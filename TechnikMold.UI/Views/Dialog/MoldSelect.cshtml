@@ -1,0 +1,87 @@
+﻿@*用@{Html.RenderAction("MoldSelect", "Dialog");}进行调用
+调用时注意设置$("#target").val()用于指定选择项目后跳转页面地址*@
+
+
+
+@*模具项目选择对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ProjectSelect" tabindex="-1" role="dialog" aria-labelledby="ProjectSelectLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ProjectSelectLabel">模具项目选择</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td><label>模具号</label></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select id="MoldList" class="form-control" size="10"></select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SelectProject" class="btn btn-primary">选择</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("document").ready(function () {
+        LoadMolds("");
+
+        $("#Keyword").on("keyup", function () {
+            LoadMolds($("#Keyword").val());
+        })
+
+        //Select the project and jump to the project part list
+        //When double click the mold project from the project list
+        $("#MoldList").on("dblclick", function () {
+            SelectProject();
+        });
+        //Select the project and jump to the project part list
+        //If no project is selected, do nothing
+        $("#SelectProject").on("click", function () {
+            if ($("#MoldList option:selected").val() != undefined) {
+                SelectProject();
+            } else {
+                alert("请选择一个模具项目");
+            }
+        });
+    })
+
+    //When users input keywords, load the mold numbers contains the keyword
+    function LoadMolds(Keyword) {
+        $("#MoldList option").remove();
+        $.getJSON("/Project/JsonMoldNumber?Keyword=" + Keyword, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#MoldList").append($("<option/>", {
+                    value: n,
+                    text: n
+                }))
+            });
+        })
+    }
+
+    function SelectProject() {
+        if ($("#target").val()==""){
+            //$("#ProjectID").val($("#MoldList option:selected").val());
+            $("#MoldNumber").val($("#MoldList option:selected").text());
+            $("#ProjectSelect").modal("hide");
+        } else {
+            location.href= $("#target").val() + $("#MoldList option:selected").val();
+        }
+    }
+
+</script>

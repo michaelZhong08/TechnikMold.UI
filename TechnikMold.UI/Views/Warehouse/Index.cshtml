@@ -1,0 +1,685 @@
+﻿@{
+    int PurchaseType=ViewBag.PurchaseType;
+    int _DeptID;
+    int UserID;
+    try
+    {
+        _DeptID =Convert.ToInt16( Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        _DeptID = 0;
+    }
+    try
+    {
+        UserID = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
+    }
+    catch
+    {
+        UserID = 0;
+    }
+}
+
+
+<div style="margin-top:10px">
+   
+        <h2>
+            @ViewBag.Title
+        </h2>
+
+        
+        <div class="col-sm-2">
+            @if (ViewBag.PurchaseType != 2)
+            {
+                <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
+                <input type="text" id="Keyword" class="form-control" />
+                <input type="hidden" id="WMoldNumber" />
+                <input type="hidden" id="PurchaseType" value="@ViewBag.PurchaseType" />
+                <input type="hidden" id="StockTypes" value="" />
+                <select class="form-control" id="MoldSelect" size="3"></select>
+            }
+            else
+            {
+                <select class="form-control" id="StockTypes" size="3"></select>
+                <input type="hidden" id="WMoldNumber" value="" />
+            }
+        </div>
+
+        <div class="col-sm-8">
+            <ul class="nav nav-pills">
+                @if ((PurchaseType == 2) && (_DeptID == 20))
+                {
+                    <li><button class="btn btn-primary" id="AddStockItem">新增备库零件</button></li>
+                    <li><button class="btn btn-warning" id="DeleteStockItem">删除备库零件</button></li>
+                    <li><button class="btn btn-primary" id="AddStockType">新增备库类型</button></li>
+                    <li><button class="btn btn-warning" id="DeleteStockType">删除备库类型</button></li>
+                    <li class="col-sm-3">
+                        <input type="text" id="WKeyword" class="form-control" value="@ViewBag.Keyword" placeholder="库存关键字" />
+                    </li>
+                    <li><button class="btn btn-primary" id="StockQuery">查询</button></li>
+                }
+                
+            </ul>
+
+            <table id="StockItemGrid"></table>
+        </div>
+</div>
+
+
+<div class="contextMenu dropdown" id="StockItemContext" style="display:none">
+    @if ((PurchaseType == 2)&&(_DeptID==20))
+    {
+        <ul style="width:200px">
+            <li id="StockEdit">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">备库修改</span>
+            </li>
+            <li id="SafeQtyEdit">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">设置安全库存</span>
+            </li>
+            <li id="StockPurchase">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/emblem-money.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">备库采购</span>
+            </li>
+            <li id="PositionEdit">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/refresh.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">库位调整</span>
+            </li>
+            <li id="DeleteStock">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png"/></span>
+                <span style="font-size:12px; font-family:Verdana">删除备库</span>
+            </li>
+        </ul>
+    }
+    else if (_DeptID == 20)
+    {
+        <ul style="width:200px">
+            <li id="PositionEdit">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/refresh.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">库位调整</span>
+            </li>
+        </ul>
+    }
+</div>
+
+
+ @if (ViewBag.PurchaseType == 2)
+ {
+     
+     //安全库存设置
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="SafeStockSetting" tabindex="-1" role="dialog" aria-labelledby="SafeStockSettingLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="SafeStockSettingLabel">设置安全库存</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><lable>安全库存数量</lable></td>
+                            <td class="col-sm-4">
+                                <input type="number" class="form-control" id="SafeQuantity" value="" placeholder="安全库存数量" min="1" />
+                            </td>
+                        </tr>
+                    </table>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SaveSafeQty" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     //备库零件编辑
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="StockItemEdit" tabindex="-1" role="dialog" aria-labelledby="StockItemEditLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="StockItemEditLabel">新增备库零件</h4>
+                </div>
+                <div class="modal-body">
+                    @using (Html.BeginForm("StockItemEdit", "Warehouse", FormMethod.Post, new { id = "StockEditForm" }))
+                    {
+                    
+                    <table class="table-striped">
+                        <tr>
+                            <td class="col-sm-2"><label>物料类型</label></td>
+                            <td class="col-sm-4">
+                                <select id="StockTypeList" class="form-control required" name="StockType"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>备库零件名称</label></td>
+                            <td class="col-sm-4">
+                                <input type="text" class="form-control required" id="Name" name="Name" value=""/>
+                                <input type="hidden" id="WarehouseStockID" name="WarehouseStockID" />
+                                <input type="hidden" id="PurchaseType" name="PurchaseType" value="2" />
+                                <input type="hidden" id="WarehouseUserID" name="WarehouseUserID" value="@UserID" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>物料号</label></td>
+                            <td class="col-sm-4">
+                                <input type="text" class="form-control required" id="PartNumber" name="MaterialNumber" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>规格</label></td>
+                            <td class="col-sm-4">
+                                <input type="text" class="form-control required" id="Specification" name="Specification" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>材料</label></td>
+                            <td class="col-sm-4">
+                                <input type="text" class="form-control" id="Material" name="Material" />
+                            </td>
+                        </tr>
+                       
+                        <tr>
+                            <td class="col-sm-2"><label>安全库存</label></td>
+                            <td class="col-sm-4">
+                                <input type="number" class="form-control required" id="SafeQuantityEdit" min="1" name="SafeQuantity"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>计划数量</label></td>
+                            <td class="col-sm-4">
+                                <input type="number" class="form-control required" id="PlanQuantity" min="1" name="PlanQty" />
+                            </td>
+                        </tr>
+                    </table>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SaveStockItem" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="StockTypeDialog" tabindex="-1" role="dialog" aria-labelledby="StockTypeLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="StockTypeLabel">添加备库类型</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><lable>备库类型名称</lable></td>
+                            <td class="col-sm-4">
+                                <input type="text" class="form-control required" id="StockTypeName" value="" placeholder="备库类型名称" />
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SaveStockType" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+ }
+ 
+<div class="modal" data-backdrop="static" data-keyboard="false" id="WarehousePositionEditDialog" tabindex="-1" role="dialog" aria-labelledby="WarehousePositionEditLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="WarehousePositionEditLabel">库位调整</h4>
+            </div>
+            <div class="modal-body">      
+                <table>
+                    <tr>
+                        <td class="col-sm-2"><label>仓库</label></td>
+                        <td class="col-sm-4">
+                            <select id="WarehouseID" class="form-control"></select>
+                            <input type="hidden" id="WarehouseStockIDs" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2"><label>库位</label></td>
+                        <td class="col-sm-4">
+                            <select id="WarehousePositionID" class="form-control"></select>
+                        </td>
+                    </tr>
+                </table>
+                    <table class="table-striped">
+                        <thead>
+                            <tr>
+                                <td class="col-sm-2"><label>名称</label></td>
+                                <td class="col-sm-2"><label>物料号</label></td>
+                                <td class="col-sm-2"><label>当前仓库</label></td>
+                                <td class="col-sm-2"><label>当前库位</label></td>
+                            </tr>
+                        </thead>
+                        <tbody id="StockItems" style="font-size:12px"></tbody>                        
+                    </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveWarehousePosition" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="~/Scripts/Warehouse.js"></script>
+<script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+
+<script>
+    $("document").ready(function () {
+
+        var _listsize = Math.round((document.documentElement.clientHeight-210) / 18);
+        @if (ViewBag.PurchaseType != 2)
+        {
+            @:$("#MoldSelect").attr("size", _listsize);
+                                        }else{
+            @:$("#StockTypes").attr("size", _listsize);
+                                            @:LoadStockTypes();
+                                        }
+
+
+
+        StockItem("@ViewBag.Keyword", "@ViewBag.MoldNumber", @ViewBag.PurchaseType)
+        SetStockItemColumn();
+        SetGridSize();
+        LoadWarehouses();
+        LoadMoldNumber("");
+
+        $("#RefreshMold").on("click", function(){
+            LoadMoldNumber("",$("#MoldSelect").val());
+        })
+        $("#NewPartBtn").on("click", function () {
+            //alert($("#NewPartForm").serialize());
+            NewPartInStock();
+        })
+
+        $("#StockTypes").on("change", function(){
+
+            var _stockType = $("#StockTypes").val();
+            var _url = "/Warehouse/JsonWarehouseStock?StockType="+_stockType+"&PurchaseType=2";
+            $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json', url:_url}).trigger("reloadGrid");
+        })
+
+        $("#StockQuery").on("click", function(){
+            var _url = "/Warehouse/JsonWarehouseStock?Keyword="+$("#WKeyword").val()+"&PurchaseType=@ViewBag.PurchaseType"
+            +"&MoldNumber="+$("#WMoldNumber").val()+"&StockType="+$("#StockTypes").val();
+            $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json', url:_url}).trigger("reloadGrid");
+        })
+
+
+        $("#SaveSafeQty").on("click", function(){
+
+            if ($("#SafeQuantity").val()!=""){
+                SetSafeQty();
+            }else{
+                alert("请输入安全库存值");
+            }
+
+        })
+
+        $("#SaveStockItem").on("click", function(){
+            SaveStockItem();
+        })
+
+        $("#AddStockItem").on("click", function(){
+            ShowStockEdit("");
+        })
+
+        $("#DeleteStockItem").on("click", function(){
+            DeleteStockItem();
+        })
+
+        $("#WarehouseID").on("change", function(){
+            LoadWarehousePositions($("#WarehouseID").val());
+        })
+
+        $("#SaveWarehousePosition").on("click", function(){
+            SaveWarehousePosition();
+        })
+
+        $("#Keyword").on("keyup", function(){
+            LoadMoldNumber($("#Keyword").val());
+        })
+
+        $("#MoldSelect").on("change", function(){
+            var _url = "/Warehouse/JsonWarehouseStock?PurchaseType=@ViewBag.PurchaseType"
+            +"&MoldNumber="+$("#MoldSelect").val()+"&StockType="+$("#StockTypes").val();
+
+            console.log(_url);
+            $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json', url:_url}).trigger("reloadGrid");
+        })
+
+        $("#AddStockType").on("click", function(){
+            AddStockType();
+        })
+
+       
+
+        $("#SaveStockType").on("click", function(){
+            SaveStockType();
+        })
+
+        $("#DeleteStockType").on("click", function(){
+            DelStockType();
+        })
+
+
+    })
+
+    function SetStockItemColumn() {
+
+        @switch (PurchaseType)
+        {
+            case 1:
+                break;
+            case 2:
+                @:$("#StockItemGrid").showHideCol("SafeQuantity");
+                @:$("#StockItemGrid").showHideCol("PlanQty");
+                @:$("#StockItemGrid").setGridParam("multiselect", true);
+                @:$("#StockItemGrid").showHideCol("StockType");
+                break;
+            case 4:
+                @:$("#StockItemGrid").showHideCol("SupplierName");
+
+
+                break;
+            case 0:
+                @:$("#StockItemGrid").showHideCol("SupplierName");
+                @:$("#StockItemGrid").showHideCol("PurchaseType");
+                @*@:$("#StockItemGrid").showHideCol("StockType");
+                @:$("#StockItemGrid").showHideCol("PlanTime");
+                @:$("#StockItemGrid").showHideCol("ForecastTime");
+                @:$("#StockItemGrid").showHideCol("FinishTime");*@
+                @:$("#StockItemGrid").showHideCol("CreateTime");
+                @:$("#StockItemGrid").showHideCol("PurchaseUser");
+                @*@:$("#StockItemGrid").showHideCol("State");*@
+                @:$("#StockItemGrid").showHideCol("ReceiveQty");
+                @:$("#StockItemGrid").showHideCol("OutQty");
+
+                break;
+            default:
+
+                break;
+        }
+    }
+
+    function SetGridSize(){
+        $("#StockItemGrid").setGridWidth(document.body.clientWidth * 0.7);
+
+        $("#StockItemGrid").setGridHeight(document.documentElement.clientHeight - 190);
+    }
+
+    function LoadStockTypes(){
+        var _url = "/Warehouse/JsonStockTypes";
+        $("#StockTypes option").remove();
+        $("#StockTypeList option").remove();
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                $("#StockTypes").append($("<option/>", {value:n.StockTypeID, text:n.Name}));
+                $("#StockTypeList").append($("<option/>", {value:n.StockTypeID, text:n.Name}));
+
+            })
+        })
+    }
+
+    function SetSafeQty(){
+        var _ids = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
+        var _url = "/Warehouse/SetSafeQuantity?StockItemIDs="+_ids+"&SafeQty="+$("#SafeQuantity").val();
+        $.ajax({
+            url:_url,
+            type:"Get",
+            success:function(msg){
+                if (msg==""){
+                    alert("安全库存修改完成");
+                    $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json'}).trigger("reloadGrid");
+                    $("#SafeStockSetting").modal("hide");
+                }else{
+                    alert(msg);
+                }
+            }
+        })
+    }
+
+    function ShowStockEdit(WarehouseStockID){
+        if ((WarehouseStockID==undefined)|(WarehouseStockID=="")){
+            $("#StockEditForm input").val("");
+            $("#PurchaseType").val(2);
+            $("#StockTypeList").val($("#StockTypes").val());
+
+        }else{
+            _url = "/Warehouse/JsonWarehouseStockItem?WarehouseStockID="+WarehouseStockID;
+            $.getJSON(_url, function(msg){
+                $("#StockEditForm input").val("");
+                $("#Name").val(msg.Name);
+                $("#WarehouseStockID").val(msg.WarehouseStockID);
+                $("#PartNumber").val(msg.MaterialNumber);
+                $("#PlanQuantity").val(msg.PlanQty);
+                $("#PurchaseType").val(2);
+                $("#Specification").val(msg.Specification);
+                $("#Material").val(msg.Material);
+                $("#StockTypeList").val(msg.StockType);
+                $("#SafeQuantityEdit").val(msg.SafeQuantity);
+            })
+
+        }
+        $("#StockItemEdit").modal("show");
+    }
+
+    function SaveStockItem(){
+        var _chkresult = ValidateCreate("StockEditForm");
+        if (ValidateCreate()){
+            var _url = "/Warehouse/StockItemEdit";
+            var _data = $("#StockEditForm").serialize();
+            $.ajax({
+                url:_url,
+                type:"Post",
+                data:_data,
+                success:function(msg){
+                    if (msg==""){
+                        $("#StockItemEdit").modal("hide");
+                        $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json'}).trigger("reloadGrid");
+                    }
+                }
+            })
+        }else{
+            alert("请输入必填项");
+        }
+    };
+
+    function EditStockItem(id){
+        ShowStockEdit(id);
+    }
+
+    function DeleteStock(ids){
+        var _url = "/Warehouse/DeleteStock?WarehouseStockIDs="+ids;
+        $.ajax({
+            url:_url,
+            type:"Get",
+            success:function(msg){
+                if (msg!=""){
+                    alert("删除出现错误，请重试");
+                }else{
+                    $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json'}).trigger("reloadGrid");
+                }
+            }
+        })
+    }
+
+    function ShowWarehousePositionEditDialog(ids){
+
+        var _url = "/Warehouse/JsonStockPositionInfo?WarehouseStockIDs="+ids;
+        $("#StockItems tr").remove();
+        $.getJSON(_url, function(msg){
+            var _row ="";
+            $.each(msg,function(i,n){
+                _row = "<tr><td>"+n.Name+"</td>"
+                        +"<td>"+n.MaterialNumber+"</td>"+
+                        "<td>"+n.Warehouse+"</td>"
+                        +"<td>"+n.Position+"</td></tr>";
+                $("#StockItems").append($(_row));
+            })
+        })
+        $("#WarehouseStockIDs").val(ids);
+        $("#WarehousePositionEditDialog").modal("show");
+
+    }
+
+    function LoadWarehouses(){
+        var _url = "/Warehouse/JsonWarehouses";
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                $("#WarehouseID").append($("<option/>", {value:n.WarehouseID, text:n.Name}));
+            })
+            LoadWarehousePositions($("#WarehouseID").val());
+        })
+    }
+
+    function LoadWarehousePositions(WarehouseID){
+        var _url = "/Warehouse/JsonWarehousePositions?WarehouseID="+WarehouseID;
+        $("#WarehousePositionID option").remove();
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                $("#WarehousePositionID").append($("<option/>", {value:n.WarehousePositionID, text:n.Name}));
+            })
+        })
+    }
+
+    function SaveWarehousePosition(){
+        var _url = "/Warehouse/ChangeStockPosition?WarehouseStockIDs="+$("#WarehouseStockIDs").val()
+        +"&WarehouseID="+$("#WarehouseID").val()+"&WarehousePositionID="+$("#WarehousePositionID").val();
+        $.ajax({
+            url:_url,
+            type:"Get",
+            success:function(msg){
+                $("#WarehousePositionEditDialog").modal("hide");
+                $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json'}).trigger("reloadGrid");
+                alert("库位修改完成");
+            }
+        })
+    }
+
+    function LoadMoldNumber(Keyword, MoldNumber){
+        var _url = "/Warehouse/JsonMoldNumber?Keyword="+Keyword+"&PurchaseType=@ViewBag.PurchaseType";
+        $("#MoldSelect option").remove();
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                if (MoldNumber==n){
+                    $("#MoldSelect").append($("<option/>", {value:n, text:n, selected:true}))
+                }else{
+                    $("#MoldSelect").append($("<option/>", {value:n, text:n}))
+                }
+                
+            })
+        })
+    }
+
+    function AddStockType(){
+        $("#StockTypeName").val("");
+        $("#StockTypeDialog").modal("show");
+    }
+
+    function SaveStockType(){
+        var _name = $("#StockTypeName").val();
+        if (_name!=""){
+            var _url = "/Warehouse/SaveStockType?Name="+_name;
+            $.ajax({
+                url:_url, 
+                type:"Get", 
+                success:function(msg){
+                    var _return = Number(msg);
+                    if (_return>0){
+                        alert("备库类型创建成功");
+                        LoadStockTypes();
+
+                        $("#StockTypeDialog").modal("hide");
+                    }else if (_return==0){
+                        alert("备库类型已存在");
+                    }else{
+                        alert("备库类型创建失败,请重试");
+                    }
+                }
+            })
+        }else{
+            alert("请输入要创建的备库类型名称");
+        }
+        
+    }
+
+    function DeleteStockItem(){
+        var _stockItemIDs = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
+        var _stockItemCounts = GetMultiSelectedCell("StockItemGrid", "Quantity")
+        var _ids = _stockItemIDs.split(",")
+        var _counts = _stockItemCounts.split(",");
+        var _valid=true;
+        for (var i=0;i<_ids.length;i++){
+            if (Number(_counts[i]>0)){
+                _valid=false;
+            }
+        }
+        console.log(_stockItemIDs);
+
+        if (_valid){
+            if (_stockItemIDs!=""){
+                if (confirm("确认删除选中备库零件？")){
+                    var _url = "/Warehouse/DeleteWarehouseStocks?WarehouseStockIDs="+_stockItemIDs;
+                    $.ajax({
+                        url:_url, 
+                        type:"Get", 
+                        success:function(msg){
+                            if (msg==""){
+                                alert("备库件删除成功");
+                                $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json'}).trigger("reloadGrid");
+                            }
+                        }
+                    })
+                }
+            }else{
+                alert("请先选择要删除的备库零件")
+            }
+        }else{
+            alert("无法删除库存数量不为0的备库件");
+        }
+        
+    }
+
+    function DelStockType(){
+        var _stockTypeID= $("#StockTypes").val();
+        if (_stockTypeID!=null){
+            if ($("#StockItemGrid").jqGrid("getDataIDs").length==0){
+                if (confirm("确认删除备库类型？")){
+                    var _url = "/Warehouse/DeleteStockType?StockTypeID="+_stockTypeID;
+                    $.ajax({
+                        url:_url, 
+                        type:"Get", 
+                        success:function(msg){
+                            if (Number(msg)==0){
+                                alert("备库类型删除成功")
+                                LoadStockTypes();
+                            }else{
+                                alert("备库类型删除失败，请重试");
+                            }
+                        }
+                    })
+                }
+            }else{
+                alert("当前备库类型下还有零件，无法删除");
+            }
+        }else{
+            alert("请选择要删除的备库类型");
+        }
+    }
+</script>

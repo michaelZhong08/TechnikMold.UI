@@ -1,0 +1,236 @@
+﻿
+@{
+    ViewBag.Title = "设计清单";
+    int DeptID = 0;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+
+<div>
+    <h2>设计清单</h2>
+    <div class="col-sm-2">
+        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control"/>
+        <select class="form-control" id="MoldSelect"></select>
+    </div>
+    <div class="col-sm-10">
+        
+        @*<nav class="navbar navbar-default" style="vertical-align:central;">
+            <ul class="nav navbar-nav">
+                <li><a href="#" id="ChangeProject">选择项目</a></li>
+                @if (ViewBag.ProjectID > 0) { 
+                    <li><a href="#" id="CreatePart">创建零件</a></li>
+                    <li><a href="#" id="UpgradePart">版本升级</a></li>
+                    <li><a href="#" id="CreatePR">零件采购</a></li>
+                }
+            </ul>
+        </nav>*@
+
+        <div id="Toolbar">
+            @*///CAD User Operation*@
+            @if (DeptID == 2)
+            {
+            <button class="btn btn-primary" id="CreatePR">创建采购申请</button>
+
+                <button class="btn btn-primary" id="CreatePart">创建零件</button>
+                <button class="btn btn-warning" id="DeletePart">删除零件</button>
+            }
+
+            
+            
+           @*<div style="float:right" class="col-sm-2">
+                <input type="text" class="form-control" placeholder="输入查询关键字" />               
+            </div>*@
+        </div>
+        <div>
+            <table id="PartGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+@*@{Html.RenderAction("MoldSelect", "Dialog");}*@
+
+
+@*手工创建零件对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PartEditModal" tabindex="-1" role="dialog" aria-labelledby="PartEditLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PartEditLabel">零件编辑</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("Edit", "Part", FormMethod.Post, new { id = "PartEdit" }))
+                {
+                    <table class="table-striped col-sm-12">
+                        <tr>
+                            <td class="col-sm-4"><label>模具号</label></td>                        
+                            <td>
+                                <input type="text" id="MoldNumber" class="form-control col-sm-3" value="@ViewBag.MoldNumber" name="MoldNumber" readonly />
+                                <input type="hidden" id="PartID" name="PartID" value="0"/>
+                                @*<input type="hidden" id="MoldNumber" name="MoldNumber" value="@ViewBag.MoldNumber" />*@
+                                <input type="hidden" id="Enabled" name="Enabled" value="true" />
+                                <input type="hidden" class="form-control" id="Version" name="Version" value="V01" readonly />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>物料号</label></td>
+                            <td><input type="text" id="PartNumber" name="PartNumber" class="form-control required" /> </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>零件名</label></td>
+                            <td>
+                                <input type="text" id="PartName" name="Name" class="form-control required" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>规格</label></td>
+                            <td>
+                                <input type="text" id="Specification" name="Specification" class="form-control required" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>数量</label></td>
+                            <td>
+                                <input type="number" id="Quantity" name="Quantity" class="form-control required" value="1" min="0"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>材料</label></td>
+                            <td>
+                                <select id="MaterialID" name="MaterialID" class="form-control"></select>
+                                <input type="hidden" id="MaterialName" name="MaterialName" />
+                                @*<input type="text" name="MaterialName" />*@
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>硬度</label></td>
+                            <td>
+                                <select class="form-control" id="HardnessID" name="HardnessID"></select>
+                                <input type="hidden" name="Hardness" id="Hardness"/>
+                            </td>
+                        </tr>
+                        @*<tr>
+                            <td class="col-sm-4"><label>品牌</label></td>
+                            <td>
+                                <select class="form-control" id="BrandID" name="BrandID"></select>
+                                <input type="hidden" id="BrandName" name="BrandName" />
+                            </td>
+                        </tr>*@
+                        @*<tr>
+                            <td class="col-sm-4"><label>版本</label></td>
+                            <td>
+                                
+                            </td>
+                        </tr>*@
+
+                        <tr>
+                            <td class="col-sm-4"><label>品牌</label></td>
+                            <td>
+                                <select class="form-control" id="BrandID" name="BrandID"></select>
+                                <input type="hidden" id="BrandName" name="BrandName" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>备注</label></td>
+                            <td>
+                                <textarea class="form-control" rows="3" id="Memo" name="Memo"></textarea>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2"><label id="FromUG"></label></td>
+                        </tr>
+                    </table>
+
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SavePart" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+@*右键菜单*@
+<div class="contextMenu dropdown" id="PartContextMenu" style="display:none">
+    <ul style="width:200px">
+
+        <li id="Edit">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">修改零件</span>
+        </li>
+        <li>
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Drawing.png" /> </span>
+            <span style="font-size:12px; font-family:Verdana">查看图纸</span>
+        </li>
+        @*<li id="Delete">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">删除零件</span>
+        </li>*@
+        @*<li id="Revision">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Revision.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">版本升级</span>
+        </li>*@
+        @*<li id="Memo">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/memo.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">修改备注</span>
+        </li>*@
+
+    </ul>
+</div>
+
+
+
+<script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+<script src="~/Scripts/Part.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        @if (DeptID == 2)
+        {
+            @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 235);
+                }
+        else
+        {
+            @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight-190);
+        }
+
+
+
+
+        var _listsize = Math.round((document.documentElement.clientHeight-210) / 18);
+        $("#MoldSelect").attr("size", _listsize);
+
+
+        LoadMoldList("","@ViewBag.MoldNumber");
+
+        $("#Keyword").on("keyup", function () {
+            setTimeout(LoadMoldList($("#Keyword").val()), 1000);
+
+        })
+        $("#test").on("click", function () {
+            $("#PartGrid").jqGrid("clearGridData");
+            $("#PartGrid").jqGrid("setGridParam", { url: "/Part/JsonParts?MoldNumber=7" }).trigger("reloadGrid");
+        })
+
+        $("#MoldSelect").on("change", function () {
+            var _MoldNumber = $("#MoldSelect").val();
+            if (_MoldNumber != null) {
+                var _url = "/Part/JsonParts?MoldNumber=" + _MoldNumber;
+                $("#PartGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+            }
+
+        })
+
+        $("#RefreshMold").on("click", function () {
+            LoadMoldList("", $("#MoldSelect").val());
+        })
+    });
+
+</script>

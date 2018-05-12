@@ -1,0 +1,151 @@
+﻿@using TechnikSys.MoldManager.Domain.Entity;
+
+@model List<WarehouseRequestItem>
+@{
+    ViewBag.Title = "仓库出库";
+}
+
+<div class="col-sm-12" style="margin-top:10px">
+    <div class="col-sm-11">
+        <div class="col-sm-8" style="float:left;">
+            <h2>仓库出库</h2>
+            <input type="hidden" id="Count" value="@Model.Count()" />
+            <ul class="nav nav-pills">
+                <li><button class="btn btn-primary" id="ConfirmOutStock">出库确认</button></li>          
+            </ul>
+@using (Html.BeginForm("SaveReceiveForm", "Warehouse", FormMethod.Post, new { id = "SaveOutStock" }))
+                    {
+            <table class="col-sm-3 table table-striped">
+                <thead>
+                    <tr>
+                        <td>零件名称</td>
+                        <td>物料号</td>
+                        <td>规格</td>
+                        <td>当前库存</td>
+                        <td>已领数量</td>
+                        <td>申领数量</td>
+                        
+                        <td>出库数量</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        
+                        @{
+                            int i = 0;
+                        foreach (WarehouseRequestItem _item in Model)
+                        {
+                            int _qty = _item.Quantity - _item.ReceivedQuantity;
+                            List<WarehouseStock> _stocks = ViewBag.StockItems;
+                            int _stock = _stocks.Where(w => w.WarehouseStockID == _item.WarehouseStockID).FirstOrDefault().Quantity;
+                            <tr>
+                                <td class="col-sm-2">@_item.PartName</td>
+                                <td class="col-sm-2">@_item.PartNumber</td>
+                                <td class="col-sm-2">@_item.Specification</td>
+                                <td class="col-sm-1">@_stock</td>
+                                <td class="col-sm-1">
+                                    @_item.ReceivedQuantity
+                                </td>
+                                <td class="col-sm-2">
+                                <input type="number" id="RequestQty[@i]" value="@_item.Quantity" class="form-control" disabled/></td>
+                                
+                                <td class="col-sm-2">
+                                    @if (_qty <= _stock)
+                                    {
+                                        <input type="number" class="form-control OutQty" id="Qty[@i]" name="Items[@i].Quantity" min="0" value="@_qty" />
+                                    }
+                                    else
+                                    {
+                                        <input type="number" class="form-control OutQty" id="Qty[@i]" name="Items[@i].Quantity" min="0" value="@_stock" />
+                                    }
+                                    
+                                    <input type="hidden" name="Items[@i].WHStockID" value="@_item.WarehouseStockID">
+                                    <input type="hidden" name="Items[@i].WHRequestID" value="@_item.WarehouseRequestItemID" />
+                                    <input type="hidden" id="Total[@i]" value="@_stock" />
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                        }
+                </tbody>
+            </table>
+            <input type="hidden" name="WarehouseRequestID" value="@ViewBag.RequestID" />
+                    }
+        </div>
+    </div>
+</div>
+
+<script >
+    $("document").ready(function () {
+        $("#ConfirmOutStock").on("click", function () {
+            var totalvalid = true;
+            for (i = 0; i < Number($("#Count").val()) ; i++) {
+                valid = ValidateQuantity(i);
+                if (valid) {
+                    $("#Qty\\[" + i + "\\]").removeClass("invalidefield");
+                } else {
+                    $("#Qty\\[" + i + "\\]").addClass("invalidefield");
+                }
+                totalvalid = valid & totalvalid;
+
+            }
+            if (totalvalid) {
+                $("#SaveOutStock").submit();
+            } else {
+                alert("出库数量不能为负数，且不能大于库存数量和申请数量");
+            }
+        })
+
+
+        $("input[type=number]").focus(function () {
+            this.select();
+        });
+
+        $(".form-control").keypress(function (e) {
+            if (e.which == 13) {// 判断所按是否回车键
+
+                    var form = $("#SaveOutStock");
+                    var inputs = $("#SaveOutStock").find(".form-control"); // 获取表单中的所有输入框
+                    var idx = inputs.index(this); // 获取当前焦点输入框所处的位置
+                    if (idx == inputs.length - 1) {// 判断是否是最后一个输入框
+                        //if (confirm("最后一个输入框已经输入,是否提交?")) // 用户确认
+                        //$("form[name='WorkhourRecordFrom']").submit(); // 提交表单
+                    } else {
+                        inputs[idx + 2].focus(); // 设置焦点
+                        inputs[idx + 2].select(); // 选中文字
+                    }
+                    return false;// 取消默认的提交行为
+               
+            }
+        });
+    })
+
+
+    function ValidateQuantity(_seq) {        
+        var value = $("#Qty\\[" + _seq + "\\]").val();
+        var _req = $("#RequestQty\\[" + _seq + "\\]").val();
+        var valid;
+        if (Number(value) > Number(_req)) {            
+            valid= false;
+        } else {
+            var _qty = $("#Total\\[" + _seq + "\\]").val();
+            if (Number(value) < 0) {
+                valid = false;
+            }else if (Number(value) > Number(_qty)) {
+                valid= false;
+            } else {
+
+                valid= true;
+            }
+        }        
+        return valid;
+        
+    }
+
+
+    function GetSequence(Name) {
+        return Name.substring(Name.indexOf('[') + 1, Name.indexOf(']'))
+    }
+
+
+</script>

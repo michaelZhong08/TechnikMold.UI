@@ -1,0 +1,145 @@
+﻿@{
+    ViewBag.Title = "成本中心管理";
+}
+
+@{
+    int DeptID = 0;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+
+<div style="margin-top:10px">
+    <h2>@ViewBag.Title</h2>
+    <div class="col-sm-2">
+        <input type="text" class="form-control" id="Keyword" />
+        <select class="form-control" id="CostCenterList"></select>
+    </div>
+    @if (DeptID ==4)
+    {
+        <div class="col-sm-4">
+            <ul class="nav nav-pills">
+                <li><button class="btn btn-primary" id="NewCostCenter">添加成本中心</button></li>
+                <li><button class="btn btn-warning" id="DeleteCostCenter">删除成本中心</button></li>
+            </ul>
+            <table class="table-striped col-sm-12">
+                <tr>
+                    <td class="col-sm-4"><label>成本中心名称</label></td>
+                    <td class="col-sm-8">
+                        <input type="text" class="form-control" id="Name" disabled />
+                        <input type="hidden" id="CostCenterID" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button class="btn btn-primary" id="SaveCostCenter">保存</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+</div>
+
+<script>
+    $("document").ready(function () {
+        var _listRows = 20;
+        $("#CostCenterList").attr("size", _listRows);
+
+        LoadCostCenters("");
+
+        $("#Keyword").on("keyup", function () {
+            LoadCostCenters($("#Keyword").val());
+        })
+
+        $("#CostCenterList").on("change", function () {
+            $("#Name").removeAttr("disabled", false);
+            $("#Name").val($("#CostCenterList option:selected").text());
+            $("#CostCenterID").val($("#CostCenterList option:selected").val());
+        })
+
+        $("#SaveCostCenter").on("click", function () {
+            SaveCostCenter();
+        })
+
+        $("#NewCostCenter").on("click", function () {
+            $("#Name").removeAttr("disabled", false);
+            $("#Name").val("");
+            $("#CostCenterID").val(0);
+        })
+
+        $("#DeleteCostCenter").on("click", function () {
+            DeleteCostCenter();
+        })
+
+    })
+    
+
+    function LoadCostCenters(Keyword) {
+        if (Keyword == undefined) {
+            Keyword = "";
+        }
+        var _url = "/Purchase/JsonCostCenters?Keyword=" + Keyword;
+        $("#CostCenterList option").remove();
+        $.ajax({
+            type: "Get",
+            url: _url,
+            success: function (msg) {
+                $.each(msg, function (i, n) {
+                    $("#CostCenterList").append($("<option/>", {
+                        value: n.CostCenterID,
+                        text: n.Name
+                    }))
+                })
+            }
+        })
+    }
+
+    function SaveCostCenter() {
+        var _url = "/Purchase/GetCostCenter?BrandName=" + $("#Name").val();
+        $.ajax({
+            type: "Get",
+            url: _url,
+            success: function (msg) {
+                var _count = Number(msg);
+                if ((_count > 0) && ($("#BrandID").val() == 0)) {
+                    alert("成本中心已存在");
+                } else {
+                    _url = "/Purchase/SaveCostCenter?Name=" + $("#Name").val() + "&CostCenterID=" + $("#CostCenterID").val();
+                    $.ajax({
+                        type: "Post",
+                        url: _url,
+                        success: function (msg) {
+                            alert("保存完成")
+                            LoadCostCenters("");
+                        }
+                    })
+                }
+            }
+        })
+
+    }
+
+    function DeleteCostCenter() {
+        if (($("#CostCenterID").val() == "") || ($("#CostCID").val() == 0)) {
+            alert("请选择一个成本中心");
+        } else {
+            if (confirm("确认删除成本中心" + $("#Name").val() + "?")) {
+                var _url = "/Purchase/DeleteCostCenter?CostCenterID=" + $("#CostCenterID").val();
+                $.ajax({
+                    type: "Get",
+                    url: _url,
+                    success: function () {
+                        alert("删除成功");
+                        LoadCostCenters("");
+                    }
+                })
+            }
+        }
+    }
+
+</script>

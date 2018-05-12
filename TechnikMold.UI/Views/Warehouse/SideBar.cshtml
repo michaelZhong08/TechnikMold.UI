@@ -1,0 +1,30 @@
+﻿@{
+    int DeptID = 0;
+    try
+    {
+        DeptID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+
+<div class="col-sm-1 sidebar">
+    <ul class="nav nav-sidebar">
+        <li><a href="/Warehouse">在库库存清单</a></li>
+        <li><a href="/Warehouse/WHPOList">订单收货</a></li>
+        <li><a href="/Warehouse/WarehouseRequestList">领料申请</a></li>
+        <li><a href="/Warehouse/OutStockHistory">出库记录</a></li>
+        <li><a href="/Warehouse/PurchaseItemList">待收货零件</a></li>
+        <li><a href="/Warehouse/Index?PurchaseType=4">在库材料查询</a></li>
+        <li><a href="/Warehouse/Index?PurchaseType=2">备库查询</a></li>
+        <li><a href="/Warehouse/Index?PurchaseType=1">在库零件查询</a></li>
+        <li><a href="/Warehouse/OutSource">外发出库</a></li>
+        @if (DeptID == 20)
+        {
+            <li><a href="/Warehouse/WarehouseInformation">仓库/库位</a></li>
+        }
+        
+    </ul>
+</div>

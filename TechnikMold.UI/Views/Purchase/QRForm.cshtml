@@ -1,0 +1,91 @@
+﻿@using MoldManager.WebUI.Models.ViewModel;
+@using TechnikSys.MoldManager.Domain.Entity;
+
+@model QRViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>QRForm</title>
+    <link href="~/Content/Site.css" rel="stylesheet" />
+</head>
+<body>
+    <div width="100%">
+        <center><h2>星诺奇采购询价单</h2></center>
+        @*<h3>询价单号 @Model.QuotationRequest.QuotationNumber</h3></>*@
+        <table border="0" width="100%">
+            <tr>
+                <td colspan="2" align="right">询价单号 @Model.QuotationRequest.QuotationNumber</td>
+            </tr>
+            <tr>
+                <td width="50%"><p>询价日期:@DateTime.Now.ToString("yyyy-MM-dd")</p></td>
+                <td width="50%" align="right"><p>报价截止日期:@Model.QuotationRequest.DueDate.ToString("yyyy-MM-dd")</p></td>
+            </tr>
+        </table>
+        
+       
+        <table class="pdfTable" border="1" cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+                <td height="30">联系人</td>
+                <td>@Model.PuUser.FullName</td>
+                <td>电话</td>
+                <td>@Model.PuUser.Extension</td>
+            </tr>
+            <tr>
+                <td>手机</td>
+                <td>@Model.PuUser.Mobile</td>
+                <td>邮箱</td>
+                <td>@Model.PuUser.Email</td>
+            </tr>
+        </table>
+        <h4>询价内容</h4>
+
+        <table class="pdfTable" border="1" cellspacing="0" cellpadding="0" width="100%" style="font-size:10px">
+            <thead>
+                <tr style="background-color:#e4e4e4">
+                    <td width="20%">零件名称</td>
+                    <td width="10%">零件号</td>
+                    <td width="15%">规格</td>
+                    <td width="5%" align="center">数量</td>
+
+                    
+                    <td width="10%">材料</td>
+                    <td width="10%">品牌</td>
+                    <td width="5%">图纸</td>
+                    <td width="10%">需求日期</td>
+                    <td width="10%">备注</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (QRContent _content in Model.QRContents)
+                {
+                    <tr>
+                        <td>@_content.PartName</td>
+                        <td>@_content.PartNumber</td>
+                        <td>@_content.PartSpecification</td>
+                        <td align="center">@_content.Quantity</td>
+
+                        
+                        <td>@_content.MaterialName</td>
+                        
+                        <td>@_content.BrandName</td>
+                        @{
+                    string _pd = _content.PurchaseDrawing ? "Yes" : "No";
+                        }
+                        <td>@_pd</td>
+                        <td>@_content.RequireDate.ToString("yyyy-MM-dd")</td>
+                        <td>@_content.Memo</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>

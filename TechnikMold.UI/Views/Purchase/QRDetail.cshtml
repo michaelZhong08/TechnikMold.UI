@@ -1,0 +1,524 @@
+﻿@model TechnikSys.MoldManager.Domain.Entity.QuotationRequest
+@using MoldManager.WebUI.Models.Helpers;
+
+@{
+    string UserID;
+    string UserName;
+    try
+    {
+        UserID = Request.Cookies["User"]["UserID"];
+        UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
+    }
+    catch
+    {
+        UserID = "";
+        UserName = "";
+    }
+}
+
+@{
+    int DeptID;
+    int PosID;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    }
+    catch
+    {
+
+    }
+}
+
+<div style="margin-top:10px">   
+    <div class="col-sm-11">
+        @if (ViewBag.QuotationRequestID != 0)
+        {
+            <input type="hidden" id="QuotationRequestID" value="@ViewBag.QuotationRequestID" />
+            <h3>询价单号：@Model.QuotationNumber</h3>
+        }
+        else
+        {
+            <input type="hidden" id="QuotationRequestID" value="0" />
+            <h3>创建询价单</h3>
+        }
+        <div id="Toolbar">
+
+            @if (Model == null)
+            {
+                <button class="btn btn-success" id="SaveQR">保存询价单</button>
+                <button class="btn btn-primary" id="AddQRContent">添加零件</button>
+                <button class="btn btn-primary" id="DeleteQRContent">删除零件</button>
+            }
+            else
+            {
+               if (DeptID==4)
+               {
+                    switch (Model.State)
+                    {
+                        case (int)QuotationRequestStatus.新建:
+                            <button class="btn btn-primary" id="AddQRContent">添加零件</button>
+                            <button class="btn btn-primary" id="DeleteQRContent">删除零件</button>
+                            <button class="btn btn-primary" id="SaveQR">保存询价单</button>
+                            <button class="btn btn-warning" id="CancelQR">取消</button>
+                            <button class="btn btn-primary" id="SelectQRSupplier">选择供应商</button>
+                            <button class="btn btn-primary" id="SendQR">生成询价文件</button>
+                            <button class="btn btn-primary" id="ExportStdData">标准件信息输出</button>
+                            break;
+                        case (int)QuotationRequestStatus.发出:
+                            <button class="btn btn-primary" id="SendQR">发送询价单</button>
+                            <button class="btn btn-primary" id="SelectQRSupplier">选择供应商</button>
+                            <button class="btn btn-primary" id="QuotationInput">输入供应商报价</button>
+                            <button class="btn btn-primary" id="CompareQuotation">报价对比&供应商指定</button>
+                            <button class="btn btn-primary" id="QuotationUpload">供应商报价文件</button>
+                            <button class="btn btn-warning" id="CloseQR">关闭询价单</button>
+                            break;
+                        case (int)QuotationRequestStatus.完成:
+                            <button class="btn btn-warning" id="RestartQR">重新询价</button>
+                            <button class="btn btn-primary" id="CompareQuotation">报价对比&生成订单</button>
+                            break;
+                    }
+               }
+            }
+        </div>
+        <div id="Basic" class="col-sm-10 PRInfo">
+            @if (ViewBag.QuotationRequestID == 0)
+            {
+
+                using (Html.BeginForm("QRSave", "Purchase", FormMethod.Post, new { id = "QRCreate" }))
+                {
+                    if (ViewBag.PurchaseRequestID != 0)
+                    {
+                        <input type="hidden" id="PurchaseRequestID" name="PurchaseRequestID" value="@ViewBag.PurchaseRequestID" />
+                    }
+                    else
+                    {
+                        <input type="hidden" id="PurchaseRequestID" name="PurchaseRequestID" value="0" />
+                    }
+                }
+            }
+            else
+            {
+                <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
+                if (Model.State == 1)
+                {
+                    using (Html.BeginForm("QRSave", "Purchase", FormMethod.Post, new { id = "QRCreate" }))
+                    {
+                        <input type="hidden" id="ProjectID" name="ProjectID" value="@Model.ProjectID" />
+                        <input type="hidden" id="PurchaseRequestID" name="PurchaseRequestID" value="@Model.PurchaseRequestID" />
+                    }
+                }
+                else
+                {
+                    <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
+                }
+            }
+            <table>
+
+                <tr>
+                    @if (ViewBag.PurchaseNumber != "")
+                    {
+                        <td class="col-sm-1"><label>关联申请单</label></td>
+                        <td class="col-sm-2">
+                            <input type="text" class="form-control" value="@ViewBag.PurchaseNumber" readonly />
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="col-sm-1"><label>关联申请单</label></td>
+                        <td class="col-sm-2">
+                            <input type="text" class="form-control" value="-" readonly />
+                        </td>
+                    }
+                    <td class="col-sm-1"><label>报价需求日期 </label></td>
+                    <td class="col-sm-2">
+                        @if ((ViewBag.DueDate != null)&&(ViewBag.DueDate!="1900-01-01"))
+                        {
+                            <input type="date" class="form-control" id="DueDate" value="@ViewBag.DueDate" readonly />
+                        }
+                        else
+                        {
+                            <input type="date" id="DueDate" class="form-control  required" value="" />
+                        }
+                    </td>
+                </tr>
+                    @if (ViewBag.QuotationRequestID != 0)
+                    {
+                        string status = Enum.GetName(typeof(QuotationRequestStatus), Model.State);
+                        <tr>
+                            <td class="col-sm-1"><label>状态</label></td>
+                            <td class="col-sm-2"><input type="text" id="QuotationRequestStatus" class="form-control" value="@status" readonly></td>
+                            <td class="col-sm-1"><label>已选择供应商</label></td>
+                            <td class="col-sm-2">
+                                <input type="text" id="ExistingSuppliers" class="form-control" readonly />
+                            </td>
+                        </tr>
+                    }
+                        
+            </table>
+        </div>
+
+        <div class="col-sm-12" style="float:left;">
+            <table id="QRContentGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="tempID" value="-1" />
+
+<input type="hidden" id="row" />
+
+
+@*修改零件数量*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ModiyfContentQtyDialog" tabindex="-1" role="dialog" aria-labelledby="ModiyfContentQtyLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ModiyfContentQtyLabel">修改零件询价数量</h4>
+            </div>
+            <div class="modal-body">                
+                <table>
+                    <tr>
+                        <td class="col-sm-1"><label>零件名称</label></td>
+                        <td class="col-sm-2">
+                            <input type="text" id="QRContentName" class="form-control" readonly/>
+                            <input type="hidden" id="QRContentIDQty" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-1"><label>询价数量</label></td>
+                        <td class="col-sm-2"><input type="number" id="QRContentQty" class="form-control" min="0"/></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveQRContentQty" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*手工添加零件对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="QRContentAdd" tabindex="-1" role="dialog" aria-labelledby="QRContentAddLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="QRContentAddLabel">添加零件</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table-striped col-sm-12">
+                    <tr>
+                        <td class="col-sm-4">零件名称</td>
+                        <td class="col-sm-8">
+                            <input type="text" class="form-control required" name="Name" id="Name" maxlength="50" />
+                            <input type="hidden" id="PartNumber" />
+                            <input type="hidden" id="QRContentID" value="0" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">数量</td>
+                        <td class="col-sm-8"><input type="number" class="form-control required" name="Quantity" id="Quantity" value="1" min="0" /></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">规格</td>
+                        <td class="col-sm-8"><input type="text" class="form-control required" name="Specification" id="Specification" maxlength="100" /></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">材料</td>
+                        <td class="col-sm-8">
+                            <select class="form-control" id="MaterialID" name="MaterialID">
+                                <option value="0">-</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">硬度</td>
+                        <td class="col-sm-8">
+                            <select class="form-control" id="HardnessID" name="Hardness">
+                                <option value="0">-</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">品牌</td>
+                        <td class="col-sm-8">
+                            <select class="form-control" id="Brand" name="BrandID"></select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">备注</td>
+                        <td class="col-sm-8">
+                            <input type="text" class="form-control" name="Memo" id="Memo" maxlength="99" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveQRContent" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*供应商选择对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="SelectSupplierDialog" tabindex="-1" role="dialog" aria-labelledby="SupplierSelectLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="SupplierSelectLabel">选择供应商</h4>
+            </div>
+            <div class="modal-body" style="height:300px">
+                <div class="col-sm-5">
+                    <select id="AvailableSuppliers" class="form-control" size="10"></select>
+                </div>
+                <div class="col-sm-1">
+                    <button class="btn btn-primary" id="Select">></button>
+                    <button class="btn btn-primary" id="Remove"><</button>
+                </div>
+
+                <div class="col-sm-5">
+                    <select id="SupplierList" class="form-control" size="10"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveQRSuppliers" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*发出询价单对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="SendQRDialog" tabindex="-1" role="dialog" aria-labelledby="SendQRLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="SendQRLabel">选择询价供应商</h4>
+            </div>
+            <div class="modal-body" style="height:300px">
+                <div class="col-sm-5">
+                    <label>供应商</label>
+                    <select id="QRSupplierList" class="form-control" size="5"></select>
+                </div>
+                <div class="col-sm-1">
+                </div>
+                <div class="col-sm-5">
+                    <label>联系人</label>
+                    <select id="QRContactList" class="form-control" size="5"></select>
+                </div>
+                <div class="col-sm-11">
+                    <label>供应商接收人</label>
+                    @using (Html.BeginForm("SendQR", "Purchase", FormMethod.Post, new { id = "SendQRByMail" }))
+                    {
+                        <input type="text" class="form-control" id="QRReceiver" name="QRReceiver" />
+                        <input type="hidden" name="QurchaseRequestID" value="@ViewBag.QurchaseRequestID" />
+                    }
+                </div>
+               
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SendQRMail" class="btn btn-primary">发送</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*标准件采购信息批量输出*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="STDDialog" tabindex="-1" role="dialog" aria-labelledby="STDLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="STDLabel">标准件采购信息输出</h4>
+            </div>
+            <div class="modal-body" style="height:300px">
+                <textarea class="form-control" rows="10" id="QRContentInfo"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*文件上传*@
+<div class="modal fade" id="QuotationFileUpload" tabindex="-1" role="dialog" aria-labelledby="QuotationFileUpload-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="QuotationFileUpload-label">供应商报价文件</h4>
+            </div>
+            <div class="modal-body">
+                <form action="/Purchase/QuotationUpload" id="UploadFileForm" enctype="multipart/form-data" method="post">
+                    <table class="table-bordered">
+
+                        <tr>
+                            <td class="col-sm-4">供应商</td>
+                            <td class="col-sm-8">
+                                <input type="hidden" name="RequestID" value="@ViewBag.QuotationRequestID" />
+                                <select name="UploadSupplier" id="UploadSupplier" class="form-control"></select>
+                                @*<input type="hidden" name="UploadSupplier" value="10" />*@
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4">文件选择</td>
+                            <td class="col-sm-8">
+                                <input type="file" class="form-control" name="File" id="File" placeholder="点击上传供应商报价文件" />
+                            </td>
+                        </tr>
+
+                    </table>
+                </form>  
+                <button class="btn btn-primary" id="UploadFile">上传文件</button>
+                <h3>已上传文件</h3> 
+                <table class="table-striped col-sm-12" id="ContentTable" >
+                    <thead>
+                        <tr>
+                            <td class="col-sm-4"><label>供应商</label></td>
+                            <td class="col-sm-4"><label>报价日期</label></td>
+                            <td class="col-sm-4"><label>报价文件</label></td>
+                        </tr>
+                    </thead>
+                    <tbody id="ContentValues">
+
+                    </tbody>
+                </table>         
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+@if (ViewBag.ProjectID == 0)
+{
+    Html.RenderAction("MoldSelect", "Dialog");
+}
+
+<script src="~/Scripts/Purchase.js"></script>
+<script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        LoadMaterials();
+        @if (ViewBag.QuotationRequestID != 0)
+        {
+            @:QRContentGrid("", @ViewBag.QuotationRequestID, @ViewBag.QRState);
+            @:LoadUser(@Model.PurchaseUserID, "UserName");
+            @:LoadProject(@ViewBag.ProjectID);
+            @:LoadSupplierNames(@ViewBag.QuotationRequestID);
+        }
+        else if (ViewBag.PurchaseItemIDs != "")
+        {
+            @:QRContentGrid("", 0, 0, "@ViewBag.PurchaseItemIDs");
+            //@:var _url = "/Purchase/JsonQRPurchaseItems?PurchaseItemIDs=@ViewBag.PurchaseItemIDs";
+            //@:$("#QRContentGrid").jqGrid('setGridParam', {datatype: "json", url:_url}).trigger("reloadGrid");
+
+
+        }else
+        {
+            @:LoadProject(@ViewBag.ProjectID);
+            @:QRContentGrid("@ViewBag.PRContentIDs", 0, 0);
+        
+        }
+
+        $("#QuotationUpload").on("click", function(){
+            ShowFileUpload();
+        })
+
+        $("#QuotationFileUpload").on("shown.bs.modal", function(){
+            LoadQRSuppliers(@ViewBag.QuotationRequestID,"UploadSupplier" )
+            GetQuotationFiles()
+        })
+
+        $("#UploadFile").on("click", function(){
+            CheckFile();
+        })
+
+    });
+
+    function ShowFileUpload(){
+        $("#QuotationFileUpload").modal("show")
+    }
+
+    function GetQuotationFiles(){
+        var _url = "/Purchase/JsonQuotationFiles?QuotationRequestID=@ViewBag.QuotationRequestID";
+        $("#ContentValues tr").remove();
+        $.getJSON(_url, function(msg){
+            if(msg.length>0){
+                $("#ContentTable").attr("style", "display:solid");
+                $.each(msg, function(i, n){
+                    $("#ContentValues").append("<tr><td>"+n.SupplierName+"</td><td>"+n.UploadDate+"</td><td><a class='btn btn-primary' href='"+n.FileLink+"'>下载文件</a></td></tr>");
+                })
+            }else{
+                $("#ContentTable").attr("style", "display:none;");
+            }
+            
+        })
+    }
+
+    function CheckFile(){
+        var _supplier = $("#UploadSupplier option:selected").val();
+        var _quotationrequest = @ViewBag.QuotationRequestID;
+        var _url ="/Purchase/QuotationFileCount?QuotationRequestID="+_quotationrequest+"&SupplierID="+_supplier
+        var _submit;
+        $.ajax({
+            url:_url, 
+            type:"Get", 
+            success:function(count){
+                if (Number(count)>0){
+                    if (confirm("该供应商报价文件已存在,是否替换原有文件?")){
+                        _submit=true;
+                    }else{
+                        _submit = false;
+                    }
+                }else{
+                    _submit = true;
+                }
+                if (_submit){
+                    UploadFile();
+                }
+            }
+        })        
+    }
+
+    function UploadFile(){
+        var _formData = new FormData($("#UploadFileForm")[0]);
+
+        $.ajax({
+
+            type:"POST", 
+            dataType:"html", 
+            url:"/Purchase/QuotationUpload", 
+            data:_formData, 
+            processData:false, 
+            contentType:false,
+            success:function(msg){
+                if (msg ==""){
+                    alert("上传成功");
+                    $("#File").val("");
+                    GetQuotationFiles();
+                }else{
+                    alert("文件上传出错,请重试");
+                }
+            }
+        })
+    }
+</script>

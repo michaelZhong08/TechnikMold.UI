@@ -1,0 +1,104 @@
+﻿
+@{
+    ViewBag.Title = "领料申请单";
+}
+
+<div class="col-sm-12" style="margin-top:10px">
+    <div class="col-sm-11">
+
+        <div class="col-sm-12" style="float:left;">
+            <h2>@ViewBag.MoldNumber 领料申请单</h2>
+            <input type="hidden" id="MoldNumber" value="@ViewBag.MoldNumber" />
+            <ul class="nav nav-pills">
+                <li><button class="btn btn-primary" id="NewWHRequest">新建申请单</button> </li>
+                <li><button class="btn btn-primary" id="RequestQuery">查询申请单</button></li>
+            </ul>
+            <table id="WHRequestGrid"></table>
+            @*<div id="jqGridPager"></div>*@
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="RequestSearchDialog" tabindex="-1" role="dialog" aria-labelledby="RequestSearchLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="RequestSearchLabel">领料申请单查询</h4>
+            </div>
+            <div class="modal-body">
+
+
+                            <table class="col-sm-12">
+                                <tr>
+                                    <td class="col-sm-4">领料单号</td>
+                                    <td class="col-sm-8">
+                                        <input type="text" id="RequestKeyword" class="form-control" placeholder="领料单号关键字" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-4"><label>关键字</label></td>
+                                
+                                    <td class="col-sm-8"><input type="text" id="ItemKeyword" class="form-control" placeholder="领料明细关键字" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-4"><label>开始日期</label></td>
+
+                                    <td class="col-sm-8"><input type="date" id="StartDate" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-4"><label>结束日期</label></td>
+
+                                    <td class="col-sm-8"><input type="date" id="EndDate" class="form-control" /></td>
+                                </tr>
+                            </table>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="QueryBtn" class="btn btn-primary">查询</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script src="~/Scripts/Warehouse.js"></script>
+<script>
+
+    $("document").ready(function () {
+        WHRequestGrid(@ViewBag.MoldNumber);
+        $("#NewWHRequest").on("click", function () {
+            location.href = "/Warehouse/WHRequestDetail";
+        })
+
+        $("#RequestQuery").on("click", function () {
+            $("#RequestSearchDialog").modal("show")
+        })
+
+        $("#QueryBtn").on("click", function () {
+            WarehouseRequestQuery();
+        })
+    })
+
+
+    function LoadWHRequest(ID) {
+        location.href = "/Warehouse/WHRequestDetail?WHRequestID=" + ID
+    }
+
+    function WarehouseRequestQuery() {
+        var _url = "/Warehouse/JsonWarehouseRequests?Keyword=" + $("#ItemKeyword").val()
+            + "&RequestKeyword=" + $("#RequestKeyword").val();
+            + "&StartDate=" + $("#StartDate").val()            
+            + "&EndDate=" + $("#EndDate").val();
+            console.log(_url);
+        $("#WHRequestGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
+        $("#RequestSearchDialog").modal("hide");
+    }
+
+   
+</script>

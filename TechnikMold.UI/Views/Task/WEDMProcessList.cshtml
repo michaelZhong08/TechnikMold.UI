@@ -1,0 +1,42 @@
+﻿
+@{
+    ViewBag.Title = "WEDMProcessList";
+}
+
+@using MoldManager.WebUI.Models.Helpers;
+@{
+    TaskType _taskType = new TaskType();
+}
+
+
+
+<div style="margin-top:10px">
+    <h2 class="page-header">@ViewBag.Title</h2>
+
+    <div class="col-sm-11">
+        <div id="Toolbar">
+            <ul class="nav nav-pills">
+                <li><button class="btn btn-primary" id="AddToQueue">加工选中任务</button></li>
+                <li><button class="btn btn-primary" id="Priority">设置优先级</button></li>
+                <li><button class="btn btn-primary" id="Priority">设置任务结束</button></li>
+                <li><button class="btn btn-primary" id="OutSource">任务外发</button></li>
+                <li><button class="btn btn-primary" id="OutSource">取消外发</button></li>
+            </ul>
+        </div>
+        <div class="col-sm-11" style="float:left;">
+            <table id="TaskGrid"></table>
+        </div>
+
+    </div>
+</div>
+
+<script src="~/Scripts/Task.js"></script>
+<script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+
+<script>
+    $("#document").ready(function () {
+
+    });
+</script>
+
+

@@ -1,0 +1,42 @@
+﻿
+<div class="modal" data-backdrop="static" data-keyboard="false" id="EleCompensationDialog" tabindex="-1" role="dialog" aria-labelledby="EleCompensationLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="EleCompensationLabel">修改电极补偿</h4>
+            </div>
+            <div class="modal-body">
+
+
+
+                @using (Html.BeginForm("SaveEDMCompensation", "Task", FormMethod.Post, new { id = "EditELECompensationForm" }))
+                {
+                    <input type="hidden" id="EDMItemID" name="EDMItemID" />
+
+                    <table class="table-striped">
+                        <tr>
+                            <td class="col-sm-2"><label>电极名称</label></td>
+                            <td class="col-sm-4">
+                                <input type="text" id="EleName" class="form-control" readonly />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-1"><label>火花间隙</label></td>
+                            <td class="col-sm-5"><input type="number" class="form-control required" name="GapCompensation" id="GapCompensation" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-1"><label>高度补偿</label></td>
+                            <td class="col-sm-5"><input type="number" class="form-control required" name="ZCompensation" id="ZCompensation" /></td>
+                        </tr>
+                    </table>
+                }
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveCncPara" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>

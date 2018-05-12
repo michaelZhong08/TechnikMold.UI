@@ -1,0 +1,114 @@
+﻿<div class="modal" data-backdrop="static" data-keyboard="false" id="SteelProgramSelectDialog" tabindex="-1" role="dialog" aria-labelledby="SteelProgramSelectLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="SteelProgramSelectDialog">加工程序选择</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td class="col-sm-2">加工设备</td>
+                        <td class="col-sm-3">
+                            <select id="Machine" class="form-control"></select>
+                            <input type="hidden" id="SteelTaskID" />
+                        </td>
+                        <td class="col-sm-2">
+                            上传目录
+                        </td>
+                        <td class="col-sm-3">
+                            <select id="Directory" class="form-control">
+                                
+                                <option value="@DateTime.Now.ToString("MM-dda-ST")">@DateTime.Now.ToString("MM-dda-ST")</option>
+                                <option value="@DateTime.Now.ToString("MM-ddb-ST")">@DateTime.Now.ToString("MM-ddb-ST")</option>
+                                <option value="@DateTime.Now.ToString("MM-ddc-ST")">@DateTime.Now.ToString("MM-ddc-ST")</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <table class="col-sm-12 table-striped">
+                    <thead>
+                        <tr>
+                            <td></td>
+                            <td><label>名称</label></td>
+                            <td><label>程序文件</label></td>
+                        </tr>
+                    </thead>
+                    <tbody id="ProgramSelect">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SendSteelProgram" class="btn btn-primary">开始加工</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("document").ready(function(){
+        GetMachines();
+
+        $("#SendSteelProgram").on("click", function () {
+            var _checkboxes = $("#Program:checked");
+            if (_checkboxes.length > 0) {
+                var _ids = "";
+                $.each(_checkboxes, function (i, n) {
+                    _ids = _ids == "" ? n.value : _ids + "," + n.value;
+                })
+
+                SendPrograms($("#SteelTaskID").val(), _ids, $("#Machine").val(), $("#Directory").val());
+            } else {
+                alert("请至少选择一个程序");
+            }
+            
+        })
+    })
+
+    function GetMachines() {
+        $.getJSON("/Task/CNCMachines", function (msg) {
+            $.each(msg, function (i, n) {
+                $("#Machine").append($("<option/>", {
+                    value: n.MachineID,
+                    text: n.Name
+                }))
+            })
+        })
+    }
+    function GetSteelTasks(TaskID) {
+        $("#SteelTaskID").val(TaskID);
+        $(".ProgramList").remove();
+        $.getJSON("/Task/JsonSteelPrograms?taskid=" + TaskID, function (msg) {
+
+            $.each(msg, function (i, n) {
+                var _programRow = "<tr class='ProgramList'><td class='col-sm-1'><input type='checkbox' id='Program' value='" +
+                    n.SteelProgramID + "' checked></td>" + "<td class='col-sm-2'>" + n.ProgramName +
+                    "</td><td class='col-sm-4'>" + n.FileName + "</td></tr>";
+                $("#ProgramSelect").append(_programRow);
+            })
+        })
+        $("#SteelProgramSelectDialog").modal("show");
+    }
+
+    function SendPrograms(TaskID, ProgramIDs, DeviceID, PathName) {
+        $.ajax({
+            url: "/Task/CreateSteelProgram?ProgramIDs=" + ProgramIDs + "&DeviceID=" + DeviceID + "&PathName=" + PathName + "&TaskID=" + TaskID,
+            dataType: "html",
+            error: function(){},
+            success: function(msg){
+                //if (msg == "False") {
+                //    alert("加工程序传输出现错误");
+                //} else {
+                //    alert("加工程序传输成功");
+                //}
+                if (msg == "") {
+                    alert("加工程序传输成功");
+                    $("#SteelProgramSelectDialog").modal("hide");
+                } else {
+                    alert(msg);
+                }
+            }
+        })
+    }
+</script>

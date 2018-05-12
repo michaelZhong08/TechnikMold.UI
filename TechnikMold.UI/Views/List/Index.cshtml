@@ -1,0 +1,140 @@
+﻿@model IEnumerable<TechnikSys.MoldManager.Domain.Entity.ListType>
+@{
+    ViewBag.Title = "列表管理";
+}
+<script type="text/javascript" src="~/Scripts/Administrator.js"></script>
+<script src="~/Scripts/List.js"></script>
+<h2>列表管理</h2>
+@using TechnikSys.MoldManager.Domain.Entity
+<script type="text/javascript">
+    $(document).ready(function () {
+        var _typeID = parseInt(@ViewBag.ListTypeID);
+        if (_typeID > 0) {
+            $("#ListType").val(_typeID);
+            LoadList("/List/ListValues?TypeID=" + _typeID, "ListContent");
+            $("#ListContent").removeAttr("disabled");
+            $("#ListContentEdit>#ListTypeID").val(_typeID);
+        }
+    });
+</script>
+<div>
+    
+    <div class="col-sm-1 sidebar">
+        <ul class="nav nav-sidebar">
+            <li><a href="/List">列表管理</a></li>
+            <li><a href="/Administrator/TaskhourCost">工时费率管理</a></li>
+            <li><a href="/Administrator/UserManagement">用户管理</a></li>
+            @*<li><a href="/Administrator/EquipmentList">设备管理</a></li>
+            <li><a href="/Administrator/Customer">客户信息</a></li>
+            <li><a href="/Administrator/Warehouse">仓库信息</a></li>*@
+        </ul>
+    </div>
+
+    <div class="col-sm-11 col-sm-offset-1">
+        <h3 class="page-header">列表管理</h3>
+        <div class="col-sm-5">
+
+            <div class=" panel panel-info" style="height:600px">
+                
+            </div>
+
+        </div>
+        <div class="col-sm-5">
+            <div class="panel panel-info" style="height:600px">
+                <div class="panel-heading"><h3 class="panel-title">列表内容</h3></div>
+                <div class="panel-body">
+                    <nav class="navbar navbar-default">
+                        <div class="navbar-collapse collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="#" id="AddListContent" data-toggle="modal" data-target="#ListContentModal">创建</a></li>
+                                <li><a href="#" id="EditListContent">编辑</a></li>
+                                <li><a href="#" id="DisableContent">删除</a></li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <div>
+                        <select class="form-control" size="25" id="ListContent" disabled></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    @*列表类型编辑*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="ListTypeModal" tabindex="-1" role="dialog" aria-labelledby="EditTypeLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="EditTypeLabel">编辑列表类型</h4>
+                </div>
+                <div class="modal-body">
+                    @using (Html.BeginForm("EditListType", "List", FormMethod.Post, new { id = "ListTypeEdit" }))
+                    {
+                        <input type="hidden" id="ListTypeID" name="ListTypeID" value="0" />
+                        <label>类型名称</label>
+                        <input type="text" class="form-control" id="Name" name="Name" value="" />
+                        <input type="hidden" id="Enabled" name="Enabled" value="true" />
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SaveType" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*列表内容编辑*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="ListContentModal" tabindex="-1" role="dialog" aria-labelledby="EditContentLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="EditContentLabel">编辑列表选项</h4>
+                </div>
+                <div class="modal-body">
+                    @using (Html.BeginForm("EditListContent", "List", FormMethod.Post, new { id = "ListContentEdit" }))
+                    {
+                        <input type="hidden" id="ListTypeID" name="ListTypeID" value="0" />
+                        <label>选项文字</label>
+                        <input type="text" class="form-control" id="Name" name="Name" value="" />
+                        <input type="hidden" id="ListValueID" name="ListValueID" value="" />
+                        <input type="hidden" id="Enabled" name="Enabled" value="true" />
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SaveContent" class="btn btn-primary">保存</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    @*禁用列表类型确认*@
+    @*<div class="modal" data-backdrop="static" data-keyboard="false" id="ListContentDisableModal" tabindex="-1" role="dialog" aria-labelledby="EditContentLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h4 class="modal-title" id="EditContentLabel">禁用列表类型</h4>
+                        <div class="modal-body">
+                            @using (Html.BeginForm("", "", FormMethod.Post, new { id = "ListContentDisable" }))
+                            {
+                                <input type="hidden" id="ListTypeID" name="ListTypeID" value="0" />
+                                <label>确认禁用列表?</label>
+                                <input type="text" id="Name" name="Name" value=""/>
+                                <input type="hidden" id="ListTypeID" name="ListTypeID" value="" />
+                                <input type="hidden" id="Enabled" name="Enabled" value="true" />
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button type="button" id="SaveContent" class="btn btn-primary">保存</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@

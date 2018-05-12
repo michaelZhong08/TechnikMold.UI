@@ -1,0 +1,74 @@
+﻿@using MoldManager.WebUI.Models.ViewModel;
+@using TechnikSys.MoldManager.Domain.Entity;
+
+@model POViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>POForm</title>
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+</head>
+<body>
+    <div width="100%">
+        <center><h1>星诺奇采购单</h1></center>
+        <div class="col-sm-2 col-sm-offset-10">
+            <p><label>生成日期:</label>2016-7-10</p>
+            <p><label>PO单号:</label>T1111111</p>
+        </div>
+        <div>
+            <table class="table table-bordered">
+                <tr>
+                    <td class="col-sm-3">P/O单号</td>
+                    <td class="col-sm-3">T1234567</td>
+                    <td class="col-sm-3">Vender Code(供方编号)</td>
+                    <td class="col-sm-3">AAAAA</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-3">Buyer 买方</td>
+                    <td class="col-sm-3">苏州星诺奇科技股份有限公司</td>
+                    <td class="col-sm-3">Vender 供方</td>
+                    <td class="col-sm-3">AAAAA</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-3">Contacter联系人</td>
+                    <td class="col-sm-3">黄福志</td>
+                    <td class="col-sm-3">Contacter联系人</td>
+                    <td class="col-sm-3">AAAAA</td>
+                </tr>
+                <tr>
+                    <td class="col-sm-3">Tel电话</td>
+                    <td class="col-sm-3"></td>
+                    <td class="col-sm-3">Tel电话</td>
+                    <td class="col-sm-3"></td>
+                </tr>
+                <tr>
+                    <td class="col-sm-3">Fax传真</td>
+                    <td class="col-sm-3"></td>
+                    <td class="col-sm-3">Fax传真</td>
+                    <td class="col-sm-3"></td>
+                </tr>
+                <tr>
+                    <td class="col-sm-3">Email邮件</td>
+                    <td class="col-sm-3"></td>
+                    <td class="col-sm-3">Email邮件</td>
+                    <td class="col-sm-3"></td>
+                </tr>
+                <tr>
+                    <td class="col-sm-3">Delivery term贸易条款</td>
+                    <td class="col-sm-3"></td>
+                    <td class="col-sm-3">Payment term付款条件</td>
+                    <td class="col-sm-3"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

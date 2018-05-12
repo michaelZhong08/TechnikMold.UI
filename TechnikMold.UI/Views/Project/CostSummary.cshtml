@@ -1,0 +1,125 @@
+﻿
+@{
+    ViewBag.Title = "项目成本统计";
+}
+
+<div class="col-sm-11" style="margin-top:50px">
+    <h2>@ViewBag.Title</h2>
+    <ul class="nav nav-pills">
+        <li class="col-sm-2">
+            <input type="text" id="MoldNumber" class="form-control" placeholder="请输入模具号" />
+        </li>
+        <li>
+            <button class="btn btn-primary" id="FindMoldNumber">查询</button>
+        </li>
+    </ul>
+    <div class="col-sm-12" id="MoldCost">
+        <h4 id="PurchaseCostLabel">采购与外发成本统计<button class="btn btn-primary" id="CostDetail">明细列表</button></h4>
+        <div class="col-sm-4">
+            <table class="table table-bordered">
+                <tr>
+                    <td class="col-sm-1"><label>采购成本</label></td>
+                    <td class="col-sm-2"><span id="PurchaseCost"></span></td>
+                </tr>
+                <tr>
+                    <td><label>外发成本</label></td>
+                    <td class="col-sm-2"><span id="OutsourceCost"></span></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-sm-12" id="MoldNotFound" style="display:none">
+        <h3>未找到模具号</h3>
+    </div>
+</div>
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PurchaseDetailModal" tabindex="-1" role="dialog" aria-labelledby="PurchaseDetailLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:1350px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <ul class="nav nav-pills">
+                    <li><button class="btn btn-primary" id="PurchaseList">采购明细</button></li>
+                    <li><button class="btn btn-primary" id="OutSourceList">外发明细</button></li>
+                </ul>
+            </div>
+            <div class="modal-body">
+                
+                <table id="PurchaseItemGrid"></table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script>
+    $("document").ready(function () {
+        $("#FindMoldNumber").on('click', function () {
+            //$("#MoldCost").attr("style", "display:none")
+            //$("#MoldNotFound").attr("style", "display:solid")
+            
+                var _url = "/Purchase/QueryProjectCost?MoldNumber=" + $("#MoldNumber").val() + "&PurchaseType=1&StartDate=&EndDate=";
+                $.ajax({
+                    type: "Get",
+                    url: _url,
+                    success: function (msg) {
+                        $("#PurchaseCost").html(msg);
+                    }
+                })
+                _url = "/Purchase/QueryProjectCost?MoldNumber=" + $("#MoldNumber").val() + "&PurchaseType=3&StartDate=&EndDate=";
+                $.ajax({
+                    type: "Get",
+                    url: _url,
+                    success: function (msg) {
+                        $("#OutsourceCost").html(msg);
+                    }
+                })
+            
+            
+        })
+
+        $("#CostDetail").on("click", function () {
+            PurchaseItem("", $("#MoldNumber").val(), 50, 1)
+            $("#PurchaseItemGrid").setGridParam().showHideCol("TotalPriceWT");
+            $("#PurchaseDetailModal").modal("show");
+        })
+
+        $("#PurchaseList").on("click", function () {
+            var _url = "/Purchase/JsonPurchaseItems?MoldNumber=" + $("#MoldNumber").val() + "&PurchaseType=1&State=50";
+            $("#PurchaseItemGrid").jqGrid('setGridParam', { url: _url, datatype: 'json' }).trigger("reloadGrid");
+        })
+
+        $("#OutSourceList").on("click", function(){
+            var _url = "/Purchase/JsonPurchaseItems?MoldNumber=" + $("#MoldNumber").val() + "&PurchaseType=3&State=50";
+            $("#PurchaseItemGrid").jqGrid('setGridParam', { url: _url, datatype: 'json' }).trigger("reloadGrid");
+        })
+    })
+
+    function ValidateMoldNumber() {
+        var _url = "/Project/CheckMoldNumber?MoldNumber=" + $("#MoldNumber").val();
+        $.ajax({
+            url: _url,
+            type: "Get",
+            success: function (msg) {
+                if (msg == "1") {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        })
+    }
+
+    function ShowCostDetail() {
+
+    }
+
+    function PurchaseList() {
+
+    }
+
+    function OutSouceList() {
+
+    }
+
+
+</script>

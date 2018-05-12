@@ -1,0 +1,212 @@
+﻿@{
+    ViewBag.Title = "订单收货";
+}
+
+<div id="hidden">
+    <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
+    <input type="hidden" id="State" value="@ViewBag.State" />
+</div>
+<div style="margin-top:10px">
+    <div class="col-sm-11">
+
+        <h3>订单列表</h3>
+        <div>
+            <ul class="nav nav-pills">
+                <li class="col-sm-2">
+                    <select id="POState" class="form-control">
+                        <option value="1">待收货</option>
+                        <option value="2">完成</option>
+                        <option value="0">所有状态</option>
+                    </select>
+                </li>
+                <li><button class="btn btn-primary" id="SearchPO">查询订单</button></li>
+            </ul>
+
+        </div>
+        <div style="margin-top:10px">
+            <table id="POListGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="POSearchDialog" tabindex="-1" role="dialog" aria-labelledby="POSearchLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="POSearchLabel">订单查询</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td class="col-sm-6">
+                            <table>
+                                <tr>
+                                    <td><label>模具号</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" id="MoldKeyword" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td><select id="MoldList" class="form-control" size="15"></select></td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="col-sm-6">
+
+                            <table>
+                                <tr>
+                                    <td class="col-sm-6"><label>关键字</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" id="ItemKeyword" class="form-control" placeholder="零件名关键字" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>开始日期</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="date" id="StartDate" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>结束日期</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="date" id="EndDate" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>供应商</label></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select id="AvailableSuppliers" class="form-control"></select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>采购类型</label></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select id="PurchaseType" class="form-control"></select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="QueryBtn" class="btn btn-primary">选择</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="~/Scripts/Warehouse.js"></script>
+<script>
+    $("document").ready(function(){
+        SetList(@ViewBag.State);
+        WHPOListGrid(@ViewBag.ProjectID, @ViewBag.State);
+        
+        
+        $("#PRState option[value=@ViewBag.State]").attr("selected", "true");
+
+        $("#SearchPO").on("click", function(){
+            LoadPOMoldNumbers("");
+            LoadSuppliers();
+            LoadPurchaseTypes();
+            $("#POSearchDialog").modal("show");
+        })
+
+        $("#QueryBtn").on('click', function () {
+            QueryPO();
+        })
+
+        $("#MoldKeyword").on("keyup", function(){
+            LoadPOMoldNumbers($("#MoldKeyword").val());
+        })
+    })
+
+    function LoadPOMoldNumbers(Keyword){
+        var _url = "/Warehouse/LoadPOMoldNumbers?Keyword="+Keyword;
+        $("#MoldList option").remove();
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                $("#MoldList").append($("<option/>", {value:n, text:n}));
+            })
+        })
+    }
+
+    function LoadSuppliers() {
+        $("#AvailableSuppliers option").remove();
+
+        $("#AvailableSuppliers").append($("<option/>", {
+            value: 0,
+            text: "-",
+            selected:true
+        }))
+
+        $.getJSON("/Purchase/JsonSuppliers", function (msg) {
+            $.each(msg, function (i, n) {
+                $("#AvailableSuppliers").append($("<option/>", {
+                    value: n.SupplierID,
+                    text: n.Name
+                }))
+            })
+        })
+    }
+
+    function LoadPurchaseTypes(){
+        var _url = "/Purchase/JsonPurchaseTypes";
+        $("#PurchaseType option").remove();
+        $("#PurchaseType").append($("<option/>", {value:"", text:"-"}))
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                $("#PurchaseType").append($("<option/>", {
+                    value:n.PurchaseTypeID, 
+                    text:n.Name 
+                }))
+            })
+        })
+    }
+
+
+    function QueryPO() {
+        var _url = "";
+        
+        if ($("#MoldList").val() != null) {
+            _url = _url == "" ? "MoldNumber=" + $("#MoldList").val() : _url + "&MoldNumber=" + $("#MoldList").val();
+        }
+
+        if ($("#ItemKeyword").val() != "") {
+            _url = _url == "" ? "KeyWord=" + $("#ItemKeyword").val() : _url + "&Keyword=" + $("#ItemKeyword").val();
+        }
+
+        if ($("#StartDate").val() != "") {
+            _url = _url == "" ? "StartDate=" + $("#StartDate").val() : _url + "&StartDate=" + $("#StartDate").val();
+        }
+
+        if ($("#EndDate").val() != "") {
+            _url = _url == "" ? "EndDate=" + $("#EndDate").val() : _url + "&EndDate=" + $("#EndDate").val();
+        }
+
+        if ($("#AvailableSuppliers").val() != 0) {
+            _url = _url == "" ? "Supplier=" + $("#AvailableSuppliers").val() : _url + "&Supplier=" + $("#AvailableSuppliers").val();
+        }
+
+        if ($("#PurchaseType").val()!=0){
+            _url = _url == "" ? "PurchaseType=" + $("#PurchaseType").val() : _url + "&PurchaseType=" + $("#PurchaseType").val();
+        }
+        _url =_url==""?"/Warehouse/JsonPurchaseOrder": "/Warehouse/JsonPurchaseOrder?" + _url;
+        $("#POListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+        $("#POSearchDialog").modal("hide");
+    }
+
+</script>

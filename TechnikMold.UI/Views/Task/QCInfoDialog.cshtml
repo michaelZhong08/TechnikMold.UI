@@ -1,0 +1,36 @@
+﻿<div class="modal" data-backdrop="static" data-keyboard="false" id="QCInfoDialog" tabindex="-1" role="dialog" aria-labelledby="QCInfoLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="QCInfoLabel">设置质检信息</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("SaveQCInfo", "Task", FormMethod.Post, new { id = "SaveQCInfoForm" }))
+                {
+                    <table class="table-striped">
+                        <tr>
+                            <td class="col-sm-2"><label>任务名称</label></td>
+                            <td class="col-sm-4">
+                                <input type="hidden" id="QCInfoID" name="QCInfoID" />
+                                <input type="hidden" id="TaskID" name="TaskID" value="99" />
+                                <input type="hidden" id="ItemID" name="ItemID" value="99" />
+                                <input type="text" id="QCTaskName" name="TaskName" class="form-control" readonly />
+
+                            </td>
+                        </tr>                        
+                        <tr>
+                            <td class="col-sm-2"><label>QC检查点</label></td>
+                            <td class="col-sm-4"><textarea type="text" class="form-control required" name="QCPoints" id="QCPoints" rows="10" style="resize:none"></textarea></td>
+                        </tr>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveQCInfo" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+

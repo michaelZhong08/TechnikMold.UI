@@ -1,0 +1,290 @@
+﻿
+@{
+    ViewBag.Title = "EleInStock";
+}
+
+
+
+<div class="col-sm-12" style="margin-top:10px">
+    <h2>电极仓库管理</h2>
+    
+
+
+   <div class="col-sm-2">
+       <input type="text" id="Keyword" class="form-control" />
+       <select id="InstockMoldList" class="form-control" size="20"></select>
+   </div>
+   <div class="col-sm-10">
+       <div id="Toolbar">
+           <ul class="nav nav-pills">
+               <li><button class="btn btn-primary" id="ScanInStock">扫描入库</button></li>
+               <li><button class="btn btn-primary" id="ScanOutStock">扫描出库</button></li>
+               <li><button class="btn btn-warning" id="ElectrodeDestroy">电极销毁</button></li>
+           </ul>
+       </div>
+       <table id="ElectrodeGrid"></table>
+   </div>
+   </div>
+
+@*扫描出/入库对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ScanBarCodeDialog" tabindex="-1" role="dialog" aria-labelledby="ScanBarCodeLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ScanBarCodeLabel"></h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td class="col-sm-2"><label>电极标签</label></td>
+                        <td class="col-sm-6">
+                            <input type="text" id="BarCode" class="form-control required" name="BarCode" />
+                            <input type="hidden" id="OperationType" />
+                        </td>
+                    </tr>
+                </table>
+               
+                    <table class="col-sm-12 table-striped" style="margin-top:10px">
+                        <thead>
+                            <tr>
+                                <td class="col-sm-12"><label>电极标签名</label></td>
+                            </tr>
+                        </thead> 
+                        <tbody id="Ele_List">
+
+                        </tbody>                       
+                    </table>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="StockChange" class="btn btn-primary">入库</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*电极销毁对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ScanDestroyDialog" tabindex="-1" role="dialog" aria-labelledby="ScanDestroyLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ScanDestroyLabel">电极销毁</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td class="col-sm-2"><label>电极标签</label></td>
+                        <td class="col-sm-6">
+                            <input type="text" id="BarCodeD" class="form-control required" name="BarCode" />
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="col-sm-12 table-striped" style="margin-top:10px">
+                    <thead>
+                        <tr>
+                            <td class="col-sm-1"></td>
+                            <td class="col-sm-12"><label>待销毁电极标签名</label></td>
+                        </tr>
+                    </thead>
+                    <tbody id="Ele_List_D"></tbody>
+                </table>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="DestroyElectrode" class="btn btn-primary">销毁电极</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script src="~/Scripts/JqGridTemplate.js"></script>
+    <script src="~/Scripts/Task.js"></script>
+
+    <script>
+        var LabelNames = new Array();
+        var ItemIDs = new Array();
+        $("documnet").ready(function () {
+            $("#Keyword").val(@ViewBag.MoldNumber);
+            LoadInstockMoldNumbers("");
+            ElectrodeInStockRecord(@ViewBag.MoldNumber);
+
+            $("#Keyword").on("keyup", function () {
+                LoadInstockMoldNumbers($("#Keyword").val());
+            })
+
+            $("#InstockMoldList").on("change", function () {
+                LoadStockCNCItem($("#InstockMoldList option:selected").text());
+            })
+
+            $("#ScanInStock").on("click", function () {
+                $("#ScanBarCodeLabel").html("扫描入库")
+                $("#Ele_List tr").remove();
+                $("#OperationType").val("1");
+                $("#StockChange").html("入库");
+                $("#ScanBarCodeDialog").modal("show");
+            })
+            $("#ScanOutStock").on("click", function () {
+                $("#ScanBarCodeLabel").html("扫描出库")
+                $("#Ele_List tr").remove();
+                $("#OperationType").val("2");
+                $("#StockChange").html("出库");
+                $("#ScanBarCodeDialog").modal("show");
+            })
+
+            
+
+            $("#BarCode").on("change", function () {
+                var _exist = 0;
+                var _label = $("#BarCode").val();
+                for (i = 0; i < LabelNames.length; i++) {
+                    if (_label == LabelNames[i]) {
+                        _exist = 1;
+                    }
+                }
+                if (_exist == 0) {
+                    LabelNames.push(_label)
+                    $("#Ele_List").append("<tr class='EleList'><td>" + _label+ "</td></tr>")
+                } else {
+                    alert("电极已扫描");
+                }
+                
+                $("#BarCode").val("");
+                $("#BarCode").focus();
+            })
+
+            $("#ScanBarCodeDialog").on("shown.bs.modal", function(){
+                $("#BarCode").focus();
+            })
+
+            $("#ScanDestroyDialog").on("hide.bs.modal", function(){
+                $("#Ele_List_D tr").remove()
+            })
+
+            $("#StockChange").on("click", function(){
+                StockChange();
+            })
+
+            $("#ElectrodeDestroy").on("click", function () {
+                GetEleToDestroy();
+            })
+
+            $("#BarCodeD").on("change", function () {
+                ScanConfirm();
+            })
+
+            $("#DestroyElectrode").on("click", function () {
+                DestroyElectrode();
+            })
+        })
+
+
+        function LoadInstockMoldNumbers(Keyword) {
+            $("#InstockMoldList option").remove();
+            $.getJSON("/Task/JsonMoldNumber?Keyword=" + Keyword, function (msg) {
+                $.each(msg, function (i, n) {
+                    $("#InstockMoldList").append($("<option/>", {
+                        text: n
+                    }))
+                });
+            })
+        }
+
+        function LoadStockCNCItem(MoldNumber) {
+            //$("#ElectrodeGrid").jqGrid('setGridParam', { datatype: "json", url: '/Task/JsonEleInStock?MoldNumber=' + MoldNumber }).trigger("reloadGrid");
+
+            location.href = "/Task/EleInStock?MoldNumber=" + MoldNumber;
+        }
+
+        function StockChange() {
+            if (LabelNames.length > 0) {
+                var _labels = "";
+                var _url = "/Task/EleStockChange?LabelNames=" + LabelNames.toString() + "&OperationType=" + $("#OperationType").val();
+                //alert(_url);
+                $.ajax({
+
+                    url: _url,
+                    dataType: "html",
+                    type: "GET",
+                    success: function (msg) {
+                        if (msg == "") {
+                            
+                            alert("电极"+$("#StockChange").html()+"完成");
+                                          
+                            location.reload();
+                        } else {
+                            alert("以下电极入库操作失败，请重试\r\n" + msg);
+                        }
+                    }
+                })
+            } else {
+                alert("请扫描电极标签条码后再执行操作");
+            }
+            LabelNames = new Array();
+        }
+
+        function GetEleToDestroy() {
+            var Labels = GetMultiSelectedCell("ElectrodeGrid", "LabelName");
+            var _itemIDs = GetMultiSelectedCell("ElectrodeGrid", "ID");
+            if (Labels == "") {
+                alert("请选择要销毁的电极");
+            } else {
+                var _labels = Labels.split(',');
+                var _ids = _itemIDs.split(',');
+                for (i = 0; i < _labels.length; i++) {
+                    LabelNames.push(_labels[i]);
+                    ItemIDs.push(_ids[i]);
+                    $("#Ele_List_D").append("<tr class='EleList'><td><input type='checkbox' class='itemid' id="+_ids[i]+"  disabled/></td><td>" + _labels[i] + "</td></tr>")
+                }
+                $("#ScanDestroyDialog").modal("show");
+            }
+        }
+
+        function ScanConfirm() {
+            var _label = $("#BarCodeD").val().trim();
+            var _exist =0
+            for (i = 0; i < LabelNames.length; i++) {
+                if (_label == LabelNames[i]) {
+                    $("#" + ItemIDs[i]).attr("checked", true);
+                    _exist = 1;
+                }
+            }
+            $("#BarCodeD").val("");
+            $("#BarCodeD").focus();
+            if (_exist == 0) {
+                alert("输入错误，未找到电极");
+            }
+        }
+
+        function DestroyElectrode() {
+            var _items = $(".itemid:checked");
+            var _itemIDs = "";
+            for (i = 0; i < _items.length; i++) {
+                _itemIDs = _itemIDs == "" ? _items[i].id : _itemIDs + "," + _items[i].id;
+            }
+            var _url = "/Task/ElectrodeDestroy?CNCItemIDs=" + _itemIDs;
+            $.ajax({
+                url:_url,
+                dataType: "html",
+                type: "GET",
+                success: function (msg) {
+                    if (msg == "") {
+                        alert("电极销毁成功");
+                        location.reload();
+                    } else {
+                        alert("以下电极销毁失败,请重试:\r\n"+msg);
+                    }
+                }
+            })
+        }
+
+    </script>
+

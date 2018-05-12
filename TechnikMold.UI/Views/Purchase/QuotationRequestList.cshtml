@@ -1,0 +1,94 @@
+﻿@using MoldManager.WebUI.Models.Helpers;
+@{
+    string UserID = "";
+    string UserName = "";
+    try
+    {
+        UserID = Request.Cookies["User"]["UserID"];
+        UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
+
+    }
+    catch
+    {
+        UserID = "";
+        UserName = "";
+    }
+}
+
+@{
+    int DeptID;
+    int PosID;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    }
+    catch
+    {
+        PosID = 0;
+    }
+}
+@{
+    
+    ViewBag.Title = "采购管理";
+}
+
+<div id="hidden">
+    <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
+    <input type="hidden" id="State" value="@ViewBag.State" />
+</div>
+<div style="margin-top:10px">
+
+    <div class="col-sm-11">
+
+        <h3>询价单列表</h3>
+        <div style="height:35px"> 
+            @if (DeptID == 4) { 
+            <button class="btn btn-primary" id="NewQR">新建询价单</button>
+            }
+            @*<button class="btn btn-primary" id="FilterMoldNo">按项目查询</button>*@
+            <div class="col-sm-2">
+                <select id="QRState" class="form-control">
+                    <option value="0">所有状态</option>
+                    @foreach (int _val in @Enum.GetValues(typeof(QuotationRequestStatus)))
+                    {
+                        if (ViewBag.State == _val) { 
+                            <option value="@_val" selected>@Enum.GetName(typeof(QuotationRequestStatus), _val)</option>
+                        }
+                        else
+                        {
+                            <option value="@_val">@Enum.GetName(typeof(QuotationRequestStatus), _val)</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div style="margin-top:20px">
+            <table id="QRListGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Purchase.js"></script>
+<script>
+    $("document").ready(function(){
+        QRListGrid(@ViewBag.ProjectID, @ViewBag.State, @ViewBag.UserID);
+        $("#PRState option[value=@ViewBag.State]").attr("selected", "true");
+    })
+
+
+    function ChangeGridStatus(){
+        var _url = "/Purchase/JsonQRList?State="+$("#QRState").val();
+        $("#QRListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+</script>
+@{Html.RenderAction("MoldSelect", "Dialog");}
+

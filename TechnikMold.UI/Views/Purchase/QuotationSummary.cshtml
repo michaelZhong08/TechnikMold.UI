@@ -1,0 +1,245 @@
+﻿@using MoldManager.WebUI.Models.ViewModel;
+@using TechnikSys.MoldManager.Domain.Entity;
+@using MoldManager.WebUI.Models.Helpers;
+
+@model QRQuotationSummaryViewModel
+@{
+    ViewBag.Title = "供应商报价汇总";
+    int Row = 0;
+}
+
+
+<div style="margin-top:10px">
+    <div class="col-sm-11">
+        <div id="Toolbar">
+        </div>
+        <div id="Basic" class="col-sm-10 PRInfo">
+
+            <table>
+                <tr>
+                    <td class="col-sm-2"><label>选择供应商</label></td>
+                    <td class="col-sm-4">
+                        <select id="AssignedSupplier" name="SupplierName" class="form-control">
+                            @foreach (Supplier _supplier in Model.Suppliers)
+                            {
+                                <option value="@_supplier.SupplierID">@_supplier.Name</option>
+                            }
+                        </select>
+                    </td>
+                    <td class="col-sm-1">总价</td>
+                    <td class="col-sm-2"><input type="text" class="form-control" id="TotalPrice" name="TotalPrice" readonly/></td>
+                    @if (Model.QRState == (int)QuotationRequestStatus.发出)
+                    {
+                        <td class="col-sm-2"><button class="btn btn-primary" id="AssignSupplier">选定供应商</button></td>
+                    }
+                </tr>
+                
+            </table>
+        </div>
+
+        <div style="margin-top:40px">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <td rowspan="2">
+                            <input type="checkbox" id="SelAll" />
+                        </td>
+                        <td class="col-sm-1" rowspan="2"><label>零件名</label></td>
+                        <td class="col-sm-1" rowspan="2"><label>零件号</label></td>
+                        <td class="col-sm-1" rowspan="2"><label>规格</label></td>
+                        <td rowspan="2"><label>数量</label></td>
+                        @foreach (Supplier _supplier in Model.Suppliers)
+                        {
+                            QRSupplier _qrSupplier = Model.QRSuppliers.Where(p => p.SupplierID == _supplier.SupplierID).FirstOrDefault();
+                            <td colspan="3">
+
+                                <label>@_supplier.Name</label>
+                                @if (_qrSupplier.QuotationDate.ToString("yyyy-MM-dd") != "0001-01-01") { 
+                                <p>
+                                    报价日期:@_qrSupplier.QuotationDate.ToString("yyyy-MM-dd")
+                                    税率:@(_qrSupplier.TaxRate*100)%
+                                </p>
+                                @*<p>报价有效期:@_qrSupplier.ValidDate.ToString("yyyy-MM-dd")</p>*@
+                                }
+                                else
+                                {
+                                    <p>未报价</p>
+                                }
+                            </td>
+                            
+                        }
+                    </tr>
+                    <tr>
+                        @foreach (Supplier _supplier in Model.Suppliers)
+                        {
+                        <td><label>未税总价</label></td>
+                            <td><label>含税总价</label></td>
+                            <td><label>交付日期</label></td>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (QRContent _content in Model.Contents)
+                    {
+                        Row = Row + 1;
+                        <tr>
+                            <td>
+                                @if (_content.SupplierID > 0)
+                                {
+                                    <input type="checkbox" value="@_content.PurchaseItemID" id="@Row" disabled/>
+                                }
+                                else
+                                {
+                                    <input type="checkbox" value="@_content.PurchaseItemID" id="@Row" />
+                                }
+                                
+                            </td>
+                            <td>@_content.PartName</td>
+                            <td>@_content.PartNumber</td>
+                            <td>@_content.PartSpecification</td>
+                            <td>@_content.Quantity</td>
+                            @foreach (Supplier _supplier in Model.Suppliers)
+                            {
+                                QRQuotation _quotation = Model.Quotations.Where(q => q.QRContentID == _content.QRContentID).Where(q => q.SupplierID == _supplier.SupplierID).FirstOrDefault();
+
+                                if ((_quotation != null)&&(_quotation.UnitPrice>0))
+                                {
+                                    <td>@_quotation.TotalPrice</td>
+                                    <td><span id="@_supplier.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPriceWT</span></td>
+                                    <td>@_quotation.ShipDate.ToString("yyyy-MM-dd")</td>
+
+                                }
+                                else
+                                {
+                                    <td>NA</td>
+                                    <td><span id="">NA</span></td>
+                                    <td>NA</td>
+                                }
+
+                            }
+                        </tr>
+                    }
+                    <tr>
+                        
+                        <td colspan="5"><label>总价</label></td>
+                        @foreach (Supplier _supplier in Model.Suppliers)
+                        {
+                            double _total = @Model.Quotations.Where(q => q.SupplierID == _supplier.SupplierID).Where(q=>q.UnitPrice>0).Sum(q => q.TotalPriceWT);
+                            <td colspan="3">
+                                @if (_total == 0)
+                                {
+                                    <p id="@_supplier.SupplierID">NA</p>
+                                }
+                                else
+                                {
+                                    <p id="@_supplier.SupplierID">@_total</p>
+                                }
+                                </td>
+
+                        }
+                        
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@*选定供应商确认对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="AssignSupplierDialog" tabindex="-1" role="dialog" aria-labelledby="PRContentAddLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="AssignSupplierDialogLabel">选定供应商确认</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("AssignSupplier", "Purchase", FormMethod.Post, new { id = "Assign" }))
+                {
+                    <table class="table-striped col-sm-12">
+                        <tr>
+                            <td class="col-sm-4">选定供应商</td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control" name="Name" id="SupplierName" readonly />
+                                <input type="hidden" name="QuotationRequestID" id="QuotationRequestID" value="@Model.QRID" />
+                                <input type="hidden" name="SupplierID" id="SupplierID">
+                                <input type="hidden" name="PurchaseItemIDs" id="PurchaseItemIDs" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>含税总价</label></td>
+                            <td class="col-sm-8"><input type="text" class="form-control" name="TotalPrice" id="Total" readonly /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4">选择原因</td>
+                            <td class="col-sm-8"><input type="text" class="form-control required" name="Memo" id="reason" maxlength="90" required />
+                        </tr>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="ConfirmSupplier" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Purchase.js"></script>
+<script>
+    $("document").ready(function () {
+        //DisplayTotal();
+        UpdateTotal();
+        $("#SelAll").on("change", function () {
+            SetCheckStatus();
+
+        })
+
+        $("input[type='checkbox']").on("change", function () {
+            UpdateTotal();
+        })
+    })
+
+    function SetCheckStatus() {
+        //alert($("#SelAll").is(':checked'));
+        var _allRows = $("input[type='checkbox']");
+        for (i = 0; i < _allRows.length; i++) {
+            _allRows[i].checked = $("#SelAll").is(':checked');
+        }
+    }
+
+    function UpdateTotal() {
+        var _selectedItems = $("input[type='checkbox'][id!='SelAll']");
+
+        
+        var _id = '';
+        
+        for (var i = 0; i < _selectedItems.length; i++) {
+            if ((_selectedItems[i].checked)&&(_selectedItems[i].disabled==false)) {
+                _id = _id == "" ? _selectedItems[i].value : _id + "," + _selectedItems[i].value;
+            }
+        }
+        
+
+        $("#PurchaseItemIDs").val(_id);
+        if (_id != "") {
+            var _url = "/Purchase/GetQuotationTotal?PurchaseItemIDs=" + _id + "&SupplierID=" + $("#AssignedSupplier").val() +
+            "&QuotationRequestID=" + $("#QuotationRequestID").val();
+            $.ajax({
+                url: _url,
+                type: "Get",
+                success: function (msg) {
+                    $("#TotalPrice").val(msg);
+                }
+            })
+        } else {
+            for (var i = 0; i < _selectedItems.length; i++) {
+                if (_selectedItems[i].disabled==false) {
+                    _id = _id == "" ? _selectedItems[i].value : _id + "," + _selectedItems[i].value;
+                }
+                
+            }
+            $("#PurchaseItemIDs").val(_id);
+            $("#TotalPrice").val($("#" + $("#AssignedSupplier option:selected").val()).html());
+        }
+    }
+</script>

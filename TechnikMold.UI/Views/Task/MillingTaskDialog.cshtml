@@ -1,0 +1,94 @@
+﻿
+<div class="modal" data-backdrop="static" data-keyboard="false" id="EditTaskDialog" tabindex="-1" role="dialog" aria-labelledby="EditTaskLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="EditTaskLabel">创建铣铁任务</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("SaveTask", "Task", FormMethod.Post, new { id = "CreateTaskForm" }))
+                {
+                    <table class="table-striped">
+                        <tr>
+                            <td class="col-sm-2"><label>任务名称</label></td>
+                            <td class="col-sm-4">
+                                <input type="hidden" id="TaskID" name="TaskID" value="0" />
+                                <input type="text" id="TaskName" name="TaskName" class="form-control required" maxlength="50" />
+                                <input type="hidden" id="ProjectID" name="ProjectID" value="" />
+                                <input type="hidden" name="TaskType" value="4" />
+                                <input type="hidden" id="State" name="State" value="1" />
+                                <input type="hidden" id="Version" name="Version" value="1" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>型号</label></td>
+                            <td class="col-sm-4"><input type="text" id="Model" name="Model" class="form-control required" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>HRC</label></td>
+                            <td class="col-sm-4"><input type="text" id="HRC" name="HRC" class="form-control required" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>材料</label></td>
+                            <td class="col-sm-4"><input type="text" id="Material" name="Material" class="form-control required" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>R</label></td>
+                            <td class="col-sm-4"><input type="number" id="R" name="R" class="form-control" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>F</label></td>
+                            <td class="col-sm-4"><input type="number" id="F" name="F" class="form-control" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>时间(分钟)</label></td>
+                            <td class="col-sm-4"><input type="number" id="Time" name="Time" class="form-control" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>毛坯尺寸</label></td>
+                            <td class="col-sm-4"><input type="text" id="Raw" name="Raw" class="form-control" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>Memo</label></td>
+                            <td class="col-sm-4"><input type="text" id="Memo" name="Memo" class="form-control" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>图纸</label></td>
+                            <td class="col-sm-4"><input type="text" id="DrawingFile" name="DrawingFile" class="form-control" /></td>
+                        </tr>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="EditTask" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function EditTaskInfo(TaskID) {
+        $.getJSON("/Task/JsonTaskBasic?TaskID=" + TaskID, function (msg) {
+            $("#TaskID").val(msg.TaskID);
+            $("#TaskName").val(msg.TaskName);
+            $("#ProjectID").val(msg.ProjectID);
+            $("#TaskType").val(msg.TaskType);
+            $("#State").val(msg.State);
+            $("#Version").val(msg.Version);
+
+            $("#Model").val(msg.Model);
+            $("#HRC").val(msg.HRC);
+            $("#Material").val(msg.Material);
+            $("#R").val(msg.R);
+            $("#F").val(msg.F);
+            $("#Time").val(msg.Time);
+            $("#Raw").val(msg.Raw);
+            $("#Memo").val(msg.Memo);
+            $("#DrawingFile").val(msg.DrawingFile);
+
+        })
+        $("#EditTaskDialog").modal("show");
+    }
+</script>

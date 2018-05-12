@@ -1,0 +1,82 @@
+﻿@using TechnikSys.MoldManager.Domain.Entity;
+
+@model IEnumerable<Position>
+@{
+    ViewBag.Title = "Index";
+}
+<h2>职位管理</h2>
+
+<div>
+
+    <div class="col-sm-1 sidebar">
+        <ul class="nav nav-sidebar">
+            <li><a href="/Administrator/TaskhourCost">工时费率管理</a></li>
+            <li><a href="/Administrator/UserManagement">用户管理</a></li>
+            <li><a href="/Administrator/Department">部门管理</a></li>
+            <li><a href="/Administrator/Position">岗位管理</a></li>
+        </ul>
+    </div>
+
+    <div class="col-sm-11 col-sm-offset-1">
+        <h3 class="page-header">岗位管理</h3>
+        <ul class="nav nav-pills">
+            <li><button class="btn btn-primary" id="CreatePos">新建岗位</button></li>
+            <li><button class="btn btn-primary" id="DeletePos">删除岗位</button></li>
+
+        </ul>
+        <div class="col-sm-2">
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3 class="panel-title">岗位列表</h3></div>
+                <div class="panel-body">
+                    <div>
+                        <select class="form-control" size="25" id="PositionList">
+                            @foreach (Position _pos in Model)
+                            {
+                                <option value="@_pos.PositionID">@_pos.Name</option>
+                            }
+
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3 class="panel-title">岗位信息</h3></div>
+                <div class="panel-body" style="height:460px">
+                    <div>
+                        @using (Html.BeginForm("PositionSave", "Administrator", FormMethod.Post, new { id = "SavePositionForm" }))
+                        {
+                            <table class="table table-striped">
+                                <tr>
+                                    <td class="col-sm-2"><label>岗位名称</label></td>
+                                    <td class="col-sm-4">
+                                        <input type="hidden" id="PositionID" name="PositionID" />
+
+                                        <input type="text" maxlength="20" id="Name" name="Name" class="form-control required" />
+                                        <input type="hidden" id="Enabled" name="Enabled" value="true"/>
+
+                                    </td>
+                                </tr>
+                            </table>
+                        }
+                        <button id="SavePos" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Project.js"></script>
+
+
+
+
+
+
+<script src="~/Scripts/Administrator.js"></script>
+<script type="text/javascript">
+        $(document).ready(function () {
+        });
+
+</script>

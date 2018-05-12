@@ -1,0 +1,382 @@
+﻿
+@{
+    ViewBag.Title = "领料申请单";
+}
+
+@{
+    int DeptID = 0;
+    try
+    {
+        DeptID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+
+<div class="col-sm-12" style="margin-top:10px">
+    <div class="col-sm-12" style="float:left;">
+        <h2>领料申请单</h2>
+        <div id="abc"></div>
+        <input type="hidden" id="WarehouseRequestID" value="@ViewBag.WHRequestID" />
+        <input type="hidden" id="RequestNumber" value="@ViewBag.RequestNumber" />
+    @if (ViewBag.WHRequestID == 0)
+    {                   
+        
+        <div class="col-sm-6">
+            <table>
+            <tr>
+                <td class="col-sm-3">
+                    <select id="PurchaseType" class="form-control"></select>
+                </td>
+                <td class="col-sm-3">
+                    <input type="text" id="Keyword" class="form-control" placeholder="库存关键字"/>
+                </td>
+                <td>
+                    <button id="Query" class="btn btn-primary">查询</button>
+                </td>
+                
+            </tr>
+            </table>
+            
+            <table id="StockItemGrid"></table>
+        </div>
+    }
+    else
+    {
+        
+        <ul class="nav nav-pills">        
+        @if (DeptID == 20)
+        {
+            <li><button class="btn btn-primary" id="ReceiveItem">仓库发料</button></li>
+        }
+        </ul>
+
+    }
+
+
+                <div class="col-sm-6">
+                    @if (ViewBag.WHRequestID == 0)
+                    {<ul class="nav nav-pills">
+                        <li><button class="btn btn-primary" id="AddStockItem">添加选中项</button></li>
+                        <li><button class="btn btn-primary" id="RemoveStockItem">移除选中项</button></li>
+                        <li><button class="btn btn-primary" id="SaveWHRequest">保存申请单</button> </li>
+                    </ul>
+                    }
+                        <table id="WHRequestItemGrid"></table>
+</div>
+            </div>
+
+
+</div>
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="RequestQuantityDialog" tabindex="-1" role="dialog" aria-labelledby="RequestQuantityLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="RequestQuantityLabel">领用数量</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td colspan="2">
+                            当前库存数量<span id="current"></span>
+                            <input type="hidden" id="ItemID" />
+                            <input type="hidden" id="Name" />
+                            <input type="hidden" id="Specification" />
+                            <input type="hidden" id="MaterialNumber" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2">领用数量</td>
+                        <td class="col-sm-4"><input class="form-control" type="number" id="Quantity" min="0" /></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="ConfirmQty">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script src="~/Scripts/Warehouse.js"></script>
+<script>
+    $("document").ready(function () {
+        @if (ViewBag.WHRequestID == 0)
+        {
+
+            @:StockItem("","",0,"Multi");
+            @:SetStockItemColumn();
+            @:LoadPurchaseTypes();
+
+        }
+        
+
+        @if (ViewBag.WHRequestID > 0)
+        {
+            @:WHRequestItemGrid(@ViewBag.WHRequestID)
+                    @:ShowHideColumn(@ViewBag.WHRequestID);
+                }
+        else
+        {
+            @:WHRequestItemGrid(@ViewBag.WHRequestID,1)
+            @:ShowHideColumn(@ViewBag.WHRequestID);
+                }
+
+        $("#AddStockItem").on("click", function () {
+            var _ids = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
+            
+
+            LoadItemInfo(_ids);
+            RemoveItem();
+        })
+
+        $("#ConfirmQty").on("click", function () {
+            if (!CheckStock()) {
+                alert("领用数量不能大于库存数量");
+            }
+            else {
+                var sourceGrid = "#WHRequestItemGrid";
+                var selrows = $(sourceGrid).jqGrid('getGridParam', 'selarrrow');
+                var _qty = $("#Quantity").val();
+                $(sourceGrid).setCell(selrows[0], 5, _qty);
+                $("#RequestQuantityDialog").modal("hide");
+            }
+        })
+
+        $("#Quantity").on("change", function () {
+            if (!CheckStock()) {
+                alert("领用数量不能大于库存数量");
+            }
+        })
+
+        $("#PurchaseType").on("change", function(){
+            var _url = "/Warehouse/JsonWarehouseStock?keyword=" + $("#Keyword").val()
+                + "&MoldNumber=&PurchaseType=" + $("#PurchaseType").val()
+                +"&Mode=Multi";
+            $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+        })
+
+        $("#Keyword").on("keyup", function () {
+            LoadStocks($("#Keyword").val());
+        })
+
+        $("#SaveWHRequest").on("click", function () {
+            SaveRequest();
+        })
+
+        $("#ReceiveItem").on("click", function () {
+            var _IDs = GetMultiSelectedIDs("WHRequestItemGrid");
+            if (_IDs == "") {
+                alert("请先选择要出库的零件");
+            } else {
+                location.href = "/Warehouse/ReceiveItem?ItemIDs=" + _IDs;
+            }
+        })
+
+        $("#OutStockHistory").on("click", function () {
+            ShowHistory();
+        })
+
+        $("#RemoveStockItem").on("click", function () {
+            var targetGrid = "#WHRequestItemGrid"
+
+            
+            var selrows = $(targetGrid).jqGrid('getGridParam', 'selarrrow');
+            for (var i = selrows.length + 1; i >= 0; i--) {
+                $(targetGrid).jqGrid("delRowData", selrows[i]);
+            }
+            var _exclude = GetAllValues("WHRequestItemGrid", "ID")
+
+            //for (var i =0;i< selrows.length; i++) {
+            //    $(targetGrid).jqGrid("delRowData", selrows[0]);
+            //}
+
+            var _url ="/Warehouse/JsonWarehouseStock?keyword=" + $("#Keyword").val()
+                + "&MoldNumber=&PurchaseType=" + $("#PurchaseType").val()
+                +"&Mode=Multi&Exclude="+_exclude;
+            
+            console.log(_url);
+            $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json',url:_url}).trigger("reloadGrid");
+        })
+
+        $("#Query").on("click", function(){
+            var _type=$("#PurchaseType").val();
+            var _keyword = $("#Keyword").val();
+            var _url = "/Warehouse/JsonWarehouseStock?keyword="+_keyword+"&PurchaseType="+_type;
+            $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+        })
+    })
+
+    function LoadStocks(Keyword) {
+    //    var _url = "/Warehouse/WHStockList?Keyword=" + Keyword;
+    //    $("#Parts option").remove();
+    //    $.getJSON(_url, function (msg) {
+    //        $.each(msg, function (i, n) {
+    //            $("#Parts").append($("<option/>",
+    //                {
+    //                    text: n.Name,
+    //                    value: n.WarehouseStockID
+    //                }))
+    //        })
+    //    })
+    }
+
+    function LoadItemInfo(ItemIDs) {
+        var targetGrid = "#WHRequestItemGrid";
+        var items = ItemIDs.split(',');
+
+        for (i = 0; i < items.length; i++) {
+            _url = "/Warehouse/LoadItem?ItemID=" + items[i];
+            $.getJSON(_url, function (msg) {
+
+                var data = {
+                    ID: msg.WarehouseStockID,
+                    PartName: msg.Name,
+                    PartNumber: msg.MaterialNumber,
+                    Specification: msg.Specification,
+                    InStockQuantity: msg.Quantity,
+                    Quantity: msg.Quantity,
+                    ReceivedQuantity: 0,
+                }
+                $(targetGrid).addRowData($(targetGrid).getGridParam("reccount") + 1, data, 0, 0);
+
+                $("#Parts option:selected").remove();
+            })
+        }
+    }
+
+
+    function ShowQtyChange(iRow) {
+        @if (ViewBag.WHRequestID == 0) {
+            @:var _id = $("#WHRequestItemGrid").getCell(iRow, "ID");
+                                    @:var _qty = $("#WHRequestItemGrid").getCell(iRow, "Quantity");
+                                    @:var _url = "/Warehouse/LoadItem?ItemID=" + _id;
+                                    @:$.getJSON(_url, function (msg) {
+                                                @:    $("#ItemID").val(ItemID);
+                                                @:    $("#current").html(msg.Quantity);
+                                                @:    $("#Quantity").val(_qty);
+                                                @:    $("#ItemID").val(msg.Quantity);
+                                                @:    $("#Name").val(msg.Name);
+                                                @:    $("#Specification").val(msg.Specification);
+                                                @:    $("#MaterialNumber").val(msg.MaterialNumber);
+                                    @:})
+
+           @:$("#RequestQuantityDialog").modal("show");
+           }
+
+        }
+
+    function CheckStock() {
+        var _stock = Number($("#current").html());
+        var _qty = Number($("#Quantity").val());
+        if (_qty > _stock) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    function SaveRequest() {
+        var sourceGrid = "#WHRequestItemGrid";
+        var itemData = "RequestNumber=" + $("#RequestNumber").val() + "&";
+        var name = "Items";
+
+        var obj = $(sourceGrid).jqGrid("getRowData");
+        var i = 0;
+        $(obj).each(function () {
+            itemData = itemData + name + "[" + i + "].PartName=" + this.PartName + "&" +
+                name + "[" + i + "].WarehouseStockID=" + this.ID + "&" +
+                name + "[" + i + "].PartNumber=" + this.PartNumber + "&" +
+                name + "[" + i + "].Specification=" + this.Specification + "&" +
+                name + "[" + i + "].Quantity=" + this.Quantity + "&";
+            i = i + 1;
+        })
+
+
+        $.ajax({
+            type: "Post",
+            dataType: "html",
+            url: "/Warehouse/SaveWHRequest",
+            data: itemData,
+            error: function () {
+
+            },
+            success: function (msg) {
+                if (msg == "") {
+                    alert("领料申请单保存成功");
+                    location.href = "/Warehouse/WarehouseRequestList"
+                } else {
+                    alert("保存出错，请重试");
+                }
+
+            }
+        });
+    }
+
+    function ShowHistory() {
+        $("#OutStockHistory").modal("show");
+
+    }
+
+    function ShowHideColumn(RequestID) {
+        if (RequestID == 0) {
+            $("#WHRequestItemGrid").showHideCol("InStockQuantity");
+        } else {
+            $("#WHRequestItemGrid").showHideCol("ReceivedQuantity");
+        }
+        if (RequestID > 0)
+        {
+            $("#WHRequestItemGrid").setGridWidth(document.body.clientWidth * 0.85);
+        }
+        else
+        {
+            $("#WHRequestItemGrid").setGridWidth(document.body.clientWidth * 0.45);
+        }
+        
+    }
+
+    function SetStockItemColumn(){
+        $("#StockItemGrid").showHideCol("SupplierName");
+        $("#StockItemGrid").showHideCol("PurchaseType");
+        $("#StockItemGrid").hideCol("Warehouse");
+        $("#StockItemGrid").hideCol("WarehousePosition");
+        $("#StockItemGrid").setGridWidth(document.body.clientWidth * 0.42);
+        $("#StockItemGrid").setGridHeight(document.documentElement.clientHeight - 200);
+    }
+
+    function LoadPurchaseTypes(){
+        var _url = "/Purchase/JsonPurchaseTypes";
+
+        $("#PurchaseType option").remove();
+        $("#PurchaseType").append($("<option/>", {value:0, text:"-"}));
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID, text:n.Name}));
+            })
+        })
+    }
+
+    function RemoveItem(){
+        var selr = $('#StockItemGrid').jqGrid('getGridParam', 'selarrrow');
+        console.log(selr);
+        for (i = selr.length-1; i>=0 ; i--) {
+            $('#StockItemGrid').jqGrid('delRowData', selr[i]);
+        }
+        //for (i = 0;i<selr.length ; i++) {
+        //    console.log(selr.length);
+        //    $('#StockItemGrid').jqGrid('delRowData',0);
+            
+        //}
+
+    }
+
+</script>
+

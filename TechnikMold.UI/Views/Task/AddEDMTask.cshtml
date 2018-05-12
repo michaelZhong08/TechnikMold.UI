@@ -1,0 +1,175 @@
+﻿
+@{
+    ViewBag.Title = "AddEDMTask";
+}
+
+
+
+<div class="col-sm-11" style="margin-top:50px">
+    <h2>添加EDM加工任务</h2>
+    <div class="col-sm-12">
+        <div class="col-sm-2">
+            <table>
+                <tr>
+                    <td>
+                        <input type="text" id="Keyword" class="form-control" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <select id="MoldList" class="form-control" size="10"></select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-sm-10">
+            <table id="TaskGrid"></table>
+        </div>
+    </div>
+    <div class="col-sm-12">
+        <div class="col-sm-3">
+            <label>电极列表</label>
+            <select id="AvailableElectrodeList" class="form-control" size="10"></select>
+        </div>
+        <div class="col-sm-3">
+            <label>任务电极列表</label>
+            <select id="SelectedElectrodeList" class="form-control" size="10"></select>
+        </div>
+        <div class="col-sm-4">
+            <table class="table">
+                <tr>
+                    <td class="col-sm-12" colspan="2"><label>工件</label></td>
+                </tr>
+                <tr>
+                    <td class="col-sm-12" colspan="2">
+                        <select id="ItemList" size="3" class="form-control" multiple>
+                            
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-sm-4"><label>优先级</label></td>
+                    <td class="col-sm-8">
+                        <select id="Priority" class="form-control">
+                            <option value="0">一般</option>
+                            <option value="1">较急</option>
+                            <option value="2">特急</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-sm-1">
+                        <label>备注</label>
+                    </td>
+                    <td class="col-sm-4">
+                        <select id="Memo" name="Memo" class="form-control">
+                            <option>此次任务为修烧焊</option>
+                            <option>此次任务为修尺寸</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-sm-12" colspan="2">
+                        <button class="btn btn-primary" id="CreateEDM">创建EDM任务</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+    
+</div>
+
+@using (Html.BeginForm("ReaddEDMTask", "Task", FormMethod.Post, new { id = "AAA" }))
+{
+    <input type="hidden" id="OldTaskID" name="OldTaskID">
+    <input type="hidden" id="TaskName" name="TaskName" />
+    <input type="hidden" id="Version"  name="Version" />
+    <input type="hidden"  id="EleDetail" name="EleDetail" />
+    <input type="hidden" id="CADDetail" name="CADDetail" />
+    <input type="hidden"  id="TaskMemo" name="Memo" />
+    <input type="hidden" id="TaskPriority" name="Priority" />
+}
+<script src="~/Scripts/Task.js"></script>
+<script>
+    $("document").ready(function(){
+        TaskRecreateGrid(0, 2);
+
+        $("#Keyword").on("keyup", function () {
+            LoadMolds($("#Keyword").val());
+        })
+
+        $("#MoldList").on("change", function () {
+            var _moldNumber = $("#MoldList option:selected").val();
+            $("#AvailableElectrodeList option").remove();
+            $("#ItemList option").remove();
+            $("#TaskGrid").jqGrid("setGridParam", { datatype: "json", url: "/Task/JsonMachineTasks?MoldNumber=" + _moldNumber + "&TaskType=2&state=1" }).trigger('reloadGrid');
+        })
+        
+        $("#CreateEDM").on("click", function(){
+            var _taskName = GetCellContent("TaskGrid", "TaskName");
+            var _version = GetCellContent("TaskGrid", "Version");
+            var _oldID =  GetCellContent("TaskGrid", "ID");
+            if (_taskName != undefined) {
+                $("#TaskName").val(_taskName);
+                $("#Version").val(_version);
+
+                var _eleDetail = GetEleList();
+                var _cadDetail = GetCADList();
+                if ((_eleDetail != "") && (_cadDetail != "")) {
+                    $("#OldTaskID") .val( _oldID);
+                    $("#EleDetail").val(_eleDetail);
+                    $("#CADDetail").val(_cadDetail);
+                    $("#TaskMemo").val($("#Memo option:selected").val());
+                    $("#TaskPriority").val($("#Priority option:selected").val());
+                    $("#AAA").submit();
+                    //alert($("#AAA").serialize());
+                } else {
+                    alert("需要加工的电极或工件总数不能为0");
+                }
+                
+            } else {
+                alert("请先选择要生成的任务");
+            }
+        })
+
+        LoadMolds("");
+    })
+
+
+    function LoadMolds(Keyword) {
+        $("#MoldList option").remove();
+        $.getJSON("/Project/JsonMoldNumber?Keyword=" + Keyword+"&TakeAll=true", function (msg) {
+            $.each(msg, function (i, n) {
+                $("#MoldList").append($("<option/>", {
+                    value: n,
+                    text: n
+                }))
+            });
+        })
+    }
+
+
+    function GetEleList() {
+        var result = "";
+        $("#SelectedElectrodeList option").each(function () {
+            var _item = $(this).text();
+
+            result = result == "" ? _item : result + ";" + _item;
+        })
+        return result;
+    }
+
+    function GetCADList() {
+        var result = "";
+        $("#ItemList option:selected").each(function () {
+            var _item = $(this).text();
+
+            result = result == "" ? _item : result + ";" + _item;
+        })
+        return result;
+    }
+</script>
+
+
+

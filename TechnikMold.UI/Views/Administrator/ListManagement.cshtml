@@ -1,0 +1,75 @@
+﻿<h2>列表管理</h2>
+@using TechnikSys.MoldManager.Domain.Entity
+<script type="text/javascript">
+    $(document).ready(function () {
+        var _typeID = parseInt(@ViewBag.ListTypeID);
+        if (_typeID > 0) {
+            $("#ListType").val(_typeID);
+            LoadList("/List/ListValues?TypeID=" + _typeID, "ListContent");
+            $("#ListContent").removeAttr("disabled");
+            $("#ListContentEdit>#ListTypeID").val(_typeID);
+        }
+    });
+</script>
+<div>
+
+    <div class="col-sm-1 sidebar">
+        <ul class="nav nav-sidebar">
+            <li><a href="/List">列表管理</a></li>
+            <li><a href="/Administrator/TaskhourCost">工时费率管理</a></li>
+            <li><a href="/Administrator/UserManagement">用户管理</a></li>
+            @*<li><a href="/Administrator/EquipmentList">设备管理</a></li>
+                <li><a href="/Administrator/Customer">客户信息</a></li>
+                <li><a href="/Administrator/Warehouse">仓库信息</a></li>*@
+        </ul>
+    </div>
+
+    <div class="col-sm-11 col-sm-offset-1">
+        <h3 class="page-header">列表管理</h3>   
+        <ul class="nav nav-pills">
+            <li><button class="btn btn-primary" id="CreateCustomer">新建客户</button></li>
+            <li><button class="btn btn-primary" id="ModifyCustomer">修改客户信息</button></li>
+            <li><button class="btn btn-primary" id="DeleteCUstomer">删除客户</button></li>
+
+        </ul>         
+        <div class="col-sm-2">
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3 class="panel-title">客户列表</h3></div>
+                <div class="panel-body">                        
+                    <div>
+                        <select class="form-control" size="25" id="CustomerList"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3 class="panel-title">客户信息</h3></div>
+                <div class="panel-body" style="height:460px">
+                    <div>
+                        @using (Html.BeginForm("CustomerSave", "Administrator", FormMethod.Post, new { id = "SaveCustomer" })) { 
+                        <table class="table table-striped">
+                            <tr>
+                                <td class="col-sm-2"><label>客户名称</label></td>
+                                <td class="col-sm-4">
+                                    <input type="text" maxlength="50" id="Name" class="form-control required"/>
+                                    <input type="hidden" id="CustomerID" />
+                                    <input type="hidden" id="Enabled" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-sm-2"><label>客户地址</label></td>
+                                <td class="col-sm-4">
+                                    <input type="text" maxlength="100" id="Address" class="form-control required" />
+                                </td>
+                            </tr>
+                        </table>
+                        }
+                        <button id="SaveCustomer" class="btn btn-primary">保存修改</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

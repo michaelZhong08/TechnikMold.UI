@@ -1,0 +1,69 @@
+﻿
+@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="~/Content/bootstrap.css" />
+    <link rel="stylesheet" href="~/Content/ui.jqgrid-bootstrap.css" />
+    <script type="text/javascript" src="~/Scripts/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.jqGrid.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/i18n/grid.locale-en.js"></script>
+    <meta charset="utf-8" />
+    <title>jqGrid Loading Data - Million Rows from a REST service</title>
+    <script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#jqGrid").jqGrid({
+            url: 'http://trirand.com/blog/phpjqgrid/examples/jsonp/getjsonp.php?callback=?&qwery=longorders',
+            mtype: "GET",
+            styleUI: 'Bootstrap',
+            datatype: "jsonp",
+            colModel: [
+                { label: 'OrderID', name: 'OrderID', key: true, width: 75 },
+                { label: 'Customer ID', name: 'CustomerID', width: 150 },
+                { label: 'Order Date', name: 'OrderDate', width: 150 },
+                { label: 'Freight', name: 'Freight', width: 150 },
+                { label: 'Ship Name', name: 'ShipName', width: 150 }
+            ],
+            viewrecords: true,
+            height: 700,
+            rowNum: 20,
+            pager: "#jqGridPager"
+        });
+    });
+
+    </script>
+
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">模具管理系统</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/">项目管理</a></li>
+                <li><a href="/Home/About">采购管理</a></li>
+                <li><a href="/Home/Contact">加工任务</a></li>
+                <li><a href="/Home/Contact">查询</a></li>
+            </ul>
+            <p class="nav navbar-text navbar-right">Hello, ASIA2\lechun1!</p>
+        </div>
+    </div>
+
+    <div class="container-fluid body-content col-sm-12" role="main" style="margin-top:50px">
+        <div class="col-sm-3" ><p>aaa</p></div>
+        <div class="col-sm-9"><p>bbb</p></div>
+    </div>   
+</body>
+</html>

@@ -1,0 +1,227 @@
+﻿
+@{
+    ViewBag.Title = "AddCNCTask";
+}
+
+
+
+<div class="col-sm-12" style="margin-top:10px">
+    <h2>新增加工任务</h2>
+    <h4 id="GRIDURL"></h4>
+    <div class="col-sm-12">
+
+    </div>
+    <div class="col-sm-2">
+        <table>
+            <tr>
+                <td><label>任务类型</label></td>
+            </tr>
+            <tr>
+                <td>
+                    <select id="TaskType" class="form-control">
+                        <option value="1">电极任务</option>
+                        <option value="4">铣铁任务</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label>选择模具号</label></td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="text" id="Keyword" class="form-control" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <select id="MoldList" class="form-control" size="20"></select>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-sm-7">
+        
+        <table id="TaskGrid"></table>
+        <label>电极信息</label>
+        <select id="EleList" class="form-control" size="8">
+            
+        </select>
+    </div>
+    <div class="col-sm-2">
+
+        <table class="col-sm-12">
+            <tr>
+                <td><button id="AddSelected" class="btn btn-primary">添加选中任务</button></td>
+                <td><button id="RemoveSelected" class="btn btn-primary">移除选中任务</button></td>
+            </tr>
+            <tr>
+                <td colspan="2" class="col-sm-12"><label>新任务名称</label></td>
+            </tr>
+            <tr>
+                <td class="col-sm-12" colspan="2">
+                    <select size="16" id="TaskList" class="form-control" multiple></select>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-sm-5"><label>粗电极个数</label></td>
+                <td class="col-sm-5"><input type="number" min="0" class="form-control" id="RCount" value="0"/> </td>
+            </tr>
+            <tr>
+                <td class="col-sm-5"><label>精电极个数</label></td>
+                <td class="col-sm-5"><input type="number" min="0" class="form-control" id="FCount" value="0" /> </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="col-sm-12">
+                    <button id="SaveTasks" class="btn btn-primary">新建任务</button>
+                </td>
+            </tr>           
+        </table>        
+    </div>
+</div>
+
+
+
+    <input type="hidden" id="TaskIDs" Name="TaskIDs" value="" />
+    <input type="hidden" id="rCount" name="RCount" value="0"  />
+    <input type="hidden" id="fCount" name="fCount" value="0" />
+
+
+
+<script>
+    $("document").ready(function () {
+
+        TaskRecreateGrid(0, 1, true);
+
+
+        LoadMolds("");
+
+        $("#Keyword").on("keyup", function () {
+            LoadMolds($("#Keyword").val());
+        })
+
+        $("#MoldList").on("change", function () {
+            LoadTasks()
+        })
+
+         
+
+        $("#TaskType").on("change", function () {
+            if ($("#MoldNumber").val() != null) {
+                LoadTasks();
+            }
+             
+        })
+
+        $("#SaveTasks").on("click", function () {
+            if (($("#RCount").val() > 0) | ($("#FCount").val() > 0)) {
+                var _ids = "";
+                $("#TaskList option").each(function () {
+                    var txt = $(this).val();
+                    _ids = _ids == "" ? txt : _ids + "," + txt;
+                });
+                $("#TaskIDs").val(_ids);
+                $("#rCount").val($("#RCount").val());
+                $("#fCount").val($("#FCount").val());
+                var _url = "/Task/ReaddCNCTask?TaskIDs=" + _ids + "&RCount=" + $("#RCount").val() + "&FCount=" + $("#FCount").val();
+                $.ajax({
+                    url: _url,
+                    type: "Get",
+                    dataType: "html",
+                    success: function (msg) {
+                        if (msg == "") {
+                            alert("任务创建完成");
+                        } else {
+                            alert("以下任务粗/精电极数量都为0， 无法创建新加工任务\r\n" + msg);
+                        }
+                    }
+                })
+
+            } else {
+                alert("粗/精电极数量不能都为0");
+            }
+            
+        })
+
+        $("#AddSelected").on("click", function () {
+            var _ids= GetMultiSelectedIDs("TaskGrid");
+            var _names = GetMultiSelectedCell("TaskGrid", "TaskName")
+
+            if (_ids != "") {
+                var _ID = _ids.split(",");
+                var _Name = _names.split(",");
+
+                for (i = 0; i < _ID.length; i++) {
+
+                    var _item = $("#TaskList option[value='" + _ID[i] + "']");
+                    if (_item.length == 0) {
+                        $("#TaskList").append($("<option>", {
+                            value: _ID[i],
+                            text: _Name[i]
+                        }))
+                    }
+
+                }
+            }
+
+            
+        })
+
+        $("#RemoveSelected").on("click", function () {
+            $("#TaskList option:selected").remove();
+        })
+
+        $("#TaskType").on("change", function () {
+            var _type = $("#TaskType option:selected").val();
+            if (_type == 1) {
+                $("#RCount").removeAttr("disabled");
+                $("#FCount").removeAttr("disabled");
+            } else {
+                $("#RCount").attr("disabled", true);
+                $("#FCount").attr("disabled", true);
+            }
+        })
+
+    })
+
+    function LoadMolds(Keyword) {
+        $("#MoldList option").remove();
+        $.getJSON("/Project/JsonMoldNumber?Keyword=" + Keyword + "&TakeAll=true", function (msg) {
+            $.each(msg, function (i, n) {
+                $("#MoldList").append($("<option/>", {
+                    value: n,
+                    text: n
+                }))
+            });
+        })
+    }
+
+    function LoadTasks() {
+        
+        var _moldnumber = $("#MoldList option:selected").val();
+        var _taskType = $("#TaskType option:selected").val();
+        //$("#TaskGrid").jqGrid("setGridParam", { url: "" }).trigger('reloadGrid');
+        //alert("Reload");
+        $("#TaskGrid").jqGrid("setGridParam", { datatype: "json", url: "/Task/JsonMachineTasks?MoldNumber=" + _moldnumber + "&TaskType=" + _taskType + "&state=1" }).trigger("reloadGrid");
+        
+        //alert("Reload");
+    }
+
+    function LoadEleDetail(TaskID)
+    {
+        if (TaskID != undefined) {
+            $("#EleList option").remove();
+            $.getJSON("/Task/JsonCNCItems?TaskID=" + TaskID, function (msg) {
+
+                $.each(msg, function (i, n) {
+                    $("#EleList").append($("<option/>", {
+                        text: n.LabelName
+                    }))
+                })
+            })
+        }
+        
+    }
+
+
+    
+</script>

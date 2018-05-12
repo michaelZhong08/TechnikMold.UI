@@ -1,0 +1,195 @@
+﻿@using MoldManager.WebUI.Models.Helpers;
+
+@{
+    ViewBag.Title = "订单列表";
+    int _dept;
+    try
+    {
+        _dept = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+
+    }
+    catch
+    {
+        _dept = 0;
+    }
+}
+
+
+
+
+<div style="margin-top:10px">
+    <div class="col-sm-11">
+
+        <h3>订单列表</h3>
+        <div>
+
+            <ul class="nav nav-pills">
+                <li class="col-sm-2">
+                    <select id="POState" class="form-control">
+                        <option value="0">所有状态</option>
+                        @foreach (int _val in @Enum.GetValues(typeof(PurchaseOrderStatus)))
+                        {
+                            if (_val == ViewBag.State)
+                            {
+                                <option value="@_val" selected>@Enum.GetName(typeof(PurchaseOrderStatus), _val)</option>
+                            }
+                            else
+                            {
+                                <option value="@_val">@Enum.GetName(typeof(PurchaseOrderStatus), _val)</option>
+                            }
+                        }
+                    </select>
+                </li>
+
+                <li><button class="btn btn-primary" id="SearchPO">查询订单</button></li>
+                @if (_dept == 4)
+                {
+                    <li><button class="btn btn-primary" id="CreatePO">创建订单</button></li>
+                }
+                
+            </ul>
+
+        </div>
+        <div style="margin-top:10px">
+            <table id="POListGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Purchase.js"></script>
+<script>
+    $("document").ready(function () {
+        POListGrid("","","","",0,@ViewBag.State, @ViewBag.PurchaseType);
+    })
+</script>
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="POSearchDialog" tabindex="-1" role="dialog" aria-labelledby="POSearchLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="POSearchLabel">订单查询</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td class="col-sm-6">
+                            <table>
+                                <tr>
+                                    <td><label>模具号</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" id="MoldKeyword" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td><select id="MoldList" class="form-control" size="10"></select></td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="col-sm-6">
+
+                            <table>
+                                <tr>
+                                    <td class="col-sm-6"><label>关键字</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" id="ItemKeyword" class="form-control" placeholder="关键字" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>开始日期</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="date" id="StartDate" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>结束日期</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="date" id="EndDate" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>供应商</label></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select id="AvailableSuppliers" class="form-control"></select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="QueryBtn" class="btn btn-primary">查询</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("document").ready(function(){
+        $("#QueryBtn").on('click', function () {
+            QueryPO();
+        })
+
+        LoadPurchaseType();
+    })
+
+    function QueryPO() {
+        var _url = "";
+        if ($("#MoldList").val() != null) {
+            _url = _url == "" ? "MoldNumber=" + $("#MoldList").val() : _url + "&MoldNumber=" + $("#MoldList").val();
+        }
+
+        if ($("#ItemKeyword").val() != "") {
+            _url = _url == "" ? "KeyWord=" + $("#ItemKeyword").val() : _url + "&Keyword=" + $("#ItemKeyword").val();
+        }
+
+        if ($("#StartDate").val() != "") {
+            _url = _url == "" ? "StartDate=" + $("#StartDate").val() : _url + "&StartDate=" + $("#StartDate").val();
+        }
+
+        if ($("#EndDate").val() != "") {
+            _url = _url == "" ? "EndDate=" + $("#EndDate").val() : _url + "&EndDate=" + $("#EndDate").val();
+        }
+
+        if ($("#AvailableSuppliers").val() != 0) {
+            _url = _url == "" ? "Supplier=" + $("#AvailableSuppliers").val() : _url + "&Supplier=" + $("#AvailableSuppliers").val();
+        }
+
+        if ($("#PurchaseType").val()!=0){
+            _url = _url == "" ? "PurchaseType=" + $("#PurchaseType").val() : _url + "&PurchaseType=" + $("#PurchaseType").val();
+        }
+        _url =_url==""?"/Purchase/PurchaseOrderList": "/Purchase/PurchaseOrderList?" + _url;
+       
+        location.href = _url;
+    }
+
+
+    function CreatePO() {
+        location.href = "/Purchase/SelectPOContent";
+    }
+
+    function LoadPurchaseType(){
+        var _url = "/Purchase/JsonPurchaseTypes";
+        $("#PurchaseType option").remove();
+        $("#PurchaseType").append($("<option/>", {value:"", text:"-"}))
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                $("#PurchaseType").append($("<option/>", {
+                    value:n.PurchaseTypeID, 
+                    text:n.Name 
+                }))
+            })
+        })
+    }
+
+    function RefreshPOByState(){
+        var _url = "/Purchase/JsonPurchaseOrderList?State="+$("#POState").val();
+        $("#POListGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
+    }
+</script>

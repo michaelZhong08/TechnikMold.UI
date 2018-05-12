@@ -1,0 +1,498 @@
+﻿@model MoldManager.WebUI.Models.ViewModel.ProjectViewModel
+@{
+    int EditStatus = 10;
+    string _inputState="readonly";
+}
+<script src="~/Scripts/Project.js"></script>
+
+@*Model参数及项目编辑类型说明
+ProjectEditStatus       ProjectID	ParentID	ProjectType     EditType
+10                      0	        0	        0	            New Main Project
+20                      0	        >0	        1	            New Mold Project
+30                      0	        >0	        2	            New Fix Mold Project
+40                      >0	        0	        0	            Existing Main Project
+50                      >0	        >0	        1	            Existing Mold Project
+60                      >0	        >0	        2	            Existing Fix Mold Project
+    *@
+
+
+@if (Model.ProjectID == 0)
+{
+    if (Model.ParentID == 0)
+    {
+        ViewBag.Title = "新建主项目";
+        EditStatus = 10;
+        _inputState = "";
+        
+    }
+    else
+    {
+        if (Model.ProjectType == 1)
+        {
+            ViewBag.Title = "创建新模项目";
+            EditStatus = 20;
+        }
+        else if (Model.ProjectType == 2)
+        {
+            ViewBag.Title = "创建修模项目";
+            EditStatus = 30;
+        }
+        
+    }
+}
+else
+{
+    switch (Model.Project.Type)
+    {
+        case 0:
+            ViewBag.Title = "主项目信息编辑";
+            EditStatus = 40;
+            break;
+        case 1:
+            ViewBag.Title = "新模项目信息编辑";
+            EditStatus = 50;
+            break;
+        case 2:
+            ViewBag.Title = "修模项目信息编辑";
+            EditStatus = 60;
+            break;
+    }
+}   
+
+@using TechnikSys.MoldManager.Domain.Entity
+
+@using (Html.BeginForm("Edit", "Project", FormMethod.Post, new { id = "ProjectEdit" }))
+{
+
+    int i = 0;
+    <div class="col-sm-10 col-offset-2" style="margin-top:70px;">
+        <h3 class="page-header">@ViewBag.Title</h3>
+
+        <p>
+            <button class="btn btn-primary" id="SaveProject">保存项目</button>
+        </p>
+        <div id="ErrorMessage" class="alert alert-danger HiddenMessage"></div>
+        <div class="panel panel-info">
+            <div class="panel-heading"><h4>项目基本信息</h4></div>
+            <div class="panel-body">
+                @*项目基本信息*@
+                <input type="hidden" id="Project.ProjectID" name="Project.Project.ProjectID" value="@Model.Project.ProjectID" />
+                <input type="hidden" id="Project.Project.Type" name="Project.Project.Type" value="@Model.Project.Type" />
+                <input type="hidden" id="Project.Project.ParentID" name="Project.Project.ParentID" value="@Model.Project.ParentID" />
+                <input type="hidden" id="Project.Project.Enabled" name="Project.Project.Enabled" value="@Model.Project.Enabled" />
+                
+                <input type="hidden" id="Project.Project.Version" name="Project.Project.Version" value="@Model.Project.Version">
+                <input type="hidden" id="Project.Project.ProjectType" name="Project.Project.ProjectType" value="@Model.Project.Type" />
+                <input type="hidden" id="Project.Project.ProjectStatus" name="Project.Project.ProjectStatus" value="@Model.Project.ProjectStatus">
+                
+
+                <table class="col-sm-12 table-striped">
+                    <tr>
+                        <td class="col-sm-2"><label>项目号</label></td>
+                        <td class="col-sm-4">
+                            <input type="text" id="Project.ProjectNumber" name="Project.Project.ProjectNumber" maxlength="20"
+                                   class="form-control required" value="@Model.Project.ProjectNumber" @_inputState />
+                        </td>
+                        @if ((EditStatus!=10)&&(EditStatus!=40))
+                        {
+                            <td class="col-sm-2"><label>模具号</label></td>
+                            <td class="col-sm-4">
+                                <input type="text" id="MoldNumber"
+                                       name="Project.Project.MoldNumber" 
+                                       class="form-control required"
+                                       maxlength="20" 
+                                       @if ((Model.Project.ProjectID>0)||(Model.Project.Type==2))
+                                       {
+                                           @:readonly
+                                       }
+                                       value="@(Model.Project.MoldNumber == "---" ? "" : @Model.Project.MoldNumber)" />
+                            </td>
+                        }
+                        else
+                        {
+                            <td></td>
+                            <td>
+                                <input type="hidden" id="Project.Project.MoldNumber" name="Project.Project.MoldNumber" class="form-control" value="---" />
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2">
+                            @if (Model.Project.ParentID>0) { 
+                        <label>模具名称</label>
+                            }
+                            else
+                            {
+                                <label>项目名称</label>
+                            }
+                        </td>
+                        <td class="col-sm-4">
+                            <input type="text" class="form-control required" id="Project.Project.Name" maxlength="50"
+                                   name="Project.Project.Name" value="@Model.Project.Name" />
+                        </td>
+
+                        <td class="col-sm-2"><label>客户</label></td>
+                        <td class="col-sm-4">
+                        @if (Model.Project.ProjectID == 0)
+                                    {
+                            <select id="Project.Project.CustomerID" 
+                                    name="Project.Project.CustomerID" 
+                                    class="form-control required" 
+                                    value="@Model.Project.CustomerID"></select>
+                            <input type="hidden" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName" />
+                        }
+                        else
+                        {
+                            <input type="text" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName"  class="form-control" readonly/>
+                            <input type="hidden" id="Project.Project.CustomerID" 
+                                    name="Project.Project.CustomerID" value="@Model.Project.CustomerID"/>
+                        }
+                        </td>
+                    </tr>
+                    @if (Model.Project.Type== 2)
+                    {
+                        <tr>
+                            <td class="col-sm-2"><label>修模类型</label></td>
+                            <td class="col-sm-4">
+                                @if (Model.Project.ProjectID == 0)
+                                {
+                                    <select id="Project.Project.FixMoldType" name="Project.Project.FixMoldType" class="form-control">
+                                        <option value="开发修模">开发修模</option>
+                                        <option value="ECN修模">ECN修模</option>
+                                        <option value="生产修模">生产修模</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" id="Project.Project.FixMoldType" name="Project.Project.FixMoldType" value="@Model.Project.FixMoldType" readonly>
+                                }
+                            </td>
+                            <td class="col-sm-2"></td>
+                            <td class="col-sm-4"></td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+
+        
+        <div class="panel panel-info">
+            <div class="panel-heading"><h4>项目人员信息</h4></div>
+            <div class="panel-body">
+                <table class="col-sm-12 table-striped">
+                    @{
+                        i = 0;
+                        foreach (Role _role in Model.Roles)
+                        {
+                            ProjectRole _projectRole;
+                            string _roleName = _role.Name;
+                            if ((Model.ProjectRoles != null)&&(Model.ProjectRoles.Count() != 0))
+                            {
+                                _projectRole = Model.ProjectRoles.Where(p => p.RoleID == _role.RoleID).FirstOrDefault();
+                            }
+                            else
+                            {
+                                _projectRole = new ProjectRole();
+                            }
+                        if (i % 2 == 0)
+                        {
+                            @:<tr>
+                        }
+                        <td class="col-sm-2"><label>@_role.Name</label></td>
+
+                        <td class="col-sm-4">
+                            <input type="text" class="form-control userselect required" 
+                                   id="Project.ProjectRoles[@i].UserName"
+                                   name="Project.ProjectRoles[@i].UserName" 
+                                   placeholder="Click to select user" 
+                                   value="@_projectRole.UserName" />
+                            <input type="hidden" id="Project.ProjectRoles[@i].RoleID"
+                                   name="Project.ProjectRoles[@i].RoleID" value="@_role.RoleID" />
+                            <input type="hidden" id="Project.ProjectRoles[@i].UserID"
+                                   name="Project.ProjectRoles[@i].UserID" value="@_projectRole.UserID" />
+                            @if (Model.ParentID != 0)
+                            {
+                                <input type="hidden" id="Project.ProjectRoles[@i].ProjectID"
+                                       name="Project.ProjectRoles[@i].ProjectID" value="0" />
+                            }
+                            else
+                            {
+                                <input type="hidden" id="Project.ProjectRoles[@i].ProjectID"
+                                       name="Project.ProjectRoles[@i].ProjectID" value="@Model.Project.ProjectID" />
+                            }
+                        </td>
+                        if (i % 2 != 0)
+                        {
+                        @:</tr>
+                        }
+                        i++;
+
+                    }
+
+                    }
+
+                </table>
+            </div>
+        </div>
+
+
+        <div class="panel panel-info">
+            <div class="panel-heading"><h4>项目计划信息</h4></div>
+            <div class="panel-body">
+                <table class="col-sm-12 table-striped">
+                    @{ i = 0; }
+
+                    @foreach (Phase _phase in Model.Phases)
+                    {
+                        ProjectPhase _projectPhase;
+                        if (Model.ProjectPhases != null)
+                        {
+                            _projectPhase = Model.ProjectPhases.Where(p => p.PhaseID == _phase.PhaseID).FirstOrDefault();
+                            if (_projectPhase == null)
+                            {
+                                _projectPhase = new ProjectPhase();
+                            }
+
+                        }
+                        else
+                        {
+                            _projectPhase = new ProjectPhase();
+                        }
+                        
+                        if (i % 2 == 0)
+                        {
+                            @:<tr>
+                        }
+                        string _finish = "";
+                        if ((Model.Project.Type == 2) && (_phase.Name == "FOT"))
+                        {
+                            <td class="col-sm-2"><label>修模</label></td>
+                        }
+                        else
+                        {
+                            <td class="col-sm-2"><label>@_phase.Name</label></td>
+                        }
+                        <td class="col-sm-4">
+                            @if (_projectPhase.PlanCFinish.ToString("yyyy-MM-dd") == "0001-01-01")
+                            {
+                            if (_projectPhase.PlanFinish.ToString("yyyy-MM-dd") == "0001-01-01")
+                            {
+                            _finish = "";
+                            }
+                            else
+                            {
+                            _finish = _projectPhase.PlanFinish.ToString("yyyy-MM-dd");
+                            }
+                            }
+                            else
+                            {
+                            _finish = _projectPhase.PlanCFinish.ToString("yyyy-MM-dd");
+                            }
+
+                            @if (Model.Project.Type == 2)
+                            {
+                                ///Fixmold projects only inherit OTS & PPAP milestone date
+                                if (_phase.PhaseID > 12)
+                                {
+                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish" />
+                                }
+                                else
+                                {
+                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="" />
+                                }
+
+                            }
+                            else
+                            {
+                                ///Mold projects inherit all milestone from main project
+                                <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                       name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish" />
+                            }
+
+                            @*if the project is a mold project, put the main project phase date in background*@
+                            @if (ViewBag.ParentID != 0)
+                            {
+                                <input type="hidden" id="ParentPhase[@i]" value="@(_projectPhase.PlanCFinish.ToString("yyyy-MM-dd")=="0001-01-01"?_projectPhase.PlanFinish.ToString("yyyy-MM-dd"):_projectPhase.PlanCFinish.ToString("yyyy-MM-dd"))" />
+                            }
+                            <input type="hidden" id="Project.ProjectPhases[@i].PhaseID"
+                                   name="Project.ProjectPhases[@i].PhaseID" value="@_phase.PhaseID">
+                            <input type="hidden" id="Project.ProjectPhases[@i].ProjectID"
+                                   name="Project.ProjectPhases[@i].ProjectID" value="@Model.Project.ProjectID">
+                            <input type="hidden" id="Project.ProjectPhases[@i].ProjectPhaseID"
+                                   name="Project.ProjectPhases[@i].ProjectPhaseID" value="@(Model.Project.ProjectID== 0 ? 0 : _projectPhase.ProjectPhaseID)">
+                        </td>
+                        if (i % 2 == 1)
+                        {
+                            @:</tr>
+                        }
+                        i = i + 1;
+                    }
+
+
+                </table>
+                <input type="hidden" id="PhaseCount" value="@i" />
+            </div>
+        </div>
+        <p>
+            <button class="btn btn-primary" id="SaveProject1">保存项目</button>
+        </p>
+
+</div>
+
+}
+
+<script>
+    $("document").ready(function(){
+        LoadCustomer(@Model.Project.CustomerID);       
+        
+        //While changing the mold project, check whether the phase date is later than the same phase of main project.
+        $("input[type='date']").on("change", function () {
+            var _type = $("#Project\\.Project\\.Type").val();
+            if(_type==1){
+                ValidateMoldPhase( this.value, this.name);
+            }else if (_type==2){
+                if (Number(GetFieldSequence(this.name))<13)
+                ValidateFixMoldPhase(this.value);
+            }
+           
+            
+        });
+
+    })
+
+    function Validate() {
+        var ValidateResult=true;
+        @if (ViewBag.ParentID != 0)
+        {
+            @: ValidateResult=ValidateResult&&ValidateMilestone();
+        }
+        return ValidateResult;
+    }
+
+    function ValidateMoldPhase(current, name){
+        var main = $("#ParentPhase\\[" +GetFieldSequence(name)+ "\\]").val();
+        if (main!="0001-01-01"){
+            if (current > main) {
+                alert("模具项目阶段完成时间不能晚于主项目");
+                $("#" + UnifyName(this.name)).val(main);            
+            }
+        }
+    }
+
+    function ValidateFixMoldPhase(current){
+        var _ots = $("#Project\\.ProjectPhases\\[12\\]\\.PlanFinish").val();
+        var _ppap = $("#Project\\.ProjectPhases\\[13\\]\\.PlanFinish").val();
+        if ((current>_ots)&(_ots!="")){
+            alert("计划完成时间不能晚于OTS交样时间");
+        }else if ((current>_ppap)&(_ppap!="")){
+            alert("计划完成时间不能晚于PPAP时间");
+        }
+    }
+
+    function ValidateFixModPhaseSave(){
+        var result = true;
+        for (i=0;i<12;i++){
+            var _item = $("#Project\\.ProjectPhases\\["+i+"\\]\\.PlanFinish").val();
+            if (_item>_ots){
+                alert("计划完成时间不能晚于OTS交样时间");
+                result=false;
+
+            }else if (current>_ppap){
+                alert("计划完成时间不能晚于PPAP时间");
+                result=false;
+            }
+            if (result==false){
+                $("#Project\\.ProjectPhases\\["+i+"\\]\\.PlanFinish").addClass("invalidefield");
+            }
+        }
+        return result;
+    }
+
+
+
+
+</script>
+@if (ViewBag.ParentID != 0)
+{
+    <script>
+    //If current project is an mold project, compare the milestone with main project
+    //Mold project milestones cannot be later than the main project milestones.
+    function ValidateMilestone() {
+        var MainProjectMilestones = new Array(@Model.Phases.Count());
+        var validateResult = true;
+
+        
+        @{
+        //Prepare Main project phase information
+        int i = 0;
+        if (Model.ProjectPhases != null)
+        {
+            foreach (ProjectPhase _phase in Model.ProjectPhases)
+            {
+                @: MainProjectMilestones[@i]="@_phase.PlanFinish.ToString("yyyy-MM-dd")";
+                            i = i + 1;
+            }        
+        }
+        }
+        
+        var ots =$("#Project\\.ProjectPhases\\[" + 12 + "\\]\\.PlanFinish");
+        var ppap = $("#Project\\.ProjectPhases\\[" + 13 + "\\]\\.PlanFinish");
+
+        for (var i = 0; i < MainProjectMilestones.length; i++) 
+        {
+            var item = $("#Project\\.ProjectPhases\\[" + i + "\\]\\.PlanFinish");
+            if (item.val() > MainProjectMilestones[i]) 
+            {
+                item.addClass("invalidfield");
+                validateResult = false;
+            }
+
+             @if (ViewBag.ProjectType == 2)
+            {
+                @:if ((item.val()>ots)|(item.val()>ppap))
+                @:{
+                @:item.addClass("invalidfield");
+                @:validateResult = false;
+                @:}
+             
+                 
+                
+            }
+        }
+       
+
+        return validateResult;
+    }
+
+    </script>
+}
+
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="UserSelect" tabindex="-1" role="dialog" aria-labelledby="EditUserLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="EditUserLabel">用户选择</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td><input type="text" id="UserKeyword" class="form-control" /></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select id="UserList" class="form-control" size="10"></select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="DefineUser" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>

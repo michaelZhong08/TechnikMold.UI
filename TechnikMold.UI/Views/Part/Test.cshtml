@@ -1,0 +1,38 @@
+﻿
+@{
+    ViewBag.Title = "Test";
+}
+
+<h2>Test</h2>
+
+<div style="margin-top:50px">
+    <div class="col-sm-2">
+        <select id="TestSelect" class="form-control">
+            <option value="1">Value1</option>
+            <option value="2">Value2</option>
+            <option value="3">Value3</option>
+            <option value="4">Value4</option>
+            <option value="5">Value5</option>
+            <option value="6">Value6</option>
+            <option value="7">Value7</option>
+            <option value="8">Value8</option>
+        </select>
+        <button class="btn btn-primary" id="TestBtn">Test</button>
+    </div>
+</div>
+
+<script>
+    var current = Math.round(Math.random() * 100);
+    $("document").ready(function () {
+
+        $("#TestBtn").on("click", function () {
+            
+            var val = current % 8;
+            $("#TestSelect option").attr("selected", false);
+            $("#TestSelect").val(val);
+            current = Math.round(Math.random()*100);
+            
+            console.log(current);
+        })
+    })
+</script>

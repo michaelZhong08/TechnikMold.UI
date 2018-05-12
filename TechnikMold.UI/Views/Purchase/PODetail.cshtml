@@ -1,0 +1,357 @@
+﻿@model TechnikSys.MoldManager.Domain.Entity.PurchaseOrder
+@using MoldManager.WebUI.Models.Helpers
+@{
+    string UserID = "";
+    string UserName = "";
+    try
+    {
+        UserID = Request.Cookies["User"]["UserID"];
+        UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
+
+    }
+    catch
+    {
+        UserID = "";
+        UserName = "";
+    }
+}
+
+@{
+    int DeptID;
+    int PosID;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    }
+    catch
+    {
+        PosID = 0;
+    }
+}
+
+<h2>Index</h2>
+<div style="margin-top:10px">
+
+    <div class="col-sm-11">
+
+        <h3>订单 @Model.PurchaseOrderNumber </h3>
+        <div id="Toolbar">         
+            @switch (Model.State)
+            {
+                case (int)PurchaseOrderStatus.新建:
+                    if (DeptID == 4) { 
+                        <button class="btn btn-primary" id="DeletePOContent">删除零件</button>
+                        <button class="btn btn-primary" id="PurchaseTypeBatch">采购类型</button>
+                        <button class="btn btn-primary" id="SubmitPO">提交审批</button>
+                        <button class="btn btn-warning" id="CancelPO">取消订单</button>
+                    }
+                    break;
+                case (int)PurchaseOrderStatus.待审批:
+                    if (PosID == 3) { 
+                        <button class="btn btn-primary" id="ReviewPO">审批</button>
+                    }
+                    if (DeptID == 4)
+                    {
+                        <button class="btn btn-warning" id="CancelPO">取消订单</button>
+                    }
+                    break;
+                case (int)PurchaseOrderStatus.发布:
+                    if (DeptID == 4)
+                    {
+                        <button class="btn btn-primary" id="SendPO">生成订单</button>
+                        <button class="btn btn-warning" id="CancelPO">取消订单</button>
+                    }
+                    break;
+                case (int)PurchaseOrderStatus.拒绝:
+                    if (DeptID == 4)
+                    {
+                        <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
+                        <button class="btn btn-primary" id="QuotationAgain">重新询价</button>
+                        <button class="btn btn-warning" id="CancelPO">取消订单</button>
+                    }
+                    break;
+
+            } 
+        </div>
+        <div id="Basic" class="col-sm-10 PRInfo">
+            <table>              
+                <tr>
+                    
+                    <td class="col-sm-1"><label>供应商</label></td>
+                    <td class="col-sm-2">
+                        <input type="text" class="form-control" id="SupplierName" readonly>
+                        <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
+                    </td>
+                    <td class="col-sm-1"><label>状态</label></td>
+                    <td class="col-sm-2">
+                        <input type="text" class="form-control" id="State" value="@Enum.GetName(typeof(PurchaseOrderStatus),@Model.State)" readonly>
+                    </td>
+                </tr>
+                @if (DeptID == 4) { 
+                <tr>
+                    <td class="col-sm-1"><label>总价</label></td>
+                    <td class="col-sm-2">
+                        <input type="text" class="form-control" id="TotalPrice" value="@(Model.TotalPrice+"("+Model.Currency+")")" readonly>
+                    </td>
+                    <td class="col-sm-1"><label>税率</label></td>
+                    <td class="col-sm-2">      
+                        @{
+                            string _tax = Model.TaxRate + "%";
+                        }
+                        <input type="text" class="form-control" value="@(Model.TaxRate + "%")" readonly />
+                    </td>
+                </tr>
+                }
+                <tr>
+                    <td class="col-sm-1"><label>备注</label></td>
+                    <td class="col-sm-5" colspan="3">
+                        <input type="text" class="form-control" id="Memo" value="@Model.Memo" readonly/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="col-sm-12" style="float:left;">
+            <table id="POContentGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="tempID" value="-1" />
+
+<input type="hidden" id="row" />
+
+
+@*订单提交*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="POSubmitModal" tabindex="-1" role="dialog" aria-labelledby="POSubmitModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="POAcceptModalLabel">订单提交</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <td class="col-sm-2"><label>备注</label></td>
+                        <td class="col-sm-4">
+                            <textarea id="SubmitMemo" class="form-control" rows="5" style="resize:none" maxlength="99"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="POSubmitButton">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*订单审批*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="POReviewModal" tabindex="-1" role="dialog" aria-labelledby="POReviewModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="POReviewModalLabel">订单审批</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <td class="col-sm-2"><label>审批结果</label></td>
+                        <td class="col-sm-4">
+                            <select class="form-control" id="ReviewResponse">
+                                @{
+                                    int response = (int)PurchaseOrderStatus.发布;
+                                }
+                                <option value="@response">通过</option>
+                                @{
+                                    response = (int)PurchaseOrderStatus.拒绝;
+                                }
+                                <option value="@response">拒绝</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2"><label>备注</label></td>
+                        <td class="col-sm-4">
+                            <textarea id="ReviewMemo" class="form-control" rows="5" style="resize:none" maxlength="50"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="POReviewBtn">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*更新明细采购类型*@
+<div class="modal fade" id="PurchaseTypeModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="PurchaseTypeModal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="PurchaseTypeModal-label">采购类型设置</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td class="col-sm-3"><label>一级类型</label></td>
+                        <td class="col-sm-9">
+                            <select id="MainType" class="form-control"></select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-3"><label>二级类型</label></td>
+                        <td class="col-sm-9">
+                            <select id="SubType" class="form-control"></select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="SetType">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="~/Scripts/Purchase.js"></script>
+<script>
+    $("document").ready(function(){
+
+        @if (ViewBag.PurchaseOrderID != 0)
+        {
+            @:POContentGrid(@ViewBag.PurchaseOrderID);
+            @:LoadProject(@Model.ProjectID);
+            @:LoadSupplierName("SupplierName", @Model.SupplierID);
+            @*@:LoadPO(@ViewBag.PurchaseRequestID);*@
+            if (Model.SupplierID == 0)
+            {
+                @:LoadSelectedSuppliersText(@ViewBag.PurchaseRequestID);
+                    }
+            else
+            {
+                @:LoadAssignedSupplier(@Model.SupplierID);
+                    }
+            @:LoadUser(@Model.UserID, "UserName");
+                }
+        else
+        {
+            @:PRContentGrid("@ViewBag.PartIDs", 0, 0);
+                    if (ViewBag.ProjectID != 0)
+            {
+                @:LoadProject(@ViewBag.ProjectID);
+                            }
+        }
+
+        $("#CancelPO").on("click", function(){
+            if (confirm("确认取消订单?")){
+                CancelPO();
+            }
+            
+        })
+
+        $("#PurchaseTypeBatch").on("click", function(){
+            var selrows = $("#POContentGrid").jqGrid('getGridParam', 'selarrrow');
+            if (selrows.length>0){
+                $("#PurchaseTypeModal").modal("show")
+            }else{
+                alert("请至少选择一项申请内容")
+            }
+            
+        })
+
+        $("#PurchaseTypeModal").on("shown.bs.modal", function(){
+            LoadPurchaseTypeLevel("MainType")
+        })
+
+        $("#MainType").on("change", function(){
+            LoadPurchaseTypeLevel("SubType", $("#MainType").val())
+        })
+
+        $("#SetType").on('click', function(){
+            SetType();
+        })
+    });
+
+
+    function CancelPO(){
+        var _url = "/Purchase/CancelPO?PurchaseOrderID="+$("#PurchaseOrderID").val();
+        $.ajax({
+            url:_url, 
+            type:"Get", 
+            success:function(msg){
+                if (msg==""){
+                    alert("订单取消成功");
+                    location.href="/Purchase/PurchaseOrderList";
+                }else{
+                    alert("订单取消错误,请重试");
+                }
+            }
+        })
+    }
+
+    function LoadPurchaseTypeLevel(target, parent){
+        $("#"+target+" option").remove();
+        if (parent==undefined){
+            parent = 0
+        }
+        var _url = '/Purchase/JsonPurchaseTypeLevel?ParentID='+parent;
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i, n){
+               
+                $("#"+target).append($("<option/>",{
+                    value:n.PurchaseTypeID, 
+                    text:n.Name
+                }))
+                if (i==0){
+                    LoadPurchaseTypeLevel("SubType", n.PurchaseTypeID)
+                }
+            })
+            //LoadPurchaseTypeLevel("SubType", $("#MainType").val())
+
+        })
+    }
+
+    function SetType(){
+        var selrows = $("#POContentGrid").jqGrid('getGridParam', 'selarrrow');
+        var _poContentIDs = "";
+        var _text = $("#SubType option:selected").val()==undefined?$("#MainType option:selected").text():$("#SubType option:selected").text()
+        var _val = $("#SubType option:selected").val()==undefined?$("#MainType option:selected").val():$("#SubType option:selected").val()
+        for (i=0;i<selrows.length;i++){
+            $("#POContentGrid").setCell(selrows[i], "PurchaseType", _text);
+            $("#POContentGrid").setCell(selrows[i], "PurchaseTypeID", _val);
+            _poContentIDs = _poContentIDs ==""?$("#POContentGrid").getCell(selrows[i], "POContentID"):_poContentIDs+","+$("#POContentGrid").getCell(selrows[i], "POContentID")
+        }
+        var _url = "/Purchase/UpdatePurchaseType?PurchaseTypeID="+_val+"&POContentIDs="+_poContentIDs;
+        $.ajax({
+            url:_url, 
+            type:"Get", 
+            success:function(msg){
+                alert(msg);
+            }
+
+        })
+
+        $("#PurchaseTypeModal").modal('hide')
+    }
+</script>

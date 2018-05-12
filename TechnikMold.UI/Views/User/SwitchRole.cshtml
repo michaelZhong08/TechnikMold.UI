@@ -1,0 +1,56 @@
+﻿@*用户角色切换*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="UserRoleModal" tabindex="-1" role="dialog" aria-labelledby="UserRoleLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="UserRoleLabel"><span id="UserName"></span>角色切换</h4>
+            </div>
+            <div class="modal-body">
+                <select id="UserRoleList" class="form-control"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="SwitchRole">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("document").ready(function(){
+        $("#UserRoleModal").on("shown.bs.modal",function(){
+            LoadUserRoles();
+        });
+
+        $("#RoleChange").on("click", function(){
+            $("#UserRoleModal").modal("show");
+        })
+
+        $("#SwitchRole").on("click", function(){
+            SwitchRole();
+        })
+    })
+
+    function LoadUserRoles(){
+        var _url = "/User/JsonUserRoleList?UserID=" + $("#CurrentUserID").val();
+        $("#UserRoleList option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#UserRoleList").append($("<option/>", { value: n.UserRoleID, text: n.DisplayName }))
+            })
+        })
+    }
+
+    function SwitchRole(){
+        var _url = "/User/ReloadCookie?UserRoleID="+$("#UserRoleList").val();
+        $.ajax({
+            type:"Get",
+            url:_url,
+            success:function(){
+                location.reload();
+            }
+        })
+    }
+
+</script>

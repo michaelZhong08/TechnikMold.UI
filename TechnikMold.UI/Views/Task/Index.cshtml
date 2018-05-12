@@ -1,0 +1,150 @@
+﻿
+@using MoldManager.WebUI.Models.Helpers;
+@{
+    TaskType _taskType = new TaskType();
+}
+
+<h2>Index</h2>
+
+<div style="margin-top:10px">
+    <div class="col-sm-11">
+        <div id="Toolbar">
+            <ul class="nav nav-pills">
+                <li class="dropdown all-camera-dropdown">
+                    <button class="dropdown-toggle btn btn-primary" data-toggle="dropdown" href="#">
+                        选择任务类型
+                        <b class="caret"></b>
+                    </button>
+                    <ul class="dropdown-menu">
+                        @for (int i = 1; i <5; i++)
+                        {
+                            <li role="presentation"><a href="/Task/Index?TaskType=@i&MoldNumber=@ViewBag.MoldNumber&State=@ViewBag.State">@_taskType.GetTypeName(i)</a></li>
+                        }
+                    </ul>
+                </li>
+                <li><button class="btn btn-primary" id="AddTask">添加任务</button></li>
+                <li>
+                    <button class="dropdown-toggle btn btn-primary" data-toggle="dropdown" href="#">设置优先级</button>
+                    <ul class="dropdown-menu">
+                        <li role="presentation"><a href="#">1</a></li>
+                        <li role="presentation"><a href="#">2</a></li>
+                        <li role="presentation"><a href="#">3</a></li>
+                        <li role="presentation"><a href="#">4</a></li>
+                        <li role="presentation"><a href="#">5</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-11" style="float:left;">
+            <table id="TaskGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="CreateTaskDialog" tabindex="-1" role="dialog" aria-labelledby="CreateTaskLabel" height="1100px">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="CreateTaskLabel">创建 @ViewBag.Title</h4>
+            </div>
+            <div class="modal-body" style="height:300px">
+                @using (Html.BeginForm("SaveTask", "Task", FormMethod.Post, new { id = "CreateTaskForm" })) { 
+                <table class="table table-striped">
+                    <tr>
+                        <td class="col-sm-2"><label>任务名称</label></td>
+                        <td class="col-sm-4">
+                            <input type="text" id="TaskName" name="TaskName" class="form-control" />
+                            <input type="hidden" id="ProjectID" name="ProjectID" value="" />
+                            <input type="hidden" id="TaskType" name="TaskType" value="@ViewBag.TaskType" />
+                            <input type="hidden" id="State" name="State" value="1" />
+                        </td>
+                        <td class="col-sm-2"><label>版本</label></td>
+                        <td class="col-sm-4"><input type="text" id="Version" name="Version" class="form-control" /></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2"><label>工艺</label></td>
+                        <td class="col-sm-4"><input type="text" id="Process" name="ProcessName" class="form-control" /></td>
+                        <td class="col-sm-2"><label>型号</label></td>
+                        <td class="col-sm-4"><input type="text" id="Model" name="Model" class="form-control" /></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2"><label>HRC</label></td>
+                        <td class="col-sm-4"><input type="text" id="HRC" name="HRC" class="form-control" /></td>
+                        <td class="col-sm-2"><label>材料</label></td>
+                        <td class="col-sm-4"><input type="text" id="Material" name="Material" class="form-control" /></td>
+                    </tr>
+                    <tr>                        
+                        <td class="col-sm-2"><label>数量</label></td>
+                        <td class="col-sm-4"><input type="text" id="Quantity" name="Quantity" class="form-control" min="0"/></td>
+                        <td class="col-sm-2"></td>
+                        <td class="col-sm-4"></td>
+                    </tr>
+                   
+                </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="CreateTask" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="~/Scripts/Task.js"></script>
+<script>
+    $(document).ready(function () {
+
+        @if (ViewBag.MoldNumber == 0)
+         {
+             @:ShowMoldSelect();
+                 }
+
+        //Create the task grid
+        if (@ViewBag.TaskType==1){
+            TaskListCAM("@ViewBag.MoldNumber", @ViewBag.State);
+        }else{
+            TaskList("@ViewBag.MoldNumber", @ViewBag.TaskType, @ViewBag.State);
+        }
+        //Hide the not wanted columns
+        @*switch(@ViewBag.TaskType){
+            case 2:
+                TaskListPole();
+                break;
+            case 3:
+                TaskListCNC()
+                break;
+            case 4:
+                TaskListEDM()
+                break;
+            case 5:
+                TaskListWEDM();
+                break;
+            case 6:
+                TaskListMill();
+                break;
+        }*@
+        switch(@ViewBag.TaskType){
+            case 1:                
+                TaskListCNC()
+                break;
+            case 2:
+                TaskListEDM()
+                break;
+            case 3:
+                TaskListWEDM();
+                break;
+            case 4:
+                TaskListMill();
+                break;
+        }
+    })
+</script>
+
+@{Html.RenderAction("MoldSelect", "Dialog");}

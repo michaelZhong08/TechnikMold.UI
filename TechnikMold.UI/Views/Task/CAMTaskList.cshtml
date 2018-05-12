@@ -1,0 +1,452 @@
+﻿@using MoldManager.WebUI.Models.Helpers;
+@{
+    TaskType _taskType = new TaskType();
+    int DeptID = 0;
+    int PosID = 0;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+
+    }
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    }
+    catch
+    {
+
+    }
+}
+
+
+
+<div style="margin-top:10px">
+    <h2>@ViewBag.Title</h2>
+
+    <div class="col-sm-2">
+        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
+        <input type="hidden" id="FMoldNumber" />
+        <input type="hidden" id="FTaskType" value="@ViewBag.TaskType" />
+        <input type="hidden" id="FState" value="@ViewBag.State" />
+        <input type="hidden" id="FCAM" value="@ViewBag.CAM" />
+        <select class="form-control" id="MoldSelect" size="3"></select>
+    </div>
+
+    <div class="col-sm-10">
+        <div id="Toolbar" style="margin-left:15px">
+            <input type="hidden" id="MoldList" value="@ViewBag.MoldNumber" />
+            <ul class="nav nav-pills">
+                    
+                    <li><button class="btn btn-info" id="UnReleaseList">图纸发布</button></li>
+                    <li><button class="btn btn-info" id="WorkshopTaskList">加工任务</button></li>
+
+                <li class="dropdown all-camera-dropdown">
+                    
+                    <button class="dropdown-toggle btn btn-info" data-toggle="dropdown" href="#">
+                        @ViewBag.TaskTypeName
+                        <b class="caret"></b>
+                    </button>
+                    <ul class="dropdown-menu">
+                        @for (int i = 1; i <= 6; i++)
+                        {
+                            if (i != 5)
+                            {
+                                <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@i&State=@ViewBag.State&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">@_taskType.GetTypeName(i)</a></li>
+                            }
+
+
+
+                        }
+                    </ul>
+                </li>
+                <li class="dropdown all-camera-dropdown">
+                    <button class="dropdown-toggle btn btn-info" data-toggle="dropdown" href="#">
+                        @if (ViewBag.CAM == 1)
+                        {
+                            if (ViewBag.State == -99)
+                            {
+                                @:当前任务
+                            }
+                            else
+                            {
+                                @:历史任务
+                            }
+                        }
+                        else
+                        {
+                            if (ViewBag.State == 0)
+                            {
+                                @:当前任务
+                            }
+                            else
+                            {
+                                @:历史任务
+                            }
+                        }
+
+
+
+
+                        <b class="caret"></b>
+                    </button>
+                    <ul class="dropdown-menu">
+                        @if (ViewBag.CAM == 1)
+                        {
+                            <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=-99&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">当前任务</a></li>
+                            <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=0&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">历史任务</a></li>
+                        }
+                        else
+                        {
+                            <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&MoldNumber=&State=0&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">当前任务</a></li>
+                            <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=1&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">历史任务</a></li>
+                        }
+                        
+                    </ul>
+                </li>
+                @*<li><button class="btn btn-primary" id="SelProject">选择模具项目</button></li>*@
+                @if (((ViewBag.TaskType == 3) || (ViewBag.TaskType == 6)) && (DeptID==3))
+                {
+                    <li><button class="btn btn-primary" id="AddTask">添加任务</button></li>
+                }
+                <li>
+                    <input type="text" class="col-sm-1 form-control" id="TaskKeyword" placeholder="任务名关键字"/>                    
+                </li>
+                <li><button class="btn btn-primary" id="QueryTask">查询</button></li>
+            </ul>
+        </div>
+        <div class="col-sm-11" style="float:left;">
+            <table id="TaskGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+
+
+@*右键菜单*@
+@if(DeptID==3)
+        {
+<div class="contextMenu dropdown" id="CAMTaskContextMenu" style="display:none">
+    <ul style="width:200px">
+        @if ((ViewBag.TaskType==3)&&(ViewBag.State==0)&&(ViewBag.CAM==0))
+        {         
+        
+        <li id="TaskInfo">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">任务信息编辑</span>
+        </li>
+        }
+        
+        
+        @if (ViewBag.State == -99)
+        {
+        @*<li id="AcceptCAMTask">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">接受任务</span>
+        </li>*@
+        
+        if (@ViewBag.TaskType == 1)
+        {
+            @*<li id="CNCPara">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">定义电极参数</span>
+            </li>
+            <li id="QCParameter">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">定义QC参数</span>
+            </li>*@
+        }
+        
+        if (ViewBag.TaskType == 2)
+        {
+            @*<li id="EditEDMItem">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">编辑电极</span>
+            </li>
+            <li id="CreateEDMItem">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">创建电极</span>
+            </li>
+            <li id="QCParameter">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">定义QC参数</span>
+            </li>*@
+        }
+        
+        <li id="ReleaseCAMTask">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">发布任务</span>
+        </li>
+        <li id="DisableCAMTask">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">删除任务</span>
+        </li>
+        }
+        else if ((ViewBag.TaskType != 100)&&(ViewBag.State == 0)&&(ViewBag.CAM == 0))
+        {
+
+                <li id="PauseTask">
+                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                    <span style="font-size:12px; font-family:Verdana">暂停/继续任务</span>
+                </li>
+                <li id="DeleteTask">
+                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                    <span style="font-size:12px; font-family:Verdana">取消任务</span>
+                </li>
+        }
+
+        @if ((ViewBag.State > 0) && (ViewBag.CAM == 0))
+            {
+                <li id="NewTask">
+                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/task-new.png" /></span>
+                    <span style="font-size:12px; font-family:Verdana">生成新任务</span>
+                </li>
+            }
+
+    </ul>
+</div>
+        }
+        
+
+
+
+@if ((ViewBag.TaskType == 3) || (ViewBag.TaskType == 6))
+{
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="MoldSelectDialog" tabindex="-1" role="dialog" aria-labelledby="MoldSelectLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <input type="hidden" id="target" value="" />
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="MoldSelectLabel">模具项目选择</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td><label>模具号</label></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="text" id="MoldKeyword" class="form-control" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <select id="ExistingMoldList" class="form-control" size="10"></select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SelectMold" class="btn btn-primary">选择</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $("document").ready(function(){
+            $("#MoldSelectDialog").on("shown.bs.modal", function(){
+                ReloadExistingMoldList("");
+            })
+
+            $("#MoldKeyword").on("keyup", function(){
+                ReloadExistingMoldList($("#MoldKeyword").val());
+            })
+
+            $("#ExistingMoldList").on("dblclick", function(){
+                CreateManualTask()
+            })
+
+            $("#SelectMold").on("click", function(){
+                CreateManualTask()
+            })
+        })
+
+        function ReloadExistingMoldList(Keyword){
+            $("#ExistingMoldList option").remove();
+            $("#MoldKeyword").val(Keyword);
+            var _url = "/Project/JsonMoldNumber?Keyword="+Keyword;
+            $.getJSON(_url, function(msg){
+                $.each(msg, function(i,n){
+                    $("#ExistingMoldList").append($("<option/>", {value:n, text:n}));
+                })
+            })
+        }
+
+        function CreateManualTask(){
+            if ($("#ExistingMoldList").val()!=null){
+                $("#MoldSelectDialog").modal("hide");
+                var MoldNumber=$("#ExistingMoldList").val()
+                ClearEditDialog();
+                GetProjectID(MoldNumber);
+                $("#EditTaskDialog").modal("show");
+                $("#TaskName").val(MoldNumber+"-");
+                $("#TaskMoldNumber").val(MoldNumber);
+                
+            }else{
+                alert("请选择一个模具号");
+            }          
+        }
+
+        
+    </script>
+}
+
+<script src="~/Scripts/Task.js"></script>
+<script src="~/Scripts/jquery.ba-throttle-debounce.js"></script>
+<script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#target").val("/Task/CAMTaskList?State=@ViewBag.State&TaskType=@ViewBag.TaskType&MoldNumber=")
+
+
+
+        //跳转至图纸发布(Cam任务)列表
+        $("#UnReleaseList").on("click", function () {
+            location = "/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=-99&CAM=1&MoldNumber=@ViewBag.MoldNumber";
+            location.href= "/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=-99&CAM=1&MoldNumber="+$("#MoldSelect").val();
+        });
+
+        //跳转至正在进行的加工任务
+        $("#WorkshopTaskList").on("click", function () {
+            location.href= "/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=0&CAM=0&MoldNumber="+$("#MoldSelect").val();
+        });
+
+        $("#Keyword").on("keyup", function(){
+            LoadMoldList(1, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val(), "");            
+        })
+
+
+        LoadMoldList(1, @ViewBag.State, @ViewBag.TaskType, "", "@ViewBag.MoldNumber");
+
+
+
+        //Create the task grid
+
+        CAMTaskList("@ViewBag.MoldNumber", @ViewBag.TaskType, @ViewBag.State, 1);
+
+        //Hide the not wanted columns
+
+        if(@ViewBag.State==-99){
+
+            //only CNC task display the positoncheck row
+            TaskListCAM(@ViewBag.TaskType);
+
+
+        }else if (@ViewBag.State==0){
+            switch(@ViewBag.TaskType){
+                case 1:
+                    TaskListCNC();
+                    break;
+                case 2:
+                    TaskListEDM();
+                    break;
+                case 3:
+                    TaskListWEDM();
+                    break;
+                case 4:
+                    TaskListMill();
+                    break;
+                case 6:
+                    TaskListGrind();
+            }
+
+            if (@ViewBag.CAM==1){
+                if (@ViewBag.State==0){
+                    $("#TaskGrid").setGridParam().showHideCol("ReleaseTime");
+                    $("#TaskGrid").setGridParam().showHideCol("CreateTime");
+                    $("#TaskGrid").setGridParam().showHideCol("CAD");
+                    $("#TaskGrid").setGridParam().showHideCol("CAM");
+
+                    if ((@ViewBag.TaskType==1)||(@ViewBag.TaskType==2)){
+                        $("#TaskGrid").setGridParam().showHideCol("Surface");
+                        $("#TaskGrid").setGridParam().showHideCol("Obit");
+                        $("#TaskGrid").setGridParam().showHideCol("ELEPos");
+                    }
+                }
+
+                $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
+            }else{
+                $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
+            }
+
+        }else{
+            $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.75);
+        }
+
+        $("#MoldSelect").on("change", function(){
+            //location.href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&MoldNumber="+$("#MoldSelect option:selected").val()+"&State=@ViewBag.State";
+            if ($("#MoldSelect").val()!=null){
+                $("#FMoldNumber").val($("#MoldSelect").val());
+                RefreshTaskGrid("");
+
+                var _links = $(".TaskTypeLink")
+
+                for (i=0;i<_links.length;i++){
+                    _links[i].href=AttachMoldNumber(_links[i].href, $("#MoldSelect").val());
+                }
+            }
+        })
+    })
+
+    function AttachMoldNumber(Link, MoldNumber){
+        var _link = Link.substring(0, Link.lastIndexOf('=')+1)+MoldNumber;
+        return _link;
+    }
+
+    function RefreshTaskGrid(Keyword){
+        var _MoldNumber = $("#FMoldNumber").val();
+        var _TaskType = $("#FTaskType").val();
+        var _State = $("#FState").val();
+        var _CAM = $("#FCAM").val();
+
+        if (Keyword==""){
+            $("#Keyword").val("");
+        }
+        var _url = '/Task/JsonMachineTasks?MoldNumber=' + _MoldNumber + "&TaskType=" + _TaskType + "&State=" + _State+"&CAM="+_CAM+"&Keyword="+Keyword;
+        console.log(_url);
+        $("#TaskGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+
+    function EditTask(Row){
+        @if (((ViewBag.TaskType == 3) || (ViewBag.TaskType == 6)) && (DeptID==3))
+        {
+            @:var _taskID=($("#TaskGrid").getCell(Row,1));
+                            @:EditTaskInfo(_taskID);
+                        }
+
+    }
+</script>
+
+@*@{Html.RenderAction("MoldSelect", "Dialog");}*@
+
+@{
+    int _task = ViewBag.TaskType;
+    switch (_task)
+    {
+        case 1:
+            Html.RenderAction("CncTaskDialog");
+            Html.RenderAction("CNCParaDialog");
+            Html.RenderAction("QCInfoDialog");
+            break;
+        case 2:
+            Html.RenderAction("EdmTaskDialog");
+            Html.RenderAction("EDMParaDialog");
+            Html.RenderAction("QCInfoDialog");
+            break;
+        case 3:
+            Html.RenderAction("WedmTaskDialog");
+            break;
+        case 4:
+            Html.RenderAction("MillingTaskDialog");
+            break;
+        case 6:
+            Html.RenderAction("GrindTaskDialog");
+            break;
+
+    }
+}

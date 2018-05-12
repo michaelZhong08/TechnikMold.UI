@@ -1,0 +1,46 @@
+﻿@{
+    ViewBag.Title = "订单收货";
+}
+
+<div id="hidden">
+    <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
+    <input type="hidden" id="State" value="@ViewBag.State" />
+</div>
+<div style="margin-top:10px">
+    <div class="col-sm-1 sidebar">
+        <ul class="nav nav-sidebar">
+            <li><a href="/Warehouse">库存信息</a></li>
+            <li><a href="/Warehouse/POList">订单收货</a></li>
+        </ul>
+    </div>
+    <div class="col-sm-11 col-sm-offset-1 main">
+
+        <h3>采购单列表</h3>
+        <div>
+            
+           
+            <div class="col-sm-2">
+                <select id="POState" class="form-control">
+                    <option value="0">所有状态</option>                    
+                    <option value="6">待收货</option>
+                    <option value="7">完成</option>
+                </select>
+            </div>
+        </div>
+        <div style="margin-top:50px">
+            <table id="POListGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Warehouse.js"></script>
+<script>
+    $("document").ready(function(){
+        SetList(@ViewBag.State);
+        POListGrid(@ViewBag.ProjectID, @ViewBag.State);
+        $("#PRState option[value=@ViewBag.State]").attr("selected", "true");
+    })
+
+</script>
+@{Html.RenderAction("MoldSelect", "Dialog");}
+

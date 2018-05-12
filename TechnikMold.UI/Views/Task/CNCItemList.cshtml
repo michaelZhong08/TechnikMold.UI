@@ -1,0 +1,67 @@
+﻿@model IEnumerable<TechnikSys.MoldManager.Domain.Entity.CNCItem>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>CNC零件列表</title>
+    <link href="/Content/bootstrap.css" rel="stylesheet" />
+    <link href="/Content/site.css" rel="stylesheet" />
+    <link href="/Content/ui.jqgrid-bootstrap.css" rel="stylesheet" />
+
+</head>
+<body>
+    <div class="col-sm-12" style="float:left;">
+        <div id="Toolbar">
+            <ul class="nav nav-pills">
+                @if (ViewBag.Type == 0) { 
+                <li><button class="btn btn-primary" id="PrintLabel">打印标签</button></li>
+                }
+            </ul>
+
+        </div>
+        <table id="TaskItemGrid"></table>
+        <div id="jqGridPager"></div>
+        </div>
+    
+    <script src="/Scripts/modernizr-2.6.2.js"></script>
+    <script src="/Scripts/jquery-1.10.2.js"></script>
+    <script src="/Scripts/bootstrap.js"></script>
+    <script src="/Scripts/respond.js"></script>
+    <script src="/Scripts/jquery.jqGrid.min.js"></script>
+    <script src="/Scripts/i18n/grid.locale-en.js"></script>
+    <script src="/Scripts/JqGridTemplate.js"></script>
+    <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+    <script src="~/Scripts/Task.js"></script>
+    <script>
+        $("document").ready(function () {
+            CNCItemList("@ViewBag.TaskIDs");
+        });
+    </script>
+    @*右键菜单*@
+    <div class="contextMenu dropdown" id="CNCItemContextMenu" style="display:none">
+        <ul style="width:200px">
+
+            <li id="TaskReady">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">准备完毕</span>
+            </li>
+            
+            <li id="Required">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">需要加工</span>
+            </li>
+            <li id="NotRequired">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">不需加工</span>
+            </li>
+           
+
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,120 @@
+﻿
+
+<div style="margin-top:10px">
+
+
+        <h2>
+            @ViewBag.Title
+        </h2>
+       
+
+        <div class="col-sm-2">
+            <button class="btn btn-primary col-sm-12" id="RefreshPO">刷新订单列表</button>
+            <select id="PurchaseTypes" class="form-control"></select>
+            <select id="PurchaseOrders" class="form-control" size="20"></select>
+        </div>
+
+        <div class="col-sm-8">
+            <ul class="nav nav-pills">
+                <li class="col-sm-4">
+                    <input type="text" id="WKeyword" class="form-control" value="@ViewBag.Keyword" placeholder="库存关键字" />
+                </li>
+                <li><button class="btn btn-primary" id="StockQuery">查询</button></li>
+                <li><button class="btn btn-primary" id="OutSourceStart">外发出库</button></td>
+            </ul>
+            <table id="PurchaseItemGrid"></table>
+        </div>
+
+</div>
+
+<script>
+
+    $("document").ready(function () {
+        LoadPurchaseTypes();
+        OutSourceItem();
+
+        var _listsize = Math.round((document.documentElement.clientHeight - 210) / 17);
+        $("#PurchaseOrders").attr("size", _listsize);
+        
+        $("#RefreshPO").on("click", function () {
+            LoadPurchaseOrders($("#PurchaseOrders").val());
+        })
+
+        $("#PurchaseTypes").on("change", function () {
+            LoadPurchaseOrders();
+        })
+
+        $("#PurchaseOrders").on("change", function () {
+            LoadOutSourceItems();
+        });
+
+        $("#OutSourceStart").on("click", function () {
+            if (confirm("是否设置这些外加工任务出库？")) {
+                StartOutSource();
+            }
+            
+        })
+    })
+
+    function LoadPurchaseTypes() {
+        var _url = "/Purchase/JsonPurchaseTypes?TypeName=模具委外加工&ContainParent=true";
+        $("#PurchaseTypes option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                if (n.ParentTypeID == 0) {
+                    $("#PurchaseTypes").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+                } else {
+                    $("#PurchaseTypes").append($("<option/>", { value: n.PurchaseTypeID, text: "-" + n.Name }));
+                }
+                
+            })
+            LoadPurchaseOrders();
+        })
+    }
+
+    function LoadPurchaseOrders(PONumber) {
+        var _url = "/Purchase/JsonPurchaseOrders?PurchaseType=" + $("#PurchaseTypes").val();
+        $("#PurchaseOrders option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                if (PONumber == n.PurchaseOrderID) {//
+                    $("#PurchaseOrders").append($("<option/>", {
+                        value: n.PurchaseOrderID,
+                        text: n.PurchaseOrderNumber + "-" + n.SupplierName,
+                        selected: true
+                    }));
+                } else {
+                    $("#PurchaseOrders").append($("<option/>", { value: n.PurchaseOrderID, text: n.PurchaseOrderNumber + "-" + n.SupplierName }));
+                }
+                
+            })
+        })
+    }
+
+    function LoadOutSourceItems() {
+        if ($("#PurchaseOrders").val() != null) {
+            var _url = "/Purchase/JsonOutSourceItems?PurchaseOrderID=" + $("#PurchaseOrders").val();
+            $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
+        }
+        
+    }
+
+    function StartOutSource() {
+        var _ids = GetMultiSelectedIDs("PurchaseItemGrid")
+        var _url = "/Purchase/StartOutSource?OutSourceItemIDs=" + _ids;
+        $.ajax({
+            url: _url,
+            type: "Get",
+            success: function (msg) {
+                if (msg == "") {
+                    alert("外发成功");
+                    LoadOutSourceItems();
+                    LoadPurchaseOrders();
+                } else {
+                    alert(msg+"外发失败");
+                }
+            }
+        })
+    }
+</script>
+

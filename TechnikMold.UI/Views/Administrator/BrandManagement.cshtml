@@ -1,0 +1,148 @@
+﻿
+@{
+    ViewBag.Title = "品牌管理";
+}
+
+@{
+    int DeptID = 0;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+
+<div style="margin-top:10px">
+    <h2>@ViewBag.Title</h2>
+    <div class="col-sm-2">
+        <input type="text" class="form-control" id="Keyword"/>
+        <select class="form-control" id="BrandList"></select>
+    </div>
+    @if (DeptID == 2)
+    {
+        <div class="col-sm-4">
+            <ul class="nav nav-pills">
+                <li><button class="btn btn-primary" id="NewBrand">添加品牌</button></li>
+                <li><button class="btn btn-warning" id="DeleteBrand">删除品牌</button></li>
+            </ul>
+            <table class="table-striped col-sm-12">
+                <tr>
+                    <td class="col-sm-4"><label>品牌名称</label></td>
+                    <td class="col-sm-8">
+                        <input type="text" class="form-control" id="Name" disabled />
+                        <input type="hidden" id="BrandID" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button class="btn btn-primary" id="SaveBrand">保存</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+    
+</div>
+
+
+<script>
+    $("document").ready(function () {
+        var _listRows = 20;
+        $("#BrandList").attr("size", _listRows);
+
+        LoadBrands("");
+
+        $("#Keyword").on("keyup", function () {
+            LoadBrands($("#Keyword").val());
+        })
+
+        $("#BrandList").on("change", function () {
+            $("#Name").removeAttr("disabled", false);
+            $("#Name").val($("#BrandList option:selected").text());
+            $("#BrandID").val($("#BrandList option:selected").val());
+        })
+
+        $("#SaveBrand").on("click", function () {
+            SaveBrand();
+        })
+
+        $("#NewBrand").on("click", function () {
+            $("#Name").removeAttr("disabled", false);
+            $("#Name").val("");
+            $("#BrandID").val(0);
+        })
+
+        $("#DeleteBrand").on("click", function(){
+            DeleteBrand();
+        })
+    })
+
+
+    function LoadBrands(Keyword) {
+        if (Keyword == undefined) {
+            Keyword = "";
+        }
+        var _url = "/Part/JsonBrands?Keyword="+Keyword;
+        $("#BrandList option").remove();
+        $.ajax({
+            type: "Get",
+            url: _url,
+            success: function (msg) {
+                $.each(msg, function (i, n) {
+                    $("#BrandList").append($("<option/>", {
+                        value: n.BrandID,
+                        text:n.Name
+                    }))
+                })
+            }
+        })
+    }
+
+    function SaveBrand() {
+        var _url = "/Part/GetBrand?BrandName=" + $("#Name").val();
+        $.ajax({
+            type: "Get",
+            url: _url,
+            success: function (msg) {
+                var _count = Number(msg);
+                if ((_count > 0) &&($("#BrandID").val()==0)){
+                    alert("品牌已存在");
+                } else {
+                    _url = "/Administrator/SaveBrand?Name=" + $("#Name").val() + "&BrandID=" + $("#BrandID").val();
+                    $.ajax({
+                        type: "Get",
+                        url: _url,
+                        success: function (msg) {
+                            alert("保存完成")
+                            LoadBrands("");
+                        }
+                    })
+                }
+            }
+        })
+        
+    }
+
+    function DeleteBrand() {
+        if (($("#BrandID").val() == "") || ($("#BrandID").val() == 0)) {
+            alert("请选择一个品牌");
+        } else {
+            if (confirm("确认删除品牌" + $("#Name").val() + "?")) {
+                var _url = "/Administrator/DeleteBrand?BrandID="+$("#BrandID").val();
+                $.ajax({
+                    type: "Get",
+                    url: _url,
+                    success: function () {
+                        alert("删除成功");
+                        LoadBrands("");
+                    }
+                })
+            }
+        }
+    }
+
+</script>
+

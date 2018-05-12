@@ -1,0 +1,314 @@
+﻿@using TechnikSys.MoldManager.Domain.Status;
+@model TechnikSys.MoldManager.Domain.Entity.ReturnRequest
+@{
+    ViewBag.Title = "退货单";
+    int DeptID;
+    try
+    {
+        DeptID =Convert.ToInt32( Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+<div style="margin-top:10px">
+    <h2>退货单 @Model.ReturnRequestNumber</h2>
+    <div class="col-sm-11">
+        <div id="ToolBar">
+            @switch (Model.State)
+            {
+                case (int)ReturnRequestStatus.新建:
+                    if (DeptID==20){
+                        <input type="hidden" id="Editable" value="true" />
+                        <button class="btn btn-primary" id="SaveRequest">保存退货单</button>
+                        if (Model.ReturnRequestID > 0)
+                        {
+                            <button class="btn btn-primary" id="SubmitRequest">提交退货单</button>
+
+                            @*<button class="btn btn-primary" id="AddContent">添加退货项</button>*@
+
+                            <button class="btn btn-warning" id="DeleteItem">删除退货项</button>
+                        }
+                    }
+
+                    break;
+                case (int)ReturnRequestStatus.待审批:
+                    if (DeptID == 4)
+                    {
+                        <button class="btn btn-primary" id="ApproveRequest">审批通过</button>
+                        <button class="btn btn-warning" id="DeclineRequest">审批拒绝</button>
+                    }
+
+                    break;
+                case (int)ReturnRequestStatus.通过:
+                    if (DeptID == 20)
+                    {
+                        <button class="btn btn-primary" id="CloseRequest">关闭退货单</button>
+                    }
+
+                    break;
+                case (int)ReturnRequestStatus.拒绝:
+                    if (DeptID == 20)
+                    {
+                        <button class="btn btn-primary" id="CloseRequest">关闭退货单</button>
+                        <button class="btn btn-primary" id="RestartRequest">重启退货单</button>
+                    }
+                    break;
+
+            }
+            <input type="hidden" id="ReturnRequestID" value="@Model.ReturnRequestID" />
+            <input type="hidden" id="PurchaseOrderID" value="@Model.PurchaseOrderID" />
+            <input type="hidden" id="SupplierID" value="@Model.SupplierID" />
+            <input type="hidden" id="SupplierName" value="@Model.SupplierName" />
+        </div>
+    </div>
+
+    <div class="col-sm-12" style="float:left;">
+        <table id="ReturnItemGrid"></table>
+        <div id="jqGridPager"></div>
+    </div>
+    
+</div>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script>
+    $("document").ready(function () {
+        ReturnItemGrid(@Model.ReturnRequestID, "@ViewBag.PurchaseItemIDs");
+
+        $("#SaveRequest").on("click", function(){
+            SaveRequest(false);            
+        })
+
+        $("#DeleteItem").on("click", function(){            
+            DeleteItems();
+        })
+
+        $("#SubmitRequest").on("click", function(){
+            SaveRequest(true);       
+        })
+
+        $("#ApproveRequest").on("click", function(){
+            if (confirm("确认同意退货？")){
+                ReviewRequest(true);
+            }
+            
+        })
+
+        $("#DeclineRequest").on("click", function(){
+            if (confirm("确认拒绝退货？")){
+                ReviewRequest(false);
+            }
+        })
+
+        $("#CloseRequest").on("click", function(){
+            CloseRequest();
+        })
+
+        $("#RestartRequest").on("click", function(){
+            if (confirm("退货单已被拒绝，确认重启并修改退货单？")){
+                RestartRequest();
+            }
+        })
+    })      
+
+    function BindRowAction(id, iCol) {
+        //alert(iCol);
+
+        $("#" + id + "_Quantity").on("focus", function () {
+            $("#" + id + "_Quantity").attr("type", "number");
+            $("#" + id + "_Quantity").attr("min", "0");
+        })
+
+
+        switch (iCol) {
+            case 10:
+                _inputid = "#"+id + "_Quantity";
+                break;
+            case 11:
+                _inputid = "#"+id + "_Memo";
+                break;
+            
+            default:
+                _inputid = "#"+ id + "_Quantity";
+                break;
+        }
+        //alert($(_inputid).val());
+        setTimeout("$(_inputid).focus()",1);
+        $(_inputid).select();
+    }
+
+    //function SaveRequest(){
+    //    alert("AAA");
+    //}
+
+
+    function SaveRequest(Submit){
+        for (i = 1; i <= $("#ReturnItemGrid").jqGrid("getDataIDs").length ; i++) {
+            $('#ReturnItemGrid').jqGrid('saveRow', i);
+        }
+        var _url = "/Warehouse/SaveReturnRequest";
+        var _itemData = "";
+        var _name="ReturnItems";
+        var rowData = $("#ReturnItemGrid").jqGrid("getRowData");
+        console.log(rowData);
+        if (rowData.length>0){
+            for (var i=0;i<rowData.length;i++){
+                var _memo= rowData[i].Memo;
+                var _instock = Number(rowData[i].InStockQuantity);
+                var _qty = Number(rowData[i].Quantity);
+                if (_qty<=0){
+                    alert("退货数量必须大于0");
+                    return false
+                }else if (_instock<_qty){
+                    alert("退货数量不能大于库存数量");
+                    return false;
+                }else{
+                    console.log(i+"-"+rowData[i].ID)
+                    _itemData = _itemData+_name+"["+i+"].ReturnItemID="+rowData[i].ID+"&"+
+                        _name+"["+i+"].Name="+rowData[i].Name+"&"+
+                        _name+"["+i+"].MaterialNumber="+rowData[i].MaterialNumber+"&"+
+                        _name+"["+i+"].Specification="+rowData[i].Specification+"&"+
+                        _name+"["+i+"].Quantity="+rowData[i].Quantity+"&"+
+                        _name+"["+i+"].WarehouseItemID="+rowData[i].WarehouseStockID+"&"+
+                        _name+"["+i+"].PurchaseItemID="+rowData[i].PurchaseItemID+"&"+
+                        _name+"["+i+"].Memo="+rowData[i].Memo+"&"+
+                        _name+"["+i+"].State=0"+"&"+
+                        _name+"["+i+"].ReturnRequestID=0"+"&"+
+                        _name+"["+i+"].Enabled=true"+"&";
+                }
+
+                
+            }
+            _itemData = _itemData+"ReturnRequestID="+$("#ReturnRequestID").val()+"&"
+                +"SupplierID="+$("#SupplierID").val()+"&"
+                +"SupplierName="+$("#SupplierName").val()+"&"
+                +"PurchaseOrderID="+$("#PurchaseOrderID").val()+"&"
+                +"WarehouseUserID="+$("#CurrentUserID").val()+"&";
+            console.log(_itemData);
+            $.ajax({
+                url:_url, 
+                type:"Post", 
+                data:_itemData, 
+                success:function(msg){
+
+                    if (isNaN(Number(msg))){
+
+                        alert("退货单保存失败，请重试");
+                        return false;
+                    }else{
+                        if (Submit){
+                            SubmitRequest();
+                        }else{
+                            alert("退货单保存成功");
+                            location.href="/Warehouse/ReturnRequestDetail?ReturnRequestID="+msg;
+                        }
+                        
+                        return true;
+                    }
+                }
+            })
+            
+        }
+    }
+
+    function DeleteItems(){
+        var selr = GetMultiSelectedIDs("ReturnItemGrid");
+        var _url = "/Warehouse/ReturnItemDelete?ReturnItemIDs="+selr;
+        if (selr!=""){
+            
+
+            if (confirm("确认删除退货项？")){
+                
+                $.ajax({
+                    url:_url, 
+                    type:"Get", 
+                    success:function(msg){
+                        if (Number(msg)!=NaN){
+                            
+                            alert("退货项删除成功");
+                            $("#ReturnItemGrid").jqGrid('setGridParam', { datatype: "json" }).trigger("reloadGrid");
+                            var _count =Number(msg);
+                            if (_count==0){
+                                alert("全部内容已清空，退货单失效");
+                                DeleteRequest();
+                            }
+                        }else{
+                            alert("删除失败，请重试");
+                        }
+                    }
+                })
+
+                
+            }
+        }else{
+            alert("请选择要删除的零件");
+        }                 
+    }
+
+    function DeleteRequest(){
+        var _url = "/Warehouse/DeleteReturnRequest?ReturnRequestID="+$("#ReturnRequestID").val();
+        $.ajax({
+            url:_url, 
+            type:"Get", 
+            success:function(){
+                location.href="/Warehouse/ReturnRequestList";
+            }
+        })
+    }
+
+    function SubmitRequest(){
+        var _url = "/Warehouse/SubmitReturnRequest?ReturnRequestID="+$("#ReturnRequestID").val();
+        $.ajax({
+            url:_url, 
+            type:"Get", 
+            success:function(msg){
+                alert("退货单已提交");
+                location.href="/Warehouse/ReturnRequestList";
+            }
+        })      
+    }
+
+    function ReviewRequest(ResponseType){
+        var _url = "/Warehouse/ReviewReturnRequest?ReturnRequestID="+$("#ReturnRequestID").val()+"&Approve="+ResponseType;
+        $.ajax({
+            url:_url, 
+            type:"Get",
+            success:function(msg){
+                if (msg==""){
+                    alert("审批完成")
+                    location.href="/Warehouse/ReturnRequestList";
+                }
+            }
+        })
+    }
+
+    function CloseRequest(){
+        var _url = "/Warehouse/CloseReturnRequest?ReturnRequestID="+$("#ReturnRequestID").val();
+        $.ajax({
+            url:_url, 
+            type:"Get",
+            success:function(msg){
+                if (msg==""){
+                    alert("退货单关闭成功")
+                    location.href="/Warehouse/ReturnRequestList";
+                }
+            }
+        })
+    }
+
+    function RestartRequest(){
+        var _url = "/Warehouse/RestartReturnRequest?ReturnRequestID="+$("#ReturnRequestID").val();
+        $.ajax({
+            url:_url, 
+            type:"Get",
+            success:function(msg){
+                if (msg==""){
+                    alert("退货单已回到新建状态，请编辑内容后提交")
+                    location.reload();
+                }
+            }
+        })
+    }
+
+    
+</script>

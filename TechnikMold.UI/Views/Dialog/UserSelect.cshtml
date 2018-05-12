@@ -1,0 +1,41 @@
+﻿@*用@{Html.RenderAction("UserSelect", "Dialog");}进行调用
+    调用时注意设置$("#target").val()用于指定选择项目后跳转页面地址*@
+
+
+
+@*模具项目选择对话框*@
+
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="UserSelect" tabindex="-1" role="dialog" aria-labelledby="UserSelectLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="UserSelectLabel">CAM用户选择</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td><label>用户名关键字</label></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" id="Keyword" class="form-control" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select id="UserList" class="form-control" size="10"></select>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SelectUser" class="btn btn-primary">选择</button>
+            </div>
+        </div>
+    </div>
+</div>

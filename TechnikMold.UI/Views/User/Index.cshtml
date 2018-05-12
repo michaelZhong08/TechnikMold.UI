@@ -1,0 +1,322 @@
+﻿@model IEnumerable<TechnikSys.MoldManager.Domain.Entity.User>
+@using TechnikSys.MoldManager.Domain.Entity;
+@{
+    ViewBag.Title = "用户管理";
+    int _Dept = 0;
+    try
+    {
+        _Dept= Convert.ToInt16(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        _Dept = 0;
+    }
+}
+<script src="~/Scripts/Administrator.js"></script>
+<script src="~/Scripts/User.js"></script>
+
+<div style="margin-top:1px">
+    <div class="col-sm-10">
+        <h2 class="page-header">@ViewBag.Title</h2>
+            
+
+        <div class="col-sm-12">
+            @*@if (_Dept == 1)
+            {*@
+            <ul class="nav nav-pills">
+                <li><button class="btn btn-primary" id="CreateUser">创建用户</button></li>
+                <li><button class="btn btn-primary" id="SetRole">设置角色</button></li>
+                <li><button class="btn btn-primary" id="QueryUser">查找用户</button></li>
+                <li><button class="btn btn-primary" id="DeleteUser">删除用户</button></li>
+            </ul>
+            @* } *@
+            <table id="UserGrid"></table>
+        </div>
+    </div>
+    </div>
+    @*创建/编辑用户对话框*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="EditUserModal" tabindex="-1" role="dialog" aria-labelledby="EditUserLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="EditUserLabel">用户编辑</h4>
+                </div>
+                <div class="modal-body">
+                    @using (Html.BeginForm("EditUser", "User", FormMethod.Post, new { id = "UserEdit" }))
+                    {
+
+                        <table class="table-striped  colsm-12">
+                            <tr>
+                                <td class="col-sm-4"><label>域用户名</label></td>
+                                <td class="col-sm-8">
+                                    <input type="text" id="LogonName" name="LogonName" maxlength="20" class="form-control required" />
+                                    <input type="hidden" id="UserID" name="UserID" />
+                                    <input type="hidden" id="DepartmentID" name="DepartmentID" />
+                                    <input type="hidden" id="PositionID" name="PositionID" />
+                                    <input type="hidden" id="Enabled" name="Enabled" value="true" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-sm-4"><label>姓名</label></td>
+                                <td class="col-sm-8"><input type="text" id="FullName"maxlength="20" name="FullName" class="form-control required" /></td>
+                            </tr>
+                            <tr>
+                                <td class="col-sm-4"><label>部门</label></td>
+                                <td class="col-sm-8">
+                                    <select id="Department" class="form-control"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-sm-4"><label>岗位</label></td>
+                                <td class="col-sm-8">
+                                    <select id="Position" class="form-control"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-sm-4"><label>电子邮件地址</label></td>
+                                <td class="col-sm-8"><input type="email" id="Email" maxlength="40" name="Email" class="form-control required" /></td>
+                            </tr>
+                            <tr>
+                                <td class="col-sm-4"><label>电话号码</label></td>
+                                <td class="col-sm-8"><input type="text" maxlength="20" id="Extension" name="Extension" class="form-control" /></td>
+                            </tr>
+                            <tr>
+                                <td class="col-sm-4"><label>手机号码</label></td>
+                                <td class="col-sm-8"><input type="number" id="Mobile" maxlength="20" name="Mobile" class="form-control" /></td>
+                            </tr>
+                        </table>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SaveUser" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@*查询用户对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="QueryUserModal" tabindex="-1" role="dialog" aria-labelledby="QueryUserLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="QueryUserLabel">查找用户</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                <tr>
+                    <td class="col-sm-2">关键字</td>
+                    <td class="col-sm-4"><input type="text" id="UserKeyword" class="form-control" /></td>
+                </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="QueryUserBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*用户角色设置对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="UserRoleModal" tabindex="-1" role="dialog" aria-labelledby="UserRoleLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="UserRoleLabel"><span id="UserName"></span>角色设置</h4>
+            </div>
+            <div class="modal-body" style="height:200px">
+                <div class="col-sm-4">
+                    <input type="hidden" id="RUserID" />
+                    <input type="hidden" id="UserRoleID" />
+                    <input type="hidden" id="DefaultRole" />
+                    <select class="form-control" size="10" id="UserRoleList"></select>
+                </div>
+                <div class="col-sm-8">
+                    <table class="table table-striped">
+                        <tr>
+                            <td class="col-sm-4"><label>部门</label></td>
+                            <td class="col-sm-8">
+                                <select id="RDepartmentID" class="form-control" disabled></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>岗位</label></td>
+                            <td class="col-sm-8">
+                                <select id="RPositionID" class="form-control" disabled></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button class="btn btn-primary"  id="NewUserRole">新建角色</button>
+                                <button class="btn btn-warning" id="DeleteUserRole">删除角色</button>
+                                <button class="btn btn-primary" id="DefaultUserRole">默认角色</button>
+                                <button class="btn btn-primary" style="float:right" id="SaveRole">保存</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="~/Scripts/Administrator.js"></script>
+    <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            LoadDepartment();
+            LoadPositions();
+
+            UserGrid("@ViewBag.Keyword");
+
+            $("#SetRole").on("click", function () {
+                var _id = GetMultiSelectedCell("UserGrid", "ID").split(",")[0];
+                if (_id == "") {
+                    alert("请选择一个用户");
+                } else {
+                    $("#RUserID").val(_id);
+                    GetUserName(_id);
+                    GetUserRolesList(_id);
+                    $("#UserRoleModal").modal("show");
+                }
+            })
+
+            $("#UserRoleList").on("change", function () {
+                GetUserRole($("#UserRoleList").val());
+            })
+
+            $("#NewUserRole").on("click", function () {
+                ResetUserRole();
+            })
+
+            $("#SaveRole").on("click", function () {
+                SaveRole();
+            })
+
+            $("#DeleteUserRole").on("click", function () {
+                if ($("#DefaultRole").val() == "true") {
+                    alert("不能删除默认角色");
+                }else{
+                    if ($("#UserRoleID").val() == 0) {
+                        alert("请选择现有角色后再进行删除操作");
+                    } else {
+                        if (confirm("确认删除角色？")) {
+                            DeleteUserRole();
+                        }
+                    }        
+                }                        
+            })
+
+            $("#DefaultUserRole").on("click", function () {
+                if ($("#UserRoleID").val() == 0) {
+                    alert("请选择现有角色后再设置默认角色");
+                } else {
+                    if (confirm("确认设置为默认角色？该设置将影响用户所属部门")) {
+                        DefaultUserRole();
+                    }
+                }                
+            })
+
+            $("#UserRoleModal").on('hide.bs.modal', function () {
+                $("#UserGrid").jqGrid('setGridParam', { datatype: "json" }).trigger("reloadGrid");
+            })
+        });
+
+
+
+        function GetUserName(id) {
+            var _url = "/User/GetUserByID?UserID=" + id;
+            $.getJSON(_url, function (msg) {
+                $("#UserName").html("<b>"+msg.FullName+"</b>");
+            })
+        }
+
+        function GetUserRolesList(id) {
+            var _url = "/User/JsonUserRoleList?UserID=" + id;
+            $("#UserRoleList option").remove();
+            $.getJSON(_url, function (msg) {
+                $.each(msg, function (i, n) {
+                    $("#UserRoleList").append($("<option/>", { value: n.UserRoleID, text: n.DisplayName }))
+                })
+            })
+        }
+
+        function GetUserRole(id) {
+            var _url = "/User/JsonUserRole?UserRoleID=" + id;
+            $("#UserRoleID").val(id);
+            $.getJSON(_url, function (msg) {
+                $("#RDepartmentID").removeAttr("disabled");
+                $("#RPositionID").removeAttr("disabled");
+                $("#RDepartmentID").val(msg.DepartmentID);
+                $("#RPositionID").val(msg.PositionID);
+                $("#DefaultRole").val(msg.DefaultRole);
+            })
+        }
+
+        function ResetUserRole() {
+            $("#UserRoleID").val(0);
+            $("#RDepartmentID").removeAttr("disabled");
+            $("#RPositionID").removeAttr("disabled");
+            $("#RDepartmentID").val($("#RDepartmentID option:first-child").val());
+            $("#RPositionID").val($("#RPositionID option:first-child").val());
+            $("#DefaultRole").val(false);
+        }
+
+        function SaveRole() {
+            var _url = "/User/SaveRole?UserID=" + $("#RUserID").val()
+                + "&DepartmentID=" + $("#RDepartmentID").val()
+                + "&PositionID=" + $("#RPositionID").val()
+                +"&UserRoleID="+$("#UserRoleID").val();
+            $.ajax({
+                type: "Get",
+                url: _url,
+                success: function (msg) {
+                    if (msg == "") {
+                        GetUserRolesList($("#RUserID").val());
+                    } else {
+                        alert("保存失败")
+                    }
+                }
+            })
+        }
+
+        function DeleteUserRole() {
+            var _url = "/User/DeleteRole?UserRoleID="+$("#UserRoleID").val();
+            $.ajax({
+                type:"Get", 
+                url:_url, 
+                success:function(msg){
+                    if (msg == "") {
+                        $("#UserRoleID").val(0);
+                        GetUserRolesList($("#RUserID").val());
+                    }else{
+                        alert("删除失败");
+                    }
+                }
+            })
+        }
+
+        function DefaultUserRole() {
+            
+            var _url = "/User/DefaultUserRole?UserRoleID=" + $("#UserRoleID").val();
+            $.ajax({
+                type: "Get",
+                url: _url,
+                success: function (msg) {
+                    if (msg == "") {
+                        GetUserRolesList($("#RUserID").val());
+                    } else {
+                        alert("设置失败");
+                    }
+                }
+            })
+        }
+    </script>

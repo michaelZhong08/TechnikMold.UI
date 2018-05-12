@@ -1,0 +1,72 @@
+﻿
+<div class="modal" data-backdrop="static" data-keyboard="false" id="CNCParaDialog" tabindex="-1" role="dialog" aria-labelledby="CNCParaLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="CNCParaLabel">设置电极加工参数</h4>
+            </div>
+            <div class="modal-body">
+                
+               
+                    
+                        @using (Html.BeginForm("SaveCncPara", "Task", FormMethod.Post, new { id = "EditCNCParaForm" }))
+                        {
+                            <input type="hidden" id="CNCParameterID" name="CNCParameterID" />
+                            <input type="hidden" id="TaskID" name="TaskID" value="99" />
+                            
+                            <table class="table-striped">
+                                <tr>
+                                    <td class="col-sm-2"><label>任务名称</label></td> 
+                                    <td class="col-sm-4">                                        
+                                        <input type="text" id="CNCTaskName" class="form-control" readonly />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1"><label>表面要求</label></td>
+                                    <td class="col-sm-5"><input type="text" class="form-control required" name="Surface" id="Surface" maxlength="20" /></td>
+                                </tr>
+                                @*<tr>
+                                    <td class="col-sm-1"><label>预留</label></td>
+                                    <td class="col-sm-5"><input type="number" class="form-control required" name="Preserve" id="Preserve" /></td>
+                                </tr>*@
+                                <tr>
+                                    <td class="col-sm-1"><label>Rough间隙</label></td>
+                                    <td class="col-sm-5">
+                                        <input type="number" class="form-control required" name="RoughGap" id="RoughGap" />
+                                        <input type="hidden" name="Preserve" id="Preserve" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1"><label>Finish间隙</label></td>
+                                    <td class="col-sm-5"><input type="number" class="form-control required" name="FinishGap" id="FinishGap" /></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1"><label>Obit</label></td>
+                                    <td class="col-sm-5"><input type="text" class="form-control required" name="ObitType" id="ObitType" maxlength="10"/></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1"><label>跑位</label></td>
+                                    <td class="col-sm-5"><textarea type="text" class="form-control required" name="Position" id="Position" rows="5" maxlength="500" style="resize:none"></textarea></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1"><label>NCRoughName</label></td>
+                                    <td class="col-sm-5"><textarea type="text" class="form-control required" name="NCRoughName" id="NCRoughName" rows="5" maxlength="500" style="resize:none"></textarea></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-1"><label>NCFinishName</label></td>
+                                    <td class="col-sm-5"><textarea type="text" class="form-control required" name="NCFinishName" id="NCFinishName" rows="5" maxlength="500" style="resize:none"></textarea></td>
+                                </tr>
+                            </table>
+                        }
+                                  
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveCncPara" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,173 @@
+﻿@{
+    int DeptID;
+    try
+    {
+        DeptID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+<div style="margin-top:10px">
+    <h2 >@ViewBag.Title</h2>
+    <div class="col-sm-2">
+        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
+        <select class="form-control" id="MoldSelect" size="3"></select>        
+    </div>
+    <div class="col-sm-10">
+        @if (ViewBag.State == 30)
+        {
+            <div class="col-sm-2">
+                <select id="PurchaseType" class="form-control"></select>
+            </div>
+        }
+        <div class="col-sm-2">
+            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项关键字" />
+        </div>
+         <input type="hidden" id="MoldNumber" />
+ 
+         <button class="btn btn-primary" id="Query">查询</button>
+ 
+         @if ((ViewBag.State == 30)&&(DeptID==4))
+         {
+     
+             <button class="btn btn-primary" id="Quotation">开始询价</button>
+     
+     
+             <button class="btn btn-primary" id="PruchaseOrder">创建订单</button>
+     
+         }
+        <div class="col-sm-11" style="float:left;">
+            <table id="PurchaseItemGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script src="~/Scripts/Purchase.js"></script>
+<script src="~/Scripts/jquery.ba-throttle-debounce.js"></script>
+<script>
+
+
+    $("document").ready(function () {
+
+        LoadMoldNumber("", "")
+
+        @if (ViewBag.State == 30)
+        {
+            @:LoadPurchaseType();
+        }
+        
+        PurchaseItem("","", @ViewBag.State);
+        @if ((ViewBag.State==10)||(ViewBag.State==40)){
+            @:ShowPOCol();
+        }
+
+        $("#Keyword").on("keyup", function () {
+            LoadMoldNumber($("#Keyword").val());
+        })
+
+        $("#MoldSelect").on("change", function () {
+
+            $("#MoldNumber").val($("#MoldSelect option:selected").val());
+            QueryPurchaseitem("", $("#MoldNumber").val());
+        })
+
+        $("#Query").on("click", function () {
+            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
+        })
+
+
+        $("#Quotation").on("click", function(){
+            StartQuotation();
+        })
+
+        $("#PurchaseType").on("change", function(){
+            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
+        })
+
+        $("#PruchaseOrder").on("click", function(){
+            var _ids = GetMultiSelectedIDs("PurchaseItemGrid");
+            
+            var _url = "/Purchase/SelectPOContent?";
+            var _condition = ""
+
+            if($("#ItemKeyword").val()==""){
+                _condition="Keyword="+$("#MoldSelect").val()+"&PurchaseType="+$("#PurchaseType").val()+"&PurchaseItemIDs="+_ids;
+            }else{
+                _condition="Keyword="+$("#ItemKeyword").val()+"&PurchaseType="+$("#PurchaseType").val()+"&PurchaseItemIDs="+_ids;
+            }
+            location.href=_url+_condition;
+
+        })
+        $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
+        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+
+    })
+
+
+    function LoadMoldNumber(Keyword) {
+        var _url = "/Purchase/JsonMoldNumber?State=@ViewBag.State";
+        if (Keyword != "") {
+            _url = _url + "&Keyword=" + Keyword;
+        }
+        $("#MoldSelect option").remove();
+
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#MoldSelect").append($("<option/>",{
+                    value:n,
+                    text:n
+                }))
+            })
+        })
+    }
+
+    function QueryPurchaseitem(Keyword, MoldNumber) {
+        var _url = "/Purchase/JsonPurchaseItems?MoldNumber=" + $("#MoldNumber").val() 
+            + "&Keyword=" + Keyword
+            +"&State=@ViewBag.State"
+            +"&PurchaseType="+$("#PurchaseType").val();
+        $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+
+
+    function ShowPOCol(){
+        $("#PurchaseItemGrid").setGridParam().showHideCol("QuotationRequest");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseOrder");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("Supplier");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("InStockQty");
+        @if (ViewBag.State == 40)
+        {
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("OutStockQty");
+        }
+        
+        @if ((ViewBag.State == 10)||(ViewBag.State==40))
+        {
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("DeliveryDate");
+        }
+
+
+        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+    }
+
+    function StartQuotation(){
+        var ids= GetMultiSelectedIDs("PurchaseItemGrid");
+        location.href="/Purchase/QRDetail?PurchaseItemIDs="+ids;
+    }
+
+    function LoadPurchaseType() {
+        var _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&TypeName=模具直接材料";
+        $("#PurchaseType option").remove();
+        //$("#PurchaseType").append($("<option/>", { value: 3, text: "零件采购", selected:true }));
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#PurchaseType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+            })
+        })
+    }
+</script>
+

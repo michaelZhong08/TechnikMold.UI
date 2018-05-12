@@ -1,0 +1,96 @@
+﻿
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="EditTaskDialog" tabindex="-1" role="dialog" aria-labelledby="EditTaskLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="EditTaskLabel">创建WEDM任务</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("SaveTask", "Task", FormMethod.Post, new { id = "CreateTaskForm" }))
+                {
+                    <table class="table-striped">
+                        <tr>
+                            <td class="col-sm-2"><label>任务名称</label></td>
+                            <td class="col-sm-4">
+                                <input type="hidden" id="TaskID" name="TaskID" value="0" />
+                                <input type="text" id="TaskName" name="TaskName" class="form-control required" />
+                                <input type="hidden" id="TaskMoldNumber" name="MoldNumber" value=""/>
+                                <input type="hidden" id="ProjectID" name="ProjectID" value="" />
+                                <input type="hidden" id="TaskType" name="TaskType" value="3" />
+                                <input type="hidden" id="State" name="State" value="1" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>版本</label></td>
+                            <td class="col-sm-4"><input type="number" min="0" id="Version" name="Version" class="form-control required" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>数量</label></td>
+                            <td class="col-sm-4"><input type="number" id="Quantity" name="Quantity" class="form-control required" min="0"/></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>时间(分钟)</label></td>
+                            <td class="col-sm-4"><input type="number" id="Time" name="Time" class="form-control required" /></td>
+                        </tr>                        
+                        <tr>
+                            <td class="col-sm-2"><label>Memo</label></td>
+                            <td class="col-sm-4"><input type="text" id="Memo" name="Memo" class="form-control required" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>图纸位置</label></td>
+                            <td class="col-sm-4"><input type="text" id="DrawingFile" name="DrawingFile" class="form-control required" /></td>
+                        </tr>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="EditTask" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+    $("document").ready(function () {
+        $("#EditTaskDialog").on("shown.bs.modal", function () {
+            ResetDialog();
+        })
+        
+
+    })
+
+
+    function EditTaskInfo(TaskID) {
+        $.getJSON("/Task/JsonTaskBasic?TaskID=" + TaskID, function (msg) {
+            $("#TaskID").val(msg.TaskID);
+            $("#TaskName").val(msg.TaskName);
+            $("#ProjectID").val(msg.ProjectID);
+            $("#TaskType").val(msg.TaskType);
+            $("#State").val(msg.State);
+            $("#Version").val(msg.Version);
+            $("#Quantity").val(msg.Quantity);
+            $("#Material").val(msg.Material);
+            $("#R").val(msg.R);
+            $("#F").val(msg.F);
+            $("#Time").val(msg.Time);
+            $("#Raw").val(msg.Raw);
+            $("#Memo").val(msg.Memo);
+            $("#DrawingFile").val(msg.DrawingFile);
+        })
+        $("#EditTaskDialog").modal("show");
+    }
+
+    function ResetDialog() {
+        $("#EditTaskDialog .required").removeClass("invalidefield");
+        $("#EditTaskDialog input").val("");
+        //$("#TaskName").val($("#MoldNumber").val() + "-");
+        $("#TaskMoldNumber").val($("#MoldNumber").val());
+        $("#TaskType").val("3");
+        
+    }
+</script>

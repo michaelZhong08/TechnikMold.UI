@@ -1,0 +1,48 @@
+﻿
+<div style="margin-top:10px">
+    
+    
+    <div class="col-sm-10">
+        <h2 class="page-header">
+            @ViewBag.Title
+        </h2>
+        <div class="col-sm-2">
+            <input type="text" id="Keyword" class="form-control" />
+
+            <select class="form-control" id="MoldSelect" size="3"></select>
+        </div>
+
+        <div class="col-sm-8">
+            <div id="Toolbar">
+                <input type="hidden" id="MoldList" value="@ViewBag.MoldNumber" />
+
+                @*@if (ViewBag.)*@
+                @*<ul class="nav nav-pills">
+
+                    <li><button class="btn btn-info" id="UnReleaseList">图纸发布</button></li>
+                    <li><button class="btn btn-info" id="WorkshopTaskList">加工任务</button></li>
+
+
+                </ul>*@
+            </div>
+            <div class="col-sm-11" style="float:left;">
+                <table id="StockItemGrid"></table>
+                <div id="jqGridPager"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $("document").ready(function () {
+        var _listsize = Math.round((document.documentElement.clientHeight) / 30);
+        $("#MoldSelect").attr("size", _listsize);
+
+        
+
+        StockItem("@ViewBag.Keyword", @ViewBag.TypeID)
+
+        $("#StockItemGrid").setGridWidth(document.body.clientWidth * 0.7);
+
+        $("#StockItemGrid").setGridHeight(document.documentElement.clientHeight - 250);
+    })
+</script>

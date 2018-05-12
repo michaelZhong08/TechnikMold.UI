@@ -1,0 +1,73 @@
+﻿@model MoldManager.WebUI.Models.TaskHourCostEditModel
+@using TechnikSys.MoldManager.Domain.Entity 
+@{
+    ViewBag.Title = "工时费率维护";
+}
+
+<script type="text/javascript" src="/Scripts/Administrator.js"></script>
+<h2>TaskHourCost</h2>
+
+<div>
+
+    <div class="col-sm-6">
+        <h3>工时费率维护</h3>
+        @using (Html.BeginForm("TaskHourCost", "Administrator", FormMethod.Post, new { id = "TaskHourCostEdit" }))
+        {
+            int i = 0;
+
+
+            
+
+                       <button class="btn btn-primary">保存</button>
+            <div class="panel panel-primary">
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <td class="col-sm-2">部门</td>
+                                <td class="col-sm-5">设备工时费率（元/小时）</td>
+                                <td class="col-sm-5">人员工时费率（元/小时）</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Department _dept in Model.Departments)
+                            {
+                                TaskHourCost _cost = Model.TaskHourCosts.Where(c => c.DepartmentID == _dept.DepartmentID).FirstOrDefault();
+                                if (_cost != null)
+                                {
+                                    <tr>
+                                        <td>
+                                            @_dept.Name
+                                            <input type="hidden" name="TaskHourCosts[@i].TaskHourCostID" id="TaskHourCosts[@i].TaskHourCostID" value="@_cost.TaskHourCostID " />
+                                            <input type="hidden" name="TaskHourCosts[@i].DepartmentID" id="TaskHourCosts[@i].DepartmentID" value="@_dept.DepartmentID " />
+                                        </td>
+                                        <td><input type="number" id="TaskHourCosts[@i].PeopleCost" name="TaskHourCosts[@i].PeopleCost" value="@_cost.PeopleCost" class="form-control" /></td>
+                                        <td><input type="number" id="TaskHourCosts[@i].DeviceCost" name="TaskHourCosts[@i].DeviceCost" value="@_cost.DeviceCost" class="form-control" /></td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td>
+                                            @_dept.Name
+                                            <input type="hidden" name="TaskHourCosts[@i].TaskHourCostID" id="TaskHourCosts[@i].TaskHourCostID" value="" />
+                                            <input type="hidden" name="TaskHourCosts[@i].DepartmentID" id="TaskHourCosts[@i].DepartmentID" value="@_dept.DepartmentID " />
+                                        </td>
+                                        <td><input type="number" id="TaskHourCosts[@i].PeopleCost" name="TaskHourCosts[@i].PeopleCost" value="0" class="form-control" /></td>
+                                        <td><input type="number" id="TaskHourCosts[@i].DeviceCost" name="TaskHourCosts[@i].DeviceCost" value="0" class="form-control" /></td>
+                                    </tr>
+                                }
+                                i = i + 1;
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+
+
+        }
+    </div>
+    </div>
+

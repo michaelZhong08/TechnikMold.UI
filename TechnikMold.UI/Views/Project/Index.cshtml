@@ -1,0 +1,503 @@
+﻿@{
+    ViewBag.Title = "项目计划";
+}
+
+@{
+    int DeptID;
+    int PosID;
+    //string UserName;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    }
+    catch
+    {
+        
+    }
+}
+<style>
+    tr:nth-child(even){background-color:#ffffff;}
+    
+</style>
+<div style="margin-top:10px">
+    <div class="col-sm-12">        
+        <ul class="nav nav-pills">
+            @if (DeptID == 1)
+            {
+                <li><button class="btn btn-primary" id="CreateProject">创建项目</button></li>
+            }            
+            <li><button class="btn btn-primary" id="SearchProject">查找项目</button></li>
+            @*<li><button class="btn btn-primary" id="FinishedProject">历史项目</button></li>*@
+           @if (ViewBag.Type == 1)
+           {
+            <li><button class="btn btn-primary" id="FixMoldProject">修模项目 </button></li>
+           }
+           else if (ViewBag.Type == 2)
+           {
+            <li><button class="btn btn-primary" id="MoldProject">新模项目 </button></li>
+           }
+            
+        </ul>
+        <br />
+            <table id="ProjectGrid"></table>
+            <div id="jqGridPager"></div>
+        
+    </div>
+</div>
+
+
+@*右键菜单*@
+<div class="contextMenu dropdown" id="ProjectContextMenu" style="display:none">
+    <ul style="width:200px">
+        @if (DeptID == 1)//Management Department User only
+        {
+            <li id="AddProject">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">新模具项目</span>
+            </li>
+            
+            <li id="Milestone">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">调整计划</span>
+            </li>
+            <li id="PauseProject">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">启动/暂停项目</span>
+            </li>
+            <li id="DeleteProject">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">删除项目</span>
+            </li>
+
+        }
+        @if (DeptID == 3)
+        {
+            <li id="MoldFixProject">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">新修模项目</span>
+            </li>
+            <li id="Milestone">
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">调整计划</span>
+            </li>
+        }
+        
+        
+
+        <li id="FinishPhase">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">阶段结束</span>
+        </li>
+        
+        
+        
+        <li id="AddMemo">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/memo.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">修改备注</span>
+        </li>
+
+        <li id="SetFile">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Document.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">项目文件</span>
+        </li>
+
+        <li id="PhaseTask">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/task-new.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">加工任务</span>
+        </li>
+
+        <li id="ProjectHistory">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">项目历史</span>
+        </li>
+
+    </ul>
+</div>
+
+<input type="hidden" id="selPhase" />
+
+@*项目备注*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ProjectMemo" tabindex="-1" role="dialog" aria-labelledby="ProjectMemoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ProjectMemoLabel">项目备注</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("Memo", "Project", FormMethod.Post, new { id = "MemoEdit" }))
+                {
+                    <input type="hidden" id="MemoProject" name="MemoProject" />
+                    <textarea id="Memo" name="Memo" class="form-control" rows="5" maxlength="100" style="resize:none"></textarea>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveMemo" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*计划调整对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ModifyMilestone" tabindex="-1" role="dialog" aria-labelledby="ModifyMilestoneLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ModifyMilestoneLabel">项目计划调整</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("ModifyPhase", "Project", FormMethod.Post, new { id = "PhaseModify" }))
+                {
+                    <input type="hidden" id="ProjectID" name="ProjectID" />
+                    <input type="hidden" id="UserName" name="UserName" value="" />
+                    <table class="table-striped  colsm-12">
+                        <tr>
+                            <td class="col-sm-4"><label>项目阶段</label></td>
+                            <td class="col-sm-8">
+                                <select id="PhaseID" name="PhaseID" class="form-control"></select>
+                            </td>
+                        </tr>
+                        @if (ViewBag.Type == 1)
+                        {
+                            <tr id="MainRow">
+                                <td class="col-sm-4"><label>主项目完成日期</label></td>
+                                <td class="col-sm-8"><input type="date" id="MainFinish" class="form-control" disabled /></td>
+                            </tr>
+                        }
+                        <tr>
+                            <td class="col-sm-4"><label>原计划完成日期</label></td>
+                            <td class="col-sm-8"><input type="date" id="PlanFinish" name="PlanFinish" class="form-control"  readonly/></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>调整后完成日期</label></td>
+                            <td class="col-sm-8">
+                                <input type="date" id="PlanCFinish" name="PlanCFinish" class="form-control required" />
+                            </td>
+                        </tr>                       
+                        <tr>
+                            <td class="col-sm-4"><label>调整原因</label></td>
+                            <td class="col-sm-8">
+                                <select id="Reason" name="Reason" class="form-control"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>原因详细描述</label></td>
+                            <td class="col-sm-8">
+                                <textarea id="Description" name="Description" class="form-control" style="resize: none" rows="3" maxlength="50"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SavePhaseModify" class="btn btn-primary">保存</button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*项目阶段完成*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="FinishPhaseDialog" tabindex="-1" role="dialog" aria-labelledby="FinishPhaseLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="FinishPhaseLabel">项目阶段结束</h4>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="FinishPhaseIDOriginal" />
+                @using (Html.BeginForm("ModifyPhase", "Project", FormMethod.Post, new { id = "FinishPhaseForm" }))
+                {
+                    <input type="hidden" id="FinishProjectID" name="ProjectID" />
+                    <input type="hidden" id="UserName" name="UserName" value="" />
+                    <table class="table-striped  colsm-12">
+                        <tr>
+                            <td class="col-sm-4"><label>项目阶段</label></td>
+                            <td class="col-sm-8">
+                                <select id="FinishPhaseID" name="PhaseID" class="form-control" readonly></select>
+                            </td>
+                        </tr>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="FinishPhaseModify" class="btn btn-primary">结束</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@*项目暂停/继续*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PauseProjectDialog" tabindex="-1" role="dialog" aria-labelledby="PauseProjectLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PauseProjectLabel">项目暂停</h4>
+            </div>
+            <div class="modal-body">
+                <h4>备注信息</h4>
+                <input type="hidden" id="PauseProjectID" />
+                <input type="hidden" id="ParentID" />
+                <textarea id="PauseMemo" class="form-control" rows="5" style="resize:none" maxlength="100"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="PauseProjectBtn" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*项目删除*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="DeleteProjectDialog" tabindex="-1" role="dialog" aria-labelledby="DeleteProjectLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="DeleteProjectLabel">项目删除</h4>
+            </div>
+            <div class="modal-body">
+                <h4>备注信息</h4>
+                <input type="hidden" id="DeleteProjectID" />
+                <textarea id="DeleteMemo" class="form-control" rows="5" style="resize:none"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="DeleteProjectBtn" class="btn btn-primary">确认删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*项目关键字筛选*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ProjectSearchDialog" tabindex="-1" role="dialog" aria-labelledby="ProjectSearchLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ProjectSearchLabel">项目查询</h4>
+            </div>
+            <div class="modal-body">
+                <table>
+                    <tr>
+                        <td class="col-sm-2"><label>项目号/模具号关键字</label></td>
+                        <td class="col-sm-4">
+                            <input type="text" class="form-control" id="keyword" />
+                            <input type="hidden" id="state" value="@ViewBag.State" />
+                            <input type="hidden" id="Type" value="@ViewBag.Type"/>
+                        </td>
+                        
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="ProjectSearchBtn" class="btn btn-primary">查询</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*项目文件路径输入*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ProjectFileDialog" tabindex="-1" role="dialog" aria-labelledby="ProjectFileLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ProjectFileLabel">项目文件</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("SaveProjectFile", "Project", FormMethod.Post, new { id = "FileUpload", enctype="multipart/form-data" }))
+                {
+                <table class="col-sm-12">
+                    <tr>
+                        <td class="col-sm-3">项目文件</td>
+                        <td class="col-sm-9">
+                            <input type="file" class="form-control" id="Attachment" name="Attachment" maxlength="500" />
+                            <input type="hidden" id="FileProjectID" name="FileProjectID" />
+                        </td>
+                    </tr>
+                </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="ProjectFileSaveBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*项目历史*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ProjectHistoryDialog" tabindex="-1" role="dialog" aria-labelledby="ProjectHistoryLabel" aria-hidden="true">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ProjectHistoryLable">项目历史</h4>
+            </div>
+            <div class="modal-body">
+                <select id="ProjectLog" class="form-control" size="20"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*阶段任务显示*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PhaseTaskDialog" tabindex="-1" role="dialog" aria-labelledby="PhaseTaskLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:1000px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PhaseTaskLabel">加工任务</h4>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-pills">
+                    <li class="dropdown" id="CNCType">
+                        <button class="dropdown-toggle btn btn-default" data-toggle="dropdown" id="TaskDisplayType">
+                            当前任务
+                            <b class="caret"></b>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li role="presentation"><a href="#" id="CurrentTask">当前任务</a></li>
+                            <li role="presentation"><a href="#" id="HistoryTask">历史任务</a></li>
+                        </ul>
+                    </li>
+                    @*<li><button class="btn btn-primary" id="CurrentTask">当前任务</button></li>
+                    <li><button class="btn btn-primary" id="HistoryTask">历史任务</button></li>*@
+                    <li class="dropdown" id="CNCType">
+                        <button class="dropdown-toggle btn btn-default" data-toggle="dropdown" id="CNCTypeTitle">电极任务
+                            <b class="caret"></b></button>
+                        <ul class="dropdown-menu">
+                            <li role="presentation"><a href="#" id="CNCTask">电极任务</a></li>
+                            <li role="presentation"><a href="#" id="SteelTask">铣铁任务</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <input type="hidden" id="MoldNumber" />
+                <input type="hidden" id="TaskType" />
+                <input type="hidden" id="State" />
+                <table id="TaskGrid"></table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="PauseProjectBtn" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+<script src="~/Scripts/Project.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+
+        GetPhases("PhaseID", @ViewBag.Type);
+        GetPhases("FinishPhaseID", @ViewBag.Type);
+
+
+        ProjectGrid("@ViewBag.Keyword", @ViewBag.State, @ViewBag.Type,@DeptID)
+
+        TaskList("", 0, 0, 1)
+
+        @if (ViewBag.Type == 1)
+        {
+            @:$("#ProjectGrid").setGridParam().showHideCol("ProjectNo");
+            @:$("#ProjectGrid").setGridParam().setLabel('FOT', 'FOT','','');
+            @:$("#ProjectGrid").setGridWidth(document.body.clientWidth*0.98);
+        }
+        
+        $("#SavePhaseModify").on("click", function () {
+            if (ValidateForm("PhaseModify")) {
+
+                @if (ViewBag.Type == 1)
+                {
+                @:if ($("#PlanCFinish").val() != $("#PlanFinish").val()) {
+                @:if ($("#PlanCFinish").hasClass("invalidefield")) {
+                @:    alert("模具项目阶段完成时间不能晚于主项目");
+                @:}
+                @:else {
+                @:    $("#PhaseModify").submit();
+                @:}
+                @:} else {
+                @:    alert("调整后完成日期和原计划完成日期不能相同");
+                @:}
+                }
+                else if (ViewBag.Type == 2)
+                {
+                @:var _url = "/Project/CheckFixMoldPhase?ProjectID="+$("#ProjectID").val()+"&PhaseID="+$("#PhaseID").val()+"&PlanCFinish="+$("#PlanCFinish").val();
+                @:$.ajax({  
+                @:  url:_url,
+                @:  type:"Get",
+                @:  success:function(msg){
+                @:    if (msg==""){
+                @:      $("#PhaseModify").submit();
+                @:    }else{
+                @:      alert(msg);
+                @:  }
+                @:  }
+                @:})    
+                }
+                
+            
+            }
+        })
+
+        $("#CurrentTask").on("click", function(){
+            $("#TaskDisplayType").html("当前任务");
+            $("#State").val(0);
+            ReloadTaskGrid();
+        })
+
+        $("#HistoryTask").on("click", function(){
+            $("#TaskDisplayType").html("历史任务");
+            $("#State").val(1);
+            ReloadTaskGrid();
+        })
+
+        $("#CNCTask").on("click", function(){
+            $("#CNCTypeTitle").html("电极任务")
+            $("#TaskType").val(1);
+            ReloadTaskGrid();
+        })
+        $("#SteelTask").on("click", function(){
+            $("#CNCTypeTitle").html("铣铁任务")
+            $("#TaskType").val(4);
+            ReloadTaskGrid();
+        })
+    }
+
+   );
+
+    function ReloadTaskGrid(){
+        var _url = "/Task/JsonMachineTasks?MoldNumber=" + $("#MoldNumber").val() + "&TaskType="+$("#TaskType").val()+"&State="+$("#State").val();
+        $("#TaskGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
+    }
+
+</script>
+
+
+
+

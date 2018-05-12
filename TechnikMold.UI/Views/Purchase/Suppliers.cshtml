@@ -1,0 +1,383 @@
+﻿@{
+    ViewBag.Title = "供应商管理";
+
+}
+
+
+
+@{
+    int DeptID, PosID;
+
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+
+       
+            }
+    catch
+    {
+        DeptID = 0;
+       
+    }
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+
+       
+        }
+    catch
+    {
+        PosID = 0;
+       
+        }
+}
+
+<h2>Index</h2>
+<div style="margin-top:20px">
+    <div class="col-sm-11">
+        
+        <div class="col-sm-12">
+            <h3>供应商信息</h3>
+
+            @if (DeptID == 4)
+            {
+                <div class="col-sm-12" id="Toolbar">
+                    <div class="btn btn-primary" id="AddSupplier">新增供应商</div>
+                    <button class="btn btn-primary" id="EditSupplier">编辑供应商信息</button>
+                    <button class="btn btn-danger" id="DeleteSupplier">删除供应商</button>
+                    <button class="btn btn-primary" id="SupplierContacts">供应商联系人</button>
+                    <button class="btn btn-primary" id="SupplierBrand">供应商品牌</button>
+                </div>
+            }
+            
+            <div style="margin-top:20px">
+                <table id="SupplierGrid"></table>
+                <div id="jqGridPager"></div>
+            </div>
+            @*<div class="col-sm-12" id="Toolbar" style="margin-top:5px">
+                <button class="btn btn-primary" id="AddContact">新增联系人</button>
+                <button class="btn btn-danger" id="DeleteContact">删除联系人</button>
+            </div>
+            <div style="margin-top:5px" id="ContactDiv">
+                <table id="SupplierContactGrid"></table>
+            </div>*@
+            @*<table class="table table-striped">
+                <tr>
+                    <td class="col-sm-2">
+                        <label>供应商简称</label>
+                        <input type="hidden" id="SelectedSupplierID" />
+                    </td>
+                    <td class="col-sm-4"><p id="SupplierName"></p></td>
+                    <td class="col-sm-2"><label>全称</label></td>
+                    <td class="col-sm-4"><p id="SupplierFullName"></p></td>
+                </tr>
+                <tr>
+                    <td><label>首次供货日期</label></td>
+                    <td colspan="3"><p id="FirstSupply"></p></td>
+                </tr>
+                <tr>
+                    <td><label>联系人</label></td>
+                    <td colspan="3"><p id="Contacts"></p></td>
+                </tr>
+            </table>*@
+        </div>
+    </div>
+</div>
+
+@*供应商编辑对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="SupplierEdit" tabindex="-1" role="dialog" aria-labelledby="SupplierEditLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="SupplierEditLabel">供应商信息</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("Supplier", "Purchase", FormMethod.Post, new { id = "SupplierInfo" }))
+                {
+                    <table class="table-striped col-sm-12">
+                        <tr>
+                            <td class="col-sm-4"><label>名称</label></td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control required" name="Name" id="Name" maxlength="10" />
+                                <input type="hidden" name="SupplierID" id="SupplierID" />
+                                <input type="hidden" name="Enabled" id="Enabled" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>全名</label></td>
+                            <td class="col-sm-8"><input type="text" class="form-control required" name="FullName" id="FullName" maxlength="100" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4">地址</td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control required" name="Address" id="Address" maxlength="100" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4">开户行</td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control required" name="Bank" id="Bank" maxlength="25" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4">账号</td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control required" name="Account" id="Account" maxlength="100" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4">税号</td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control required" name="TaxNo" id="TaxNo" min="0" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4">税率</td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control required" name="TaxRate" id="TaxRate" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4">结算方式</td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control required" name="Settlement" id="Settlement" maxlength="50" />
+                            </td>
+                        </tr>
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveSupplier" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*供应商联系人编辑对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="SupplierContact" tabindex="-1" role="dialog" aria-labelledby="SupplierContactLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="SupplierContactLabel">供应商联系人信息</h4>
+            </div>
+            <div class="modal-body" style="height:250px">
+                <div>
+                    <div class="col-sm-12" style="margin:3px">
+                        <button class="btn btn-primary" id="AddContact">添加联系人</button>
+                        <button class="btn btn-warning" id="DelContact">删除联系人</button>
+                    </div>
+                    <div class="col-sm-4">
+                        <select id="ContactList" class="form-control" size="10"></select>
+                    </div>
+                    <div class="col-sm-8">
+                        <input type="hidden" id="SelectedSupplier" value="0"/>
+                        @using (Html.BeginForm("SupplierContact", "Purchase", FormMethod.Post, new { id = "ContactInfo" }))
+                        {
+                            <table class="table-striped col-sm-12">
+                                <tr>
+                                    <td class="col-sm-4"><label>姓名</label></td>
+                                    <td class="col-sm-8">
+
+                                        <input type="text" class="form-control required" name="FullName" id="ContactFullName" disabled/>
+                                        <input type="hidden" name="ContactID" id="ContactID" />
+                                        <input type="hidden" name="OrganizationID" id="OrganizationID" value="" />
+                                        <input type="hidden" name="ContactType" id="ContactType" value="1" />
+                                        <input type="hidden" name="Enabled" id="Enabled" value="true" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-4"><label>电子邮件</label></td>
+                                    <td class="col-sm-8"><input type="text" class="form-control required" name="Email" id="Email" disabled /></td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-4"><label>固定电话</label></td>
+                                    <td class="col-sm-8">
+                                        <input type="text" class="form-control" name="Telephone" id="Telephone" disabled />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-4"><label>手机号码</label></td>
+                                    <td class="col-sm-8">
+                                        <input class="form-control" id="Mobile" name="Mobile" disabled />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-4"><label>备注信息</label></td>
+                                    <td class="col-sm-8">
+                                        <input type="text" class="form-control" id="Memo" name="Memo" disabled />
+                                    </td>
+                                </tr>
+
+                            </table>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveContact" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*供应商品牌关联*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="SupplierBrandEdit" tabindex="-1" role="dialog" aria-labelledby="SupplierBrandLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="SupplierBrandLabel">供应商品牌关联</h4>
+            </div>
+            <div class="modal-body" style="height:250px">
+                <div>
+                    <div class="col-sm-5">
+                        <select class="form-control" id="AvailableBrand" size="10"></select>
+                        <input type="hidden" id="SupplierBrandID" />
+                    </div>
+                    <div class="col-sm-1">
+                        <button class="btn btn-primary" id="Add">></button>
+                        <button class="btn btn-primary" id="Remove"><</button>
+                    </div>
+                    <div class="col-sm-5">
+                        <select class="form-control" id="SupplierBrandList" size="10"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveBrand" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/Scripts/Purchase.js"></script>
+<script>
+    $("document").ready(function () {
+
+        @if (DeptID == 4)
+        {
+            @:SupplierGrid(0);
+            @:$("#SupplierGrid").setGridParam().showHideCol("Bank");
+            @:$("#SupplierGrid").setGridParam().showHideCol("Account");
+            @:$("#SupplierGrid").setGridParam().showHideCol("TaxNo");
+            @:$("#SupplierGrid").setGridParam().showHideCol("TaxRate");
+            @:$("#SupplierGrid").setGridParam().showHideCol("Settlement");
+            @:$("#SupplierGrid").setGridWidth(document.body.clientWidth * 0.87).trigger("reload");
+        }
+        else
+        {
+            @:SupplierGrid(1);
+        }
+
+        $("#SupplierBrand").on("click", function () {
+            var _supplierIDs = GetMultiSelectedCell("SupplierGrid", "SupplierID").split(",");
+            if (_supplierIDs[0] != "") {
+                LoadBrands(_supplierIDs[0]);
+                $("#SupplierBrandEdit").modal("show");
+            } else {
+                alert("请先选择供应商");
+            }
+            
+        })
+
+        $("#AvailableBrand").on("dblclick", function () {
+            AddSupplier();
+        })
+
+        $("#SupplierBrandList").on("dblclick", function () {
+            RemoveSupplier();
+        })
+
+        $("#Add").on("click", function () {
+            AddSupplier();
+        })
+
+        $("#Remode").on("click", function () {
+            RemoveSupplier();
+        })
+
+        $("#SaveBrand").on("click", function(){
+            SaveBrand();
+        })
+        
+        //SupplierContactGrid();
+    })
+
+
+    function LoadBrands(SupplierID) {
+        $("#SupplierBrandID").val(SupplierID);
+        $("#AvailableBrand option").remove();
+        var _url = "/Part/JsonBrands";
+        $.ajax({
+            type: "Get",
+            url: _url,
+            success: function (msg) {
+                $.each(msg, function (i, n) {
+                    $("#AvailableBrand").append($("<option/>", { value: n.BrandID, text: n.Name }));
+                })
+
+                _url = "/Purchase/SupplierBrandList?SupplierID=" + SupplierID;
+                $("#SupplierBrandList option").remove();
+                $.ajax({
+                    type: "Get",
+                    url: _url,
+                    success: function (msg) {
+                        $.each(msg, function (i, n) {
+                            $("#SupplierBrandList").append($("<option/>", { value: n.BrandID, text: n.Name }));
+                            $("#AvailableBrand option[value=" + n.BrandID + "]").remove();
+                        })                        
+                    }
+                })
+            }
+        })
+    }
+
+    function AddSupplier() {
+        var _id = $("#AvailableBrand option:selected").val();
+        var _text = $("#AvailableBrand option:selected").text();
+        if (_text != "") {
+            $("#AvailableBrand option:selected").remove();
+            $("#SupplierBrandList").append($("<option>", { value: _id, text: _text }));
+        }
+        
+    }
+
+    function RemoveSupplier() {
+        var _id = $("#SupplierBrandList option:selected").val();
+        var _text = $("#SupplierBrandList option:selected").text();
+        if (_text != "") {
+            $("#SupplierBrandList option:selected").remove();
+            $("#AvailableBrand").append($("<option>", { value: _id, text: _text }));
+        }
+    }
+
+
+    function SaveBrand() {
+        var _brandIDs = "";
+        $("#SupplierBrandList option").each(function () {
+            _brandIDs = _brandIDs == "" ? this.value :_brandIDs+ "," + this.value;
+        })
+        var _url = "/Purchase/SaveSupplierBrands?SupplierID=" + $("#SupplierBrandID").val() + "&BrandIDs=" + _brandIDs;
+        $.ajax({
+            type: "Get",
+            url: _url,
+            success: function () {
+                alert("保存成功")
+                $("#SupplierBrandEdit").modal("hide");
+            }
+        })
+        
+    }
+
+    
+
+
+
+
+</script>

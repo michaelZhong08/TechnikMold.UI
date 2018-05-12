@@ -1,0 +1,521 @@
+﻿@using MoldManager.WebUI.Models.EditModel;
+@model IEnumerable<QRQuotationEditModel>
+@{
+    ViewBag.Title = "供应商报价输入";
+    int i = 0;
+    int DeptID;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+
+<div style="margin-top:10px">
+
+    <div class="col-sm-12">
+        @*@using (Html.BeginForm("SaveQuotation", "Purchase", FormMethod.Post, new { id = "QRQuotationInput" }))
+            {*@
+        <h3>供应商报价输入</h3>
+        <div class="col-sm-12 PRInfo">
+            <table>
+                <tr>
+                    <td class="col-sm-2"><label>供应商</label></td>
+                    <td class="col-sm-2">
+                        <select id="QRSupplierList" class="form-control"></select>
+                        <input type="hidden" id="ValidDate" name="ValidDate" value="0001-01-01">
+                    </td>
+                    <td class="col-sm-2"><label>报价日期</label></td>
+                    <td class="col-sm-2"><input type="date" id="QuotationDate" name="QuotationDate" class="form-control required" value="@DateTime.Now.ToString("yyyy-MM-dd")"></td>
+
+                    <td class="col-sm-2"><label>税率</label></td>
+                    <td class="col-sm-2">
+                        <select id="TaxRate" name="TaxRate" class="form-control required" autocomplete="off">
+                            <option value="0.17">17%</option>
+                            <option value="0.06">6%</option>
+                            <option value="0.05">5%</option>
+                            <option value="0.04">4%</option>
+                            <option value="0.03">3%</option>
+                            <option value="0">0%</option>
+                        </select>
+                    </td>
+
+                    @if (DeptID == 4)
+                    {
+                        <td>
+                            <button class="btn btn-primary" id="DateSet">到货日期</button>
+                        </td>
+                    }
+
+                </tr>
+                <tr>
+                    <td class="col-sm-2"><label>报价类型</label></td>
+                    <td class="col-sm-2">
+                        <select id="TaxInclude" class="form-control">
+                            <option value="1">含税价</option>
+                            <option value="0">未税价</option>
+                        </select>
+                    </td>
+                    <td class="col-sm-2"><label>报价人</label></td>
+                    <td class="col-sm-2">
+                        <select class="form-control" id="SupplierContact" name="ContactID"></select>
+                    </td>
+                    <td class="col-sm-2"><label>总价</label></td>
+                    <td class="col-sm-2">
+                        <input type="number" id="QuotationTotal" class="form-control" readonly>
+                    </td>
+
+                    @if (DeptID == 4)
+                    {
+                        <td>
+                            <button class="btn btn-primary" id="SaveQuotation">保存报价</button>
+                        </td>
+                    }
+
+                </tr>
+
+
+            </table>
+        </div>
+
+
+        <div class="col-sm-12">
+            <input type="hidden" id="SupplierID" name="SupplierID" value="" />
+            <input type="hidden" id="QuotationRequestID" name="QuotationRequestID" value="@ViewBag.QuotationRequestID" />
+            <table class="table table-striped ">
+                <thead>
+                    <tr>
+                        <td class="col-sm-2">
+                            <input type="checkbox" id="SelAll" />
+                            <label>零件名称</label>
+                        </td>
+                        <td class="col-sm-1"><label>零件号</label></td>
+                        <td class="col-sm-1"><label>规格</label></td>
+                        <td><label>数量</label></td>
+                        <td class="col-sm-1"><label>未税单价</label></td>
+                        <td class="col-sm-1"><label>未税总价</label></td>
+                        <td class="col-sm-1"><label>含税单价</label></td>
+                        <td class="col-sm-1"><label>含税总价</label></td>
+                        <td class="col-sm-1"><label>计划到货日期</label></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (QRQuotationEditModel _content in Model)
+                    {
+                        string _unitPrice = _content.UnitPrice == 0 ? "" : _content.UnitPrice.ToString();
+                        <tr>
+
+
+
+                            <td class="col-sm-2">
+                                <input type="checkbox" id="MultiSelect[@i]" value="@i" />
+                                @_content.PartName
+                            </td>
+                            <td class="col-sm-1">@_content.PartNumber</td>
+                            <td class="col-sm-1">@_content.Specification</td>
+                            <td class="col-sm-1">@_content.Quantity</td>
+                            <td>
+                                @*<input type="hidden" id="QuotationID" name="Quotations[@i].PRQuotationID" value="@_content.QRQuotationID" />*@
+                                <input type="number" class="form-control WOT" id="UnitPrice[@i]" name="Quotations[@i].UnitPrice" value="@_unitPrice" min="0" readonly />
+                                <input type="hidden" id="QRContentID[@i]" name="Quotations[@i].QRContentID" value="@_content.QRContentID" />
+
+                                <input type="hidden" id="Quantity[@i]" name="Quotations[@i].Quantity" value="@_content.Quantity" />
+
+                            </td>
+                            <td class="col-sm-1">
+                                <input type="number" class="form-control WOT" id="TotalPrice[@i]" name="Quotations[@i].TotalPrice" readonly />
+                            </td>
+                            <td class="col-sm-1">
+                                <input type="number" class="form-control WT" id="UnitPriceWT[@i]" name="Quotations[@i].UnitPriceWT" />
+                            </td>
+                            <td class="col-sm-1">
+                                <input type="number" class="form-control WT" id="TotalPriceWT[@i]" name="Quotations[@i].TotalPriceWT" />
+                            </td>
+
+                            <td class="col-sm-1"><input type="date" class="form-control" id="ShipDate[@i]" name="Quotations[@i].ShipDate" value="" /></td>
+                        </tr>
+                        i = i + 1;
+                    }
+                </tbody>
+            </table>
+
+
+        </div>
+
+    </div>
+</div>
+
+
+
+
+@*交付日期设置对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="DeliveryDateDialog" tabindex="-1" role="dialog" aria-labelledby="DeliveryDateLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:350px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="DeliveryDateLabel">交货日期</h4>
+            </div>
+            <div class="modal-body">
+                <input type="date" id="DeliveryDateValue" class="form-control" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveDeliveryDate" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/Purchase.js"></script>
+<script>
+
+    $("document").ready(function () {
+        LoadQRSuppliers(@ViewBag.QuotationRequestID, "QRSupplierList", @ViewBag.QRSupplierID);
+        setTimeout("GetSelectedID()", 200);
+
+
+
+        $("#TaxRate").on("change", function(){
+
+            UpdateTotalBatch();
+        })
+
+        $("#TaxInclude").on("change", function(){
+            UpdateTotalBatch();
+            TriggerTax();
+        })
+
+        $("#QRSupplierList").on("change", function(){
+            var _supplierID= $("#QRSupplierList").val();
+            console.log("SelectedID="+this.value);
+            LoadQuotation( _supplierID);
+
+            LoadContacts(_supplierID);
+
+            LoadTaxRate(_supplierID);
+        })
+
+        $("#DateSet").on("click", function(){
+            DateSetShow();
+        })
+
+        $("#SaveDeliveryDate").on("click", function(){
+            SetDeliverDate();
+        })
+
+        $("#SelAll").on("change", function(){
+            SetCheckStatus();
+
+        })
+
+
+        $("input[name*='UnitPrice']").on("change", function(){
+            if (this.value<0){
+                this.value="";
+                $(this).addClass("invalidefield");
+                alert("单价不能为负数");
+            }else{
+
+                var _id= this.id;
+                var _seq = _id.substring(_id.indexOf('[')+1, _id.indexOf(']'))
+                if(_id.indexOf('WT')>0){
+                    UpdateTotal(this.value, _seq, true, true);
+                }else{
+                    UpdateTotal(this.value, _seq, true, false);
+                }
+                //UpdateTotal(_seq);
+            }
+        })
+
+        $("input[name*='TotalPrice']").on("change", function(){
+            if (this.value<0){
+                this.value="";
+                $(this).addClass("invalidfield");
+                alert("总价不能为负数");
+            }else{
+                var _id= this.id;
+                var _seq = _id.substring(_id.indexOf('[')+1, _id.indexOf(']'))
+                if(_id.indexOf('WT')>0){
+                    UpdateTotal(this.value, _seq, false, true);
+                }else{
+                    UpdateTotal(this.value, _seq, false, false);
+                }
+            }
+        })
+
+
+    });
+
+
+
+    function GetSelectedID(){
+        var _supplierID=($("#QRSupplierList").val())
+        LoadQuotation(_supplierID);
+        LoadContacts(_supplierID);
+        LoadTaxRate(_supplierID);
+    }
+
+
+    function LoadTaxRate(SupplierID){
+
+        var _url = "/Purchase/JsonQRSupplier?QuotationRequestID="+$("#QuotationRequestID").val()+"&SupplierID="+SupplierID;
+        var _taxInclude;
+        $.getJSON(_url, function(msg){
+            var n = msg[0];
+
+            if (n.TaxRate>=0){
+                //If supplier has provided quotation, fill the tax rate and tax include with the existing information
+                if (n.TaxInclude==true){
+                    $("#TaxInclude").val(1)
+                }else{
+                    $("#TaxInclude").val(0);
+                }
+
+                TriggerTax();
+                $("#TaxRate").val(n.TaxRate);
+            }else{
+                //If supplier never provided quotation, load the default tax rate of supplier
+                _url = "/Purchase/JsonSupplier?SupplierID="+SupplierID;
+                var _taxrate;
+                $("#TaxRate option").attr("selected",false);
+
+                $.getJSON(_url, function(msg){
+                    if (msg.TaxRate!="%"){
+                        _taxrate = Number( msg.TaxRate.substring(0, msg.TaxRate.length-1))/100;
+                        $("#TaxRate").val(_taxrate);
+
+                    }else{
+                        _taxrate=0;
+                        $("#TaxRate option").attr("selected",false);
+                        $("#TaxRate option[value='0']").attr("selected", "true");
+                    }
+
+                })
+            }
+        })
+
+
+
+
+
+    }
+
+    function UpdateTotal(Value, Sequence,Unit,WithTax){
+        //Quotations[0].UnitPrice
+        //Quotations[0].TotalPrice
+        var _tax = 1+Number($("#TaxRate").val());
+        var _qty = $("#Quantity\\["+Sequence+"\\]").val();
+        var _unitWOT, _unitWT, _totalWOT, _totalWT;
+        if (Unit){
+            if (WithTax){
+                _unitWT =Value;//Number($("#UnitPriceWT\\["+Sequence+"\\]").val());
+                _unitWOT = Number(_unitWT)/_tax;
+                _totalWT =_unitWT*_qty;
+                _totalWOT = _unitWOT*_qty;
+
+
+            }else{
+                _unitWOT =Value;// Number($("#UnitPrice\\["+Sequence+"\\]").val());
+                _unitWT = _unitWOT*_tax;
+                _totalWOT = _unitWOT*_qty;
+                _totalWT = _unitWT*_qty;
+            }
+        }else{
+            if (WithTax){
+                _totalWT =Value;//  Number($("#TotalPrice\\["+Sequence+"\\]").val());
+                _totalWOT = _totalWT/_tax;
+                _unitWT = _totalWT/_qty;
+                _unitWOT = _totalWOT/_qty;
+            }else{
+                _totalWOT =Value;//  Number($("#TotalPriceWOT\\["+Sequence+"\\]").val());
+                _totalWT = _totalWOT*_tax;
+                _unitWT = _totalWT/_qty;
+                _unitWOT = _totalWOT/_qty;
+            }
+        }
+
+        console.log("UNITWOT="+_unitWOT);
+        console.log("UNITWT="+$("#UnitPriceWT\\["+Sequence+"\\]").val());
+        console.log("TOTALWOT="+_unitWOT);
+        console.log("TOTALWT="+_unitWOT);
+
+        _unitWOT = Number(_unitWOT).toFixed(4);
+        
+        _unitWT= Number(_unitWT).toFixed(4);
+
+        _totalWOT= Number(_totalWOT).toFixed(4);
+        
+        _totalWT= Number(_totalWT).toFixed(4);
+
+        if (_unitWOT!=0){
+            $("#UnitPrice\\["+Sequence+"\\]").val(_unitWOT);
+            $("#UnitPriceWT\\["+Sequence+"\\]").val(_unitWT);
+            $("#TotalPrice\\["+Sequence+"\\]").val(_totalWOT);
+            $("#TotalPriceWT\\["+Sequence+"\\]").val(_totalWT);
+        }else{
+            $("#UnitPrice\\["+Sequence+"\\]").val("");
+            $("#UnitPriceWT\\["+Sequence+"\\]").val("");
+            $("#TotalPrice\\["+Sequence+"\\]").val("");
+            $("#TotalPriceWT\\["+Sequence+"\\]").val("");
+        }
+    }
+
+
+
+    function UpdateTotalBatch(){
+
+        var _items = $("input[id^='UnitPrice[");
+        $("input[id^='UnitPrice[").each(function(i, n){
+            var id=n.id;
+            var _seq = id.substring(id.indexOf('[')+1, id.indexOf(']'))
+            if ($("#TaxInclude").val()==1){
+                UpdateTotal(_seq, true, true);
+            }else{
+                UpdateTotal(_seq, true, false);
+            }
+
+        })
+    }
+
+
+    function TriggerTax(){
+        var _wot= $(".WOT")
+        var _wt= $(".WT");
+        if ($("#TaxInclude").val()==1){
+            $(".WOT").attr("readonly", true);
+            $(".WT").attr("readonly", false);
+        }else{
+            $(".WOT").attr("readonly", false);
+            $(".WT").attr("readonly", true);
+        }
+    }
+
+
+
+    function LoadQuotation(SupplierID){
+        var _TaxRate=0;
+        if (SupplierID!=""){
+            var _url  = "/Purchase/JsonQuotation?SupplierID="+SupplierID+"&QuotationID=@ViewBag.QuotationRequestID"
+            $.getJSON(_url, function(msg){
+                if (msg!=""){
+
+                    $.each(msg, function(i,n){
+                        var _item = $("input[name$='\\].QRContentID'][value='"+n.QRContentID+"']");
+
+                        var _seq= GetSequence(_item[0].name);
+                        //$("input[name='Quotations\\["+_seq+"\\].PRQuotationID']").val(n.QRQuotationID);
+                        if (n.UnitPrice>0){
+                            $("input[name='Quotations\\["+_seq+"\\].UnitPrice']").val(n.UnitPrice);
+                            $("input[name='Quotations\\["+_seq+"\\].TotalPrice']").val(n.TotalPrice);
+                            var _date = renderDate( n.ShipDate);
+                            $("input[name='Quotations\\["+_seq+"\\].ShipDate']").val(_date);
+                            $("input[name='Quotations\\["+_seq+"\\].UnitPriceWT']").val(n.UnitPriceWT);
+                            $("input[name='Quotations\\["+_seq+"\\].TotalPriceWT']").val(n.TotalPriceWT);
+                        }else{
+                            $("input[name='Quotations\\["+_seq+"\\].UnitPrice']").val("");
+                            $("input[name='Quotations\\["+_seq+"\\].TotalPrice']").val("");
+                            $("input[name='Quotations\\["+_seq+"\\].ShipDate']").val("");
+                            $("input[name='Quotations\\["+_seq+"\\].UnitPriceWT']").val("");
+                            $("input[name='Quotations\\["+_seq+"\\].TotalPriceWT']").val("");
+                        }
+
+                    })
+                }else{
+                    //$("input[name$='\\].PRQuotationID']").val(0);
+                    $("input[name$='\\].UnitPrice']").val("");
+                    $("input[name$='\\].TotalPrice']").val("");
+                    $("input[name$='\\].UnitPriceWT']").val("");
+                    $("input[name$='\\].TotalPriceWT']").val("");
+                    $("input[name$='\\].ShipDate']").val("");
+                }
+                UpdateQuotationTotal();
+            })
+
+            _url = "/Purchase/JsonQRSupplierDetail?SupplierID="+SupplierID+"&QuotationID=@ViewBag.QuotationRequestID"
+            $.getJSON(_url, function(msg){
+
+                //$("#TaxRate option[text='"+msg.TaxRate+"']").attr("selected", "true");
+                //if (msg.TaxInclude==false){
+                //    $("input[name='TaxInclude'][value=0]").attr("checked",true);
+                //}else{
+                //    $("input[name='TaxInclude'][value=1]").attr("checked",true);
+                //}
+                _TaxRate=msg.TaxRate;
+                if (_TaxRate<0){
+                    LoadTaxRate(SupplierID);
+                }
+
+                $("#ContactID").val(msg.ContactID);
+            })
+        }else{
+            $("input[name$='\\].PRQuotationID']").val(0);
+            $("input[name$='\\].UnitPrice']").val(0);
+            $("input[name$='\\].TotalPrice']").val(0);
+            $("input[name$='\\].ShipDate']").val("");
+        }
+
+
+
+    }
+
+    function UpdateQuotationTotal(){
+        var _total=0;
+        $("input[id^='TotalPriceWT[").each(function(i, n){
+            var id=n.id;
+            if (n.value!=""){
+                _total=_total+Number(n.value);
+            }
+        })
+        $("#QuotationTotal").val(Math.round(_total*100)/100);
+    }
+
+    function GetSequence(Name){
+        return Name.substring(Name.indexOf('[')+1, Name.indexOf(']'))
+    }
+
+    function LoadContacts(SupplierID){
+        var _url = "/Purchase/JsonContacts?SupplierID="+SupplierID;
+        $("#SupplierContact option").remove();
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i, n){
+                $("#SupplierContact").append($("<option/>",{
+                    value:n.ContactID,
+                    text:n.FullName
+                }))
+            })
+        })
+    }
+
+    function DateSetShow(){
+
+
+        $("#DeliveryDateDialog").modal("show");
+    }
+
+    function SetDeliverDate(){
+        var _dateVal = $("#DeliveryDateValue").val();
+        var _selRows = $("input[type='checkbox']:checked")
+        if(_selRows.length==0){
+            _selRows = $("input[type='checkbox'][id^='MultiSelect']")
+
+        }
+        for (var i=0;i<_selRows.length;i++){
+            var _seq = _selRows[i].value
+            $("input[name='Quotations\\["+_seq+"\\].ShipDate']").val(_dateVal);
+        }
+        $("#DeliveryDateDialog").modal("hide");
+    }
+
+    function SetCheckStatus(){
+        //alert($("#SelAll").is(':checked'));
+        var _allRows = $("input[id^='MultiSelect']");
+        for (i=0;i<_allRows.length;i++){
+            _allRows[i].checked=$("#SelAll").is(':checked');
+        }
+
+    }
+</script>

@@ -1,0 +1,73 @@
+﻿
+@using TechnikSys.MoldManager.Domain.Entity;
+
+@model IEnumerable<Department>
+@{
+    ViewBag.Title = "Index";
+}
+<div style="margin-top:50px">
+
+
+    <div class="col-sm-11">
+        <h3 class="page-header">部门管理</h3>
+        <ul class="nav nav-pills">
+            <li><button class="btn btn-primary" id="CreateDept">新建部门</button></li>
+            <li><button class="btn btn-primary" id="DeleteDept">删除部门</button></li>
+
+        </ul>
+        <div class="col-sm-2">
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3 class="panel-title">部门列表</h3></div>
+                <div class="panel-body">
+                    <div>
+                        <select class="form-control" size="25" id="DepartmentList">
+                            @foreach (Department _dept in Model)
+                            {
+                                <option value="@_dept.DepartmentID">@_dept.Name</option>
+                            }
+
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3 class="panel-title">部门信息</h3></div>
+                <div class="panel-body" style="height:460px">
+                    <div>
+                        @using (Html.BeginForm("DepartmentSave", "Administrator", FormMethod.Post, new { id = "SaveDepartmentForm" }))
+                        {
+                            <table class="table table-striped">
+                                <tr>
+                                    <td class="col-sm-2"><label>部门名称</label></td>
+                                    <td class="col-sm-4">
+                                        <input type="hidden" id="DepartmentID" name="DepartmentID" />
+
+                                        <input type="text" maxlength="20" id="Name" name="Name" class="form-control required" />
+                                        <input type="hidden" id="Enabled" name="Enabled" value="true" />
+
+                                    </td>
+                                </tr>
+                            </table>
+                        }
+                        <button id="SaveDepartment" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Project.js"></script>
+
+
+
+
+
+
+<script src="~/Scripts/Administrator.js"></script>
+<script type="text/javascript">
+        $(document).ready(function () {
+        });
+
+</script>

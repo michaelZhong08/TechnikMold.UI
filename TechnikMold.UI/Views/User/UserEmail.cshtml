@@ -1,0 +1,21 @@
+﻿@model TechnikSys.MoldManager.Domain.Entity.User
+
+@if (Model != null)
+{
+    if ((Model.EmailUser == "") || (Model.EmailPassword == ""))
+    {
+        <div>
+            <table class="col-sm-10">
+                <tr>
+                    <td class="col-sm-3"><label>邮件用户名</label></td>
+                    <td class="col-sm-9"><input type="text" class="form-control" id="EmailUserID" name="EmailUser" /></td>
+
+                </tr>
+                <tr>
+                    <td class="col-sm-3"><label>邮件密码</label></td>
+                    <td class="col-sm-9"><input type="password" class="form-control" id="EmailPassword" name="EmailPassword" /></td>
+                </tr>
+            </table>
+        </div>
+    }
+}

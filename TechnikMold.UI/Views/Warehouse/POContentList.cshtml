@@ -1,0 +1,230 @@
+﻿@using MoldManager.WebUI.Models.Helpers;
+@{
+    
+    ViewBag.Title = "订单收货";
+    int DeptID=0;
+    try{
+        DeptID= Convert.ToInt16(Request.Cookies["User"]["Department"]);
+    }catch{
+        DeptID=0;
+    }
+}
+
+<h2>POContentList</h2>
+    <div class="col-sm-11">   
+        
+        <div class="col-sm-12" style="float:left;">
+            <h2>订单号:@ViewBag.PONumber</h2>
+            <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
+            <input type="hidden" id="ReturnRequestID" value="@ViewBag.ReturnRequestID" />
+            <ul class="nav nav-pills">
+                @if (DeptID == 20)
+                {
+                    if (ViewBag.State < (int)PurchaseOrderStatus.完成)
+                    {
+                        <li><button class="btn btn-primary" id="ClosePO">关闭订单</button> </li>
+                    }
+                    if ((ViewBag.State == (int)PurchaseOrderStatus.部分收货) || (ViewBag.State == (int)PurchaseOrderStatus.完成))
+                    {
+                        if (ViewBag.ReturnRequestID > 0)
+                        {
+                            <li><button class="btn btn-primary" id="CreateReturnRequest">添加到退货单</button></li>
+                        }
+                        else
+                        {
+                            <li><button class="btn btn-primary" id="CreateReturnRequest">创建退货单</button></li>
+                        }
+                    }
+
+
+                }             
+                <li><button class="btn btn-primary" id="ShowHistory">显示订单历史</button></li>
+            </ul>
+            <table id="POContentGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+
+
+@*订单项收货对话框*@
+@if (DeptID == 20)
+{
+<div class="modal" data-backdrop="static" data-keyboard="false" id="POContentToStockDlg" tabindex="-1" role="dialog" aria-labelledby="POContentToStockLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="POContentToStockLabel">订单项收货</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("POContentToStock", "Warehouse", FormMethod.Post, new { id = "POContentToStock" })) { 
+                <table class="table table-striped">
+                    <tr>
+                        <td class="col-sm-1"><label>零件名</label></td>
+                        <td class="col-sm-2">
+                            <input type="text" id="Name" class="form-control " readonly />
+                            <input type="hidden" id="PurchaseItemID" name="PurchaseItemID" />
+                            <input type="hidden" id="WarehouseID" name="WarehouseID">
+                            <input type="hidden" id="WarehousePositionID" name="WarehousePositionID">
+                        </td>
+                        <td class="col-sm-1"><label>零件号</label></td>
+                        <td class="col-sm-2">
+                            <input type="text" id="PartNumber" class="form-control " readonly />
+                        </td>
+                    </tr>      
+                    <tr>
+                        <td class="col-sm-1"><label>规格</label></td>
+                        <td class="col-sm-2">
+                            <input type="text" id="Specification" class="form-control " readonly />
+                        </td>
+                        <td class="col-sm-1"><label>采购数量</label></td>
+                        <td class="col-sm-2">
+                            <input type="number" id="Quantity" class="form-control " readonly/>                           
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-1"><label>已收数量</label></td>
+                        <td class="col-sm-2">
+                            <input type="number" id="ReceivedQty" class="form-control" readonly />
+                        </td>
+                        <td class="col-sm-1"><label>实收数量</label></td>
+                        <td class="col-sm-2">
+                            <input type="number" id="ReceiveQty" class="form-control" name="ReceiveQty" min="0"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-1"><label>仓库</label></td>
+                        <td class="col-sm-2">
+                            <select id="WarehouseList" class="form-control"></select>
+                        </td>
+                        <td class="col-sm-1"><label>库位</label></td>
+                        <td class="col-sm-2">
+                            <select id="WarehousePositionList" class="form-control"></select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-1" ><label>备注</label></td>
+                        <td class="col-sm-4" colspan="3">
+                            <textarea type="text" id="Memo" class="form-control" name="Memo" rows="3" style="resize:none"></textarea>
+                        </td>
+                    </tr>
+                </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                
+                    <button type="button" id="ConfirmInStock" class="btn btn-primary">确认收货</button>
+               
+               
+            </div>
+        </div>
+    </div>
+</div>
+}
+@*订单历史对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="POHistoryDialog" tabindex="-1" role="dialog" aria-labelledby="POHistoryLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="POHistoryLabel">订单历史</h4>
+            </div>
+            <div class="modal-body">
+                <select id="POHistory" class="form-control" size="20"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script src="~/Scripts/Warehouse.js"></script>
+
+<script>
+    $("document").ready(function () {
+        WarehouseAcceptGrid(@ViewBag.PurchaseOrderID);
+        LoadWarehouse();
+        //LoadWarehousePosition($("#WarehouseList option:first").val());
+
+        $("#WarehouseList").on("change", function () {
+            LoadWarehousePosition($("#WarehouseList").val());
+        })
+
+        $("#POContentToStockDlg").on("shown.bs.modal", function () {
+            if ($("#ReceivedQty").val() == $("#Quantity").val()) {
+                alert("本项已完成收货");
+                $("#POContentToStockDlg").modal("hide");
+            }
+        })
+
+        $("#CreateReturnRequest").on("click", function () {
+            var _ids = GetMultiSelectedCell("POContentGrid", "PurchaseItemID");
+            if (_ids != "") {
+                location.href = "/Warehouse/ReturnRequestDetail?PurchaseItemIDs=" + _ids + "&PurchaseOrderID=" + $("#PurchaseOrderID").val()
+                +"&ReturnRequestID="+$("#ReturnRequestID").val();
+            } else {
+                alert("请先选择要退货的内容");
+            }
+            
+        })
+
+        $("#ReceiveQty").on("change", function () {
+            var _total = $("#Quantity").val()
+            var _current = Number($("#ReceivedQty").val()) + Number($("#ReceiveQty").val());
+            if (_current > _total) {
+                alert("收货数量不能大于订单数量");
+                $("#ConfirmInStock").attr("disabled", "disabled");
+            } else {
+                $("#ConfirmInStock").removeAttr("disabled");
+            }
+        })
+
+    })
+
+
+    function LoadWarehouse(WarehouseID) {
+        var _url = "/Warehouse/JsonWarehouses";
+        $("#WarehouseList option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+
+                if (WarehouseID==n.WarehouseID){
+                    $("#WarehouseList").append($("<option/>", { value: n.WarehouseID, text: n.Name, selected:true }));
+                }else{
+                    $("#WarehouseList").append($("<option/>", { value: n.WarehouseID, text: n.Name }));
+                }
+               
+            })
+            LoadWarehousePosition($("#WarehouseList").val());
+        })
+    }
+
+    function LoadWarehousePosition(WarehouseID, PositionID) {
+        if (WarehouseID == null) {
+            var _url = "";
+        } else {
+            var _url = "/Warehouse/JsonWarehousePositions?WarehouseID="+WarehouseID;
+        }
+        
+        $("#WarehousePositionList option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                if (PositionID == n.PositionID) {
+                    $("#WarehousePositionList").append($("<option/>", {value:n.WarehousePositionID, text:n.Name, selected:true}))
+                } else {
+                    $("#WarehousePositionList").append($("<option/>", { value: n.WarehousePositionID, text: n.Name}))
+                }
+            })
+        })
+    }
+
+
+</script>

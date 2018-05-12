@@ -1,0 +1,443 @@
+﻿@{
+    ViewBag.Title = "创建订单";
+}
+
+<div style="margin-top:10px">
+    <h2>采购订单维护   </h2>
+    <table class="col-sm-12">
+        <tr>
+            <td class="col-sm-2">
+                <input type="text" class="form-control" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword"/>
+            </td>
+            <td class="col-sm-1">
+                <button class="btn btn-primary" id="Search">查询</button>
+            </td>
+            <td><label>采购类型</label></td>
+            <td class="col-sm-2">
+                @if (ViewBag.PurchaseItemIDs == "")
+                {
+                    <select class="form-control" id="PurchaseType"></select>
+                }
+                else
+                {
+                    <select class="form-control" id="PurchaseType" disabled></select>
+                }
+            
+            </td>
+            <td><label>供应商</label></td>
+            <td class="col-sm-1">
+                <select class="form-control" id="Supplier"></select>
+            </td>
+            <td><label>币种</label></td>
+            <td class="col-sm-1">
+            <select id="Currency" class="form-control">
+                <option value="人民币">人民币</option>
+                <option value="美元">美元</option>
+                <option value="日元">日元</option>
+                <option vlaue="欧元">欧元</option>
+            </select>
+            </td>
+            <td><label>税率</label></td>
+            <td class="col-sm-1">
+                
+                <select id="TaxRate" class="form-control">
+                    <option value="17">17%</option>
+                    <option value="6">6%</option>
+                    <option value="5">5%</option>
+                    <option value="4">4%</option>
+                    <option value="3">3%</option>
+                    <option value="0">0%</option>
+                </select>
+            </td>
+            <td class="col-sm-2"><button class="btn btn-primary" id="CreatePO">保存订单</button></td>
+        </tr>
+    </table>
+    <div class="col-sm-6">
+        <table id="PRContentGrid"></table>
+    </div>
+    <div class="col-sm-6">
+        <input type="hidden" id="ActiveCol" />
+        <table id="POContentGrid"></table>
+    </div>
+</div>
+
+@*待采购项右键菜单*@
+<div class="contextMenu dropdown" id="PurchaseItemContextMenu" style="display:none">
+    <ul style="width:200px">
+
+        <li id="AddItem">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/arrow-right.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">加入订单</span>
+        </li>
+      </ul>
+</div>
+
+@*采购项右键菜单*@
+<div class="contextMenu dropdown" id="POItemContextMenu" style="display:none">
+    <ul style="width:200px">
+        <li id="DeliveryDate">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/calendar.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">设置交货日期</span>
+        </li>
+        <li id="BatchPriceShow">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/money-2.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">批量设置单价</span>
+        </li>
+        <li id="HistoryPrice">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/money-2.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">历史价格查询</span>
+        </li>
+        <li id="RemoveItem">
+            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png" /></span>
+            <span style="font-size:12px; font-family:Verdana">移除订单项</span>
+        </li>
+    </ul>
+</div>
+
+@*交付日期设置对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="DeliveryDateDialog" tabindex="-1" role="dialog" aria-labelledby="DeliveryDateLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:350px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="DeliveryDateLabel">交货日期</h4>
+            </div>
+            <div class="modal-body">
+                <input type="date" id="DeliveryDateValue" class="form-control" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveDeliveryDate" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*批量单价设置对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="BatchUnitPriceDialog" tabindex="-1" role="dialog" aria-labelledby="BatchUnitPriceLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:350px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="BatchUnitPriceLabel">设置选中项单价</h4>
+            </div>
+            <div class="modal-body">
+                <input type="number" id="BatchUnitPrice" class="form-control" min="0"/>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="BatchUnitPriceSet" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*价格历史查询对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="HistoryPriceDialog" tabindex="-1" role="dialog" aria-labelledby="HistoryPriceLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:550px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="HistoryPriceLabel">历史价格</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped col-sm-12">
+                    <thead>
+                        <tr>
+                            <td class="col-sm-3"><label>零件名</label></td>
+                            <td class="col-sm-3"><label>供应商</label></td>
+                            <td class="col-sm-3"><label>价格</label></td>
+                            <td class="col-sm-3"><label>采购日期</label></td>
+                        </tr>
+                    </thead>
+                    <tbody id="ItemList">
+                        
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script src="~/Scripts/Purchase.js"></script>
+<script>
+    $("document").ready(function () {
+        PRContent_PO_T("",0);
+        POContent_PO_T("@ViewBag.PurchaseItemIDs");
+        LoadSuppliers();
+        LoadPurchaseTypes();
+
+
+
+        $("#Search").on("click", function () {
+            if ($("#Keyword").val() != "") {
+                LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
+            } else {
+                alert("请输入查询关键字");
+            }
+        })
+
+
+
+        $("#PurchaseType").on("change", function () {
+            LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
+        })
+
+        $("#SaveDeliveryDate").on("click", function () {
+            SetDeliveryDate();
+        })
+
+        $("#BatchUnitPriceSet").on("click", function(){
+            SavePriceBatch();
+        })
+    })
+
+    function LoadPRContents(Keyword, PurchaseType, Exclude) {
+        if (Exclude==undefined){
+            Exclude=GetExistingPOItemIDs();
+        }
+        var _url = "/Purchase/JsonPurchaseItems?Keyword=" + Keyword +"&PurchaseType="+PurchaseType+ "&State=30&ExcluedIDs="+Exclude;
+        $("#PRContentGrid").jqGrid('setGridParam', {datatype:'json', url: _url }).trigger("reloadGrid");
+    }
+
+    function LoadSuppliers() {
+        var _url = "/Purchase/JsonSuppliers";
+        $("#Supplier option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#Supplier").append($("<option/>", {
+                    value: n.SupplierID,
+                    text:n.Name
+                }))
+            })
+        })
+    }
+
+    function LoadPurchaseTypes() {
+        var _url = "/Purchase/JsonPurchaseTypeTree";
+        $("#PurchaseType option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                if (n.ParentTypeID == 0) {
+                    if (@ViewBag.PurchaseType==n.PurchaseTypeID){
+                        $("#PurchaseType").append($("<option/>", {
+                            value: n.PurchaseTypeID,
+                            text: n.Name,
+                            selected:true
+                        }))
+                    }else{
+                        $("#PurchaseType").append($("<option/>", {
+                            value: n.PurchaseTypeID,
+                            text: n.Name
+                        }))
+                    }
+
+                } else {
+                    if (@ViewBag.PurchaseType==n.PurchaseTypeID){
+                        $("#PurchaseType").append($("<option/>", {
+                            value: n.PurchaseTypeID,
+                            text: "-"+n.Name,
+                            selected:true
+                        }))
+                    }else{
+                        $("#PurchaseType").append($("<option/>", {
+                            value: n.PurchaseTypeID,
+                            text: "-"+n.Name
+                        }))
+                    }
+                }
+
+            })
+            LoadPRContents($("#Keyword").val(), $("#PurchaseType").val(), "@ViewBag.PurchaseItemIDs");
+        })
+    }
+
+    function ShowSetDeliverDate() {
+        $("#DeliveryDateDialog").modal("show");
+    }
+
+    function SetDeliveryDate() {
+        var rowNo = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
+        //$("#POContentGrid").getGridParam("selrow");
+        for (i = 0; i < rowNo.length; i++) {
+
+            $("#POContentGrid").jqGrid('setCell', rowNo[i], 'DeliverDate', $("#DeliveryDateValue").val());
+        }
+        $("#DeliveryDateDialog").modal("hide");
+    }
+
+    function RemovePOItem() {
+    
+        var selr = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
+        var len = selr.length;
+        for (i=0;i<len;i++){
+            $('#POContentGrid').jqGrid('delRowData', selr[0]);
+        }
+
+        LoadPRContents($("#Keyword").val(), $("#PurchaseType").val(), GetExistingPOItemIDs());
+    }
+
+    function GetExistingPOItemIDs(){
+
+
+        var ids= $("#POContentGrid").getDataIDs();
+        var _result = "";
+        for (i=0;i<ids.length;i++){
+            _result = _result==""?$("#POContentGrid").getCell(ids[i], "PurchaseItemID"):_result+","+$("#POContentGrid").getCell(ids[i], "PurchaseItemID")
+        }
+        return _result;
+
+    }
+    function UpdateTotal(id){
+        $("#" + id + "_TotalPrice").val(Number($("#POContentGrid").getCell(id, 'Quantity')) * Number($("#" + id + "_UnitPrice").val()));
+        //alert($("#POContentGrid").getCell(id, 'Quantity'));
+    }
+
+    function UpdateUnit(id){
+        $("#" + id + "_UnitPrice").val(Number($("#" + id + "_TotalPrice").val())/Number($("#POContentGrid").getCell(id, 'Quantity')));
+    }
+    function BindRowAction(id, iCol) {
+        //$("#" + id + "_Quantity").on("change", function () {
+        
+        //    UpdateTotal(id);
+        //})
+
+        //$("#" + id + "_UnitPrice").on("change", function () {
+        //    UpdateTotal(id);
+        //})
+
+        //$("#" + id + "_Quantity").on("blur", function() { 
+        //    UpdateTotal(id);
+        //})
+
+        //$("#" + id + "_UnitPrice").on("blur", function () {
+        //    UpdateTotal(id);
+        //})
+
+        $("#" + id + "_Quantity").on("keyup", function () {
+        
+            UpdateTotal(id);
+        })
+
+        $("#" + id + "_UnitPrice").on("keyup", function () {
+            UpdateTotal(id);
+        })
+
+        $("#" + id + "_Quantity").on("focus", function () {
+            $("#ActiveCol").val(4);
+            $("#" + id + "_Quantity").attr("type", "number");
+        })
+
+        $("#" + id + "_UnitPrice").on("focus", function () {
+            $("#ActiveCol").val(5);
+            $("#" + id + "_UnitPrice").attr("type", "number");
+        })
+
+        $("#" + id + "_TotalPrice").on("focus", function () {
+            $("#ActiveCol").val(6);
+            $("#" + id + "_TotalPrice").attr("type", "number");
+        })
+
+        $("#" + id + "_TotalPrice").on("keyup", function () {
+            UpdateUnit(id);
+        })
+
+
+
+        if (iCol==undefined){
+            iCol = Number($("#ActiveCol").val());
+        }
+        switch (iCol) {
+            case 4:
+                _inputID = "#"+id + "_Quantity";
+                break;
+            case 5:
+                _inputID = "#"+id + "_UnitPrice";
+                break;
+            case 6:
+                _inputID ="#" + id + "_TotalPrice";
+                break;
+            default:
+                _inputID = "#"+ id + "_Quantity";
+                break;
+        }
+        //alert(_inputID)
+        //alert($(_inputID).val());
+        setTimeout("$(_inputID).focus()",1);
+        $(_inputID).select();
+    }
+
+    function ShowBatchPrice(){
+        $("#BatchUnitPriceDialog").modal("show");
+    }
+
+    function SavePriceBatch(){
+        if ($("#BatchUnitPrice").val()==0){
+            alert("单价不能为0");
+            return false;
+        }else{
+            var _url = "/Purchase/OrderOutSource?PurchaseTypeID="+$("#PurchaseType").val();
+
+            $.ajax({
+                url:_url,
+                type:"Get", 
+                success:function(msg){
+                    var _outsource;
+                    if (msg=="True"){
+                        _outsource = true;
+                    }else{
+                        _outsource = false;
+                    }
+
+                    var rowNo = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
+                    for (i = 0; i < rowNo.length; i++) {
+                        
+                        $("#POContentGrid").jqGrid('setCell', rowNo[i], 'UnitPrice', $("#BatchUnitPrice").val());
+
+
+                        var _qty ;
+                        if (_outsource){
+                            var _memo = $("#POContentGrid").getCell(rowNo[i], 'Memo');
+                            _qty= _memo.substring(0, _memo.length-1);
+                        }else{
+                            _qty = $("#POContentGrid").getCell(rowNo[i], 'Quantity');
+                        }
+                        var _total = Number(_qty)*Number($("#BatchUnitPrice").val());
+                        $("#POContentGrid").jqGrid('setCell', rowNo[i], 'TotalPrice',_total);
+                    }
+                    $("#DeliveryDateDialog").modal("hide");
+                    $("#BatchUnitPriceDialog").modal("hide");
+                }
+            })
+            
+        }
+    }
+
+    function ShowHistory(){
+        var selr = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
+        $("#ItemList tr").remove();
+        if (selr.length==1){
+            var _id = $('#POContentGrid').getCell(selr[0], "PurchaseItemID");
+
+            var _url = "/Purchase/FindHistoryPart?purchaseitemid="+_id;
+            console.log(_url);
+            $.getJSON(_url, function(msg){
+                $.each(msg, function(i,n){
+                    $("#ItemList").append("<tr><td>"+n.Name+"</td><td>"+n.Supplier+"</td><td>"+n.Price+"</td><td>"+n.Date+"</td></tr>")
+                })
+
+                $("#HistoryPriceDialog").modal("show");
+            })
+        }else{
+            alert("请选择一个零件再进行历史价格查询");
+        }
+        
+    }
+</script>

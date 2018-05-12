@@ -1,0 +1,188 @@
+﻿@using TechnikSys.MoldManager.Domain.Entity;
+
+@model IEnumerable<PurchaseType>
+
+
+
+@{
+    ViewBag.Title = "采购类型管理";
+
+    int _deptID = 0;
+    try
+    {
+        _deptID = Convert.ToInt32( Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        _deptID = 0;
+    }
+}
+<div style="margin-top:10px">
+    <h3>采购类型管理</h3>
+    <div class="col-sm-2">
+        <select id="PurchaseTypeList" class="form-control" size="30"></select>
+    </div>
+    <div class="col-sm-6">
+        
+        @if (_deptID == 4)
+        {
+            <ul class="nav nav-pills">
+                <li><button class="btn btn-primary" id="NewType">新建采购类型</button></li>
+                <li><button class="btn btn-warning" id="DeleteType">删除采购类型</button></li>
+            </ul>
+        }
+        
+        <form id="SavePurchaseTypeForm">
+            <table class="col-sm-12 table table-striped">
+                @*@using (Html.BeginForm("Save", "Purchase", FormMethod.Post, new { id = "SaveDepartmentForm" }))
+                {*@
+
+
+
+                    <tr>
+                        <td class="col-sm-4"><label>名称</label></td>
+                        <td class="col-sm-8">
+                            <input type="text" id="Name" name="Name" class="form-control" />
+                            <input type="hidden" id="PurchaseTypeID" name="PurchaseTypeID" />
+                            <input type="hidden" id="ShortName" name="ShortName" />
+                            <input type="hidden" id="TaskType" name="TaskType" />
+                            <input type="hidden" id="Enabled" name="Enabled" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>上级类型</label></td>
+                        <td>
+                            <select id="ParentTypeID" class="form-control" name="ParentTypeID">
+                                <option value="0">-</option>
+                                @foreach (PurchaseType _type in Model)
+                                {
+                                    <option value="@_type.PurchaseTypeID">@_type.Name</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>默认采购周期</label></td>
+                        <td><input type="number" class="form-control" id="DefaultPeriod" name="DefaultPeriod" min="1" /></td>
+                    </tr>
+                    <tr></tr>
+
+                @*}*@
+                @*<tr>
+                    <td colspan="2"><button id="SaveType" class="btn btn-primary">保存</button></td>
+                </tr>*@
+            </table>
+        </form>
+        @if (_deptID == 4)
+        {
+        <button id="SaveType" class="btn btn-primary">保存</button>
+        }
+    </div>
+</div>
+
+<script>
+    $("document").ready(function () {
+        LoadPurchaseTypeTree();
+
+        $("#PurchaseTypeList").on("change", function () {
+            LoadPurchaseType();
+        })
+
+        $("#SaveType").on("click", function () {
+            SavePurchaseType();
+        })
+
+        $("#NewType").on("click", function () {
+            ResetForm();
+        })
+
+        $("#DeleteType").on("click", function () {
+            DeleteType();
+        })
+    })
+
+    function LoadPurchaseTypeTree() {
+        var _url = "/Purchase/JsonPurchaseTypeTree";
+        $("#PurchaseTypeList option").remove();
+
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                if (n.ParentTypeID == 0) {
+                    $("#PurchaseTypeList").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }))
+                } else {
+                    $("#PurchaseTypeList").append($("<option/>", { value: n.PurchaseTypeID, text: '-'+ n.Name }))
+                }
+                
+            })
+        })
+    }
+
+    function LoadPurchaseType() {
+        var _purchaseTypeID = $("#PurchaseTypeList").val();
+        var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+_purchaseTypeID;
+        $.getJSON(_url, function (msg) {
+            $("#PurchaseTypeID").val(msg.PurchaseTypeID);
+            $("#Name").val(msg.Name);
+            $("#ParentTypeID").val(msg.ParentTypeID);
+            $("#DefaultPeriod").val(msg.DefaultPeriod);
+            $("#Enabled").val(msg.Enabled);
+        })
+    }
+
+    function SavePurchaseType() {
+        var _url = "/Purchase/SavePurchaseType";
+        if ($("#Name").val() == "") {
+            alert("类型名称不能为空")
+            return false;
+        }
+        if (($("#DefaultPeriod").val() == "") || (Number($("#DefaultPeriod").val()) <= 0)) {
+            alert("默认采购周期必须大于0");
+            return false;
+        }
+        $.ajax({
+            url: _url,
+            type: "Post",
+            data: $("#SavePurchaseTypeForm").serialize(),
+            success: function (msg) {
+                if (msg == "") {
+                    alert("保存成功")
+                    LoadPurchaseTypeTree();
+                } else {
+                    alert(msg);
+                }
+            }
+        })
+        return false;
+    }
+
+    function ResetForm() {
+        $("#SavePurchaseTypeForm input").val("");
+    }
+
+    function DeleteType() {
+        var _url = "/Purchase/DeletePurchaseType?PurchaseTypeID=";
+        var _id = $("#PurchaseTypeID").val();
+        if (_id == "") {
+            alert("请先选择要删除的采购类型");
+        } else {
+            if (confirm("确认删除采购类型?")) {
+                _url = _url + _id;
+                $.ajax({
+                    url: _url,
+                    type: "Get",
+                    success: function (msg) {
+                        if (msg == "") {
+                            ResetForm();
+                            LoadPurchaseTypeTree();
+                            alert("采购类型删除成功")
+                        } else {
+                            alert(msg);
+                        }
+                    }
+                })
+            }
+        }
+
+    }
+</script>
+

@@ -1,0 +1,71 @@
+﻿@using TechnikSys.MoldManager.Domain.Entity;
+@model IEnumerable<Customer>
+
+@{
+    ViewBag.Title = "客户管理";
+}
+
+
+
+
+<h2>客户管理</h2>
+
+<div>
+    <div class="col-sm-11">
+        <h3 class="page-header">客户管理</h3>
+        <ul class="nav nav-pills">
+            <li><button class="btn btn-primary" id="CreateCustomer">新建客户</button></li>
+            <li><button class="btn btn-primary" id="DeleteCustomer">删除客户</button></li>
+
+        </ul>
+        <div class="col-sm-2">
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3 class="panel-title">客户列表</h3></div>
+                <div class="panel-body">
+                    <div>
+                        <select class="form-control" size="25" id="CustomerList">
+                            @foreach (Customer _customer in Model)
+                            {
+                                <option value="@_customer.CustomerID">@_customer.Name</option>
+                            }
+
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3 class="panel-title">客户信息</h3></div>
+                <div class="panel-body" style="height:460px">
+                    <div>
+                        @using (Html.BeginForm("CustomerSave", "Project", FormMethod.Post, new { id = "SaveCustomerForm" }))
+                        {
+                            <table class="table table-striped">
+                                <tr>
+                                    <td class="col-sm-2"><label>客户名称</label></td>
+                                    <td class="col-sm-4">
+                                        <input type="hidden" id="CustomerID" name="CustomerID" value="0"/>
+                                        
+                                        <input type="text" maxlength="50" id="Name" name="Name" class="form-control required" />
+                                        
+                                        
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-sm-2"><label>客户地址</label></td>
+                                    <td class="col-sm-4">
+                                        <input type="text" maxlength="100" id="Address" name="Address" class="form-control required" />
+                                        <input type="hidden" id="Enabled" name="Enabled" value="true"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        }
+                        <button id="SaveCustomer" class="btn btn-primary">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Project.js"></script>

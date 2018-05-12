@@ -1,0 +1,264 @@
+﻿
+@{
+    ViewBag.Title = "材料库管理";
+    int DeptID = 0;
+    int PosID = 0;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+
+    }
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    }
+    catch
+    {
+
+    }
+}
+
+<div style="margin-top:10px">
+    <div class="col-sm-11">
+        <h2>@ViewBag.Title</h2>
+
+
+        <div class="col-sm-4">
+            @if ((DeptID == 2) && (PosID > 1)) { 
+            <div id="ToolBarWH" style="margin:2px">
+                <button id="AddMaterial" class="btn btn-primary">新增材料</button>
+                <button id="DelMaterial" class="btn btn-warning">删除材料</button>
+            </div>
+            }
+            <select id="MaterialID" class="form-control" size="20"></select>
+        </div>
+        <div class="col-sm-4">
+            @if ((DeptID == 2) && (PosID > 1)) {
+            <div id="ToolBarWH" style="margin:2px">
+                <button id="AddHardness" class="btn btn-primary">新增硬度</button>
+                <button id="DelHardness" class="btn btn-warning">删除硬度</button>
+            </div>
+            }
+            <select id="HardnessID" class="form-control" size="20"></select>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="EditMaterialDialog" tabindex="-1" role="dialog" aria-labelledby="EditMaterialLable" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="EditMaterialLable">材料</h4>
+            </div>
+            <div class="modal-body">
+                <form id="MaterialForm">
+                    <table class="table-striped">
+                        <tr>
+                            <td class="col-sm-2">
+                                <label>材料名称</label>
+                            </td>
+                            <td class="col-sm-4">
+                                <input type="text" id="MaterialName" class="form-control required" name="Name" />
+                                <input type="hidden" id="Material_ID" name="MaterialID" />
+                                <input type="hidden" id="MEnabled" name="Enabled" value="true" />
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveMaterial" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="EditHardnessDialog" tabindex="-1" role="dialog" aria-labelledby="EditHardnessLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="EditHardnessLabel">硬度</h4>
+            </div>
+            <div class="modal-body">
+                <form id="HardnessForm">
+                    <table class="table-striped">
+                        <tr>
+                            <td class="col-sm-2">
+                                <label>硬度名称</label>
+                            </td>
+                            <td class="col-sm-4">
+                                <input type="text" id="HardnessName" class="form-control required" name="Value" />
+                                <input type="hidden" id="Hardness_ID" name="HardnessID" />
+                                <input type="hidden" id="HMaterial_ID" name="MaterialID" />
+                                <input type="hidden" id="HEnabled" name="Enabled" value="true" />
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveHardness" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        LoadMaterials(-1,1);
+
+        $("#AddMaterial").on("click", function () {
+            ShowMaterialEdit(0,"")
+        })
+
+        $("#AddHardness").on("click", function () {
+            var _materialID=Number($("#MaterialID").val())
+            if ( _materialID== 0) {
+                alert("请先选择一种材料");
+            } else {
+                ShowHardnessEdit(0, "", _materialID);
+            }
+        })
+
+        $("#MaterialID").on("change", function () {
+            var _materialID = $("#MaterialID").val();
+            LoadHardness(_materialID,-1, 1);
+        })
+
+        $("#MaterialID").on("dblclick", function () {
+            @if ((DeptID == 2) && (PosID > 1)) {
+
+            @:var _materialID = $("#MaterialID").val()
+                        @:var _materialName = $("#MaterialID option:selected").text();
+                        @:if (_materialID != null) {
+                            @:    ShowMaterialEdit(_materialID, _materialName);
+                                @:}
+            }
+        })
+
+        $("#HardnessID").on("dblclick", function () {
+            @if ((DeptID == 2) && (PosID > 1)) {
+            @:var _hardnessID = $("#HardnessID").val();
+            @:var _materialID = $("#MaterialID").val();
+            @:var _hardnessName = $("#HardnessID option:selected").text();
+            @:if (_hardnessID!=null){
+            @:    ShowHardnessEdit(_hardnessID, _hardnessName, _materialID);
+            @:}
+            }
+        })
+
+        $("#SaveMaterial").on("click", function () {
+            SaveMaterial();
+        })
+
+        $("#SaveHardness").on("click", function () {
+            SaveHardness();
+        })
+
+        $("#DelMaterial").on("click", function () {
+            DelMaterail();
+        })
+
+        $("#DelHardness").on("click", function(){
+            DelHardness();
+        })
+    })
+
+    function ShowMaterialEdit(MaterialID, MaterialName) {
+        $("#MaterialName").val(MaterialName);
+        $("#Material_ID").val(MaterialID);
+        $("#EditMaterialDialog").modal("show");
+    }
+
+    function ShowHardnessEdit(HardnessID, HardnessName, MaterialID) {
+        $("#HardnessName").val(HardnessName);
+        $("#Hardness_ID").val(HardnessID);
+        $("#HMaterial_ID").val(MaterialID);
+        $("#EditHardnessDialog").modal("show");
+    }
+
+    function SaveMaterial() {
+        var _data = $("#MaterialForm").serialize();
+        var _url = "/Administrator/SaveMaterial";
+        $.ajax({
+            url:_url,
+            type: "Post",
+            data: _data,
+            success:function(msg){
+                LoadMaterials(msg, 1);
+                $("#EditMaterialDialog").modal("hide");
+            }
+        })
+    }
+
+    function SaveHardness() {
+        var _data = $("#HardnessForm").serialize();
+        var _url = "/Administrator/SaveHardness";
+        $.ajax({
+            url: _url,
+            type: "Post",
+            data: _data,
+            success: function (msg) {
+                LoadHardness($("#MaterialID").val(),msg, 1);
+                $("#EditHardnessDialog").modal("hide");
+            }
+        })
+    }
+
+    function DelMaterail(){
+        var _url = "/Administrator/DeleteMaterial?MaterialID="+$("#MaterialID").val();
+        if ($("#MaterialID").val() == null) {
+            alert("请选择要删除的材料")
+        } else {
+            if (confirm("确认删除材料" + $("#MaterialID option:selected").text()+"?")) {
+                $.ajax({
+                    url: _url,
+                    type: "Get",
+                    success: function (msg) {
+                        if (msg == "") {
+                            alert("删除成功")
+                            LoadMaterials(-1, 1);
+                        } else {
+                            alert(msg);
+                        }
+                    }
+                })
+            }
+        }
+    }
+    function DelHardness() {
+        var _url = "/Administrator/DeleteHardness?HardnessID=" + $("#HardnessID").val();
+
+        if ($("#HardnessID").val() == null) {
+            alert("请选择要删除的材料硬度")
+        } else {
+            if (confirm("确认删除材料硬度" + $("#HardnessID option:selected").text() + "?")) {
+                $.ajax({
+                    url: _url,
+                    type: "Get",
+                    success: function (msg) {
+                        if (msg == "") {
+                            alert("删除成功")
+                            LoadHardness($("#MaterialID").val(), -1, 1);
+                        } else {
+                            alert(msg);
+                        }
+                    }
+                })
+            }
+        }
+    }
+
+</script>
+

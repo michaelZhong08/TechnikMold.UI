@@ -1,0 +1,234 @@
+﻿@using MoldManager.WebUI.Models.Helpers;
+@{
+    ViewBag.Title = "采购申请单管理";
+}
+
+@{
+    int DeptID;
+    int PosID;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    }
+    catch
+    {
+        PosID = 0;
+    }
+}
+<div id="hidden">
+    <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
+    <input type="hidden" id="State" value="@ViewBag.State" />
+</div>
+
+<div style="margin-top:10px">
+    <div class="col-sm-11">
+
+        <h3>申请单列表</h3>
+        <div>
+            <button class="btn btn-primary" id="NewPR">新建申请单</button>
+            <button class="btn btn-primary" id="SearchPR">申请单查询</button>
+            @if ((PosID>1)&&(ViewBag.State==2)){
+            <button class="btn btn-primary" id="BatchApprove">批量通过</button>
+            }
+            @*@{
+                string UserID = "";
+                try
+                {
+                    UserID = Request.Cookies["User"]["UserID"];
+                    <button class="btn btn-primary" id="MyProject" onclick="location.href='/Purchase/Index?UserID=@UserID'">我发起的申请单</button>
+
+                }
+                catch
+                {
+
+                }
+            }*@
+            <div class="col-sm-2">
+                <select id="PRState" class="form-control">
+                    @foreach (int _val in @Enum.GetValues(typeof(PurchaseRequestStatus)))
+                    {
+
+                        //if (_val != 4)
+                        //{
+                            if (ViewBag.State == _val)
+                            {
+                                <option value="@_val" selected>@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
+                            }
+                            else
+                            {
+                                <option value="@_val">@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
+                            }
+                        @*}*@
+                    }
+                </select>
+            </div>
+        </div>
+        <div style="margin-top:20px">
+            <table id="PRListGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/Purchase.js"></script>
+
+<script>
+    $("document").ready(function(){
+
+
+        @*PRListGrid("@ViewBag.MoldNumber", "@ViewBag.PRKeyword", "@ViewBag.StartDate", "@ViewBag.FinishDate", @ViewBag.Supplier, @ViewBag.PurchaseType, @ViewBag.Department, @ViewBag.State);*@
+        PRListGrid(@ViewBag.Department, @ViewBag.State);
+
+        LoadQuerySuppliers();
+
+        LoadPurchaseType();
+
+        $("#QueryPR").on("click", function(){
+            QueryPurchaseRequests();
+        })
+    })
+
+    function LoadQuerySuppliers(){
+        var _url = "/Purchase/JsonSuppliers";
+        $("#SupplierList option").remove();
+        $("#SupplierList").append($("<option/>", {value:"", text:"-"}))
+        $.getJSON(_url, function(msg){
+            $.each(msg,function(i,n){
+                $("#SupplierList").append($("<option/>", {
+                    value:n.SupplierID,
+                    text:n.Name
+                }))
+            })
+        })
+    }
+
+    function LoadPurchaseType(){
+        var _url = "/Purchase/JsonPurchaseTypes?ContainParent=false";
+        console.log(_url);
+        $("#PurchaseType option").remove();
+        $("#PurchaseType").append($("<option/>", {value:"", text:"-"}))
+        $.getJSON(_url, function(msg){
+            $.each(msg, function(i,n){
+                $("#PurchaseType").append($("<option/>", {
+                    value:n.PurchaseTypeID,
+                    text:n.Name
+                }))
+            })
+        })
+    }
+
+    function ChangeGridStatus(){
+        var _url = "/Purchase/JsonPRList?State="+$("#PRState").val()+"&Department=@ViewBag.Department";
+        $("#PRListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+
+    function QueryPurchaseRequests() {
+        var _url = "/Purchase/JsonPRList?State=" + $("#PRState").val() + "&Department=@ViewBag.Department";
+        var _condition = "";
+
+        if ($("#MoldList option:selected").val() != undefined) {
+            _condition = "&MoldNumber=" + $("#MoldList option:selected").val();
+        }
+
+        if ($("#PRKeyword").val() != "") {
+            _condition = _condition == "" ? "&PRKeyword=" + $("#PRKeyword").val() : _condition + "&PRKeyword=" + $("#PRKeyword").val()
+        }
+
+        if ($("#StartDate").val() != "") {
+            _condition = _condition == "" ? "&StartDate=" + $("#StartDate").val() : _condition + "&StartDate=" + $("#StartDate").val()
+        }
+
+        if ($("#FinishDate").val() != "") {
+            _condition = _condition == "" ? "&FinishDate=" + $("#FinishDate").val() : _condition + "&FinishDate=" + $("#FinishDate").val()
+        }
+
+        if ($("SupplierList").val() != 0) {
+            _condition = _condition == "" ? "&Supplier=" + $("#SupplierList").val() : _condition + "&Supplier=" + $("#SupplierList").val()
+        }
+
+        if ($("#PurchaseType").val() != 0) {
+            _condition = _condition == "" ? "&PurchaseType=" + $("#PurchaseType").val() : _condition + "&PurchaseType=" + $("#PurchaseType").val()
+        }
+
+        _url = _url + _condition;
+        $("#PRSearchDialog").modal("hide");
+        $("#PRListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+</script>
+@*@{Html.RenderAction("MoldSelect", "Dialog");}*@
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PRSearchDialog" tabindex="-1" role="dialog" aria-labelledby="PRSearchLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input type="hidden" id="target" value="" />
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PRSearchLabel">申请单查询</h4>
+            </div>
+            <div class="modal-body">
+
+                    <table>
+                        <tr>
+                            <td class="col-sm-6">
+                                <table>
+                                    <tr>
+                                        <td><label>模具号</label></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="text" id="MoldKeyword" class="form-control" placeholder="模具号关键字"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><select id="MoldList" class="form-control" size="10"></select></td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td class="col-sm-6">
+
+                                <table>
+                                    <tr>
+                                        <td><label>关键字</label></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="text" id="PRKeyword" class="form-control" placeholder="采购明细关键字"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label>开始日期</label></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="date" id="StartDate" class="form-control" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label>结束日期</label></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="date" id="FinishDate" class="form-control" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td><label>供应商</label></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <select id="SupplierList" class="form-control"></select>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>             
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="QueryPR" class="btn btn-primary">选择</button>
+            </div>
+        </div>
+    </div>
+</div>

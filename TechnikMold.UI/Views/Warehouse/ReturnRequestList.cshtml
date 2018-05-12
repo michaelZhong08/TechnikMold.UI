@@ -1,0 +1,86 @@
+﻿@using TechnikSys.MoldManager.Domain.Status;
+@model TechnikSys.MoldManager.Domain.Entity.ReturnRequest
+@{
+    ViewBag.Title = "退货管理";
+    int DeptID;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+<div style="margin-top:10px">
+    <h2>退货单列表</h2>
+    <div class="col-sm-11">
+        <div id="ToolBar">        
+            <ul class="nav nav-pills">
+                <li><label>状态</label></li>
+                <li class="col-sm-2">
+                    <select class="form-control" id="Status">
+                        <option value="-1">新建</option>
+                        <option value="0">待审批</option>
+                        <option value="1">审批完成</option>
+                        <option value="2">关闭</option>
+                    </select>
+                </li>
+                <li><label>开始日期</label></li>
+                <li class="col-sm-2">
+                    <input type="date" class="form-control" id="StartDate" />
+                </li>
+                <li><label>结束日期</label></li>
+                <li class="col-sm-2">
+                    <input type="date" class="form-control" id="EndDate" />
+                </li>
+
+                <li class="col-sm-2">
+                    <input type="text" id="Keyword" class="form-control" placeholder="退货项关键字" />
+                </li>
+                <li><button class="btn btn-primary" id="FilterReturnRequests">查询</button></li>
+                @if (DeptID == 20)
+                {
+                    <li><button class="btn btn-primary" id="CreateReturnRequest">创建退货单</button></li>
+                }
+               
+            </ul>          
+        </div>
+
+    <div class="col-sm-12" style="float:left;">
+        <table id="ReturnRequestGrid"></table>
+        <div id="jqGridPager"></div>
+    </div>
+</div>
+    </div>
+
+<script>
+    $("document").ready(function () {
+
+        ReturnRequestGrid($("#Status option:selected").val());
+
+        $("#FilterReturnRequests").on("click", function () {
+            FilterRequests();
+        })
+
+        $("#Status").on("change", function () {
+            FilterRequests();
+        })
+
+        $("#CreateReturnRequest").on("click", function () {
+            location.href = "/Warehouse/WHPOList";
+        })
+    })
+
+    function LoadReturnRequestDetail(ID) {
+        location.href="/Warehouse/ReturnRequestDetail?ReturnRequestID="+ID;
+    }
+
+    function FilterRequests() {
+        var _url = "/Warehouse/JsonReturnRequests?State=" + $("#Status").val() +
+            "&StartDate=" + $("#StartDate").val() +
+            "&EndDate=" + $("#EndDate").val() +
+            "&Keyword=" + $("#Keyword").val();
+        $("#ReturnRequestGrid").jqGrid('setGridParam', { url: _url, datatype: "json" }).trigger("reloadGrid");
+    }
+</script>

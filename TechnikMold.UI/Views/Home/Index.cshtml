@@ -1,0 +1,32 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<div style="margin-top:50px">
+    <div class="col-sm-1 sidebar">
+        <ul class="nav nav-sidebar">
+            <li><a href="#">项目计划</a></li>
+            <li><a href="#">设计清单</a></li>
+            <li>@Html.ActionLink("仓库管理","Index","Warehouse")</li>
+
+        </ul>
+    </div>
+    <div class="col-sm-11 col-sm-offset-1">
+        <nav class="navbar navbar-default" style="vertical-align:central;">
+            <ul class="nav navbar-nav">
+                <li><a href="/Project/Edit" id="CreateProject">创建项目</a></li>
+            </ul>
+        </nav>
+        <div>
+            <table id="ProjectGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(ProjectGrid());
+</script>
+
+
+
+

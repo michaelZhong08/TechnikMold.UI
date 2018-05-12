@@ -1,0 +1,237 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/jqgrid")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/jqgrid")
+    @Scripts.Render("~/bundles/GridTemplate")
+
+    <script>
+        $("document").ready(function(){
+            $("#UserInfo").html("@{Html.RenderAction("Validate", "User", new { UserName = User.Identity.Name });}");
+        })
+    @{
+        int DeptID,PosID, UserID;
+        try
+        {
+             DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+
+            @:var dept = @DeptID;
+                    }
+        catch
+        {
+            DeptID=0;
+            @:var dept = 0;
+                }
+
+        try
+        {
+            PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+
+            @:var pos = @PosID;
+                }
+        catch
+        {
+            PosID=0;
+            @:var pos = 0;
+                }
+        try
+        {
+            UserID = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
+        }
+        catch
+        {
+            UserID = 0;
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-header">
+            <input type="hidden" id="CurrentUserID" value="@UserID" />
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li>@Html.ActionLink("模具管理系统", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })</li>
+                <li class="dropdown dropdown-main">
+                    <a href="/Project" class="dropdown-toggle"
+                       data-toggle="dropdown" role="button"
+                       aria-haspopup="true" aria-expanded="false">项目管理</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/Project">项目计划</a></li>
+
+                        @if (DeptID == 1)
+                        {
+                            <li><a href="/Project/CustomerManagement">客户管理</a></li>
+                                <li><a href="/Project/CostSummary">项目成本统计</a></li>
+                        }
+
+                    </ul>
+                </li>
+                <li class="dropdown dropdown-main">
+                    <a href="/Project" class="dropdown-toggle"
+                       data-toggle="dropdown" role="button"
+                       aria-haspopup="true" aria-expanded="false">设计管理</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/Part">设计清单</a></li>
+                        <li><a href="/Purchase">申请单维护</a></li>
+                        <li><a href="/Administrator/MaterialManagement">材料库</a></li>
+                        <li><a href="/Administrator/BrandManagement">品牌管理</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown dropdown-main">
+                    <a href="#" class="dropdown-toggle"
+                       data-toggle="dropdown" role="button"
+                       aria-haspopup="true" aria-expanded="false">采购管理</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/Purchase/PurchaseItemList?State=30">待处理采购项</a></li>
+                        <li><a href="/Purchase/OutSourceItemList">待处理外发项</a></li>
+                        <li><a href="/Purchase">申请单维护</a></li>
+                        <li><a href="/Purchase/QuotationRequestList">询价单维护</a></li>
+                        <li><a href="/Purchase/PurchaseOrderList">订单维护</a></li>
+                        <li><a href="/Purchase/PurchaseItemList?State=10">在购零件清单</a></li>
+                        <li><a href="/Purchase/PurchaseItemList?State=40">零件采购清单</a></li>
+                        <li><a href="/Purchase/PurchaseItemList">采购项查询</a></li>
+                        @if (DeptID == 4)
+                        {
+                            <li><a href="/Purchase/Suppliers">供应商信息</a></li>
+                                <li><a href="/Purchase/PurchaseTypeManage">采购类型管理</a></li>
+                                <li><a href="/Purchase/CostCenter">成本中心管理</a></li>
+                        }
+
+                        @if ((DeptID == 1) || (DeptID == 4))
+                        {
+                            <li><a href="/Purchase/POReport">订单记录查询</a></li>
+                        }
+
+                    </ul>
+                </li>
+
+                <li class="dropdown dropdown-main">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">加工任务</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/Task/CAMTaskList">CAM任务</a></li>
+                        <li><a href="/Task/Index">加工任务</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown dropdown-main">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">仓库管理</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/Warehouse/WHPOList">订单收货</a></li>
+                        <li><a href="/Warehouse/WarehouseRequestList">领料申请</a></li>
+                        <li><a href="/Warehouse/OutStockHistory">出库记录</a></li>
+                        <li><a href="/Warehouse/OutSource">外发出库</a></li>
+                        <li><a href="/Warehouse/PurchaseItemList">待收货零件</a></li>
+                        <li><a href="/Warehouse">在库库存清单</a></li>
+                        <li><a href="/Warehouse/Index?PurchaseType=4">在库材料查询</a></li>
+                        <li><a href="/Warehouse/Index?PurchaseType=1">在库零件查询</a></li>
+                        <li><a href="/Warehouse/Index?PurchaseType=2">备库查询</a></li>
+                        <li><a href="/Warehouse/ReturnRequestList">退货管理</a></li>
+                        @if (DeptID == 20)
+                        {
+                            <li><a href="/Warehouse/WarehouseInformation">仓库/库位</a></li>
+                        }
+
+                    </ul>
+                </li>
+                <li class="dropdown dropdown-main">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">工时管理</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">预估工时</a></li>
+                        <li><a href="#">工时填报</a></li>
+                        <li><a href="#">工时审批</a></li>
+                        <li><a href="#">工时报表</a></li>
+                        <li><a href="#">机器稼动率</a></li>
+                        <li><a href="/Administrator/TaskHourCost">工时费率</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <p class="nav navbar-text navbar-right">
+                <label id="UserInfo">
+                    @{Html.RenderAction("Validate", "User", new { UserName = User.Identity.Name });}
+
+                </label>
+
+                @if ((DeptID == 1) || (PosID == 3))
+            {
+                    <a href="/Administrator/"><img src="~/Images/system.png" width="24" height="24" /></a>
+                }
+                <a href="#" id="RoleChange"><img src="~/Images/exit.png" title="角色切换" /></a>
+            </p>
+    </div>
+
+    </div>
+    <div class="container-fluid body-content" role="main">
+        @RenderBody()
+    </div>
+    <script src="~/Scripts/MoldManager.js"></script>
+
+    @*用户角色切换*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="UserRoleSwitchModal" tabindex="-1" role="dialog" aria-labelledby="UserRoleLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="UserRoleLabel"><span id="UserName"></span>角色切换</h4>
+                </div>
+                <div class="modal-body">
+                    <select id="UserRoles" class="form-control"></select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="SwitchRole">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    $("document").ready(function(){
+        $("#UserRoleSwitchModal").on("shown.bs.modal",function(){
+            LoadUserRoles();
+        });
+
+        $("#RoleChange").on("click", function(){
+            $("#UserRoleSwitchModal").modal("show");
+        })
+
+        $("#SwitchRole").on("click", function(){
+            SwitchRole();
+        })
+
+        $('li.dropdown-main').mouseover(function() {
+            $(this).addClass('open');    }).mouseout(function() {        $(this).removeClass('open');    });
+    })
+
+    function LoadUserRoles(){
+        var _url = "/User/JsonUserRoleList?UserID=" + $("#CurrentUserID").val();
+        $("#UserRoles option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#UserRoles").append($("<option/>", { value: n.UserRoleID, text: n.DisplayName }))
+            })
+        })
+    }
+
+    function SwitchRole(){
+        var _url = "/User/ReloadCookie?UserRoleID="+$("#UserRoles").val();
+        $.ajax({
+            type:"Get",
+            url:_url,
+            success:function(){
+                location.reload();
+            }
+        })
+    }
+
+    </script>
+</body>
+</html>

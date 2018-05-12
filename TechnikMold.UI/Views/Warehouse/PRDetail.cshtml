@@ -1,0 +1,477 @@
+﻿@model TechnikSys.MoldManager.Domain.Entity.PurchaseRequest
+@using MoldManager.WebUI.Models.Helpers
+@{
+    string UserID = "";
+    string UserName = "";
+    try
+    {
+        UserID = Request.Cookies["User"]["UserID"];
+        UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
+
+    }
+    catch
+    {
+        UserID = "";
+        UserName = "";
+    }
+
+    int DeptID;
+    int PosID;
+    try
+    {
+        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+
+    try
+    {
+        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    }
+    catch
+    {
+        PosID = 0;
+    }
+}
+
+<h2>Index</h2>
+    <div class="col-sm-11">
+        @if (ViewBag.PurchaseRequestID != 0)
+        {
+            <input type="hidden" id="PRModified" value="false" />
+        }
+        else
+        {
+            <input type="hidden" id="PRModified" value="true" />
+        }
+
+        <div id="Toolbar">
+
+            @if (Model == null)
+            {
+                
+                <button class="btn btn-primary" id="AddContent">添加零件</button>
+                <button class="btn btn-primary" id="DeleteContent">删除零件</button>
+                <button class="btn btn-success" id="CreatePR">保存申请单</button>
+
+            }
+            else
+            {
+                <button class="btn btn-primary" id="PRHistory">申请单历史</button>
+                switch (Model.State)
+                {
+                    case (int)PurchaseRequestStatus.新建:
+                        <button class="btn btn-primary" id="AddContent">添加零件</button>
+                        <button class="btn btn-primary" id="DeleteContent">删除零件</button>
+                        <button class="btn btn-primary" id="CreatePR">保存申请单</button>
+                        <button class="btn btn-success" id="SubmitPR">提交申请单</button>
+                        <button class="btn btn-warning" id="CancelPR">取消申请单</button>
+                        break;
+                    case (int)PurchaseRequestStatus.待审批:
+                        if (PosID > 1) { 
+                            <button class="btn btn-primary" id="ReviewPR">审批</button>
+                        }
+                        break;
+                    case (int)PurchaseRequestStatus.审批通过:
+                    <button class="btn btn-primary" id="CreateQR">生成询价单</button>
+                        break;
+                    case (int)PurchaseRequestStatus.完成:
+                        break;
+                    case (int)PurchaseRequestStatus.拒绝:
+                    <button class="btn btn-primary" id="RestartPR">重启申请单</button>
+                        break;
+                }
+            }
+
+
+
+
+        </div>
+        <div id="Basic" class="col-sm-10 PRInfo">
+            <table>
+
+                <tr>
+                    <td class="col-sm-1"><label>所属模具项目</label></td>
+
+                    <td class="col-sm-2">
+                        
+                        @if (ViewBag.PurchaseRequestID == 0)
+                        {
+                            
+                            using (Html.BeginForm("PRSave", "Purchase", FormMethod.Post, new { id = "PRCreate" }))
+                            {
+                                if (ViewBag.ProjectID != 0)
+                                {
+                                    <input type="hidden" id="ProjectID" name="ProjectID" value="@ViewBag.ProjectID" />
+                                }
+                                else
+                                {
+                                    <input type="hidden" id="ProjectID" name="ProjectID" value="" />
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <input type="hidden" id="PurchaseRequestID" value="@Model.PurchaseRequestID" />
+                            if (Model.State == 1)
+                            {
+                                using (Html.BeginForm("PRSave", "Purchase", FormMethod.Post, new { id = "PRCreate" }))
+                                {
+                                    <input type="hidden" id="ProjectID" name="ProjectID" value="@Model.ProjectID" />
+                                }
+                            }
+                            else
+                            {
+                                <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
+                            }                            
+                        }
+
+
+
+                        @if (ViewBag.ProjectID != 0)
+                        {
+                            <input type="text" class="form-control" id="MoldNumber" readonly>
+                        }
+                        else
+                        {
+                            <input type="text" class="form-control" id="MoldNumber" placeholder="点击选择模具项目" />
+                        }
+                    </td>
+                    <td class="col-sm-1">
+                        <label>申请人</label>
+                    </td>
+
+                    <td class="col-sm-2">
+                        <input type="text" id="UserName" name="UserName" class="form-control" value="@UserName" readonly />
+                        <input type="hidden" id="UserID" name="UserID" value="@UserID" />
+                    </td>
+                </tr>
+
+                @if (ViewBag.PurchaseRequestID != 0)
+                {
+                    string status = Enum.GetName(typeof(PurchaseRequestStatus), Model.State);
+                    <tr>
+                        <td class="col-sm-1"><label>申请单号</label></td>
+                        <td class="col-sm-2">
+                            <input type="text" id="PurchaseRequestNumber" class="form-control" value="" readonly />
+                        </td>
+                        <td class="col-sm-1"><label>状态</label></td>
+                        <td class="col-sm-2"><input type="text" id="PurchaseRequestStatus" class="form-control" value="@status" readonly></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-1"><label>需求日期</label></td>
+                        <td class="col-sm-2">
+
+                            @if (Model.State < (int)PurchaseRequestStatus.待审批)
+                            {
+                                <input type="date" class="form-control required" id="DueDate" name="DueDate" value="@Model.DueDate.ToString("yyyy-MM-dd")" />
+                            }
+                            else
+                            {
+                                <input type="date" class="form-control required" id="DueDate" name="DueDate" value="@Model.DueDate.ToString("yyyy-MM-dd")" readonly />
+                            }
+                           
+                        </td>
+                        <td class="col-sm-1"><label>推荐供应商</label></td>
+                        <td class="col-sm-2">
+                            <input type="text" id="RecommandSupplierName" class="form-control" />
+                            <input type="hidden" id="SupplierID" name="SupplierID" value="0" />
+                        </td>
+                    </tr>
+
+                    
+                }
+                else
+                {
+                    <tr>
+                        <td class="col-sm-1"><label>需求日期</label></td>
+                        <td class="col-sm-2">
+                            <input type="date" class="form-control required" id="DueDate" name="DueDate" value="" />
+                        </td>
+                        <td class="col-sm-1">推荐供应商</td>
+                        <td class="col-sm-2">
+                            <input type="text" id="RecommandSupplierName" class="form-control" />
+                            <input type="hidden" id="SupplierID" name="SupplierID" value="0" />
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td class="col-sm-1"><label>备注信息</label></td>
+                    <td colspan="3" class="col-sm-5">
+
+                        @try{
+                            if (Model.State < (int)PurchaseRequestStatus.待审批)
+                        {
+                            <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" maxlength="99" />
+                        }
+                        else
+                        {
+                            <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" maxlength="99" readonly />
+                        }
+                        }
+                        catch
+                        {
+                            <input type="text" id="PRMemo" value="" class="form-control" maxlength="99" />
+                        }
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="col-sm-12" style="float:left;">
+            <table id="PRContentGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+
+
+<input type="hidden" id="tempID" value="-1" />
+
+<input type="hidden" id="row" />
+@*手工添加零件对话框*@>
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PRContentAdd" tabindex="-1" role="dialog" aria-labelledby="PRContentAddLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PRContentAddLabel">添加零件</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table-striped col-sm-12">
+                    <tr>
+                        <td class="col-sm-4">零件名称</td>
+                        <td class="col-sm-8">
+                            <input type="text" class="form-control required" name="Name" id="Name" maxlength="50" />
+                            <input type="hidden" id="PartNumber" />
+                            <input type="hidden" id="PRContentID" value="0" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">数量</td>
+                        <td class="col-sm-8"><input type="number" class="form-control required" name="Quantity" id="Quantity" min="0" value="" /></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">规格</td>
+                        <td class="col-sm-8"><input type="text" class="form-control required" name="Specification" id="Specification" maxlength="100" /></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">材料</td>
+                        <td class="col-sm-8">
+                            <select class="form-control" id="MaterialID" name="MaterialID">
+                                <option value="0">-</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">硬度</td>
+                        <td class="col-sm-8">
+                            <select class="form-control" id="HardnessID" name="Hardness">
+                                <option value="0">-</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">品牌</td>
+                        <td class="col-sm-8">
+                            <select class="form-control" id="Brand" name="BrandID"></select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">备注</td>
+                        <td class="col-sm-8">
+                            <input type="text" class="form-control" name="Memo" id="Memo" maxlength="99" />
+                        </td>
+                    </tr>
+                    @*<tr>
+                        <td class="col-sm-4">估价</td>
+                        <td class="col-sm-8">
+                            <input type="number" class="form-control" name="EstimatePrice" id="EstimatePrice" value=""/>
+                        </td>
+                    </tr>*@
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveContent" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*申请单提交*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PRSubmitModal" tabindex="-1" role="dialog" aria-labelledby="PRSubmitModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PRPRAcceptModalLabel">申请单提交</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <td class="col-sm-2"><label>备注</label></td>
+                        <td class="col-sm-4">
+                            <textarea id="SubmitMemo" class="form-control" rows="5" style="resize:none" maxlength="99"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="PRSubmitButton">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*申请单接受/拒绝*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PRReviewModal" tabindex="-1" role="dialog" aria-labelledby="PRReviewModalLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PRReviewModalLabel">申请单审批</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <td class="col-sm-2"><label>审批结果</label></td>
+                        <td class="col-sm-4">
+                            <select class="form-control" id="ReviewResponse">
+                                @{
+                                    int response = (int)PurchaseRequestStatus.审批通过;
+                                }
+                                <option value="@response">通过</option>
+                                @{
+                                    response = (int)PurchaseRequestStatus.拒绝;
+                                }
+                                <option value="@response">拒绝</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2"><label>备注</label></td>
+                        <td class="col-sm-4">
+                            <textarea id="ReviewMemo" class="form-control" rows="5" style="resize:none" maxlength="99"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="PRReviewButton">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*重启申请单对话框*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="RestartPRDialog" tabindex="-1" role="dialog" aria-labelledby="RestartPRLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="RestartPRLabel">重启申请单</h4>
+            </div>
+            <div class="modal-body" style="height:300px">
+                <h4>重启原因</h4>
+                <textarea id="RestartMemo" name="Memo" rows="5" class="form-control" maxlength="99" style="resize:none"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="RestartPRBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@*申请单历史显示*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PRHistoryModal" tabindex="-1" role="dialog" aria-labelledby="PRHistoryLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PRHistoryLabel">申请单历史</h4>
+            </div>
+            <div class="modal-body">
+                <select id="PRHistoryList" class="form-control" size="20"></select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*推荐供应商*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="RecommandSupplierModal" tabindex="-1" role="dialog" aria-labelledby="RecommandSupplierLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="RecommandSupplierLabel">推荐供应商</h4>
+            </div>
+            <div class="modal-body">
+                <select id="Suppliers" class="form-control">
+                    <option id="0">-</option>
+                    <option id="1">a</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="RecommandSupplierBtn">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.BeginForm("PDFTest", "Purchase", FormMethod.Post, new { id = "PDF" }))
+{ <input type="hidden" id="PDFContent" name="Content" />
+}
+
+@if (ViewBag.ProjectID == 0)
+{
+    Html.RenderAction("MoldSelect", "Dialog");
+}
+
+<script src="~/Scripts/Purchase.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        LoadMaterials();
+        @*@if (ViewBag.PurchaseRequestID != 0)
+        {
+            @:PRContentGrid("", @ViewBag.PurchaseRequestID, @ViewBag.PRState,"");
+                            @:LoadProject(@ViewBag.ProjectID);
+                            @:LoadPR(@ViewBag.PurchaseRequestID);
+                            if (Model.SupplierID != 0)
+            {
+                @:LoadAssignedSupplier(@Model.SupplierID);
+                             }
+            @:LoadUser(@Model.UserID, "UserName");
+                                }
+        else if (ViewBag.PartIDs!="")
+        {
+            @:PRContentGrid("@ViewBag.PartIDs", 0, 0,"");
+                            if (ViewBag.ProjectID != 0)
+            {
+                @:LoadProject(@ViewBag.ProjectID);
+                             }
+        }
+        else if (ViewBag.TaskIDs != "")
+        {
+            @:PRContentGrid("", 0, 0,"@ViewBag.TaskIDs");
+        }
+        else
+        {
+            @:PRContentGrid("", 0, 0,"");
+                }*@
+        PRContentGrid_T()
+    });
+
+</script>

@@ -1,0 +1,190 @@
+﻿
+<div class="modal" data-backdrop="static" data-keyboard="false" id="EDMItemsDialog" tabindex="-1" role="dialog" aria-labelledby="EDMParaLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="EDMParaLabel">编辑EDM工作项</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("SaveEDMPara", "Task", FormMethod.Post, new { id = "EditEDMItemForm" }))
+                {
+                    
+                    <input type="hidden" id="TaskID" name="TaskID" value="99" />
+                    <table class="table-striped">                        
+                        <tr>
+                            <td class="col-sm-2"><label>电极名称</label></td>
+                            <td class="col-sm-4">
+                                <input type="hidden" id="EDMTaskName" name="LabelName" />
+                                <input type="hidden" id="TaskID" name="TaskID" />
+                                <input type="hidden" name="ElePosition" id="ElePosition" value="0"/>
+                                <select id="EDMItemID" name="EDMItemID" class="form-control"></select>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>间隙</label></td>
+                            <td class="col-sm-4"><input type="text" class="form-control required" name="Gap" id="Gap" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>X</label></td>
+                            <td class="col-sm-4"><input type="text" class="form-control required" name="OffsetX" id="OffsetX" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>Y</label></td>
+                            <td class="col-sm-4"><input type="text" class="form-control required" name="OffsetY" id="OffsetY" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>Z</label></td>
+                            <td class="col-sm-4"><input type="text" class="form-control required" name="OffsetZ" id="OffsetZ" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>C</label></td>
+                            <td class="col-sm-4"><input type="text" class="form-control required" name="OffsetC" id="OffsetC" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>火花间隙补偿</label></td>
+                            <td class="col-sm-4"><input type="text" class="form-control required" name="GapCompensate" id="GapCompensate" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>高度补偿</label></td>
+                            <td class="col-sm-4"><input type="text" class="form-control required" name="ZCompensate" id="ZCompensate" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>表面</label></td>
+                            <td class="col-sm-4">
+                                <select class="form-control required" id="Surface" name="Surface">
+                                    <option value="VDI27">VDI27</option>
+                                    <option value="VDI24">VDI24</option>
+                                    <option value="VDI21">VDI21</option>
+                                    <option value="VDI18">VDI18</option>
+                                    <option value="VDI15">VDI15</option>
+                                    <option value="POLISH">POLISH</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>材料</label></td>
+                            <td class="col-sm-4">
+                                <select class="form-control required" name="Material" id="Material" >
+                                    <option value="Copper">Copper </option>
+                                    <option value="Graphite">Graphite</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>平动</label></td>
+                            <td class="col-sm-4">
+                                <select class="form-control required" name="Obit" id="Obit" >
+                                    <option value="C">圆平动</option>
+                                    <option value="S">球平动</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveEDMItemBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal" data-backdrop="static" data-keyboard="false" id="CreateEDMItemDialog" tabindex="-1" role="dialog" aria-labelledby="EDMParaLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="EDMParaLabel">添加EDM工作项</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("SaveEDMPara", "Task", FormMethod.Post, new { id = "CreateEDMItemForm" }))
+                {
+                    <input type="hidden" id="TaskID" name="TaskID" value="99" />
+                    <table class="table-striped">
+                        <tr id="Create">
+                            <td class="col-sm-2"><label>电极名称</label></td>
+                            <td class="col-sm-4">
+                                <input type="hidden" id="EDMItemID" name="EDMItemID" value="0" />
+                                <input type="hidden" name="ElePosition" id="ElePosition" value="0" />
+                                <input type="text" id="EDMTaskName" name="LabelName" class="form-control required" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>间隙</label></td>
+                            <td class="col-sm-4"><input type="number" class="form-control required" name="Gap" id="Gap" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>X</label></td>
+                            <td class="col-sm-4"><input type="number" class="form-control required" name="OffsetX" id="OffsetX" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>Y</label></td>
+                            <td class="col-sm-4"><input type="number" class="form-control required" name="OffsetY" id="OffsetY" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>Z</label></td>
+                            <td class="col-sm-4"><input type="number" class="form-control required" name="OffsetZ" id="OffsetZ" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>C</label></td>
+                            <td class="col-sm-4"><input type="number" class="form-control required" name="OffsetC" id="OffsetC" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>火花间隙补偿</label></td>
+                            <td class="col-sm-4"><input type="number" class="form-control required" name="GapCompensate" id="GapCompensate" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>高度补偿</label></td>
+                            <td class="col-sm-4"><input type="number" class="form-control required" name="ZCompensate" id="ZCompensate" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>表面</label></td>
+                            <td class="col-sm-4">
+                                @*<input type="text" class="form-control required" name="Surface" id="Surface" />*@
+                                <select class="form-control required" id="Surface" name="Surface">
+                                    <option value="VDI27">VDI27</option>
+                                    <option value="VDI24">VDI24</option>
+                                    <option value="VDI21">VDI21</option>
+                                    <option value="VDI18">VDI18</option>
+                                    <option value="VDI15">VDI15</option>
+                                    <option value="POLISH">POLISH</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>材料</label></td>
+                            <td class="col-sm-4">
+                                <select class="form-control required" name="Material" id="Material">
+                                    <option value="Copper">Copper </option>
+                                    <option value="Graphite">Graphite</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>平动</label></td>
+                            <td class="col-sm-4">
+                                <select class="form-control required" name="Obit" id="Obit">
+                                    <option value="C">圆平动</option>
+                                    <option value="S">球平动</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                    </table>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="CreateEDMItemBtn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

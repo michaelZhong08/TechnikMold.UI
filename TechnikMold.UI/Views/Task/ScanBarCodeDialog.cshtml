@@ -1,0 +1,253 @@
+﻿
+<div class="modal" data-backdrop="static" data-keyboard="false" id="ScanBarCodeDialog" tabindex="-1" role="dialog" aria-labelledby="ScanBarCodeLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="ScanBarCodeLabel">电极扫描加工</h4>
+            </div>
+            <div class="modal-body">                
+                    <table class="table">
+                        <tr>
+                            <td class="col-sm-2"><label>电极标签</label></td>
+                            <td class="col-sm-6">
+                                <input type="text" id="BarCode" class="form-control required" name="BarCode" />
+                            </td>
+                         
+                            <td class="col-sm-1"><label>工位</label></td>
+                            <td class="col-sm-2"><input type="text" class="form-control required" name="Position" id="Position" maxlength="100" /></td>
+                        </tr>  
+                        @*<tr>
+                            <td colspan="4">
+                                <button class="btn btn-primary col-sm-offset-10" id="SetPosition">添加电极</button>
+                            </td>
+                        </tr>*@
+
+                    </table>
+                @using (Html.BeginForm("ScanBarCode", "Task", FormMethod.Post, new { id = "ScanBarCodeForm" }))
+                {
+                    <table class="col-sm-12 table-striped" style="margin-top:10px">
+                      <thead>
+                          <tr>
+                              <td class="col-sm-6"><label>电极标签名</label></td>
+                              <td class="col-sm-4"><label>位置</label></td>
+                          </tr>
+                      </thead>  
+                        <tbody id="Ele_List"></tbody>
+                    </table>
+                }
+                <table>
+                    <tr>
+                        <td class="col-sm-2"><label>加工设备</label></td>
+                        <td class="col-sm-3">
+                            <select class="form-control" id="Device">
+                                <option value="1">CNC设备1</option>
+                            </select>
+                        </td>
+                        <td class="col-sm-2"><label>传输路径</label></td>
+                        <td class="col-sm-4">
+                            <select class="form-control" id="DevicePath">
+                                <option value="@DateTime.Now.ToString("MM-dda")">@DateTime.Now.ToString("MM-dda")</option>
+                                <option value="@DateTime.Now.ToString("MM-ddb")">@DateTime.Now.ToString("MM-ddb")</option>
+                                <option value="@DateTime.Now.ToString("MM-ddc")">@DateTime.Now.ToString("MM-ddc")</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SendProgram" class="btn btn-primary">开始加工</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    var EleIDs = new Array();
+    var EleWholeNames = new Array();
+    var ElePosition = new Array();
+
+    var tmpID, tmpLabel;
+
+    var _timer = {};
+    $("#document").ready(function () {
+
+
+        $("#ScanBarCodeDialog").on("shown.bs.modal", function () {
+            EleIDs = new Array();
+            EleWholeNames = new Array();
+            ElePosition = new Array();
+            $("#Ele_List tr").remove();
+
+        })
+
+        $("#SendProgram").on("click", function () {
+            var allID="";
+            for (i = 0; i < EleIDs.length; i++) {
+
+                allID = allID ==""?EleIDs[i]:allID+","+EleIDs[i];
+            }
+
+            var allPos = "";
+            for (i = 0; i < ElePosition.length; i++) {
+                allPos = allPos == "" ? ElePosition[i] : allPos + "," + ElePosition[i];
+            }
+                
+            $.ajax({
+                dataType: "html",
+                url: "/Task/CreateCNCProgram?EleIds=" + allID + "&Positions=" + allPos
+                    + "&Path=" + $("#DevicePath").val() + "&Device=" + $("#Device").val(),
+                error: function () {
+
+                },
+                success:function(msg){
+                    if (msg == "") {
+                        alert("传输成功");
+                        ResetEleList();
+                        $("#ScanBarCodeDialog").modal("hide");
+                    } else {
+                        
+                        alert("传输失败\r\n错误信息:\r\n"+msg);
+                    }
+                }
+            })
+            
+            
+        })
+
+        //$("#BarCode,#Position").on("keyup", function () {
+        //    CheckInput(this);
+        //})
+
+        $("#BarCode").on('keyup', function () {
+            delay_till_last('BarCode', function () {
+                // run something
+                CheckInput($("#BarCode"));
+            }, 500);
+        });
+
+        $("#Position").on('keyup', function () {
+            delay_till_last('Position', function () {
+                // run something
+                CheckInput($("#Position"));
+            }, 500);
+        });
+    });
+
+    function delay_till_last(id, fn, wait) {
+        if (_timer[id]) {
+            window.clearTimeout(_timer[id]);
+            delete _timer[id];
+        }
+        return _timer[id] = window.setTimeout(function () {
+            fn();
+            delete _timer[id];
+        }, wait);
+    }
+
+    function ResetEleList() {
+        $(".EleList").remove();
+
+        EleIDs = new Array();
+        ElePosition = new Array();
+        EleWholeNames = new Array();
+    }
+
+
+    function CheckInput(obj) {
+        var _item = obj[0].value;
+        var _first = _item.charAt(0);
+        var _last = _item.charAt(_item.length - 1).toUpperCase();
+        var _valid = 1;
+        if ((_last == "F") | (_last == "R")) {
+            CheckBarCode(_item);
+        } else if (((_first == '#') & (_last == '&')) | (IsNum(_item))) {
+            CheckPosition(_item);
+        } else {
+            alert("无效条码，请重新扫描");
+        }
+    }
+
+
+    function CheckBarCode(BarCode) {
+        var _exist = 0;
+        var _last = BarCode.charAt(BarCode.length - 1).toUpperCase();
+        
+        for (i = 0; i < EleWholeNames.length; i++) {
+            if (BarCode == EleWholeNames[i]) {
+                _exist = 1;
+            }
+        }
+        if (_exist == 0) {
+            AddPart();
+            $("#Position").focus()
+        } else {
+            alert("条码已存在");
+        }
+    }
+
+    function CheckPosition(Position) {
+        var _exist = 0;
+        var _pos
+        if (IsNum(Position)) {
+            _pos = Position;
+        } else {
+            _pos = Position.substring(1, Position.length - 1);
+            $("#Position").val(_pos)
+        }
+         
+        for (i = 0; i < ElePosition.length; i++) {
+            if (_pos == ElePosition[i]) {
+                _exist = 1;
+            }
+        }
+        if (_exist == 0) {
+            AddPart();
+        } else {            
+            alert("工位已选择，请重新扫描工位条码");
+        }
+    }
+
+
+    function AddPart() {
+
+        if (($("#BarCode").val() != "") & ($("#Position").val() != "")) {
+            var _url = "/Task/ValidateCNCItem?LabelName=" + $("#BarCode").val();
+            $.ajax({
+                url: _url,
+                dataType: "html",
+                success: function (msg) {
+                    if (msg != "") {
+                        var obj = $.parseJSON(msg);
+                        var id = obj.CNCItemID;
+                        EleIDs.push(obj.CNCItemID);
+                        EleWholeNames.push(obj.LabelName);
+                        ElePosition.push($("#Position").val());
+                        $("#Ele_List").append("<tr class='EleList'><td>" + obj.LabelName + "</td><td>" + $("#Position").val() + "</td></tr>");
+                        $("#BarCode").val("");
+                        $("#Position").val("");
+                        $("#BarCode").focus();
+                    } else {
+                        alert("系统中未找到待加工电极信息");
+                        $("#BarCode").val("");
+                        $("#BarCode").focus();
+                    }                    
+                }
+            })
+        }
+    }
+
+    function IsNum(Value) {
+        return !isNaN(Number(Value));
+    }
+
+    function ClearFields() {
+        $("#BarCode").val("");
+        $("Position").val("");
+        $("#BarCode").focus();
+    }
+
+   
+</script>

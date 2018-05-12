@@ -1,0 +1,184 @@
+﻿@{
+    int DeptID;
+    try
+    {
+        DeptID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+
+
+<div style="margin-top:10px">
+    <h2>@ViewBag.Title</h2>
+    <div class="col-sm-2">
+        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字"/>
+        <select class="form-control" id="MoldSelect" size="20"></select>
+    </div>
+    <div class="col-sm-10">
+        @*<div>
+            <table class="col-sm-7">
+                <tr>
+                    <td class="col-sm-1"><label>外发类型</label></td>
+                    <td class="col-sm-2"><select id="OutSourceType" class="form-control"></select></td>
+                    <td class="col-sm-2">
+                        <input type="text" class="form-control" id="ItemKeyword" placeholder="外发项关键字" />
+                        <input type="hidden" id="MoldNumber" />
+                    </td>
+                    <td class="col-sm-1">
+                        <button class="btn btn-primary" id="Query">查询</button>
+                    </td>
+                </tr>
+            </table>
+        </div>*@
+
+        <div class="col-sm-2">
+            <select id="OutSourceType" class="form-control"></select>
+        </div>
+
+        <div class="col-sm-2">
+            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项关键字" />
+        </div>
+        
+        
+        <input type="hidden" id="MoldNumber" />
+
+        <button class="btn btn-primary" id="Query">查询</button>
+
+        @if  (DeptID == 4)
+        {
+
+            <button class="btn btn-primary" id="Quotation">开始询价</button>
+
+
+            <button class="btn btn-primary" id="PruchaseOrder">创建订单</button>
+
+        }
+        <div class="col-sm-11" style="float:left;">
+            <table id="PurchaseItemGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+
+<script>
+    $("document").ready(function () {
+        LoadOutSourceType();
+        LoadMoldNumber("");
+        PurchaseItem("", "", 30, 3);
+
+        var _listsize = Math.round((document.documentElement.clientHeight-210) / 18);
+        $("#MoldSelect").attr("size", _listsize);
+
+        $("#RefreshMold").on("click", function () {
+            LoadMoldNumber("",$("#MoldSelect").val());
+        })
+
+        $("#Keyword").on("keyup", function () {
+            LoadMoldNumber($("#Keyword").val());
+        })
+
+        $("#MoldSelect").on("change", function () {
+            $("#MoldNumber").val($("#MoldSelect option:selected").val());
+            QueryOutSourceItem("", $("#MoldNumber").val(), $("#OutSourceType").val());
+        })
+
+        $("#Query").on("click", function () {
+            QueryOutSourceItem($("#ItemKeyword").val(), $("#MoldNumber").val(), $("#OutSourceType").val());
+        })
+
+        $("#OutSourceType").on("change", function () {
+            QueryOutSourceItem("", "", $("#OutSourceType").val());
+        })
+
+        $("#Quotation").on("click", function () {
+            StartQuotation();
+        })
+
+        //$("#PruchaseOrder").on("click", function () {
+        //    if ($("#ItemKeyword").val() == "") {
+        //        location.href = "/Purchase/SelectPOContent?&Keyword=" + $("#MoldSelect").val()+"&PurchaseType="+$("#OutSourceType").val();
+        //    } else {
+        //        location.href = "/Purchase/SelectPOContent?&Keyword=" + $("#ItemKeyword").val() + "&PurchaseType=" + $("#OutSourceType").val();
+        //    }
+        //})
+
+        $("#PruchaseOrder").on("click", function () {
+            var _ids = GetMultiSelectedIDs("PurchaseItemGrid");
+
+            var _url = "/Purchase/SelectPOContent?";
+            var _condition = ""
+
+            if ($("#ItemKeyword").val() == "") {
+                _condition = "Keyword=" + $("#MoldSelect").val() + "&PurchaseType=" + $("#OutSourceType").val() + "&PurchaseItemIDs=" + _ids;
+            } else {
+                _condition = "Keyword=" + $("#ItemKeyword").val() + "&PurchaseType=" + $("#OutSourceType").val() + "&PurchaseItemIDs=" + _ids;
+            }
+            _url = _url + _condition;
+            location.href = _url;
+
+        })
+
+
+        $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
+        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+    })
+
+    function LoadOutSourceType() {
+        var _url = "/Purchase/JsonPurchaseTypes?ContainParent=false&TypeName=模具委外加工";
+        $("#OutSourceType option").remove();
+        $("#OutSourceType").append($("<option/>", { value: 3, text: "外发任务", selected:true }));
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#OutSourceType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+            })
+        })
+    }
+
+
+    function LoadMoldNumber(Keyword, MoldNumber) {
+        var _url = "/Purchase/JsonMoldNumber?State=@ViewBag.State&Keyword=" + $("#Keyword").val()+"&PurchaseType=3";
+        if (Keyword != "") {
+            _url = _url + "?Keyword=" + Keyword;
+        }
+        $("#MoldSelect option").remove();
+
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                if (MoldNumber == n) {
+                    $("#MoldSelect").append($("<option/>", {
+                        value: n,
+                        text: n,
+                        selected:true
+                    }))
+                } else {
+                    $("#MoldSelect").append($("<option/>", {
+                        value: n,
+                        text: n
+                    }))
+                }
+                
+            })
+            
+        })
+    }
+
+    function QueryOutSourceItem(Keyword, MoldNumber, PurchaseType) {
+
+        var _url = "/Purchase/JsonPurchaseItems?MoldNumber=" + $("#MoldNumber").val() +
+            "&Keyword=" + Keyword +
+            "&PurchaseType=" + PurchaseType +
+            "&State=30";
+        $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+
+    function StartQuotation() {
+        var ids = GetMultiSelectedIDs("PurchaseItemGrid");
+        location.href = "/Purchase/QRDetail?PurchaseItemIDs=" + ids;
+    }
+
+</script>

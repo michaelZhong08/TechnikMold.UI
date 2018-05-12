@@ -1,0 +1,88 @@
+﻿@{
+    ViewBag.Title = "待收货零件清单";
+}
+
+
+<div style="margin-top:10px">
+    <h2>待收货零件清单</h2>
+    <div class="col-sm-2">
+        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
+
+        <input type="text" id="Keyword" class="form-control" />
+        <select class="form-control" id="MoldSelect" size="20"></select>
+    </div>
+    <div class="col-sm-10">
+        <div>
+            <table class="col-sm-4">
+                <tr>
+                    <td class="col-sm-2">
+                        <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项关键字" />
+                        <input type="hidden" id="MoldNumber" />
+                    </td>
+                    <td class="col-sm-1">
+                        <button class="btn btn-primary" id="Query">查询</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-sm-11" style="float:left;">
+            <table id="PurchaseItemGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script src="~/Scripts/Warehouse.js"></script>
+<script>
+
+
+    $("document").ready(function () {
+
+        LoadMoldNumber("", "")
+        PurchaseItem("", "", 10);
+        $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("InStockQty");
+        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+
+        $("#Keyword").on("keyup", function () {
+            LoadMoldNumber($("#Keyword").val());
+        })
+
+        $("#MoldSelect").on("click", function () {
+
+            $("#MoldNumber").val($("#MoldSelect option:selected").val());
+            QueryPurchaseitem("", $("#MoldNumber").val());
+        })
+
+        $("#Query").on("click", function () {
+            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
+        })
+    })
+
+
+    function LoadMoldNumber(Keyword) {
+        var _url = "/Purchase/JsonMoldNumber?State=10&Keyword="+$("#Keyword").val();
+        if (Keyword != "") {
+            _url = _url + "?Keyword=" + Keyword;
+        }
+        $("#MoldSelect option").remove();
+
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#MoldSelect").append($("<option/>",{
+                    value:n,
+                    text:n
+                }))
+            })
+        })
+    }
+
+    function QueryPurchaseitem(Keyword, MoldNumber) {
+        var _url = "/Purchase/JsonPurchaseItems?MoldNumber=" + $("#MoldNumber").val() + "&Keyword=" + Keyword+"&State=10";
+        $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+
+
+</script>
+

@@ -1,0 +1,207 @@
+﻿@using MoldManager.WebUI.Models.ViewModel;
+@using TechnikSys.MoldManager.Domain.Entity;
+@{
+    Layout = null;
+}
+
+@model POViewModel
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>POForm</title>
+    <link href="~/Content/Site.css" rel="stylesheet" />
+</head>
+<body>
+    <div width="100%">
+        <center><h3>星诺奇采购订单</h3></center>
+        <p>生成日期:@DateTime.Now.ToString("yyyy-MM-dd")</p>
+        <p>订单号:@Model.PurchaseOrder.PurchaseOrderNumber</p>
+        <table class="pdfTable" border="1" cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+                <td width="20%">P/O No 订单号码</td>
+                <td width="30%">@Model.PurchaseOrder.PurchaseOrderNumber</td>
+                <td width="20%">Vendor Code 供方编号</td>
+                <td width="30%">@Model.Supplier.Name</td>
+            </tr>
+            <tr>
+                <td>Buyer 买方</td>
+                <td>苏州星诺奇科技股份有限公司</td>
+                <td>Vendor 供方</td>
+                @try{
+                <td>@Model.Supplier.FullName</td>
+                }
+                catch
+                {
+                   @: </td>
+                }
+            </tr>
+            <tr>
+                <td height="30">Contact 联系人</td>
+                <td>@Model.PuUser.FullName</td>
+                <td>Contact 联系人</td>
+@try{
+                <td>@Model.Contact.FullName</td>
+}
+catch
+{
+   @:</td>
+}
+            </tr>
+            <tr>
+                <td>Tel 电话</td>
+                <td>@Model.PuUser.Extension</td>
+                <td>Tel 电话</td>
+                @try { 
+                <td>@Model.Contact.Telephone</td>
+                }
+                catch
+                {
+                @:</td>
+                }
+            </tr>
+            <tr>
+                <td>Email 邮件</td>
+                <td>@Model.PuUser.Email</td>
+                <td>Email 邮件</td>
+                @try {
+                    <td>@Model.Contact.Email</td>
+                }
+                catch
+                {
+                    @:</td>
+                }
+            </tr>
+            <tr>
+                <td>Delivery Term贸易条款</td>
+                <td>Door to Door</td>
+                <td>Payment term付款条件</td>
+                <td>月结60天</td>
+            </tr>
+        </table>
+        <h4>订单内容</h4>
+
+        <table class="pdfTable" border="1" cellspacing="0" cellpadding="0" width="100%">
+            <thead>
+                <tr>
+                    <td>Item</td>
+                    <td>Part No.</td>
+                    <td>Specification</td>
+                    <td>QTY</td>
+                    <td>Units</td>
+                    <td>U/P</td>
+                    <td>Amount</td>
+                    <td>ETA</td>
+                    <td>Remark</td>
+                </tr>
+                <tr style="background-color:#e4e4e4">
+                    <td width="5%">项次</td>
+                    <td width="10%" align="center">物料编号</td>
+
+                    <td width="15%">规格</td>
+                    <td width="10%">数量</td>
+                    <td width="10%">单位</td>
+                    <td width="10%">单价(含17%税)</td>
+                    <td width="5%">金额(含17%税)</td>
+                    <td width="10%">交货日期</td>
+                    <td>备注</td>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                    int qty = 0;
+                    double amount= 0;
+                }
+                @foreach (POContent _content in Model.POContents)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@_content.PartName</td>
+                        <td align="center">@_content.PartSpecification</td>
+
+                        <td>@_content.Quantity</td>
+                        <td>件</td>
+                        <td>@_content.UnitPrice.ToString("0.00")</td>
+                        @{
+                    double sub = _content.Quantity * _content.UnitPrice;
+                        }
+                        <td>@sub.ToString("0.00")</td>
+                       
+                        <td></td>
+                        <td>@_content.Memo</td>
+                    </tr>
+                    qty = qty + _content.Quantity;
+                    amount = amount +sub; 
+                    i++;
+                }
+                <tr>
+                    <td colspan="9"></td>
+                </tr>
+                <tr>
+                    <td colspan="2"> </td>
+                    <td>Total Quantity:</td>
+                    <td>@qty</td>
+                    <td>件</td>
+                    <td>Total Amount:</td>
+                    <td>@amount.ToString("0.00")</td>
+                    <td>Currency:</td>
+                    <td>RMB</td>
+                </tr>
+                <tr>
+                    <td colspan="2"> </td>
+                    <td>总数量</td>
+                    <td>@qty</td>
+                    <td>件</td>
+                    <td>总金额</td>
+                    <td>@amount.ToString("0.00")</td>
+                    <td>币别:</td>
+                    <td>RMB</td>
+                </tr>
+                <tr>
+                    <td colspan="9">Remark备注：</td>
+                </tr>
+                <tr>
+                    <td colspan="9">
+                        1.Vendor has to verify if the material is HSF or not and feedback in written way.<br />
+                        供应商必须将所提供的物料中是否含有有害物质的信息书面告知本公司。
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="9">
+                        2.Pls sign back within 24 hours, our payment is according to confirmed order .<br />
+                        请24小时内签字回传采购订单， 回传的订单时我司付款的凭证之一。
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="9">
+                        3.Once shipment goods are delayed one day without notifying purchaser in advance, payment shall be delayed one month and so forth.<br />
+                        交易异常未提前通知采购， 延误一天，当月货款延后一个月，依此类推。
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="9">
+                        4.In order to improve the efficiency for both parties, COA and delivery order with PO. No􀋣part No and lot. No. should be provided together while delivering.<br />
+                        送货事情提供送货单（订单号，物料编号，批号）、检验报告， 以加快双方作业效率。
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="9">
+                        5.Time of goods receipt 9:00am~11:30am & 13:00pm ~17:00pm of Monday to Friday. Beyond this period, consignee should be informed in advance.<br />
+                        仓库收货时间：周一至周五上午9:00-11:30,下午13:00-17:00）， 若其他时间送货，提前预约。
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="9">
+                        6.Please read content of Sinnotech Criterion for Supplier Management carefully before the delivery. Any business or quality controversy, especially quality problems,
+                        replacement or supplement should be implented in time firstly. And Criterion for Supplier Management should be reffered too.<br />
+                        交易前请仔细阅读星诺奇供应商管理手册，任何商务与质量争议，特别是质量问题，供应商必须及时更换或补货以满足买方需求，同时依供应商管理手册要求处理品质异常。
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>
