@@ -9,9 +9,9 @@ namespace MoldManager.WebUI.Models.GridRowModel
     public class POContentGridRowModel
     {
         public string[] cell;
-        public POContentGridRowModel(POContent POContent, string ETA, string PRNumber, int TypeID, string TypeName)
+        public POContentGridRowModel(POContent POContent, string ETA, string PRNumber)
         {
-            cell = new string[11];
+            cell = new string[10];
             cell[0] = POContent.POContentID.ToString();
             cell[1] = POContent.PartName;
             cell[2] = POContent.PartNumber;
@@ -21,8 +21,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[6] = (POContent.Quantity * POContent.UnitPrice).ToString();
             cell[7] = PRNumber;
             cell[8] = POContent.RequireTime.ToString("yyyy-MM-dd");
-            cell[9] = TypeID == 0 ? "" : TypeID.ToString();
-            cell[10] = TypeName;
+            cell[9] = POContent.Memo;
         }
     }
 }

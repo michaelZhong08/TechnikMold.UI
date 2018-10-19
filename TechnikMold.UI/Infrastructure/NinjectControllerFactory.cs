@@ -9,7 +9,7 @@ using TechnikSys.MoldManager.Domain.Abstract;
 using TechnikSys.MoldManager.Domain.Concrete;
 
 
-namespace MoldManager.WebUI.Infrastructure
+namespace TechnikSys.WebUI.Infrastructure
 {
     public class NinjectControllerFactory : DefaultControllerFactory
     {
@@ -29,6 +29,7 @@ namespace MoldManager.WebUI.Infrastructure
         private void AddBindings()
         {
             ninjectKernel.Bind<IBrandRepository>().To<BrandRepository>();
+            ninjectKernel.Bind<IDepPhaseRepository>().To<DepPhaseRepository>();
             ninjectKernel.Bind<ICustomerRepository>().To<CustomerRepository>();
             ninjectKernel.Bind<IDepartmentRepository>().To<DepartmentRepository>();
             ninjectKernel.Bind<IListTypeRepository>().To<ListTypeRepository>();
@@ -66,22 +67,13 @@ namespace MoldManager.WebUI.Infrastructure
             ninjectKernel.Bind<IPOContentRepository>().To<POContentRepository>();
             ninjectKernel.Bind<ICAMTasksRepository>().To<CAMTaskRepository>();
             ninjectKernel.Bind<ICNCItemRepository>().To<CNCItemRepository>();
-            //ninjectKernel.Bind<IEDMItemRepository>().To<EDMItemRepository>();
             ninjectKernel.Bind<IQCInfoRepository>().To<QCInfoRepository>();
-            //ninjectKernel.Bind<ICNCParameterRepository>().To<CNCParameterRepository>();
             ninjectKernel.Bind<IPartImportRecordRepository>().To<PartImportRecordRepository>();
             ninjectKernel.Bind<IWarehouseRecordRepository>().To<WarehouseRecordRepository>();
             ninjectKernel.Bind<IPositionRepository>().To<PositionRepository>();
             ninjectKernel.Bind<IQuotationRequestRepository>().To<QuotationRequestRepository>();
             ninjectKernel.Bind<IQRContentRepository>().To<QRContentRepository>();
             ninjectKernel.Bind<ISteelDrawingCADPartRepository>().To<SteelDrawingCADPartRepository>();
-            //ninjectKernel.Bind<ISteel_Programme_listRepository>().To<Steel_Programme_listRepository>();
-            //ninjectKernel.Bind<ISteel_GroupProgramme_listRepository>().To<Steel_GroupProgramme_listRepository>();
-            //ninjectKernel.Bind<ISteel_CAM_drawing_tableRepository>().To<Steel_CAM_drawing_tableRepository>();
-            //ninjectKernel.Bind<IMACH_TOTALRepository>().To<MACH_TOTALRepository>();
-            //ninjectKernel.Bind<IELE_GENERAL_TABLERepository>().To<ELE_GENERAL_TABLERepository>();
-            //ninjectKernel.Bind<IELE_SETTING_TABLERepository>().To<ELE_SETTING_TABLERepository>();
-            //ninjectKernel.Bind<IMACH_CAMDrawingRepository>().To<MACH_CAMDrawingRepository>();
             ninjectKernel.Bind<IEleItemRepository>().To<ELEItemRepository>();
 
             ninjectKernel.Bind<ICharmillRepository>().To<CharmillRepository>();
@@ -121,6 +113,10 @@ namespace MoldManager.WebUI.Infrastructure
             ninjectKernel.Bind<ISupplierBrandRepository>().To<SupplierBrandRepository>();
             ninjectKernel.Bind<IPartListRepository>().To<PartListRepository>();
             ninjectKernel.Bind<IQuotationFileRepository>().To<QuotationFileRepository>();
+
+            ninjectKernel.Bind<IMGSettingRepository>().To<MGSettingRepository>();
+            ninjectKernel.Bind<IWEDMSettingRepository>().To<WEDMSettingRepository>();
+            ninjectKernel.Bind<IMachinesInfoRepository>().To<MachinesInfoRepository>();
         }
     }
 }

@@ -12,49 +12,36 @@
     }
 }
 
-<div>
+<div style="margin-top:60px">
     <h2>设计清单</h2>
     <div class="col-sm-2">
         <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
-        <input type="text" id="Keyword" class="form-control"/>
-        <select class="form-control" id="MoldSelect"></select>
+        <input type="text" id="Keyword" class="form-control" />
+        <select class="form-control" id="MoldSelect" style=""></select>
     </div>
     <div class="col-sm-10">
-        
-        @*<nav class="navbar navbar-default" style="vertical-align:central;">
-            <ul class="nav navbar-nav">
-                <li><a href="#" id="ChangeProject">选择项目</a></li>
-                @if (ViewBag.ProjectID > 0) { 
-                    <li><a href="#" id="CreatePart">创建零件</a></li>
-                    <li><a href="#" id="UpgradePart">版本升级</a></li>
-                    <li><a href="#" id="CreatePR">零件采购</a></li>
-                }
-            </ul>
-        </nav>*@
 
         <div id="Toolbar">
+            <select id="sltVersion" style="width:100px;height:32px;border:1px solid #ccc;margin-right:4px;"></select>
             @*///CAD User Operation*@
             @if (DeptID == 2)
             {
-            <button class="btn btn-primary" id="CreatePR">创建采购申请</button>
-
+                <button class="btn btn-primary" id="CreatePR">创建采购申请</button>
                 <button class="btn btn-primary" id="CreatePart">创建零件</button>
                 <button class="btn btn-warning" id="DeletePart">删除零件</button>
+                <button class="btn btn-primary" id="PublishModel">发布PartList</button>
+                <button class="btn btn-primary" id="UpgradeModel">升级PartList</button>
+                <button class="btn btn-primary" id="UpdradePart">升级Part</button>
+                <button class="btn btn-success" id="PLImport">外部导入</button>
             }
 
-            
-            
-           @*<div style="float:right" class="col-sm-2">
-                <input type="text" class="form-control" placeholder="输入查询关键字" />               
-            </div>*@
         </div>
-        <div>
-            <table id="PartGrid"></table>
-            <div id="jqGridPager"></div>
+        <div id="PartGridDiv" style="overflow-x:auto;overflow-y:hidden;">
+            <table id="PartGrid" style="width:100%"></table>
+            @*<div id="jqGridPager"></div>*@
         </div>
     </div>
 </div>
-@*@{Html.RenderAction("MoldSelect", "Dialog");}*@
 
 
 @*手工创建零件对话框*@
@@ -70,41 +57,46 @@
                 {
                     <table class="table-striped col-sm-12">
                         <tr>
-                            <td class="col-sm-4"><label>模具号</label></td>                        
+                            @*<td class="col-sm-4"><label>模具号</label></td>*@
                             <td>
-                                <input type="text" id="MoldNumber" class="form-control col-sm-3" value="@ViewBag.MoldNumber" name="MoldNumber" readonly />
-                                <input type="hidden" id="PartID" name="PartID" value="0"/>
+                                <input type="hidden" id="MoldNumber" class="form-control col-sm-3" value="@ViewBag.MoldNumber" name="MoldNumber" readonly />
+                                <input type="hidden" id="BomVersion" class="form-control col-sm-3"  name="BomVersion" readonly />
+                                <input type="hidden" id="PartID" name="PartID" value="0" />
                                 @*<input type="hidden" id="MoldNumber" name="MoldNumber" value="@ViewBag.MoldNumber" />*@
                                 <input type="hidden" id="Enabled" name="Enabled" value="true" />
                                 <input type="hidden" class="form-control" id="Version" name="Version" value="V01" readonly />
                             </td>
                         </tr>
-                        <tr>
+                        @*<tr>
                             <td class="col-sm-4"><label>物料号</label></td>
                             <td><input type="text" id="PartNumber" name="PartNumber" class="form-control required" /> </td>
+                        </tr>*@
+                        <tr>
+                            <td class="col-sm-4"><label>零件号</label></td>
+                            <td><input type="text" id="JobNo" name="JobNo" class="form-control required" placeholder="请输入JOB NO"/> </td>
                         </tr>
                         <tr>
-                            <td class="col-sm-4"><label>零件名</label></td>
+                            <td class="col-sm-4"><label>零件短名</label></td>
                             <td>
-                                <input type="text" id="PartName" name="Name" class="form-control required" />
+                                <input type="text" id="ShortName" name="ShortName" class="form-control required" placeholder="请输入零件短名"/>
                             </td>
                         </tr>
                         <tr>
                             <td class="col-sm-4"><label>规格</label></td>
                             <td>
-                                <input type="text" id="Specification" name="Specification" class="form-control required" />
+                                <input type="text" id="Specification" name="Specification" class="form-control required" placeholder="请输入规格或尺寸"/>
                             </td>
                         </tr>
                         <tr>
                             <td class="col-sm-4"><label>数量</label></td>
                             <td>
-                                <input type="number" id="Quantity" name="Quantity" class="form-control required" value="1" min="0"/>
+                                <input type="number" id="Quantity" name="Quantity" class="form-control required" value="1" min="0" />
                             </td>
                         </tr>
                         <tr>
                             <td class="col-sm-4"><label>材料</label></td>
                             <td>
-                                <select id="MaterialID" name="MaterialID" class="form-control"></select>
+                                <select id="MaterialID" name="MaterialID" class="form-control required"></select>
                                 <input type="hidden" id="MaterialName" name="MaterialName" />
                                 @*<input type="text" name="MaterialName" />*@
                             </td>
@@ -113,30 +105,52 @@
                             <td class="col-sm-4"><label>硬度</label></td>
                             <td>
                                 <select class="form-control" id="HardnessID" name="HardnessID"></select>
-                                <input type="hidden" name="Hardness" id="Hardness"/>
+                                <input type="hidden" name="Hardness" id="Hardness" />
                             </td>
                         </tr>
-                        @*<tr>
-                            <td class="col-sm-4"><label>品牌</label></td>
-                            <td>
-                                <select class="form-control" id="BrandID" name="BrandID"></select>
-                                <input type="hidden" id="BrandName" name="BrandName" />
-                            </td>
-                        </tr>*@
-                        @*<tr>
-                            <td class="col-sm-4"><label>版本</label></td>
-                            <td>
-                                
-                            </td>
-                        </tr>*@
 
                         <tr>
                             <td class="col-sm-4"><label>品牌</label></td>
                             <td>
-                                <select class="form-control" id="BrandID" name="BrandID"></select>
+                                <select class="form-control required" id="BrandID" name="BrandID" ></select>
                                 <input type="hidden" id="BrandName" name="BrandName" />
                             </td>
                         </tr>
+                        @**@
+                        <tr>
+                            <td class="col-sm-4"></td>
+                            <td>
+                                <input type="checkbox" id="DetailDrawing" name="DetailDrawing" /> &nbsp;<label>详图</label>&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+                                <input type="checkbox" id="BriefDrawing" name="BriefDrawing" /> &nbsp;<label>简图</label>&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+                                <input type="checkbox" id="PurchaseDrawing" name="PurchaseDrawing" /> &nbsp;<label>附图订购</label>&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+                                <input type="checkbox" id="ExtraMaching" name="ExtraMaching" /> &nbsp;<label>追加工</label>
+                            </td>
+                        </tr>
+                        @*<tr>
+                            <td class="col-sm-4"><label>附图订购</label> &nbsp; &nbsp;<input type="checkbox" id="PurchaseDrawing" name="PurchaseDrawing" /></td>
+                            <td>
+                                <label>追加工</label> &nbsp; &nbsp;<input type="checkbox" id="ExtraMaching" name="ExtraMaching" />
+                            </td>
+                        </tr>*@
+                        @*<tr>
+                            <td class="col-sm-4"><label>简图</label></td>
+                            <td>
+                                <input type="checkbox" id="BriefDrawing" name="BriefDrawing" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>附图订购</label></td>
+                            <td>
+                                <input type="checkbox" id="PurchaseDrawing" name="PurchaseDrawing"  />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>追加工</label></td>
+                            <td>
+                                <input type="checkbox" id="ExtraMaching" name="ExtraMaching"  />
+                            </td>
+                        </tr>*@
+                        @**@
                         <tr>
                             <td class="col-sm-4"><label>备注</label></td>
                             <td>
@@ -152,9 +166,32 @@
                 }
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SPClose" class="btn btn-default" data-dismiss="modal">关闭</button>
                 <button type="button" id="SavePart" class="btn btn-primary">保存</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="PLImportModal" aria-labelledby="PLImportLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" id="PartEditLabel">外部文件导入系统</h4>
+            </div>
+            <form id="PLImportForm" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-horizontal">
+                        @*<label>外部文件：</label>&nbsp;&nbsp;*@
+                        <input id="PLFile" name="file" type="file" class="form-control" />
+                    </div>                   
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" id="PLSubmit" class="btn btn-primary">上传</button>
+                </div>
+            </form>                        
         </div>
     </div>
 </div>
@@ -171,17 +208,17 @@
             <span style="font-size:12px; font-family:Verdana">查看图纸</span>
         </li>
         @*<li id="Delete">
-            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png" /></span>
-            <span style="font-size:12px; font-family:Verdana">删除零件</span>
-        </li>*@
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">删除零件</span>
+            </li>*@
         @*<li id="Revision">
-            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Revision.png" /></span>
-            <span style="font-size:12px; font-family:Verdana">版本升级</span>
-        </li>*@
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Revision.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">版本升级</span>
+            </li>*@
         @*<li id="Memo">
-            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/memo.png" /></span>
-            <span style="font-size:12px; font-family:Verdana">修改备注</span>
-        </li>*@
+                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/memo.png" /></span>
+                <span style="font-size:12px; font-family:Verdana">修改备注</span>
+            </li>*@
 
     </ul>
 </div>
@@ -190,47 +227,92 @@
 
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/Part.js"></script>
+<script src="http://malsup.github.io/jquery.form.js"></script>
 <script type="text/javascript">
     $(document).ready(function () {
+        //
+        $('#PartGridDiv').css('width', document.body.clientWidth * 0.82);
+        $('.ui-jqgrid-bdiv').css('width', document.body.clientWidth * 0.82);
+        $('.ui-jqgrid-hdiv').css('width', document.body.clientWidth * 0.82);
+        //$('#PartGrid').css('width', document.body.clientWidth * 0.1);
+        $(window).resize(function () {
+            $('#PartGridDiv').css('width', document.body.clientWidth * 0.82);
+
+            var _listsize = Math.round((document.documentElement.clientHeight - 165) / 18);
+            $("#MoldSelect").attr("size", _listsize);
+            $("#MoldSelect").css("height", document.documentElement.clientHeight - 165-39);
+            $("#PartGridDiv").css('height', document.documentElement.clientHeight - 165)
+            //$('.ui-jqgrid-bdiv').css('width', document.body.clientWidth * 0.82);
+            //$('.ui-jqgrid-hdiv').css('width', document.body.clientWidth * 0.82);
+            //$('#PartGrid').css('width', document.body.clientWidth * 0.1);
+        })
+        //
         @if (DeptID == 2)
         {
-            @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 235);
-                }
+            @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
+                                }
         else
         {
-            @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight-190);
-        }
+            @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
+                        }
 
 
 
 
-        var _listsize = Math.round((document.documentElement.clientHeight-210) / 18);
+        var _listsize = Math.round((document.documentElement.clientHeight - 165) / 18);
         $("#MoldSelect").attr("size", _listsize);
 
-
-        LoadMoldList("","@ViewBag.MoldNumber");
+        LoadMoldList("", "@ViewBag.MoldNumber");
 
         $("#Keyword").on("keyup", function () {
             setTimeout(LoadMoldList($("#Keyword").val()), 1000);
 
         })
-        $("#test").on("click", function () {
-            $("#PartGrid").jqGrid("clearGridData");
-            $("#PartGrid").jqGrid("setGridParam", { url: "/Part/JsonParts?MoldNumber=7" }).trigger("reloadGrid");
-        })
 
-        $("#MoldSelect").on("change", function () {
+        $("#MoldSelect").on("click", function () {
             var _MoldNumber = $("#MoldSelect").val();
             if (_MoldNumber != null) {
-                var _url = "/Part/JsonParts?MoldNumber=" + _MoldNumber;
-                $("#PartGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+                //加载版本
+                LoadMoldVer(_MoldNumber);
             }
-
         })
+        $("#sltVersion").on("change", function () {
+            ReloadGrid();
 
+        });
         $("#RefreshMold").on("click", function () {
             LoadMoldList("", $("#MoldSelect").val());
+        });
+        //
+        $('#PLImport').on('click', function () {
+            $('#PLImportModal').modal('show');
         })
+
+        //Partlist上传
+        $('#PLSubmit').on('click', function () {
+            if ($('#PLFile').val() == '') {
+                alert('请选择文件！');
+                $('#PLFile').focus();
+                return false;
+            }
+            $('#PLImportForm').ajaxSubmit({
+                url: '/Part/PLImport',
+                type: 'post',
+                success: function (result) {
+                    if (result.code > 0) {
+                        alert(result.Message);
+                        $('#PLFile').val("");
+                        $('#PLImportModal').modal('hide');
+                        $("#RefreshMold").click();
+                    }
+                    else {
+                        alert(result.Message);
+                    }
+                },
+                error: function (error) { alert('程序出错！'); }
+            })
+        });
+
     });
 
 </script>

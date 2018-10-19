@@ -12,7 +12,8 @@ using System.Text;
 using System.IO;
 using MoldManager.WebUI.Tools;
 using System.Linq.Expressions;
-using TechnikMold.UI.Models.ViewModel;
+using TechnikSys.MoldManager.UI.Models.ViewModel;
+using TechnikSys.MoldManager.Domain.Output;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -27,8 +28,10 @@ namespace MoldManager.WebUI.Controllers
         private IPhaseModificationRepository _phaseModificationRepository;
         private ICostCenterRepository _costCenterRepository;
         private IDepartmentRepository _deptRepository;
+        private IPartListRepository _partListRepository;
 
         private IProjectRecordRepository _projectRecordRepository;
+        private IDepPhaseRepository _depphaseRepository;
 
         public ProjectController(IProjectRepository ProjectRepository,
             IProjectPhaseRepository ProjectPhaseRepository, 
@@ -38,8 +41,10 @@ namespace MoldManager.WebUI.Controllers
             ICustomerRepository CustomerRepository, 
             IPhaseModificationRepository PhaseModificationRepository,
             ICostCenterRepository CostCenterRepository, 
-            IDepartmentRepository DepartmentRepository, 
-            IProjectRecordRepository ProjectRecordRepository){
+            IDepartmentRepository DepartmentRepository,
+            IPartListRepository PartListRepository,
+            IProjectRecordRepository ProjectRecordRepository,
+            IDepPhaseRepository DepPhaseRepository){
 
             _projectRepository = ProjectRepository;
             _projectPhaseRepository = ProjectPhaseRepository;
@@ -50,14 +55,17 @@ namespace MoldManager.WebUI.Controllers
             _phaseModificationRepository = PhaseModificationRepository;
             _costCenterRepository = CostCenterRepository;
             _deptRepository = DepartmentRepository;
+            _partListRepository = PartListRepository;
             _projectRecordRepository = ProjectRecordRepository;
+            _depphaseRepository = DepPhaseRepository;
         }
         // GET: Project
-        public ActionResult Index(string Keyword = "", int State = 1, int Type=1)
+        public ActionResult Index(string Keyword = "", int State = 1, int Type=1,bool IsDepFinish=true)
         {
             ViewBag.Keyword = Keyword;
             ViewBag.State = State;
             ViewBag.Type = Type;
+            ViewBag.IsDepFinish = IsDepFinish;
             return View();
         }
 
@@ -238,7 +246,7 @@ namespace MoldManager.WebUI.Controllers
                         _projectType = "项目";
                         break;
                     case 1:
-                        _projectType = "模具项目";
+                        _projectType = "模具项目";                       
                         break;
                     case 2:
                         _projectType = "修模项目";
@@ -251,6 +259,27 @@ namespace MoldManager.WebUI.Controllers
                 string _recordMemo = _userName + "创建" + _projectType;
 
                 AddProjectRecord(_projectID, _recordMemo);
+                #region by michael 创建新模项目 更新partlist模具号
+                if (Project.Project.Type == 1)
+                {
+                    try
+                    {
+                        List<PartList> _partlists = _partListRepository.PartLists.Where(p => p.MoldNumber == Project.Project.MoldNumber).ToList() ?? new List<PartList>();
+                        if (_partlists.Count > 0)
+                        {
+                            foreach (var _pl in _partlists)
+                            {
+                                _pl.ProjectID = _projectID;
+                                _partListRepository.Save(_pl);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+                #endregion
             }
 
             if (Project.Project.Type > 0)
@@ -533,8 +562,19 @@ namespace MoldManager.WebUI.Controllers
             ProjectGridViewModel _gridViewModel = new ProjectGridViewModel(_projects, _projectPhaseRepository, _projectRoleRepository, _phases);
             return Json(_gridViewModel, JsonRequestBehavior.AllowGet);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Keyword"></param>
+        /// <param name="State"></param>
+        /// <param name="Type"></param>
+        /// <param name="DepID"></param>
+        /// <param name="PageCount"></param>
+        /// <param name="Page"></param>
+        /// <param name="isDepFinish">true 部门未结案 false 项目未结案</param>
+        /// <returns></returns>
 
-        public ActionResult JsonProjects(string Keyword = "", int State = 1, int Type = 1, int DepID = 18, int PageCount = 60, int Page = 1)
+        public ActionResult JsonProjects(string Keyword = "", int State = 1, int Type = 1, int DepID = 18, int PageCount = 60, int Page = 1,bool isDepFinish=true)
         {
             List<Project> _projects;
             List<Phase> _phases;
@@ -587,7 +627,14 @@ namespace MoldManager.WebUI.Controllers
             int _totalprojects = 0;
             if (Keyword == "")
             {
-                _projectsByDep = GetProjectsByDep(_projects, DepID, _skipcount, _takeCount);
+                if (isDepFinish)
+                {
+                    _projectsByDep = GetProjectsByDep(_projects, DepID, _skipcount, _takeCount);
+                }
+                else
+                {
+                    _projectsByDep = _projects.Where(p => p.Enabled = true).Where(p => p.ProjectStatus < 3);
+                }                
                 _totalprojects = _projectsByDep.Count();
                 _projectsByDep = _projectsByDep.Skip(_skipcount).Take(_takeCount);
             }
@@ -651,77 +698,86 @@ namespace MoldManager.WebUI.Controllers
             }                      
             try
             {
-                string[] PhName;
+                #region 部门-项目阶段控制
+                //string[] PhName;
                 IEnumerable<int> ProjectID;
-                switch (DepartmentID)
-                {
-                    //管理
-                    case 1:
-                        break;
-                    //CAD
-                    case 2:
-                        PhName = new string[] { "CAD" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //CAM
-                    case 3:
-                        PhName = new string[] { "CAM" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //采购
-                    case 4:
-                        PhName = new string[] { "采购" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //CNC
-                    case 7:
-                        PhName = new string[] { "CNC", "CNC开粗" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //EDM
-                    case 8:
-                        PhName = new string[] { "EDM" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //WEDM
-                    case 9:
-                        PhName = new string[] { "WEDM" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //仓库
-                    case 20:
-                        PhName = new string[] { "热处理" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //MG 磨床
-                    case 5:
-                        PhName = new string[] { "开粗", "磨床" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //装配
-                    case 11:
-                        PhName = new string[] { "装配" };
-                        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
-                        ProJIDList = ProjectID.ToList();
-                        break;
-                    //异常
-                    case 18:
-                        Projects = new List<Project>();
-                        break;
-                }
+                //switch (DepartmentID)
+                //{
+                //    //管理
+                //    case 1:
+                //        break;
+                //    //CAD
+                //    case 2:
+                //        PhName = new string[] { "CAD" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //CAM
+                //    case 3:
+                //        PhName = new string[] { "CAM" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //采购
+                //    case 4:
+                //        PhName = new string[] { "采购" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //CNC
+                //    case 7:
+                //        PhName = new string[] { "CNC", "CNC开粗" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //EDM
+                //    case 8:
+                //        PhName = new string[] { "EDM" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //WEDM
+                //    case 9:
+                //        PhName = new string[] { "WEDM" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //仓库
+                //    case 20:
+                //        PhName = new string[] { "热处理" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //MG 磨床
+                //    case 5:
+                //        PhName = new string[] { "开粗", "磨床" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //装配
+                //    case 11:
+                //        PhName = new string[] { "装配" };
+                //        ProjectID = lst.Where(i => PhName.Contains(i.Name) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                //        ProJIDList = ProjectID.ToList();
+                //        break;
+                //    //异常
+                //    case 18:
+                //        Projects = new List<Project>();
+                //        break;
+                //}
+                List<Base_DepPhase> depPhases = _depphaseRepository.QueryByDepID(DepartmentID).Where(d=>d.DepId!=1).ToList() ?? new List<Base_DepPhase>();
+                List<int?> phaseIds = new List<int?>();
+                foreach (var depPhase in depPhases)
+                    phaseIds.Add(depPhase.PhaseId);
+                ProjectID = phaseIds.Count == 0 ? new List<int>() : lst.Where(i => phaseIds.Contains(i.PhaseID) & i.ActualFinish != _datezero).Select(i => i.ProjectID);
+                ProJIDList = ProjectID.ToList();
+                #endregion
             }
             catch (Exception ex)
             {
 
             }
+            
             ProjectList = Projects.Where(p => !ProJIDList.Contains(p.ProjectID)); //.Skip(skipcount).Take(takeCount)
             return ProjectList;
         }
@@ -936,9 +992,10 @@ namespace MoldManager.WebUI.Controllers
 
         public bool PhaseDeptValidate(int PhaseID, int DepartmentID)
         {
-            string _phase = _phasesRepository.Phases.Where(p => p.PhaseID == PhaseID).Select(p=>p.Name).FirstOrDefault();
+            //string _phase = _phasesRepository.Phases.Where(p => p.PhaseID == PhaseID).Select(p=>p.Name).FirstOrDefault();
             string _dept = _deptRepository.GetByID(DepartmentID).Name;
-            if ((_phase == _dept)||(_dept=="管理"))
+            Base_DepPhase depPhase = _depphaseRepository.QueryByDepID(DepartmentID).Where(d => d.PhaseId == PhaseID).FirstOrDefault() ?? new Base_DepPhase();
+            if ((depPhase.Id>0) ||(_dept=="管理"))
             {
                 return true;
             }
@@ -1109,6 +1166,137 @@ namespace MoldManager.WebUI.Controllers
             return View();
         }
 
+        #region   added by felix 20170729
+        /// <summary>
+        /// 获取某模具的版本清单（版本控制）  
+        /// </summary>
+        /// <param name="MoldNumber">模具编号</param>
+        /// <returns></returns>
+        public JsonResult GetMoldVerList(string MoldNumber)
+        {
+            try
+            {
+                List<MoldVersionInfo> _project =
+                    _projectRepository.GetProjectVerList(MoldNumber);
+                return Json(_project, JsonRequestBehavior.AllowGet);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        /// <summary>
+        /// 判断是否已发布
+        /// </summary>
+        /// <param name="ProjectID"></param>
+        /// <returns></returns>
+        public int GetIsPublish(int ProjectID = 0)
+        {
+            try
+            {
+                Project prj = _projectRepository.GetByID(ProjectID);
+                if (prj != null && prj.IsPublish == true)
+                {
+                    return 1;
+                }
+                else if (prj != null && prj.IsPublish == false)
+                {
+                    return 0;
+                }
+                else
+                    return -1;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+        public JsonResult GetProjectJson(int ProjectID = 0)
+        {
+            try
+            {
+                Project prj = _projectRepository.GetByID(ProjectID);
+                return Json(prj, JsonRequestBehavior.AllowGet);
 
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public int GetIsUpgrade(int ProjectID = 0)
+        {
+            try
+            {
+                Project prj = _projectRepository.GetByID(ProjectID);//当前项目
+                Project _project = _projectRepository.QueryByMoldNumber(prj.MoldNumber);//最新版本的项目
+
+                if (prj != null && prj.IsPublish == true && prj.Version == _project.Version)
+                {//可以升级（最新的版本 ，已发布的）
+                    return 1;
+                }
+                else if (prj != null && prj.Version != _project.Version)
+                {
+                    return 0;//不是最新版本
+                }
+                else if (prj != null && prj.Version == _project.Version && prj.IsPublish == false)
+                {
+                    return 2;//该最新版本未发布
+                }
+                else
+                    return -1;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// publish project
+        /// </summary>
+        /// <param name="projectID"></param>
+        /// <returns></returns>
+        public int PublishProject(string moldNumber)
+        {
+            try
+            {
+                //获取模具最后一个版本的id
+                int projectID = GetProjectID(moldNumber);
+                int rs = 0;
+                //修改该版本的ispublish
+                if (projectID > 0)
+                {
+                    Project _project = _projectRepository.GetByID(projectID);
+                    _project.IsPublish = true;
+                    rs = _projectRepository.Save(_project);
+                }
+                if (rs > 0)
+                    return 1;
+                else return 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        #endregion
+        #region added by michael 180708
+        public bool IsMainPJ(string pjID)
+        {
+            if (!string.IsNullOrEmpty(pjID) && pjID!="undefined")
+            {
+                int pjIDint = Convert.ToInt32(pjID);
+                Project pj = _projectRepository.GetByID(pjIDint);
+                if (pj.ParentID == 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        #endregion
     }
 }

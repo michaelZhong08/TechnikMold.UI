@@ -15,14 +15,23 @@
     $("#SaveUser").on("click", function () {
         $("#DepartmentID").val($("#Department option:selected").val());
         $("#PositionID").val($("#Position").val());
-        if (GetInvalidCount("UserEdit") == 0) {
+        //if (GetInvalidCount("UserEdit") == 0) {
 
-            if (ValidateCreate("UserEdit")) {
-                if (ValidateEmail("Email")) {                    
-                    $("#UserEdit").submit(); 
-                } else {
-                    return false;
-                }
+        //    if (ValidateCreate("UserEdit")) {
+        //        if (ValidateEmail("Email")) {                    
+        //            $("#UserEdit").submit(); 
+        //        } else {
+        //            return false;
+        //        }
+        //    } else {
+        //        return false;
+        //    }
+        //} else {
+        //    return false;
+        //}
+        if (ValidateCreate("UserEdit")) {
+            if (ValidateEmail("Email")) {
+                $("#UserEdit").submit();
             } else {
                 return false;
             }
@@ -85,8 +94,10 @@ function DeleteUsers() {
 
 //Setup the UserEdit modal fields by user logon name
 function LoadUser(id) {
+    
     $.getJSON("/User/GetUserByID?UserID=" + id, function (user) {
         $("#LogonName").val(user.LogonName);
+        $("#UserCode").val(user.UserCode);
         $("#UserID").val(user.UserID);
         $("#DepartmentID").val(user.DepartmentID);
         $("#Enabled").val(user.Enabled);
@@ -96,8 +107,10 @@ function LoadUser(id) {
         $("#Mobile").val(user.Mobile);
         $("#Department").find("option[value=" + user.DepartmentID + "]").attr("selected", true);
         $("#Position").find("option[value=" + user.PositionID + "]").attr("selected", true);
+        ValidateCreate("UserEdit");
         $("#EditUserModal").modal("show");
     })
+    
 }
 
 function ValidateCreate(FormName) {

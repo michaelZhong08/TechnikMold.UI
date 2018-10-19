@@ -32,8 +32,7 @@
         }
 }
 
-<h2>Index</h2>
-<div style="margin-top:20px">
+<div style="margin-top:60px">
     <div class="col-sm-11">
         
         <div class="col-sm-12">
@@ -96,6 +95,12 @@
                 @using (Html.BeginForm("Supplier", "Purchase", FormMethod.Post, new { id = "SupplierInfo" }))
                 {
                     <table class="table-striped col-sm-12">
+                        <tr>
+                            <td class="col-sm-4"><label>供应商代码</label></td>
+                            <td class="col-sm-8">
+                                <input type="text" class="form-control required" name="Code" id="Code" />
+                            </td>
+                        </tr>
                         <tr>
                             <td class="col-sm-4"><label>名称</label></td>
                             <td class="col-sm-8">

@@ -28,7 +28,7 @@
     tr:nth-child(even){background-color:#ffffff;}
     
 </style>
-<div style="margin-top:10px">
+<div style="margin-top:60px">
     <div class="col-sm-12">        
         <ul class="nav nav-pills">
             @if (DeptID == 1)
@@ -44,8 +44,7 @@
            else if (ViewBag.Type == 2)
            {
             <li><button class="btn btn-primary" id="MoldProject">新模项目 </button></li>
-           }
-            
+           }           
         </ul>
         <br />
             <table id="ProjectGrid"></table>
@@ -413,6 +412,22 @@
 <script src="~/Scripts/Project.js"></script>
 <script type="text/javascript">
     $(document).ready(function(){
+        //$('#ProjectGrid').mousedown(function(e){ 
+        //    if(3 == e.which){ 
+        //        var pjID=GetCurrentID1("ProjectGrid");
+        //        $.ajax({
+        //            url: "/Project/IsMainPJ?pjID=" + pjID,
+        //            type: 'get',
+        //            success: function (res) {
+        //                $('#AddProject').css('display', 'none');
+        //                //if (res!='True')
+        //                //    $('#AddProject').css('display', 'none');
+        //                //else
+        //                //    $('#AddProject').css('display', 'inline');
+        //            }
+        //        })
+        //    }
+        //})
 
         GetPhases("PhaseID", @ViewBag.Type);
         GetPhases("FinishPhaseID", @ViewBag.Type);

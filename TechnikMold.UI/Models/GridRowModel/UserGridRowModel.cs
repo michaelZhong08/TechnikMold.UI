@@ -12,18 +12,19 @@ namespace MoldManager.WebUI.Models.GridRowModel
         public string[] cell;
         public UserGridRowModel(User User, string DepartmentName, string PositionName)
         {
-            cell = new string[10];
-
+            cell = new string[11];
+            
             cell[0] = User.UserID.ToString();
             cell[1] = User.DepartmentID.ToString();
-            cell[2] = User.LogonName;
-            cell[3] = User.FullName;
-            cell[4] = DepartmentName;
-            cell[5] = PositionName;
-            cell[6] = User.Extension;
-            cell[7] = User.Mobile;
-            cell[8] = User.Email;                
-            cell[9] = User.Enabled.ToString();
+            cell[2] = User.UserCode?? "";
+            cell[3] = User.LogonName;
+            cell[4] = User.FullName;
+            cell[5] = DepartmentName;
+            cell[6] = PositionName;
+            cell[7] = User.Extension;
+            cell[8] = User.Mobile;
+            cell[9] = User.Email;                
+            cell[10] = User.Enabled.ToString();
             
 
         }

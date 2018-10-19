@@ -12,7 +12,7 @@
 
 
 
-<div style="margin-top:10px">
+<div style="margin-top:60px">
     <h2 class="page-header">@ViewBag.Title</h2>
     <div class="col-sm-2">
         <select id="EleList" size="30" class="form-control">
@@ -27,14 +27,11 @@
            
         </div>
         <div class="col-sm-11" style="float:left;">
-            <ul class="nav nav-pills">
+            @*<ul class="nav nav-pills">
                 <li><button class="btn btn-primary" id="AddToQueue">设置任务开始</button></li>
                 <li><button class="btn btn-primary" id="SetEleFlag">设置电极加工标记</button></li>
-            </ul>
+            </ul>*@
             <table id="TaskGrid"></table>
-        </div>
-        <div id="Toolbar">
-            
         </div>
         <div class="col-sm-11" style="float:left;">
             <ul class="nav nav-pills">
@@ -42,8 +39,7 @@
                 <li><button class="btn btn-primary" id="RemoveItem">移除</button></li>
                 <li><button class="btn btn-primary" id="DeviceSelect">夏米尔350</button></li>
                 <li><button class="btn btn-primary" id="RaiseHeight">抬高高度:80</button></li>
-                <li><button class="btn btn-primary" id="PieceCount">工件个数:1</button></li>
-                
+                <li><button class="btn btn-primary" id="PieceCount">工件个数:1</button></li>              
                 <li><button class="btn btn-primary" id="ItemPosition">电极位置</button></li>
                 <li><button class="btn btn-primary" id="ItemSurface">表面要求</button> </li>
                 <li><button class="btn btn-primary" id="Compensation">补偿值</button> </li>
@@ -387,34 +383,6 @@
         </div>
     </div>
 </div>
-
-    @*右键菜单*@
-    @*<div class="contextMenu dropdown" id="EDMItemContextMenu" style="display:none">
-            <ul style="width:200px">
-                <li id="ItemPosition">
-                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
-                    <span style="font-size:12px; font-family:Verdana">电极位置</span>
-                </li>
-                <li id="ItemSurface">
-                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
-                    <span style="font-size:12px; font-family:Verdana">表面要求</span>
-                </li>
-                <li id="Compensation">
-                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
-                    <span style="font-size:12px; font-family:Verdana">补偿值</span>
-                </li>
-
-                <li id="ObitSelect">
-                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
-                    <span style="font-size:12px; font-family:Verdana">平动方式</span>
-                </li>
-                <li id="MaterialSelect">
-                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
-                    <span style="font-size:12px; font-family:Verdana">修改材料</span>
-                </li>
-
-            </ul>
-        </div>*@
 
 <div class="modal" data-backdrop="static" data-keyboard="false" id="EleCompensationDialog" tabindex="-1" role="dialog" aria-labelledby="EleCompensationLabel" aria-hidden="true">
     <div class="modal-dialog">

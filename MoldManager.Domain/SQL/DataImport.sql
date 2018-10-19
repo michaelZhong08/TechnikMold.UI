@@ -1,0 +1,33 @@
+﻿--CNC Machine Information----
+INSERT INTO [MoldManager].[dbo].[Machines] ([Name] ,[IPAddress] ,[System_3R] ,[Pallet] ,[PointDescribe] ,[SystemType]) SELECT [MACHINE_NAME] ,[IP_ADDRESS] ,[SYSTEM_3R] ,[PALLET] ,[POINT_DESCRIPE] ,[SYSTEM_TYPE] FROM [MOLD_MACH].[dbo].[MACH_CONFIG]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -13,7 +13,7 @@
         <ul class="nav nav-pills">
             <li><button class="btn btn-primary" id="CreateDept">新建部门</button></li>
             <li><button class="btn btn-primary" id="DeleteDept">删除部门</button></li>
-
+            <li><button class="btn btn-primary" id="ShowDepPhase">部门阶段关联</button></li>
         </ul>
         <div class="col-sm-2">
             <div class="panel panel-info">
@@ -58,6 +58,37 @@
         </div>
     </div>
 </div>
+
+@* 部门/项目阶段权限关联 *@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="DepPhaseEdit" tabindex="-1" role="dialog" aria-labelledby="SupplierBrandLabel">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            </div>
+            <div class="modal-body" style="height:250px">
+                <div>
+                    <div class="col-sm-5">
+                        <select class="form-control" id="PhaseList" size="10"></select>
+                        <input type="hidden" id="PhaseID" />
+                    </div>
+                    <div class="col-sm-1">
+                        <button class="btn btn-primary" id="Add">></button>
+                        <button class="btn btn-primary" id="Remove"><</button>
+                    </div>
+                    <div class="col-sm-5">
+                        <select class="form-control" id="DepPhaseList" size="10"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="SaveBrand" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="~/Scripts/Project.js"></script>
 
 
@@ -67,7 +98,92 @@
 
 <script src="~/Scripts/Administrator.js"></script>
 <script type="text/javascript">
-        $(document).ready(function () {
-        });
+    $(document).ready(function () {
+        $("#ShowDepPhase").on("click", function () {
+            var depId = $("#DepartmentList").val();
+            if (depId != null) {
+                LoadDepPhases(depId);
+                $("#DepPhaseEdit").modal("show");
+            } else {
+                alert("请先选择一个部门");
+            }
+        })
+    });
+    function LoadDepPhases(depId) {
+        $("#PhaseID").val(depId);
+        $("#PhaseList option").remove();
+        var _url = "/Administrator/JsonPhases?DepId=" + depId;
+        $.ajax({
+            type: "Get",
+            url: _url,
+            success: function (msg) {
+                $.each(msg, function (i, n) {
+                    $("#PhaseList").append($("<option/>", { value: n.PhaseID, text: n.Name }));
+                })
 
+                _url = "/Administrator/JsonDepPhaseList?DepId=" + depId;
+                $("#DepPhaseList option").remove();
+                $.ajax({
+                    type: "Get",
+                    url: _url,
+                    success: function (msg) {
+                        $.each(msg, function (i, n) {
+                            $("#DepPhaseList").append($("<option/>", { value: n.PhaseID, text: n.Name }));
+                            $("#PhaseList option[value=" + n.depId + "]").remove();
+                        })
+                    }
+                })
+            }
+        })
+    }
+    $("#Add").on("click", function () {
+        AddPhase();
+    })
+
+    $("#Remove").on("click", function () {
+        RemovePhase();
+    })
+    $('#PhaseList').on('dblclick', function () {
+        AddPhase();
+    })
+    $('#DepPhaseList').on('dblclick', function () {
+        RemovePhase();
+    })
+
+    function AddPhase() {
+        var _id = $("#PhaseList option:selected").val();
+        var _text = $("#PhaseList option:selected").text();
+        if (_text != "") {
+            $("#PhaseList option:selected").remove();
+            $("#DepPhaseList").append($("<option>", { value: _id, text: _text }));
+        }
+
+    }
+    function RemovePhase() {
+        var _id = $("#DepPhaseList option:selected").val();
+        var _text = $("#DepPhaseList option:selected").text();
+        if (_text != "") {
+            $("#DepPhaseList option:selected").remove();
+            $("#PhaseList").append($("<option>", { value: _id, text: _text }));
+        }
+    }
+    function SavePhase() {
+        var _PhaseIds = "";
+        $("#DepPhaseList option").each(function () {
+            _PhaseIds = _PhaseIds == "" ? this.value : _PhaseIds + "," + this.value;
+        })
+        var _url = "/Administrator/SaveDepPhases?DepId=" + $("#DepartmentList").val() + "&PhaseIds=" + _PhaseIds;
+        $.ajax({
+            type: "Get",
+            url: _url,
+            success: function () {
+                alert("保存成功")
+                $("#DepPhaseEdit").modal("hide");
+            }
+        })
+
+    }
+    $("#SaveBrand").on("click", function () {
+        SavePhase();
+    })
 </script>

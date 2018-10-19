@@ -21,7 +21,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
             PurchaseRequestStatus Status, 
             IProjectRepository ProjectRepository, 
             IPurchaseTypeRepository PurchaseTypeRepository, 
-            IDepartmentRepository DeptRepository)
+            IDepartmentRepository DeptRepository,
+            IPRContentRepository PRContentRepository)
         {
             rows = new List<PRListGridRowModel>();
             string _userName, _reviewUser, _submitUser;
@@ -81,8 +82,17 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 {
                     _dept = "";
                 }
-
-                rows.Add(new PRListGridRowModel(_request, _userName, _type, _dept, _submitUser, _reviewUser));
+                //申请者
+                User ApprovalUser = UsersRepo.Users.Where(u => u.UserCode == _request.ApprovalERPUserID).FirstOrDefault() ?? new User();
+                //ERP料号同步状态
+                List<PRContent> prcs = PRContentRepository.QueryByRequestID(_request.PurchaseRequestID).ToList() ?? new List<PRContent>();
+                bool ERPPartStatus = true;
+                foreach(var prc in prcs)
+                {
+                    if (string.IsNullOrEmpty(prc.ERPPartID))
+                        ERPPartStatus = false;
+                }
+                rows.Add(new PRListGridRowModel(_request, _userName, _type, _dept, _submitUser, _reviewUser, ApprovalUser.FullName, ERPPartStatus));
             }
             Page = 1;
             Total = 100;

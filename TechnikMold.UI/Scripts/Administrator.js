@@ -154,6 +154,7 @@ function NewUser() {
     
     $("#LogonName").val("");
     $("#UserID").val("");
+    $("#UserCode").val("");
     $("#DepartmentID").val("");
     $("#Enabled").val("");
     $("#FullName").val("");

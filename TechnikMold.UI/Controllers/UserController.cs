@@ -47,7 +47,7 @@ namespace MoldManager.WebUI.Controllers
         public string  Validate(string UserName)
         
         {
-            UserName = "sinno-tecl\\michael.zhong";
+            //UserName = "sinno-tech\\administrator";
             string _userName;
             if (UserName.IndexOf('\\') > 0)
             {

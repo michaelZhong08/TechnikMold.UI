@@ -23,7 +23,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             string MoldNumber;
             foreach (Part _part in Parts)
             {
-                MoldNumber = ProjectRepository.GetByID(_part.ProjectID).MoldNumber;
+                MoldNumber= _part.Name.Split(new char[] { '_' })[0]??"";
                 rows.Add(new PurchaseContentGridRowModel(_part, MoldNumber));
             }
             Page = 1;
@@ -56,13 +56,13 @@ namespace MoldManager.WebUI.Models.GridViewModel
             Records = 500;
         }
 
-        public PurchaseContentGridViewModel(List<PRContent> PRContents, 
-            IPurchaseItemRepository PurchaseItemRepository, 
-            ICostCenterRepository CostCenterRepository, 
-            IPurchaseTypeRepository PurchaseTypeRepository)
+        public PurchaseContentGridViewModel(List<PRContent> PRContents,
+           IPurchaseItemRepository PurchaseItemRepository,
+           ICostCenterRepository CostCenterRepository,
+           IPartRepository PartRepository)
         {
             rows = new List<PurchaseContentGridRowModel>();
-            
+
             string state = "";
             foreach (PRContent _content in PRContents)
             {
@@ -77,23 +77,22 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 }
 
                 String _costcenter;
-                if (_purchaseItem.CostCenterID>0){
+                if (_purchaseItem.CostCenterID > 0)
+                {
                     _costcenter = CostCenterRepository.QueryByID(_purchaseItem.CostCenterID).Name;
-                }else{
-                    _costcenter="";
                 }
-
-                string _purchaseType="";
-                try
+                else
                 {
-                    _purchaseType = PurchaseTypeRepository.QueryByID(_content.PurchaseTypeID).Name;
+                    _costcenter = "";
                 }
-                catch
-                {
-
-                }
-                
-                rows.Add(new PurchaseContentGridRowModel(_content, state, _costcenter, _purchaseType));
+                string ERPNo = string.Empty;
+                //if (_purchaseItem.PartID > 0)
+                //{
+                //    Part _part = PartRepository.QueryByID(_purchaseItem.PartID);
+                //    ERPNo = _part.ERPPartID;
+                //}
+                ERPNo = _content.ERPPartID;
+                rows.Add(new PurchaseContentGridRowModel(_content, state, _costcenter, ERPNo));
             }
             Page = 1;
             Total = PRContents.Count();

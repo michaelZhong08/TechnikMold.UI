@@ -60,6 +60,9 @@
 	margin-bottom: 0; 
 	table-layout: fixed; 
 	border-top:none;
+    /*font-size:20px;*/
+    background-color:rgba(0,0,0,0.8);
+    color:rgba(255,255,255,1);
 }
 .ui-jqgrid .ui-jqgrid-htable thead th {
 	overflow : hidden; 
@@ -68,7 +71,15 @@
 }
 .ui-jqgrid .ui-jqgrid-htable thead th div {
 	overflow: hidden; 
-	position:relative;
+	/*position:relative;*/
+    /*height:100%;*/
+    /*width:100%;
+    margin:0px;
+    padding:0px;*/
+    position:relative;
+    left:0px;
+    top:-5px;
+
 }
 .ui-th-column, .ui-jqgrid .ui-jqgrid-htable th.ui-th-column {
 	overflow: hidden;
@@ -79,7 +90,8 @@
 	overflow: hidden;
 	white-space: nowrap;
 }
-.ui-th-ltr, .ui-jqgrid .ui-jqgrid-htable th.ui-th-ltr {}
+.ui-th-ltr, .ui-jqgrid .ui-jqgrid-htable th.ui-th-ltr {text-align:center;vertical-align:middle;}
+.ui-jqgrid-htable th.ui-th-ltr:hover {color:black}
 .ui-th-rtl, .ui-jqgrid .ui-jqgrid-htable th.ui-th-rtl {text-align: center; }
 .ui-first-th-ltr { }
 .ui-first-th-rtl { }
@@ -831,7 +843,7 @@ ul.ui-search-menu li, ul.ui-nav-menu li {
 }
 .ui-menu-item hr {
 	margin-bottom: 0px;
-	margin-top:0px;
+	margin-top:60px;
 }
 
 .searchFilter .ui-search-table td,

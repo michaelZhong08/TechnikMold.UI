@@ -5,7 +5,7 @@
 
 
 
-<div class="col-sm-12" style="margin-top:10px">
+<div class="col-sm-12" style="margin-top:60px">
     <h2>电极仓库管理</h2>
     
 
@@ -45,7 +45,7 @@
                     </tr>
                 </table>
                
-                    <table class="col-sm-12 table-striped" style="margin-top:10px">
+                    <table class="col-sm-12 table-striped" style="margin-top:60px">
                         <thead>
                             <tr>
                                 <td class="col-sm-12"><label>电极标签名</label></td>
@@ -85,7 +85,7 @@
                     </tr>
                 </table>
 
-                <table class="col-sm-12 table-striped" style="margin-top:10px">
+                <table class="col-sm-12 table-striped" style="margin-top:60px">
                     <thead>
                         <tr>
                             <td class="col-sm-1"></td>
@@ -110,6 +110,7 @@
     <script src="~/Scripts/Task.js"></script>
 
     <script>
+        //LabelNames <=> ELE_IndexCode
         var LabelNames = new Array();
         var ItemIDs = new Array();
         $("documnet").ready(function () {
@@ -150,9 +151,16 @@
                         _exist = 1;
                     }
                 }
+                //update by michael
                 if (_exist == 0) {
-                    LabelNames.push(_label)
-                    $("#Ele_List").append("<tr class='EleList'><td>" + _label+ "</td></tr>")
+                    LabelNames.push(_label);
+                    $.ajax({
+                        type: 'Post',
+                        url: "/Task/ValidateCNCItem?ELE_IndexCode=" + _label,
+                        success: function (res) {
+                            $("#Ele_List").append("<tr class='EleList'><td>" + res.LabelName + "</td></tr>")
+                        }
+                    })                    
                 } else {
                     alert("电极已扫描");
                 }

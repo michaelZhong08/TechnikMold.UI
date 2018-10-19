@@ -13,9 +13,9 @@ namespace MoldManager.WebUI.Models.GridRowModel
         public string[] cell;
 
         public PRListGridRowModel(PurchaseRequest PurchaseRequest, string UserName, 
-            string PurchaseType, string Department,string SubmitUser, string ReviewUser)
+            string PurchaseType, string Department,string SubmitUser, string ReviewUser,string ApprovalFullName,bool ERPPartStatus)
         {
-            cell = new string[11];
+            cell = new string[13];
             cell[0] = PurchaseRequest.PurchaseRequestID.ToString();
             cell[1] = PurchaseRequest.PurchaseRequestNumber;
             cell[2] = UserName;
@@ -26,7 +26,9 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[7] = PurchaseRequest.ApprovalDate==new DateTime(1900,1,1)?"-": PurchaseRequest.ApprovalDate.ToString("yyyy-MM-dd");
             cell[8] = PurchaseType;
             cell[9] = Enum.GetName(typeof(PurchaseRequestStatus), PurchaseRequest.State);
-            cell[10] = PurchaseRequest.Memo; 
+            cell[10] = PurchaseRequest.Memo;
+            cell[11] = ApprovalFullName;
+            cell[12] = ERPPartStatus.ToString();
         }
     }
 }

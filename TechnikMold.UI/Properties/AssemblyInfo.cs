@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息是通过以下项进行控制的
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("TechnikMold.UI")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("TechnikSys.MoldManager.UI")]
+[assembly: AssemblyDescription("模具管理信息系统")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TechnikMold.UI")]
+[assembly: AssemblyCompany("上海钛尼科信息科技有限公司")]
+[assembly: AssemblyProduct("TechnikSys.MoldManager.UI")]
 [assembly: AssemblyCopyright("版权所有(C)  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // 你可以指定所有值，也可以让修订版本和内部版本号采用默认值，
 // 方法是按如下所示使用 "*":
-[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyVersion("2.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

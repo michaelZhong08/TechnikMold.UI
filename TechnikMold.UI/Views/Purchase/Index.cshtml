@@ -29,29 +29,20 @@
     <input type="hidden" id="State" value="@ViewBag.State" />
 </div>
 
-<div style="margin-top:10px">
+<div style="margin-top:60px">
     <div class="col-sm-11">
 
         <h3>申请单列表</h3>
         <div>
             <button class="btn btn-primary" id="NewPR">新建申请单</button>
             <button class="btn btn-primary" id="SearchPR">申请单查询</button>
-            @if ((PosID>1)&&(ViewBag.State==2)){
-            <button class="btn btn-primary" id="BatchApprove">批量通过</button>
+            @if ((PosID > 1) && (ViewBag.State == 2))
+            {
+                <button class="btn btn-primary" id="BatchApprove">批量通过</button>
             }
-            @*@{
-                string UserID = "";
-                try
-                {
-                    UserID = Request.Cookies["User"]["UserID"];
-                    <button class="btn btn-primary" id="MyProject" onclick="location.href='/Purchase/Index?UserID=@UserID'">我发起的申请单</button>
 
-                }
-                catch
-                {
+            <button class="btn btn-primary" id="ExportExcelForPurchase" style="background-color:#71C671;">导出采购申请</button>
 
-                }
-            }*@
             <div class="col-sm-2">
                 <select id="PRState" class="form-control">
                     @foreach (int _val in @Enum.GetValues(typeof(PurchaseRequestStatus)))
@@ -59,14 +50,14 @@
 
                         //if (_val != 4)
                         //{
-                            if (ViewBag.State == _val)
-                            {
-                                <option value="@_val" selected>@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
-                            }
-                            else
-                            {
-                                <option value="@_val">@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
-                            }
+                        if (ViewBag.State == _val)
+                        {
+                            <option value="@_val" selected>@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
+                        }
+                        else
+                        {
+                            <option value="@_val">@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
+                        }
                         @*}*@
                     }
                 </select>
@@ -84,7 +75,7 @@
 <script>
     $("document").ready(function(){
 
-
+        $("#ExportExcelForPurchase").hide();
         @*PRListGrid("@ViewBag.MoldNumber", "@ViewBag.PRKeyword", "@ViewBag.StartDate", "@ViewBag.FinishDate", @ViewBag.Supplier, @ViewBag.PurchaseType, @ViewBag.Department, @ViewBag.State);*@
         PRListGrid(@ViewBag.Department, @ViewBag.State);
 
@@ -93,8 +84,12 @@
         LoadPurchaseType();
 
         $("#QueryPR").on("click", function(){
-            QueryPurchaseRequests();
+            QueryPurchaseOrders();
         })
+        if($("#PRState").val() =="3")
+        {
+            $("#ExportExcelForPurchase").show();
+        }
     })
 
     function LoadQuerySuppliers(){
@@ -129,9 +124,19 @@
     function ChangeGridStatus(){
         var _url = "/Purchase/JsonPRList?State="+$("#PRState").val()+"&Department=@ViewBag.Department";
         $("#PRListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+        if($("#PRState").val() =="3")
+        {
+            $("#ExportExcelForPurchase").show();
+        }
+        else
+        {
+            $("#ExportExcelForPurchase").hide();
+
+        }
+
     }
 
-    function QueryPurchaseRequests() {
+    function QueryPurchaseOrders() {
         var _url = "/Purchase/JsonPRList?State=" + $("#PRState").val() + "&Department=@ViewBag.Department";
         var _condition = "";
 
@@ -166,7 +171,7 @@
 </script>
 @*@{Html.RenderAction("MoldSelect", "Dialog");}*@
 
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PRSearchDialog" tabindex="-1" role="dialog" aria-labelledby="PRSearchLabel">
+<div class="modal" id="PRSearchDialog" tabindex="-1" role="dialog" aria-labelledby="PRSearchLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -176,54 +181,62 @@
             </div>
             <div class="modal-body">
 
-                    <table>
-                        <tr>
-                            <td class="col-sm-6">
-                                <table>
-                                    <tr>
-                                        <td><label>模具号</label></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" id="MoldKeyword" class="form-control" placeholder="模具号关键字"/></td>
-                                    </tr>
-                                    <tr>
-                                        <td><select id="MoldList" class="form-control" size="10"></select></td>
-                                    </tr>
-                                </table>
-                            </td>
-                            <td class="col-sm-6">
+                <table>
+                    <tr>
+                        <td class="col-sm-6">
+                            <table>
+                                <tr>
+                                    <td><label>模具号</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" id="MoldKeyword" class="form-control" placeholder="模具号关键字" /></td>
+                                </tr>
+                                <tr>
+                                    <td><select id="MoldList" class="form-control" size="15"></select></td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="col-sm-6">
 
-                                <table>
-                                    <tr>
-                                        <td><label>关键字</label></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" id="PRKeyword" class="form-control" placeholder="采购明细关键字"/></td>
-                                    </tr>
-                                    <tr>
-                                        <td><label>开始日期</label></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="date" id="StartDate" class="form-control" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td><label>结束日期</label></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="date" id="FinishDate" class="form-control" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td><label>供应商</label></td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <select id="SupplierList" class="form-control"></select>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>             
+                            <table>
+                                <tr>
+                                    <td><label>关键字</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" id="PRKeyword" class="form-control" placeholder="零件名称关键字" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>开始日期</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="date" id="StartDate" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>结束日期</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="date" id="FinishDate" class="form-control" /></td>
+                                </tr>
+                                <tr>
+                                    <td><label>供应商</label></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select id="SupplierList" class="form-control"></select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label>采购类型</label></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select id="PurchaseType" class="form-control"></select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>

@@ -20,7 +20,7 @@
 
 <div>
     <h2 class="page-header">
-        任务点检 
+        任务点检
     </h2>
 
     <div class="col-sm-11">
@@ -37,7 +37,7 @@
                         @for (int i = 1; i < 5; i++)
                         {
                             //暂时禁用WEDM
-                            if ((i != 2)&&(i!=3))
+                            if ((i != 2) && (i != 3))
                             {
                                 <li role="presentation"><a href="/Task/TaskFinishList?TaskType=@i">@_taskType.GetTypeName(i)</a></li>
                             }
@@ -55,8 +55,6 @@
                         <li class="btn btn-primary PointCheck" id="SteelPointCheck">点检</li>
                     }
                 }
-
-                @*<li class="btn btn-primary" id="Clear">清空</li>*@
             </ul>
         </div>
         <div class="col-sm-11" style="float:left;">
@@ -92,7 +90,7 @@
                         </tr>
                     </table>
 
-                    <table class="col-sm-12 table-striped" style="margin-top:10px">
+                    <table class="col-sm-12 table-striped" style="margin-top:60px">
                         <thead>
                             <tr>
                                 <td class="col-sm-1"></td>
@@ -152,21 +150,21 @@ else if (ViewBag.TaskType == 4)
     var _timer = {};
     $("document").ready(function () {
         //点检
-        $(".PointCheck").on("click", function () {            
+        $(".PointCheck").on("click", function () {
             @if (ViewBag.TaskType == 1)
             {
                 @:LoadCNCItems();
-            }
+                        }
             else if (ViewBag.TaskType == 4)
             {
                 @:$("#SpotCheckDlg").modal("show");
-            }
+                        }
         })
 
         $("#SpotCheckDlg").on("shown.bs.modal", function () {
             $("#")
             LoadCNCUser();
-            
+
         })
 
         $("#BarCode").on("keyup", function () {
@@ -174,77 +172,81 @@ else if (ViewBag.TaskType == 4)
                 // run something
                 ScanConfirm($("#BarCode").val());
             }, 500);
-            
+
         })
 
         $("#SpotCheckBtn").on("click", function () {
             @if (ViewBag.TaskType == 1)
             {
                 @:EleSpotCheck();
-            }
+                        }
             else if (ViewBag.TaskType==4)
             {
                 @:SteelSpotCheck();
-            }
-            
+                        }
+
         })
-        
+
 
     });
 
-    function LoadCNCUser(){
+    function LoadCNCUser() {
         $("#CheckUser option").remove();
 
-        $.getJSON("/User/GetUsersByDepartment?DepartmentID=7", function(msg){
-            $.each(msg, function(i,n){
+        $.getJSON("/User/GetUsersByDepartment?DepartmentID=7", function (msg) {
+            $.each(msg, function (i, n) {
                 $("#CheckUser").append($("<option/>", {
                     value: n.UserID,
                     text: n.FullName
                 }))
-            })        
+            })
         })
     }
 
 
-    function LoadCNCItems()
-    {
+    function LoadCNCItems() {
         var Labels = GetMultiSelectedCell("TaskGrid", "TaskName");
         var _itemIDs = GetMultiSelectedCell("TaskGrid", "ID");
-        
+
         $("#SpotCheckDlg").modal("show");
     }
 
     function ScanConfirm(barcode) {
-        var _url = "/Task/ValidateCNCItem?LabelName=" + barcode
+        var _url = "/Task/ValidateCNCItem?ELE_IndexCode=" + barcode
         $.getJSON(_url, function (msg) {
             if (Number(msg.CNCItemID) > 0) {
-                if (msg.Status == 1) {
+                if (msg.Status == 10) {
                     if ($("#" + msg.CNCItemID).length == 0) {
                         $("#Ele_List_D").append("<tr><td><input class='itemid' type='checkbox' id='" + msg.CNCItemID + "' checked disabled></td><td>" + msg.LabelName + "</td></tr>")
                         $("#BarCode").val("");
-                    } else {
+                    }
+                    else {
                         alert("电极已存在");
                     }
-                    
-                } else {
+
+                }
+                else if (msg.Status == 20) {
                     alert("电极已点检完成,无需再次点检")
                 }
-                
-            } else {
+                else {
+                    alert("只有状态是 正在加工 的电极才可以点检！")
+                }
+            }
+            else {
                 alert("未找到对应电极信息");
             }
         })
-        
-        
+
+
     }
-    
+
     function EleSpotCheck() {
         var _items = $(".itemid:checked");
         var _itemIDs = "";
         for (i = 0; i < _items.length; i++) {
             _itemIDs = _itemIDs == "" ? _items[i].id : _itemIDs + "," + _items[i].id;
         }
-        var _url = "/Task/ElectrodeFinish?CNCItemIDs=" + _itemIDs+"&UserID="+$("#CheckUser option:selected").val();
+        var _url = "/Task/ElectrodeFinish?CNCItemIDs=" + _itemIDs + "&UserID=" + $("#CheckUser option:selected").val();
         $.ajax({
             url: _url,
             dataType: "html",
@@ -281,7 +283,7 @@ else if (ViewBag.TaskType == 4)
         } else {
             alert("请选择要点检的电极");
         }
-        
+
     }
 
     function delay_till_last(id, fn, wait) {

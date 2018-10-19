@@ -14,6 +14,13 @@ using System.IO;
 using System.Net;
 using TechnikSys.MoldManager.Domain.Status;
 using System.Linq.Expressions;
+using Aspose.Cells;
+using System.Reflection;
+using System.Data.SqlClient;
+using System.Data;
+using System.Configuration;
+using TechnikSys.MoldManager.UI.Models.ViewModel;
+using TechnikMold.UI.Models;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -47,7 +54,7 @@ namespace MoldManager.WebUI.Controllers
         private ISupplierBrandRepository _supplierBrandRepository;
         private IBrandRepository _brandRepository;
         private ICostCenterRepository _costCenterRepository;
-        private IQuotationFileRepository _quotationFileRepository;
+        private IPartListRepository _partListRepository;
 
 
         public PurchaseController(IPartRepository PartRepository,
@@ -76,8 +83,8 @@ namespace MoldManager.WebUI.Controllers
             ISteelCAMDrawingRepository SteelCAMDrawingRepository,
             ISupplierBrandRepository SupplierBrandRepository,
             IBrandRepository BrandRepository,
-            ICostCenterRepository CostCenterRepository, 
-            IQuotationFileRepository QuotationFileRepository)
+            ICostCenterRepository CostCenterRepository,
+            IPartListRepository partListRepository)
         {
             _partRepository = PartRepository;
             _prContentRepository = PRContentRepository;
@@ -106,7 +113,7 @@ namespace MoldManager.WebUI.Controllers
             _supplierBrandRepository = SupplierBrandRepository;
             _brandRepository = BrandRepository;
             _costCenterRepository = CostCenterRepository;
-            _quotationFileRepository = QuotationFileRepository;
+            _partListRepository = partListRepository;
             _status = new PurchaseRequestStatus();
         }
 
@@ -189,7 +196,11 @@ namespace MoldManager.WebUI.Controllers
             string WarehouseStockIDs = "",
             int TaskType = 0)
         {
+            List<User> ApprovaluserList = _userRepository.Users.Where(u => !string.IsNullOrEmpty(u.UserCode)).ToList() ?? new List<TechnikSys.MoldManager.Domain.Entity.User>();
+            //ViewBag.ApprovalUserIDList = new SelectList(ApprovaluserList, "UserCode", "FullName");
+            ViewBag.ApprovalUserIDList = ApprovaluserList;
             ViewBag.TaskType = TaskType;
+            #region 存在采购申请单号
             if (PurchaseRequestID != 0)
             {
                 PurchaseRequest _request = _purchaseRequestRepository.GetByID(PurchaseRequestID);
@@ -201,6 +212,12 @@ namespace MoldManager.WebUI.Controllers
                 ViewBag.PurchaseRequestID = PurchaseRequestID;
                 ViewBag.PRState = _request.State;
                 ViewBag.TaskIDs = "";
+                ViewBag.State = _request.State;
+                string ApprolUserID = _request.ApprovalERPUserID ?? "";
+                User ApprolUser = _userRepository.Users.Where(u => !string.IsNullOrEmpty(u.UserCode)).Where(u => u.UserCode == ApprolUserID).FirstOrDefault() ?? new TechnikSys.MoldManager.Domain.Entity.User();
+                ViewBag.ApprovalUserName = ApprolUser.FullName ?? "";
+                User CreUser = _userRepository.Users.Where(u => u.UserID == _request.UserID).FirstOrDefault() ?? new User();
+                ViewBag.CreUserName = CreUser.FullName ?? "";
                 try
                 {
                     PurchaseType _purchaseType = _purchaseTypeRepository.QueryByID(_request.PurchaseType);
@@ -215,6 +232,8 @@ namespace MoldManager.WebUI.Controllers
 
                 return View(_request);
             }
+            #endregion
+            #region 不存在PR单号、存在模具号
             else if (MoldNumber != "")
             {
                 ViewBag.Title = "新建申请单";
@@ -226,38 +245,42 @@ namespace MoldManager.WebUI.Controllers
                 {
                     ViewBag.ProjectID = 0;
                 }
-
                 ViewBag.PurchaseRequestID = 0;
                 ViewBag.PRState = 0;
                 ViewBag.MoldNumber = MoldNumber;
                 ViewBag.WarehouseStockIDs = "";
+                ViewBag.State = 0;
+                #region 来源：Partlist
                 if (PartIDs != "")
                 {
-
                     ViewBag.PartIDs = PartIDs;
                     ViewBag.TaskIDs = "";
                     ViewBag.WarehouseStockIDs = "";
                 }
+                #endregion
+                #region 来源：任务外发
                 else if (TaskIDs != "")
                 {
                     ViewBag.PartIDs = "";
                     ViewBag.TaskIDs = TaskIDs;
                     ViewBag.WarehouseStockIDs = "";
                 }
-
-
+                #endregion
                 return View();
             }
-
-
+            #endregion
+            #region 不存在PR单号、不存在模具号
             else
             {
                 ViewBag.Title = "新建申请单";
+                //List<User> ApprovaluserList = _userRepository.Users.Where(u => !string.IsNullOrEmpty(u.UserCode)).ToList() ?? new List<TechnikSys.MoldManager.Domain.Entity.User>();
+                //ViewBag.ApprovalUserIDList = new SelectList(ApprovaluserList, "UserCode", "FullName");
                 ViewBag.ProjectID = 0;
                 ViewBag.PartIDs = "";
                 ViewBag.PurchaseRequestID = 0;
                 ViewBag.PRState = 0;
                 ViewBag.TaskIDs = "";
+                ViewBag.State = 0;
                 if (WarehouseStockIDs != "")
                 {
                     ViewBag.WarehouseStockIDs = WarehouseStockIDs;
@@ -268,7 +291,7 @@ namespace MoldManager.WebUI.Controllers
                 }
                 return View();
             }
-
+            #endregion
         }
 
 
@@ -364,7 +387,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="PRContents"></param>
         /// <returns></returns>
         [HttpPost]
-        public int PRSave(List<PRContent> PRContents, int PurchaseType, int PurchaseRequestID = 0, int SupplierID = 0, string Memo = "")
+        public int PRSave(List<PRContent> PRContents, int PurchaseType, int PurchaseRequestID = 0, int SupplierID = 0, string Memo = "",string ApprovalERPUserID="")
         {
             int _requestID;
             PurchaseRequest _request;
@@ -383,7 +406,7 @@ namespace MoldManager.WebUI.Controllers
             {
                 DepartmentID = 0;
             }
-
+            #region 新建PR
             if (PurchaseRequestID == 0)
             {
                 _request = new PurchaseRequest();
@@ -407,8 +430,11 @@ namespace MoldManager.WebUI.Controllers
                 _request.SupplierID = SupplierID;
                 _request.PurchaseType = PurchaseType;
                 _request.DepartmentID = DepartmentID;
+                _request.ApprovalERPUserID = ApprovalERPUserID;
                 _requestID = _purchaseRequestRepository.Save(_request);
             }
+            #endregion
+            #region 更新PR
             else
             {
 
@@ -423,12 +449,12 @@ namespace MoldManager.WebUI.Controllers
 
                 _request.DueDate = _requireDate;
                 _request.PurchaseType = PurchaseType;
-
+                _request.ApprovalERPUserID = ApprovalERPUserID;
                 _purchaseRequestRepository.Save(_request);
 
             }
-
-            //string MoldNumber = _projectRepository.GetByID(ProjectID).MoldNumber;
+            #endregion
+            #region 创建 PR明细、采购项明细
             //Create PR Contents
             foreach (PRContent _content in PRContents)
             {
@@ -438,7 +464,7 @@ namespace MoldManager.WebUI.Controllers
 
                 PurchaseItem _item = new PurchaseItem(_content);
 
-                _item.PurchaseType = _content.PurchaseTypeID;
+                _item.PurchaseType = PurchaseType;
 
                 _item.MoldNumber = _content.MoldNumber;
 
@@ -475,6 +501,8 @@ namespace MoldManager.WebUI.Controllers
                 {
                     Part _part = _partRepository.QueryByID(_content.PartID);
                     _part.InPurchase = true;
+                    //零件上锁 michael
+                    _part.Locked = true;
                     _partRepository.Save(_part);
                 }
 
@@ -484,14 +512,15 @@ namespace MoldManager.WebUI.Controllers
                 }
                 _prContentRepository.Save(_content);
             }
-
+            #endregion
+            #region Create PR operation record 具体用处不详
             //Create PR operation record
             if (PurchaseRequestID == 0)
             {
                 string _msg = "创建申请单" + _request.PurchaseRequestNumber;
                 PRRecord(_requestID, _msg);
             }
-
+            #endregion
             return _requestID;
 
         }
@@ -701,84 +730,89 @@ namespace MoldManager.WebUI.Controllers
                 {
                     _prList = _purchaseRequestRepository.PurchaseRequests.Where(p => p.Enabled == true).OrderByDescending(p => p.PurchaseRequestNumber);
                 }
-                if ((Department > 0) && (_dept != 4))
-                {
-                    _prList = _prList.Where(p => p.DepartmentID == Department);
-                }
 
             }
             else
             {
-                Expression<Func<PurchaseItem, bool>> _exp1 = i => i.Quantity > 0;
-                Expression<Func<PurchaseItem, bool>> _exp2 = null;
-
+                IEnumerable<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems;
                 if (MoldNumber != "")
                 {
-                    _exp1 = PredicateBuilder.And(_exp1, i => i.MoldNumber.Contains(MoldNumber));
+                    _items = _items.Where(p => p.Name.Contains(MoldNumber));
                 }
-
-                if (StartDate != "")
-                {
-                    try
-                    {
-                        DateTime _start = Convert.ToDateTime(StartDate);
-                        _exp1 = PredicateBuilder.And(_exp1, i => i.CreateTime > _start);
-                    }
-                    catch
-                    {
-
-                    }
-                }
-
-                if (FinishDate != "")
-                {
-                    try
-                    {
-                        FinishDate = FinishDate + " 23:59";
-                        DateTime _end = Convert.ToDateTime(FinishDate);
-                        _exp1 = PredicateBuilder.And(_exp1, i => i.CreateTime < _end);
-                    }
-                    catch
-                    {
-
-                    }
-                }
-
                 if (PRKeyword != "")
                 {
-                    _exp2 = i => i.PartNumber.Contains(PRKeyword);
-                    _exp1 = PredicateBuilder.Or(_exp2, i => i.Name.Contains(PRKeyword));
-
+                    _items = _items.Where(p => p.Name.Contains(PRKeyword));
                 }
+                //if (StartDate != "")
+                //{
+                //}
+                //if (FinishDate != "")
+                //{
 
-                if (Supplier > 0)
-                {
-                    _exp1 = PredicateBuilder.And(_exp1, i => i.SupplierID == Supplier);
-                }
+                //}
+                //if (Supplier > 0)
+                //{
+                //    _items = _items.Where(p => p.SupplierID == Supplier);
+                //}
 
+                //if (PurchaseType > 0)
+                //{
+                //    _items = _items.Where(p => p.PurchaseType == PurchaseType);
+                //}
 
-                List<int> _prIDs = _purchaseItemRepository.PurchaseItems.Where(_exp1)
-                    .Select(i => i.PurchaseRequestID).Distinct().ToList();
+                //if (State > 0)
+                //{
+                //    _items = _items.Where(p => p.State == State);
+                //}
+
+                IEnumerable<int> _prIds = _items.Select(p => p.PurchaseRequestID).Distinct();
+
                 _prList = _purchaseRequestRepository.PurchaseRequests
-                    .Where(p => (_prIDs.Contains(p.PurchaseRequestID)))
-                    //.Where(p => p.State == State)
-                    .Where(p => p.Enabled == true).OrderByDescending(p => p.CreateDate);
-                if ((Department > 0) && (_dept != 4))
-                {
-                    _prList = _prList.Where(p => p.DepartmentID == Department);
-                }
+                    .Where(p => (_prIds.Contains(p.PurchaseRequestID)))
+                    .Where(p => p.State == State)
+                    .Where(p => p.Enabled == true).OrderByDescending(p => p.CreateDate); ;
+            }
+
+            if ((Department > 0) && (_dept != 4))
+            {
+                _prList = _prList.Where(p => p.DepartmentID == Department);
             }
             PRListGridViewModel _viewModel = new PRListGridViewModel(_prList,
                 _userRepository,
                 _status,
                 _projectRepository,
                 _purchaseTypeRepository,
-                _departmentRepository);
+                _departmentRepository,
+                _prContentRepository);
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
 
-
-
+        [HttpPost]
+        public ActionResult GetErpIDByPartID(string PartID="")
+        {
+            PartID = PartID == "" ? "0" : PartID;
+            int int_PartID = Convert.ToInt32(PartID);
+            if (int_PartID > 0)
+            {
+                string erpID = _partRepository.QueryByID(int_PartID).ERPPartID??"";
+                return Json(new { Code = 0, Message = erpID });
+            }
+            return Json(new { Code = -1, Message = "" });
+        }
+        [HttpPost]
+        public string GetErpIDByPrcID(string PrcID = "")
+        {
+            PrcID = PrcID == "" ? "0" : PrcID;
+            int int_PrcID = Convert.ToInt32(PrcID);
+            if (int_PrcID > 0)
+            {
+                string erpID = _prContentRepository.QueryByID(int_PrcID).ERPPartID ?? "";
+                return erpID;
+                //return Json(string.IsNullOrEmpty(erpID) ? new { Code = -1, Message = "" }: new { Code = 0, Message = erpID });
+            }
+            return "";
+            //return Json(new { Code = -1, Message = "" });
+        }
         /// <summary>
         /// Pass the partID string to create the PR
         /// </summary>
@@ -789,12 +823,17 @@ namespace MoldManager.WebUI.Controllers
             if (PartIDs != "")
             {
                 string[] _partID = PartIDs.Split(',');
-                List<Part> _partList = new List<Part>();
+                List<Part> _parts = new List<Part>();
                 for (int i = 0; i < _partID.Length; i++)
                 {
-                    _partList.Add(_partRepository.QueryByID(Convert.ToInt32(_partID[i])));
+                    if (!string.IsNullOrEmpty(_partID[i]))
+                    {
+                        _parts.Add(_partRepository.QueryByID(Convert.ToInt32(_partID[i])));
+                    }
+
                 }
-                PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_partList, _projectRepository);
+                PurchaseContentGridViewModel _model;
+                _model = new PurchaseContentGridViewModel(_parts, _projectRepository);
 
                 return Json(_model, JsonRequestBehavior.AllowGet);
             }
@@ -880,23 +919,41 @@ namespace MoldManager.WebUI.Controllers
             PurchaseRequest _pr = _purchaseRequestRepository.GetByID(PurchaseRequestID);
             return Json(_pr, JsonRequestBehavior.AllowGet);
         }
-
+        #region Upd By Michael 零件名更新为零件短名
         public JsonResult JsonPRContent(int PRContentID)
         {
             PRContent _item = _prContentRepository.QueryByID(PRContentID);
+            //短名
+            string name = _item.PartName??"";
+            //name = name.Substring(name.IndexOf('_') + 1, name.LastIndexOf('_') - name.IndexOf('_') - 1);
+            //name = name.Substring(0, name.LastIndexOf('_') - 1);
+            _item.PartName = name;
             return Json(_item, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult JsonPRContents(string Keyword)
         {
             IEnumerable<PRContent> _prcontents = _prContentRepository.QueryByName(Keyword);
+            foreach(var prc in _prcontents)
+            {
+                //短名
+                string name = prc.PartName;
+                name = name.Substring(name.IndexOf('_') + 1, name.LastIndexOf('_') - name.IndexOf('_') - 1);
+                name = name.Substring(0, name.LastIndexOf('_') - 1);
+                prc.PartName = name;
+            }            
             return Json(_prcontents, JsonRequestBehavior.AllowGet);
         }
-
+        #endregion
         public JsonResult JsonPRDetail(int PRID)
         {
-            List<PRContent> _contents = _prContentRepository.QueryByRequestID(PRID).ToList();
-            PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_contents, _purchaseItemRepository, _costCenterRepository, _purchaseTypeRepository);
+            List<PRContent> _contents= new List<PRContent>();
+            try
+            {
+                _contents = _prContentRepository.QueryByRequestID(PRID).ToList() ?? new List<PRContent>();
+            }
+            catch (Exception ex) { }
+            PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_contents, _purchaseItemRepository, _costCenterRepository, _partRepository);
             return Json(_model, JsonRequestBehavior.AllowGet);
         }
 
@@ -1099,22 +1156,13 @@ namespace MoldManager.WebUI.Controllers
         public ActionResult QRForm(int QuotationRequestID)
         {
 
-            //Michael 20180507
+
             QuotationRequest _qr = _quotationRequestRepository.GetByID(QuotationRequestID);
-            List<PurchaseItem> PiList = _purchaseItemRepository.PurchaseItems.Where(p => p.QuotationRequestID == QuotationRequestID).ToList();
 
             if (_qr.State == (int)QuotationRequestStatus.新建)
             {
-                try
-                {
-                    _quotationRequestRepository.ChangeStatus(QuotationRequestID, (int)QuotationRequestStatus.发出);
-                    foreach (PurchaseItem pi in PiList)
-                    {
-                        pi.State = (int)PurchaseItemStatus.询价中;
-                        _purchaseItemRepository.Save(pi);
-                    }
-                }
-                catch { }
+
+                _quotationRequestRepository.ChangeStatus(QuotationRequestID, (int)QuotationRequestStatus.发出);
             }
             User _user = _userRepository.GetUserByID(_qr.PurchaseUserID);
             IEnumerable<QRContent> _qrContents = _qrContentRepository.QueryByQRID(QuotationRequestID);
@@ -1171,15 +1219,15 @@ namespace MoldManager.WebUI.Controllers
             int _id;
             for (int i = 0; i < _ids.Length; i++)
             {
-                _id = Convert.ToInt16(_ids[i]);
+                _id = Convert.ToInt32(_ids[i]);
                 PRContent _content = _prContentRepository.QueryByID(_id);
                 PurchaseItem _item = _purchaseItemRepository.QueryByID(_content.PurchaseItemID);
                 if (_item.State < (int)PurchaseItemStatus.待收货)
                 {
                     _prContentRepository.Delete(_id);
                     _purchaseItemRepository.ChangeState(_content.PurchaseItemID, (int)PurchaseItemStatus.取消);
-
-                    int _partID = _item.PartID;
+                    #region 更新 Part 采购状态
+                    int _partID = _item.PartID;               
                     if (_partID > 0)
                     {
                         Part _part = _partRepository.QueryByID(_partID);
@@ -1194,6 +1242,16 @@ namespace MoldManager.WebUI.Controllers
                             _partRepository.Save(_part);
                         }
                     }
+                    #endregion
+                    #region 更新 Task 状态 '等待'
+                    int _taskid = _content.TaskID;
+                    if (_taskid > 0)
+                    {
+                        Task _task = _taskRepository.QueryByTaskID(_taskid);
+                        _task.State = (int)CNCStatus.等待;
+                        _taskRepository.Save(_task);
+                    }
+                    #endregion
                 }
                 else
                 {
@@ -1281,6 +1339,23 @@ namespace MoldManager.WebUI.Controllers
             else
             {
                 _purchaseItemRepository.ChangeState(PurchaseRequestID, 0, 0, (int)PurchaseItemStatus.审批拒绝);
+                //added by felix
+                //修改parts 的inpurchase = 0
+                List<PurchaseItem> items = _purchaseItemRepository.QueryByPurchaseRequestID(PurchaseRequestID).ToList<PurchaseItem>();
+                foreach (PurchaseItem item in items)
+                {
+                    Part p = _partRepository.QueryByID(item.PartID);
+                    p.InPurchase = false;
+                    PartList partlist = _partListRepository.PartLists.Where(pl => pl.PartListID == p.PartListID).FirstOrDefault();
+                    //零件(新建) bom(未发布)
+                    //零件(新建并升级)
+                    //零件(非新建且升级)
+                    if ((p.Latest && !partlist.Released)||(p.Latest&&p.Status>1)||(!p.Latest&&p.Status>0))
+                    {
+                        p.Locked = false;
+                    }
+                    _partRepository.SaveNew(p);
+                }
             }
             return _msg;
         }
@@ -1320,6 +1395,30 @@ namespace MoldManager.WebUI.Controllers
         {
             string _msg = "";
             _purchaseRequestRepository.Cancel(PurchaseRequestID);
+            #region 取消 Part 采购状态
+            List<PurchaseItem> items = _purchaseItemRepository.QueryByPurchaseRequestID(PurchaseRequestID).ToList<PurchaseItem>();
+            foreach (PurchaseItem item in items)
+            {               
+                Part p = _partRepository.QueryByID(item.PartID) ?? new Part();                
+                if (p.PartID > 0)
+                {
+                    p.InPurchase = false;
+                    _partRepository.SaveNew(p);
+                }                
+            }
+            #endregion
+            #region 更新外发任务状态
+            List<PRContent> _prcontents = _prContentRepository.QueryByRequestID(PurchaseRequestID).ToList();
+            foreach(var r in _prcontents)
+            {
+                if (r.TaskID > 0)
+                {
+                    Task _task = _taskRepository.QueryByTaskID(r.TaskID);
+                    _task.State = (int)CNCStatus.等待;
+                    _taskRepository.Save(_task);
+                }
+            }
+            #endregion
             return _msg;
         }
 
@@ -1730,7 +1829,7 @@ namespace MoldManager.WebUI.Controllers
         {
             try
             {
-                int[] _purchaseItemIDs = Array.ConvertAll<string, int>(PurchaseItemIDs.Split(','), delegate(string s) { return int.Parse(s); });
+                int[] _purchaseItemIDs = Array.ConvertAll<string, int>(PurchaseItemIDs.Split(','), delegate (string s) { return int.Parse(s); });
                 List<QRContent> _qrContents = _qrContentRepository.QRContents.Where(q => q.QuotationRequestID == QuotationRequestID)
                     .Where(q => (_purchaseItemIDs.Contains(q.PurchaseItemID))).Where(q => q.Enabled == true).ToList();
                 IEnumerable<QRQuotation> _qrQuotations = _qrQuotationRepository.QueryByQRID(QuotationRequestID);
@@ -1839,9 +1938,9 @@ namespace MoldManager.WebUI.Controllers
             IEnumerable<PurchaseOrder> _poList;
             if ((MoldNumber == "") && (Keyword == "") && (StartDate == "") && (EndDate == "") && (Supplier == 0) && (PurchaseType == 0))
             {
-                _poList = _purchaseOrderRepository.PurchaseOrders.Where(p=>p.UserID!=0);
+                _poList = _purchaseOrderRepository.PurchaseOrders;
 
-                if (State != 0)
+                if (State > 0)
                 {
                     _poList = _poList.Where(p => p.State == State);
                 }
@@ -1922,7 +2021,7 @@ namespace MoldManager.WebUI.Controllers
         public ActionResult JosnPOContents(int PurchaseOrderID)
         {
             POContentGridViewModel _poContents = new POContentGridViewModel(_poContentRepository.QueryByPOID(PurchaseOrderID),
-                _purchaseRequestRepository, _purchaseItemRepository, _purchaseTypeRepository);
+                _purchaseRequestRepository, _purchaseItemRepository);
             return Json(_poContents, JsonRequestBehavior.AllowGet);
         }
 
@@ -2371,12 +2470,6 @@ namespace MoldManager.WebUI.Controllers
             return Json(_types, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult JsonPurchaseTypeLevel(int ParentID = 0)
-        {
-            List<PurchaseType> _types = _purchaseTypeRepository.QueryByParentID(ParentID).ToList();
-            return Json(_types, JsonRequestBehavior.AllowGet);
-        }
-
 
         #endregion
 
@@ -2520,15 +2613,6 @@ namespace MoldManager.WebUI.Controllers
             return Json(_moldNumbers, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult JsonPurchaseItemMoldNumber(string Keyword = "")
-        {
-            IEnumerable<string> _moldNumbers = _purchaseItemRepository.PurchaseItems
-                .Where(i => i.MoldNumber != "")
-                .Where(i => i.MoldNumber.Contains(Keyword))
-                .Select(i => i.MoldNumber).Distinct();
-            return Json(_moldNumbers, JsonRequestBehavior.AllowGet);
-        }
-
         public ActionResult JsonPurchaseTypeTree(int PurchaseTypeID = 0)
         {
             List<PurchaseType> _types = _purchaseTypeRepository.PurchaseTypeTree(PurchaseTypeID);
@@ -2625,7 +2709,7 @@ namespace MoldManager.WebUI.Controllers
         {
             double _total = 0;
 
-            int[] _purchaseItemID = Array.ConvertAll<string, int>(PurchaseItemIDs.Split(','), delegate(string s) { return int.Parse(s); });
+            int[] _purchaseItemID = Array.ConvertAll<string, int>(PurchaseItemIDs.Split(','), delegate (string s) { return int.Parse(s); });
 
 
             IEnumerable<QRQuotation> _quotations;
@@ -2724,7 +2808,8 @@ namespace MoldManager.WebUI.Controllers
 
         public int GetCostCenter(string Name)
         {
-            return _costCenterRepository.CostCenters.Where(c => c.Name == Name).Count();
+            int count = _costCenterRepository.CostCenters.Where(c => c.Name == Name).Where(c => c.Enabled == true).Count();
+            return count;
         }
 
         [HttpPost]
@@ -2733,7 +2818,17 @@ namespace MoldManager.WebUI.Controllers
             CostCenter.Enabled = true;
             return _costCenterRepository.Save(CostCenter);
         }
-
+        #region added by michael
+        /// <summary>
+        /// Get部门代码
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult GetDepCode(string Name)
+        {
+            CostCenter center = _costCenterRepository.CostCenters.Where(c => c.Name == Name).Where(c => c.Enabled == true).FirstOrDefault() ?? new CostCenter();
+            return Json(center, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
         public bool DeleteCostCenter(int CostCenterID)
         {
             try
@@ -2802,106 +2897,1432 @@ namespace MoldManager.WebUI.Controllers
                 return "删除成功";
             }
         }
-
-
-        #region PO report for finacial dept
-
-        public ActionResult POReport()
+        #region ExportExcelForPart
+        /// <summary>
+        /// 导出零件信息
+        /// </summary>
+        /// <returns></returns>
+        public string ExportExcelForPart(string PartID="")
         {
-            return View();
-        }
+            //return ExportExcel<PartViewForExport>(ps);
+            Workbook workbook = new Workbook();
+            workbook.Open(AppDomain.CurrentDomain.BaseDirectory + "\\images\\material.xlsx", FileFormatType.Excel2007Xlsx);
 
+            Worksheet worksheet = workbook.Worksheets[0];
+            //worksheet.Name = "Page1";
+            Cells cells = worksheet.Cells;
+            cells.InsertRow(0);
+            Aspose.Cells.Style style = workbook.Styles[workbook.Styles.Add()];//新增样式
+            style.HorizontalAlignment = TextAlignmentType.Center;//文字居中  
+            style.Font.Size = 11;//文字大小  
+            style.Font.IsBold = true;//粗体 
+            cells.SetRowHeight(0, 20);              //设置行高 
 
-        public ActionResult JsonPOReport(string StartDate, string EndDate = "")
-        {
-            DateTime _startDate = Convert.ToDateTime(StartDate + " 00:00");
-            DateTime _endDate;
-            if (EndDate == "")
+            List<string> listHead = new List<string>();
+            #region MyRegion
+            listHead.Add("代码");
+            listHead.Add("名称");
+            listHead.Add("明细");
+            listHead.Add("审核人_FName");
+            listHead.Add("物料全名");
+            listHead.Add("助记码");
+            listHead.Add("规格型号");
+            listHead.Add("辅助属性类别_FName");
+            listHead.Add("辅助属性类别_FNumber");
+            listHead.Add("模具号");
+            listHead.Add("零件号");
+            listHead.Add("物料属性_FName");
+            listHead.Add("物料分类_FName");
+            listHead.Add("计量单位组_FName");
+            listHead.Add("基本计量单位_FName");
+            listHead.Add("基本计量单位_FGroupName");
+            listHead.Add("采购计量单位_FName");
+            listHead.Add("采购计量单位_FGroupName");
+            listHead.Add("销售计量单位_FName");
+            listHead.Add("销售计量单位_FGroupName");
+            listHead.Add("生产计量单位_FName");
+            listHead.Add("生产计量单位_FGroupName");
+            listHead.Add("库存计量单位_FName");
+            listHead.Add("库存计量单位_FGroupName");
+            listHead.Add("辅助计量单位_FName");
+            listHead.Add("辅助计量单位_FGroupName");
+            listHead.Add("辅助计量单位换算率");
+            listHead.Add("默认仓库_FName");
+            listHead.Add("默认仓库_FNumber");
+            listHead.Add("默认仓位_FName");
+            listHead.Add("默认仓位_FGroupName");
+            listHead.Add("默认仓管员_FName");
+            listHead.Add("默认仓管员_FNumber");
+            listHead.Add("来源_FName");
+            listHead.Add("来源_FNumber");
+            listHead.Add("数量精度");
+            listHead.Add("最低存量");
+            listHead.Add("最高存量");
+            listHead.Add("安全库存数量");
+            listHead.Add("使用状态_FName");
+            listHead.Add("是否为设备");
+            listHead.Add("设备编码");
+            listHead.Add("是否为备件");
+            listHead.Add("批准文号");
+            listHead.Add("别名");
+            listHead.Add("物料对应特性");
+            listHead.Add("默认待检仓库_FName");
+            listHead.Add("默认待检仓库_FNumber");
+            listHead.Add("默认待检仓位_FName");
+            listHead.Add("默认待检仓位_FGroupName");
+            listHead.Add("品牌");
+            listHead.Add("材料");
+            listHead.Add("采购最高价");
+            listHead.Add("采购最高价币别_FName");
+            listHead.Add("采购最高价币别_FNumber");
+            listHead.Add("委外加工最高价");
+            listHead.Add("委外加工最高价币别_FName");
+            listHead.Add("委外加工最高价币别_FNumber");
+            listHead.Add("销售最低价");
+            listHead.Add("销售最低价币别_FName");
+            listHead.Add("销售最低价币别_FNumber");
+            listHead.Add("是否销售");
+            listHead.Add("采购负责人_FName");
+            listHead.Add("采购负责人_FNumber");
+            listHead.Add("采购部门");
+            listHead.Add("毛利率(%)");
+            listHead.Add("采购单价");
+            listHead.Add("销售单价");
+            listHead.Add("是否农林计税");
+            listHead.Add("是否进行保质期管理");
+            listHead.Add("保质期(天)");
+            listHead.Add("是否需要库龄管理");
+            listHead.Add("是否采用业务批次管理");
+            listHead.Add("是否需要进行订补货计划的运算");
+            listHead.Add("失效提前期(天)");
+            listHead.Add("盘点周期单位_FName");
+            listHead.Add("盘点周期");
+            listHead.Add("每周/月第()天");
+            listHead.Add("上次盘点日期");
+            listHead.Add("外购超收比例(%)");
+            listHead.Add("外购欠收比例(%)");
+            listHead.Add("销售超交比例(%)");
+            listHead.Add("销售欠交比例(%)");
+            listHead.Add("完工超收比例(%)");
+            listHead.Add("完工欠收比例(%)");
+            listHead.Add("领料超收比例(%)");
+            listHead.Add("领料欠收比例(%)");
+            listHead.Add("计价方法_FName");
+            listHead.Add("计划单价");
+            listHead.Add("单价精度");
+            listHead.Add("存货科目代码_FNumber");
+            listHead.Add("销售收入科目代码_FNumber");
+            listHead.Add("销售成本科目代码_FNumber");
+            listHead.Add("成本差异科目代码_FNumber");
+            listHead.Add("代管物资科目_FNumber");
+            listHead.Add("税目代码_FName");
+            listHead.Add("税率(%)");
+            listHead.Add("成本项目_FName");
+            listHead.Add("成本项目_FNumber");
+            listHead.Add("是否进行序列号管理");
+            listHead.Add("参与结转式成本还原");
+            listHead.Add("备注");
+            listHead.Add("网店货品名");
+            listHead.Add("商家编码");
+            listHead.Add("严格进行二维码数量校验");
+            listHead.Add("单位包装数量");
+            listHead.Add("计划策略_FName");
+            listHead.Add("计划模式_FName");
+            listHead.Add("订货策略_FName");
+            listHead.Add("固定提前期");
+            listHead.Add("变动提前期");
+            listHead.Add("累计提前期");
+            listHead.Add("订货间隔期(天)");
+            listHead.Add("最小订货量");
+            listHead.Add("最大订货量");
+            listHead.Add("批量增量");
+            listHead.Add("设置为固定再订货点");
+            listHead.Add("再订货点");
+            listHead.Add("固定/经济批量");
+            listHead.Add("变动提前期批量");
+            listHead.Add("批量拆分间隔天数");
+            listHead.Add("拆分批量");
+            listHead.Add("需求时界(天)");
+            listHead.Add("计划时界(天)");
+            listHead.Add("默认工艺路线_FInterID");
+            listHead.Add("默认工艺路线_FRoutingName");
+            listHead.Add("默认生产类型_FName");
+            listHead.Add("默认生产类型_FNumber");
+            listHead.Add("生产负责人_FName");
+            listHead.Add("生产负责人_FNumber");
+            listHead.Add("计划员_FName");
+            listHead.Add("计划员_FNumber");
+            listHead.Add("是否倒冲");
+            listHead.Add("倒冲仓库_FName");
+            listHead.Add("倒冲仓库_FNumber");
+            listHead.Add("倒冲仓位_FName");
+            listHead.Add("倒冲仓位_FGroupName");
+            listHead.Add("投料自动取整");
+            listHead.Add("日消耗量");
+            listHead.Add("MRP计算是否合并需求");
+            listHead.Add("MRP计算是否产生采购申请");
+            listHead.Add("控制类型_FName");
+            listHead.Add("控制策略_FName");
+            listHead.Add("容器名称");
+            listHead.Add("看板容量");
+            listHead.Add("辅助属性参与计划运算");
+            listHead.Add("产品设计员_FName");
+            listHead.Add("产品设计员_FNumber");
+            listHead.Add("图号");
+            listHead.Add("是否关键件");
+            listHead.Add("毛重");
+            listHead.Add("净重");
+            listHead.Add("重量单位_FName");
+            listHead.Add("重量单位_FGroupName");
+            listHead.Add("长度");
+            listHead.Add("宽度");
+            listHead.Add("高度");
+            listHead.Add("体积");
+            listHead.Add("长度单位_FName");
+            listHead.Add("长度单位_FGroupName");
+            listHead.Add("版本号");
+            listHead.Add("单位标准成本");
+            listHead.Add("附加费率(%)");
+            listHead.Add("附加费所属成本项目_FNumber");
+            listHead.Add("成本BOM_FBOMNumber");
+            listHead.Add("成本工艺路线_FInterID");
+            listHead.Add("成本工艺路线_FRoutingName");
+            listHead.Add("标准加工批量");
+            listHead.Add("单位标准工时(小时)");
+            listHead.Add("标准工资率");
+            listHead.Add("变动制造费用分配率");
+            listHead.Add("单位标准固定制造费用金额");
+            listHead.Add("单位委外加工费");
+            listHead.Add("委外加工费所属成本项目_FNumber");
+            listHead.Add("单位计件工资");
+            listHead.Add("采购订单差异科目代码_FNumber");
+            listHead.Add("采购发票差异科目代码_FNumber");
+            listHead.Add("材料成本差异科目代码_FNumber");
+            listHead.Add("加工费差异科目代码_FNumber");
+            listHead.Add("废品损失科目代码_FNumber");
+            listHead.Add("标准成本调整差异科目代码_FNumber");
+            listHead.Add("采购检验方式_FName");
+            listHead.Add("产品检验方式_FName");
+            listHead.Add("委外加工检验方式_FName");
+            listHead.Add("发货检验方式_FName");
+            listHead.Add("退货检验方式_FName");
+            listHead.Add("库存检验方式_FName");
+            listHead.Add("其他检验方式_FName");
+            listHead.Add("抽样标准(致命)_FName");
+            listHead.Add("抽样标准(致命)_FNumber");
+            listHead.Add("抽样标准(严重)_FName");
+            listHead.Add("抽样标准(严重)_FNumber");
+            listHead.Add("抽样标准(轻微)_FName");
+            listHead.Add("抽样标准(轻微)_FNumber");
+            listHead.Add("库存检验周期(天)");
+            listHead.Add("库存周期检验预警提前期(天)");
+            listHead.Add("检验方案_FInterID");
+            listHead.Add("检验方案_FBrNo");
+            listHead.Add("检验员_FName");
+            listHead.Add("检验员_FNumber");
+            listHead.Add("英文名称");
+            listHead.Add("英文规格");
+            listHead.Add("HS编码_FHSCode");
+            listHead.Add("HS编码_FNumber");
+            listHead.Add("外销税率%");
+            listHead.Add("HS第一法定单位");
+            listHead.Add("HS第二法定单位");
+            listHead.Add("进口关税率%");
+            listHead.Add("进口消费税率%");
+            listHead.Add("HS第一法定单位换算率");
+            listHead.Add("HS第二法定单位换算率");
+            listHead.Add("是否保税监管");
+            listHead.Add("物料监管类型_FName");
+            listHead.Add("物料监管类型_FNumber");
+            listHead.Add("长度精度");
+            listHead.Add("体积精度");
+            listHead.Add("重量精度");
+            listHead.Add("启用服务");
+            listHead.Add("生成产品档案");
+            listHead.Add("维修件");
+            listHead.Add("保修期限（月）");
+            listHead.Add("使用寿命（月）");
+            listHead.Add("控制");
+            listHead.Add("是否禁用");
+            listHead.Add("全球唯一标识内码");
+
+            #endregion
+            List<string> listHead1 = new List<string>();
+            #region MyRegion
+            listHead1.Add("代码");
+            listHead1.Add("名称");
+            listHead1.Add("明细");
+            listHead1.Add("审核人_FName");
+            listHead1.Add("物料全名");
+            listHead1.Add("助记码");
+            listHead1.Add("规格型号");
+            listHead1.Add("辅助属性类别_FName");
+            listHead1.Add("辅助属性类别_FNumber");
+            listHead1.Add("模具号");
+            listHead1.Add("零件号");
+            listHead1.Add("物料属性_FName");
+            listHead1.Add("物料分类_FName");
+            listHead1.Add("计量单位组_FName");
+            listHead1.Add("基本计量单位_FName");
+            listHead1.Add("基本计量单位_FGroupName");
+            listHead1.Add("采购计量单位_FName");
+            listHead1.Add("采购计量单位_FGroupName");
+            listHead1.Add("销售计量单位_FName");
+            listHead1.Add("销售计量单位_FGroupName");
+            listHead1.Add("生产计量单位_FName");
+            listHead1.Add("生产计量单位_FGroupName");
+            listHead1.Add("库存计量单位_FName");
+            listHead1.Add("库存计量单位_FGroupName");
+            listHead1.Add("辅助计量单位_FName");
+            listHead1.Add("辅助计量单位_FGroupName");
+            listHead1.Add("辅助计量单位换算率");
+            listHead1.Add("默认仓库_FName");
+            listHead1.Add("默认仓库_FNumber");
+            listHead1.Add("默认仓位_FName");
+            listHead1.Add("默认仓位_FGroupName");
+            listHead1.Add("默认仓管员_FName");
+            listHead1.Add("默认仓管员_FNumber");
+            listHead1.Add("来源_FName");
+            listHead1.Add("来源_FNumber");
+            listHead1.Add("数量精度");
+            listHead1.Add("最低存量");
+            listHead1.Add("最高存量");
+            listHead1.Add("安全库存数量");
+            listHead1.Add("使用状态_FName");
+            listHead1.Add("是否为设备");
+            listHead1.Add("设备编码");
+            listHead1.Add("是否为备件");
+            listHead1.Add("批准文号");
+            listHead1.Add("别名");
+            listHead1.Add("物料对应特性");
+            listHead1.Add("默认待检仓库_FName");
+            listHead1.Add("默认待检仓库_FNumber");
+            listHead1.Add("默认待检仓位_FName");
+            listHead1.Add("默认待检仓位_FGroupName");
+            listHead1.Add("品牌");
+            listHead1.Add("材料");
+
+            listHead1.Add("采购最高价");
+            listHead1.Add("采购最高价币别_FName");
+            listHead1.Add("采购最高价币别_FNumber");
+            listHead1.Add("委外加工最高价");
+            listHead1.Add("委外加工最高价币别_FName");
+            listHead1.Add("委外加工最高价币别_FNumber");
+            listHead1.Add("销售最低价");
+            listHead1.Add("销售最低价币别_FName");
+            listHead1.Add("销售最低价币别_FNumber");
+            listHead1.Add("是否销售");
+            listHead1.Add("采购负责人_FName");
+            listHead1.Add("采购负责人_FNumber");
+            listHead1.Add("采购部门");
+            listHead1.Add("毛利率");
+            listHead1.Add("采购单价");
+            listHead1.Add("销售单价");
+            listHead1.Add("是否农林计税");
+            listHead1.Add("是否进行保质期管理");
+            listHead1.Add("保质期天");
+            listHead1.Add("是否需要库龄管理");
+            listHead1.Add("是否采用业务批次管理");
+            listHead1.Add("是否需要进行订补货计划的运算");
+            listHead1.Add("失效提前期天");
+            listHead1.Add("盘点周期单位_FName");
+            listHead1.Add("盘点周期");
+            listHead1.Add("每周月第天");
+            listHead1.Add("上次盘点日期");
+            listHead1.Add("外购超收比例");
+            listHead1.Add("外购欠收比例");
+            listHead1.Add("销售超交比例");
+            listHead1.Add("销售欠交比例");
+            listHead1.Add("完工超收比例");
+            listHead1.Add("完工欠收比例");
+            listHead1.Add("领料超收比例");
+            listHead1.Add("领料欠收比例");
+            listHead1.Add("计价方法_FName");
+            listHead1.Add("计划单价");
+            listHead1.Add("单价精度");
+            listHead1.Add("存货科目代码_FNumber");
+            listHead1.Add("销售收入科目代码_FNumber");
+            listHead1.Add("销售成本科目代码_FNumber");
+            listHead1.Add("成本差异科目代码_FNumber");
+            listHead1.Add("代管物资科目_FNumber");
+            listHead1.Add("税目代码_FName");
+            listHead1.Add("税率");
+            listHead1.Add("成本项目_FName");
+            listHead1.Add("成本项目_FNumber");
+            listHead1.Add("是否进行序列号管理");
+            listHead1.Add("参与结转式成本还原");
+            listHead1.Add("备注");
+            listHead1.Add("网店货品名");
+            listHead1.Add("商家编码");
+            listHead1.Add("严格进行二维码数量校验");
+            listHead1.Add("单位包装数量");
+            listHead1.Add("计划策略_FName");
+            listHead1.Add("计划模式_FName");
+            listHead1.Add("订货策略_FName");
+            listHead1.Add("固定提前期");
+            listHead1.Add("变动提前期");
+            listHead1.Add("累计提前期");
+            listHead1.Add("订货间隔期天");
+            listHead1.Add("最小订货量");
+            listHead1.Add("最大订货量");
+            listHead1.Add("批量增量");
+            listHead1.Add("设置为固定再订货点");
+            listHead1.Add("再订货点");
+            listHead1.Add("固定经济批量");
+            listHead1.Add("变动提前期批量");
+            listHead1.Add("批量拆分间隔天数");
+            listHead1.Add("拆分批量");
+            listHead1.Add("需求时界天");
+            listHead1.Add("计划时界天");
+            listHead1.Add("默认工艺路线_FInterID");
+            listHead1.Add("默认工艺路线_FRoutingName");
+            listHead1.Add("默认生产类型_FName");
+            listHead1.Add("默认生产类型_FNumber");
+            listHead1.Add("生产负责人_FName");
+            listHead1.Add("生产负责人_FNumber");
+            listHead1.Add("计划员_FName");
+            listHead1.Add("计划员_FNumber");
+            listHead1.Add("是否倒冲");
+            listHead1.Add("倒冲仓库_FName");
+            listHead1.Add("倒冲仓库_FNumber");
+            listHead1.Add("倒冲仓位_FName");
+            listHead1.Add("倒冲仓位_FGroupName");
+            listHead1.Add("投料自动取整");
+            listHead1.Add("日消耗量");
+            listHead1.Add("MRP计算是否合并需求");
+            listHead1.Add("MRP计算是否产生采购申请");
+            listHead1.Add("控制类型_FName");
+            listHead1.Add("控制策略_FName");
+            listHead1.Add("容器名称");
+            listHead1.Add("看板容量");
+            listHead1.Add("辅助属性参与计划运算");
+            listHead1.Add("产品设计员_FName");
+            listHead1.Add("产品设计员_FNumber");
+            listHead1.Add("图号");
+            listHead1.Add("是否关键件");
+            listHead1.Add("毛重");
+            listHead1.Add("净重");
+            listHead1.Add("重量单位_FName");
+            listHead1.Add("重量单位_FGroupName");
+            listHead1.Add("长度");
+            listHead1.Add("宽度");
+            listHead1.Add("高度");
+            listHead1.Add("体积");
+            listHead1.Add("长度单位_FName");
+            listHead1.Add("长度单位_FGroupName");
+            listHead1.Add("版本号");
+            listHead1.Add("单位标准成本");
+            listHead1.Add("附加费率");
+            listHead1.Add("附加费所属成本项目_FNumber");
+            listHead1.Add("成本BOM_FBOMNumber");
+            listHead1.Add("成本工艺路线_FInterID");
+            listHead1.Add("成本工艺路线_FRoutingName");
+            listHead1.Add("标准加工批量");
+            listHead1.Add("单位标准工时小时");
+            listHead1.Add("标准工资率");
+            listHead1.Add("变动制造费用分配率");
+            listHead1.Add("单位标准固定制造费用金额");
+            listHead1.Add("单位委外加工费");
+            listHead1.Add("委外加工费所属成本项目_FNumber");
+            listHead1.Add("单位计件工资");
+            listHead1.Add("采购订单差异科目代码_FNumber");
+            listHead1.Add("采购发票差异科目代码_FNumber");
+            listHead1.Add("材料成本差异科目代码_FNumber");
+            listHead1.Add("加工费差异科目代码_FNumber");
+            listHead1.Add("废品损失科目代码_FNumber");
+            listHead1.Add("标准成本调整差异科目代码_FNumber");
+            listHead1.Add("采购检验方式_FName");
+            listHead1.Add("产品检验方式_FName");
+            listHead1.Add("委外加工检验方式_FName");
+            listHead1.Add("发货检验方式_FName");
+            listHead1.Add("退货检验方式_FName");
+            listHead1.Add("库存检验方式_FName");
+            listHead1.Add("其他检验方式_FName");
+            listHead1.Add("抽样标准致命_FName");
+            listHead1.Add("抽样标准致命_FNumber");
+            listHead1.Add("抽样标准严重_FName");
+            listHead1.Add("抽样标准严重_FNumber");
+            listHead1.Add("抽样标准轻微_FName");
+            listHead1.Add("抽样标准轻微_FNumber");
+            listHead1.Add("库存检验周期天");
+            listHead1.Add("库存周期检验预警提前期天");
+            listHead1.Add("检验方案_FInterID");
+            listHead1.Add("检验方案_FBrNo");
+            listHead1.Add("检验员_FName");
+            listHead1.Add("检验员_FNumber");
+            listHead1.Add("英文名称");
+            listHead1.Add("英文规格");
+            listHead1.Add("HS编码_FHSCode");
+            listHead1.Add("HS编码_FNumber");
+            listHead1.Add("外销税率");
+            listHead1.Add("HS第一法定单位");
+            listHead1.Add("HS第二法定单位");
+            listHead1.Add("进口关税率");
+            listHead1.Add("进口消费税率");
+            listHead1.Add("HS第一法定单位换算率");
+            listHead1.Add("HS第二法定单位换算率");
+            listHead1.Add("是否保税监管");
+            listHead1.Add("物料监管类型_FName");
+            listHead1.Add("物料监管类型_FNumber");
+            listHead1.Add("长度精度");
+            listHead1.Add("体积精度");
+            listHead1.Add("重量精度");
+            listHead1.Add("启用服务");
+            listHead1.Add("生成产品档案");
+            listHead1.Add("维修件");
+            listHead1.Add("保修期限月");
+            listHead1.Add("使用寿命月");
+            listHead1.Add("控制");
+            listHead1.Add("是否禁用");
+            listHead1.Add("全球唯一标识内码");
+
+            #endregion
+
+            for (int i = 0; i < listHead.Count; i++)
             {
-                EndDate = DateTime.Now.ToString("yyyy-MM-dd") + " 23:59";
+                cells[0, i].PutValue(listHead[i]);
+                cells[0, i].Style = style;
+                cells.SetColumnWidth(i, 30);
             }
-            _endDate = Convert.ToDateTime(EndDate);
-            List<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems.Where(p => p.DeliveryTime > _startDate)
-                .Where(p => p.DeliveryTime <= _endDate)//.Where(p => p.State == (int)PurchaseItemStatus.完成)
-                .ToList();
-            PurchaseOrderReportGridViewModel _viewModel = new PurchaseOrderReportGridViewModel(_items,
-                _purchaseTypeRepository, _supplierRepository, _purchaseOrderRepository, _costCenterRepository);
-            return Json(_viewModel, JsonRequestBehavior.AllowGet);
-        }
-        #endregion
 
-        public string UpdatePurchaseType(string POContentIDs, int PurchaseTypeID)
-        {
-            string[] _ids = POContentIDs.Split(',');
-            try
+            List<PartViewForExport> list = new List<PartViewForExport>();
+            SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
+
+            if (PartID.Contains(","))
+            //if (PurchaseRequestID>0)
             {
-                for (int i = 0; i < _ids.Length; i++)
+                string[] strArr = PartID.Split(',');
+                //构建dt
+                //string sql1 = "execute Pro_RefreshERPData '" + "0" + "'";
+                //SqlCommand comm1 = new SqlCommand(sql1, conn);
+                //SqlDataAdapter da1= new SqlDataAdapter(comm1);
+                //DataSet ds1 = new DataSet();
+                //da1.Fill(ds1, "test");
+                //DataTable Exceldt= ds1.Tables[0].Clone();
+                foreach (string str in strArr)
                 {
-                    int _itemid = _poContentRepository.QueryByID(Convert.ToInt32(_ids[i])).PurchaseItemID;
-                    PurchaseItem _item = _purchaseItemRepository.QueryByID(_itemid);
-                    _item.PurchaseType = PurchaseTypeID;
-                    _purchaseItemRepository.Save(_item);
+                    if (!string.IsNullOrEmpty(str))
+                    {
+                        #region MyRegion 
+                        string sql = "execute Pro_RefreshERPData '" + str + "'";
+                        SqlCommand comm = new SqlCommand(sql, conn);
+                        SqlDataAdapter da = new SqlDataAdapter(comm);
+                        DataSet ds = new DataSet();
+                        da.Fill(ds, "test");
+                        #endregion
+                        if (ds == null && ds.Tables.Count == 0)
+                            return "false";
+                        //Exceldt = FilterRepeatTable(Exceldt, "代码");
+                        foreach (DataRow dr in ds.Tables[0].Rows)
+                        {
+                            PartViewForExport pvfe = new PartViewForExport();
+                            Type partInfo = typeof(PartViewForExport);
+                            PropertyInfo[] pis = partInfo.GetProperties();
+                            foreach (PropertyInfo pi in pis)
+                            {
+                                if (ds.Tables[0].Columns.Contains(pi.Name))
+                                {
+                                    pi.SetValue(pvfe, dr[pi.Name].ToString());
+                                }
+                            }
+                            list.Add(pvfe);
+                        }                        
+                    }
                 }
-                return "采购类型更新成功";
+                //过滤重复行 michael
+                List<PartViewForExport> list1 = new List<PartViewForExport>();
+                foreach (var pv in list)
+                {
+                    int rowCount = (from PartViewForExport q in list1 where q.代码.ToString() == pv.代码.ToString() where pv.代码.ToString() != "未查询到物料分类，请至ERP创建" select q).ToList().Count();//where pv.代码.ToString() != "未查询到物料分类，请至ERP创建"
+                    if (rowCount == 0)
+                    {
+                        list1.Add(pv);
+                    }
+                }
+                if (list1.Count > 0)
+                {
+                    for (int i = 1; i <= list1.Count; i++)
+                    {
+                        PartViewForExport pv = list1[i - 1];
+
+                        for (int j = 1; j <= listHead1.Count; j++)
+                        {
+                            string name = listHead1[j - 1];
+                            PropertyInfo p = typeof(PartViewForExport).GetProperty(name);
+                            string value = p.GetValue(pv, null) == null ? "" : p.GetValue(pv, null).ToString(); ;
+                            cells[i, j - 1].PutValue(value);
+                            cells.SetColumnWidth(i, 30);
+                        }
+                    }
+                    workbook.Save("物料" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".xlsx", FileFormatType.Excel2007Xlsx, SaveType.OpenInExcel, System.Web.HttpContext.Current.Response);
+                }                
             }
-            catch
-            {
-                return "保存失败,请刷新后重试";
-            }
-
-        }
-
-        #region QuotationFile Upload
-
-        [HttpPost]
-        public string QuotationUpload(int RequestID, int UploadSupplier, HttpPostedFileBase File)
-        {
-            List<QuotationFile> _exist = _quotationFileRepository.QueryByQuotationRequest(RequestID, UploadSupplier);
-            foreach (QuotationFile _file in _exist)
-            {
-                _file.Enabled = false;
-                _quotationFileRepository.Save(_file);
-            }
-
-            try
-            {
-                string _path = Server.MapPath("~/Quotation/");
-                QuotationFile _file = new QuotationFile(RequestID, UploadSupplier, File.FileName, File.ContentType);
-                _quotationFileRepository.Save(_file);
-                File.SaveAs(_path + _file.SysFileName);
-                return "";
-            }
-            catch
-            {
-                return "error";
-            }
-        }
-
-
-        public ActionResult JsonQuotationFiles(int QuotationRequestID)
-        {
-            List<QuotationFile> _files = _quotationFileRepository.QueryByQuotationRequest(QuotationRequestID);
-            List<QuotationFileViewModel> _models = new List<QuotationFileViewModel>();
-            foreach(QuotationFile _file in _files){
-                string _supplierName = _supplierRepository.QueryByID(_file.SupplierID).Name;
-                QuotationFileViewModel _model = new QuotationFileViewModel(_file, _supplierName);
-                _models.Add(_model);
-            }
-            return Json(_models, JsonRequestBehavior.AllowGet);
-        }
-
-        public ActionResult GetQuotationFile(int QuotationFileID)
-        {
-            QuotationFile _file = _quotationFileRepository.QueryByID(QuotationFileID);
-            string _filepath = Server.MapPath("~/Quotation/"+_file.SysFileName);
-            return File(_filepath, _file.MimeType, _file.FileName);
-        }
-
-        public int QuotationFileCount(int QuotationRequestID, int SupplierID)
-        {
-            int _count = _quotationFileRepository.QueryByQuotationRequest(QuotationRequestID, SupplierID).Count();
-            return _count;
+            return "ok";
         }
         #endregion
+        #region ERP料号同步 michael
+        /// <summary>
+        /// 导出零件信息  michael 180608
+        /// </summary>
+        /// <returns></returns>
+        public string ExportExcelForPartByPR(string PurchaseRequestID,string PartID = "")
+        {            
+            PurchaseRequestID = PurchaseRequestID == "" ? "0" : PurchaseRequestID;
+            int int_PurchaseRequestID = Convert.ToInt32(PurchaseRequestID);
+            if (int_PurchaseRequestID == 0)
+                return "NG";
+            //return ExportExcel<PartViewForExport>(ps);
+            Workbook workbook = new Workbook();
+            workbook.Open(AppDomain.CurrentDomain.BaseDirectory + "\\images\\material.xlsx", FileFormatType.Excel2007Xlsx);
+
+            Worksheet worksheet = workbook.Worksheets[0];
+            //worksheet.Name = "Page1";
+            Cells cells = worksheet.Cells;
+            cells.InsertRow(0);
+            Aspose.Cells.Style style = workbook.Styles[workbook.Styles.Add()];//新增样式
+            style.HorizontalAlignment = TextAlignmentType.Center;//文字居中  
+            style.Font.Size = 11;//文字大小  
+            style.Font.IsBold = true;//粗体 
+            cells.SetRowHeight(0, 20);              //设置行高 
+
+            List<string> listHead = new List<string>();
+            #region MyRegion
+            listHead.Add("代码");
+            listHead.Add("名称");
+            listHead.Add("明细");
+            listHead.Add("审核人_FName");
+            listHead.Add("物料全名");
+            listHead.Add("助记码");
+            listHead.Add("规格型号");
+            listHead.Add("辅助属性类别_FName");
+            listHead.Add("辅助属性类别_FNumber");
+            listHead.Add("模具号");
+            listHead.Add("零件号");
+            listHead.Add("物料属性_FName");
+            listHead.Add("物料分类_FName");
+            listHead.Add("计量单位组_FName");
+            listHead.Add("基本计量单位_FName");
+            listHead.Add("基本计量单位_FGroupName");
+            listHead.Add("采购计量单位_FName");
+            listHead.Add("采购计量单位_FGroupName");
+            listHead.Add("销售计量单位_FName");
+            listHead.Add("销售计量单位_FGroupName");
+            listHead.Add("生产计量单位_FName");
+            listHead.Add("生产计量单位_FGroupName");
+            listHead.Add("库存计量单位_FName");
+            listHead.Add("库存计量单位_FGroupName");
+            listHead.Add("辅助计量单位_FName");
+            listHead.Add("辅助计量单位_FGroupName");
+            listHead.Add("辅助计量单位换算率");
+            listHead.Add("默认仓库_FName");
+            listHead.Add("默认仓库_FNumber");
+            listHead.Add("默认仓位_FName");
+            listHead.Add("默认仓位_FGroupName");
+            listHead.Add("默认仓管员_FName");
+            listHead.Add("默认仓管员_FNumber");
+            listHead.Add("来源_FName");
+            listHead.Add("来源_FNumber");
+            listHead.Add("数量精度");
+            listHead.Add("最低存量");
+            listHead.Add("最高存量");
+            listHead.Add("安全库存数量");
+            listHead.Add("使用状态_FName");
+            listHead.Add("是否为设备");
+            listHead.Add("设备编码");
+            listHead.Add("是否为备件");
+            listHead.Add("批准文号");
+            listHead.Add("别名");
+            listHead.Add("物料对应特性");
+            listHead.Add("默认待检仓库_FName");
+            listHead.Add("默认待检仓库_FNumber");
+            listHead.Add("默认待检仓位_FName");
+            listHead.Add("默认待检仓位_FGroupName");
+            listHead.Add("品牌");
+            listHead.Add("材料");
+            listHead.Add("采购最高价");
+            listHead.Add("采购最高价币别_FName");
+            listHead.Add("采购最高价币别_FNumber");
+            listHead.Add("委外加工最高价");
+            listHead.Add("委外加工最高价币别_FName");
+            listHead.Add("委外加工最高价币别_FNumber");
+            listHead.Add("销售最低价");
+            listHead.Add("销售最低价币别_FName");
+            listHead.Add("销售最低价币别_FNumber");
+            listHead.Add("是否销售");
+            listHead.Add("采购负责人_FName");
+            listHead.Add("采购负责人_FNumber");
+            listHead.Add("采购部门");
+            listHead.Add("毛利率(%)");
+            listHead.Add("采购单价");
+            listHead.Add("销售单价");
+            listHead.Add("是否农林计税");
+            listHead.Add("是否进行保质期管理");
+            listHead.Add("保质期(天)");
+            listHead.Add("是否需要库龄管理");
+            listHead.Add("是否采用业务批次管理");
+            listHead.Add("是否需要进行订补货计划的运算");
+            listHead.Add("失效提前期(天)");
+            listHead.Add("盘点周期单位_FName");
+            listHead.Add("盘点周期");
+            listHead.Add("每周/月第()天");
+            listHead.Add("上次盘点日期");
+            listHead.Add("外购超收比例(%)");
+            listHead.Add("外购欠收比例(%)");
+            listHead.Add("销售超交比例(%)");
+            listHead.Add("销售欠交比例(%)");
+            listHead.Add("完工超收比例(%)");
+            listHead.Add("完工欠收比例(%)");
+            listHead.Add("领料超收比例(%)");
+            listHead.Add("领料欠收比例(%)");
+            listHead.Add("计价方法_FName");
+            listHead.Add("计划单价");
+            listHead.Add("单价精度");
+            listHead.Add("存货科目代码_FNumber");
+            listHead.Add("销售收入科目代码_FNumber");
+            listHead.Add("销售成本科目代码_FNumber");
+            listHead.Add("成本差异科目代码_FNumber");
+            listHead.Add("代管物资科目_FNumber");
+            listHead.Add("税目代码_FName");
+            listHead.Add("税率(%)");
+            listHead.Add("成本项目_FName");
+            listHead.Add("成本项目_FNumber");
+            listHead.Add("是否进行序列号管理");
+            listHead.Add("参与结转式成本还原");
+            listHead.Add("备注");
+            listHead.Add("网店货品名");
+            listHead.Add("商家编码");
+            listHead.Add("严格进行二维码数量校验");
+            listHead.Add("单位包装数量");
+            listHead.Add("计划策略_FName");
+            listHead.Add("计划模式_FName");
+            listHead.Add("订货策略_FName");
+            listHead.Add("固定提前期");
+            listHead.Add("变动提前期");
+            listHead.Add("累计提前期");
+            listHead.Add("订货间隔期(天)");
+            listHead.Add("最小订货量");
+            listHead.Add("最大订货量");
+            listHead.Add("批量增量");
+            listHead.Add("设置为固定再订货点");
+            listHead.Add("再订货点");
+            listHead.Add("固定/经济批量");
+            listHead.Add("变动提前期批量");
+            listHead.Add("批量拆分间隔天数");
+            listHead.Add("拆分批量");
+            listHead.Add("需求时界(天)");
+            listHead.Add("计划时界(天)");
+            listHead.Add("默认工艺路线_FInterID");
+            listHead.Add("默认工艺路线_FRoutingName");
+            listHead.Add("默认生产类型_FName");
+            listHead.Add("默认生产类型_FNumber");
+            listHead.Add("生产负责人_FName");
+            listHead.Add("生产负责人_FNumber");
+            listHead.Add("计划员_FName");
+            listHead.Add("计划员_FNumber");
+            listHead.Add("是否倒冲");
+            listHead.Add("倒冲仓库_FName");
+            listHead.Add("倒冲仓库_FNumber");
+            listHead.Add("倒冲仓位_FName");
+            listHead.Add("倒冲仓位_FGroupName");
+            listHead.Add("投料自动取整");
+            listHead.Add("日消耗量");
+            listHead.Add("MRP计算是否合并需求");
+            listHead.Add("MRP计算是否产生采购申请");
+            listHead.Add("控制类型_FName");
+            listHead.Add("控制策略_FName");
+            listHead.Add("容器名称");
+            listHead.Add("看板容量");
+            listHead.Add("辅助属性参与计划运算");
+            listHead.Add("产品设计员_FName");
+            listHead.Add("产品设计员_FNumber");
+            listHead.Add("图号");
+            listHead.Add("是否关键件");
+            listHead.Add("毛重");
+            listHead.Add("净重");
+            listHead.Add("重量单位_FName");
+            listHead.Add("重量单位_FGroupName");
+            listHead.Add("长度");
+            listHead.Add("宽度");
+            listHead.Add("高度");
+            listHead.Add("体积");
+            listHead.Add("长度单位_FName");
+            listHead.Add("长度单位_FGroupName");
+            listHead.Add("版本号");
+            listHead.Add("单位标准成本");
+            listHead.Add("附加费率(%)");
+            listHead.Add("附加费所属成本项目_FNumber");
+            listHead.Add("成本BOM_FBOMNumber");
+            listHead.Add("成本工艺路线_FInterID");
+            listHead.Add("成本工艺路线_FRoutingName");
+            listHead.Add("标准加工批量");
+            listHead.Add("单位标准工时(小时)");
+            listHead.Add("标准工资率");
+            listHead.Add("变动制造费用分配率");
+            listHead.Add("单位标准固定制造费用金额");
+            listHead.Add("单位委外加工费");
+            listHead.Add("委外加工费所属成本项目_FNumber");
+            listHead.Add("单位计件工资");
+            listHead.Add("采购订单差异科目代码_FNumber");
+            listHead.Add("采购发票差异科目代码_FNumber");
+            listHead.Add("材料成本差异科目代码_FNumber");
+            listHead.Add("加工费差异科目代码_FNumber");
+            listHead.Add("废品损失科目代码_FNumber");
+            listHead.Add("标准成本调整差异科目代码_FNumber");
+            listHead.Add("采购检验方式_FName");
+            listHead.Add("产品检验方式_FName");
+            listHead.Add("委外加工检验方式_FName");
+            listHead.Add("发货检验方式_FName");
+            listHead.Add("退货检验方式_FName");
+            listHead.Add("库存检验方式_FName");
+            listHead.Add("其他检验方式_FName");
+            listHead.Add("抽样标准(致命)_FName");
+            listHead.Add("抽样标准(致命)_FNumber");
+            listHead.Add("抽样标准(严重)_FName");
+            listHead.Add("抽样标准(严重)_FNumber");
+            listHead.Add("抽样标准(轻微)_FName");
+            listHead.Add("抽样标准(轻微)_FNumber");
+            listHead.Add("库存检验周期(天)");
+            listHead.Add("库存周期检验预警提前期(天)");
+            listHead.Add("检验方案_FInterID");
+            listHead.Add("检验方案_FBrNo");
+            listHead.Add("检验员_FName");
+            listHead.Add("检验员_FNumber");
+            listHead.Add("英文名称");
+            listHead.Add("英文规格");
+            listHead.Add("HS编码_FHSCode");
+            listHead.Add("HS编码_FNumber");
+            listHead.Add("外销税率%");
+            listHead.Add("HS第一法定单位");
+            listHead.Add("HS第二法定单位");
+            listHead.Add("进口关税率%");
+            listHead.Add("进口消费税率%");
+            listHead.Add("HS第一法定单位换算率");
+            listHead.Add("HS第二法定单位换算率");
+            listHead.Add("是否保税监管");
+            listHead.Add("物料监管类型_FName");
+            listHead.Add("物料监管类型_FNumber");
+            listHead.Add("长度精度");
+            listHead.Add("体积精度");
+            listHead.Add("重量精度");
+            listHead.Add("启用服务");
+            listHead.Add("生成产品档案");
+            listHead.Add("维修件");
+            listHead.Add("保修期限（月）");
+            listHead.Add("使用寿命（月）");
+            listHead.Add("控制");
+            listHead.Add("是否禁用");
+            listHead.Add("全球唯一标识内码");
+
+            #endregion
+            List<string> listHead1 = new List<string>();
+            #region MyRegion
+            listHead1.Add("代码");
+            listHead1.Add("名称");
+            listHead1.Add("明细");
+            listHead1.Add("审核人_FName");
+            listHead1.Add("物料全名");
+            listHead1.Add("助记码");
+            listHead1.Add("规格型号");
+            listHead1.Add("辅助属性类别_FName");
+            listHead1.Add("辅助属性类别_FNumber");
+            listHead1.Add("模具号");
+            listHead1.Add("零件号");
+            listHead1.Add("物料属性_FName");
+            listHead1.Add("物料分类_FName");
+            listHead1.Add("计量单位组_FName");
+            listHead1.Add("基本计量单位_FName");
+            listHead1.Add("基本计量单位_FGroupName");
+            listHead1.Add("采购计量单位_FName");
+            listHead1.Add("采购计量单位_FGroupName");
+            listHead1.Add("销售计量单位_FName");
+            listHead1.Add("销售计量单位_FGroupName");
+            listHead1.Add("生产计量单位_FName");
+            listHead1.Add("生产计量单位_FGroupName");
+            listHead1.Add("库存计量单位_FName");
+            listHead1.Add("库存计量单位_FGroupName");
+            listHead1.Add("辅助计量单位_FName");
+            listHead1.Add("辅助计量单位_FGroupName");
+            listHead1.Add("辅助计量单位换算率");
+            listHead1.Add("默认仓库_FName");
+            listHead1.Add("默认仓库_FNumber");
+            listHead1.Add("默认仓位_FName");
+            listHead1.Add("默认仓位_FGroupName");
+            listHead1.Add("默认仓管员_FName");
+            listHead1.Add("默认仓管员_FNumber");
+            listHead1.Add("来源_FName");
+            listHead1.Add("来源_FNumber");
+            listHead1.Add("数量精度");
+            listHead1.Add("最低存量");
+            listHead1.Add("最高存量");
+            listHead1.Add("安全库存数量");
+            listHead1.Add("使用状态_FName");
+            listHead1.Add("是否为设备");
+            listHead1.Add("设备编码");
+            listHead1.Add("是否为备件");
+            listHead1.Add("批准文号");
+            listHead1.Add("别名");
+            listHead1.Add("物料对应特性");
+            listHead1.Add("默认待检仓库_FName");
+            listHead1.Add("默认待检仓库_FNumber");
+            listHead1.Add("默认待检仓位_FName");
+            listHead1.Add("默认待检仓位_FGroupName");
+            listHead1.Add("品牌");
+            listHead1.Add("材料");
+
+            listHead1.Add("采购最高价");
+            listHead1.Add("采购最高价币别_FName");
+            listHead1.Add("采购最高价币别_FNumber");
+            listHead1.Add("委外加工最高价");
+            listHead1.Add("委外加工最高价币别_FName");
+            listHead1.Add("委外加工最高价币别_FNumber");
+            listHead1.Add("销售最低价");
+            listHead1.Add("销售最低价币别_FName");
+            listHead1.Add("销售最低价币别_FNumber");
+            listHead1.Add("是否销售");
+            listHead1.Add("采购负责人_FName");
+            listHead1.Add("采购负责人_FNumber");
+            listHead1.Add("采购部门");
+            listHead1.Add("毛利率");
+            listHead1.Add("采购单价");
+            listHead1.Add("销售单价");
+            listHead1.Add("是否农林计税");
+            listHead1.Add("是否进行保质期管理");
+            listHead1.Add("保质期天");
+            listHead1.Add("是否需要库龄管理");
+            listHead1.Add("是否采用业务批次管理");
+            listHead1.Add("是否需要进行订补货计划的运算");
+            listHead1.Add("失效提前期天");
+            listHead1.Add("盘点周期单位_FName");
+            listHead1.Add("盘点周期");
+            listHead1.Add("每周月第天");
+            listHead1.Add("上次盘点日期");
+            listHead1.Add("外购超收比例");
+            listHead1.Add("外购欠收比例");
+            listHead1.Add("销售超交比例");
+            listHead1.Add("销售欠交比例");
+            listHead1.Add("完工超收比例");
+            listHead1.Add("完工欠收比例");
+            listHead1.Add("领料超收比例");
+            listHead1.Add("领料欠收比例");
+            listHead1.Add("计价方法_FName");
+            listHead1.Add("计划单价");
+            listHead1.Add("单价精度");
+            listHead1.Add("存货科目代码_FNumber");
+            listHead1.Add("销售收入科目代码_FNumber");
+            listHead1.Add("销售成本科目代码_FNumber");
+            listHead1.Add("成本差异科目代码_FNumber");
+            listHead1.Add("代管物资科目_FNumber");
+            listHead1.Add("税目代码_FName");
+            listHead1.Add("税率");
+            listHead1.Add("成本项目_FName");
+            listHead1.Add("成本项目_FNumber");
+            listHead1.Add("是否进行序列号管理");
+            listHead1.Add("参与结转式成本还原");
+            listHead1.Add("备注");
+            listHead1.Add("网店货品名");
+            listHead1.Add("商家编码");
+            listHead1.Add("严格进行二维码数量校验");
+            listHead1.Add("单位包装数量");
+            listHead1.Add("计划策略_FName");
+            listHead1.Add("计划模式_FName");
+            listHead1.Add("订货策略_FName");
+            listHead1.Add("固定提前期");
+            listHead1.Add("变动提前期");
+            listHead1.Add("累计提前期");
+            listHead1.Add("订货间隔期天");
+            listHead1.Add("最小订货量");
+            listHead1.Add("最大订货量");
+            listHead1.Add("批量增量");
+            listHead1.Add("设置为固定再订货点");
+            listHead1.Add("再订货点");
+            listHead1.Add("固定经济批量");
+            listHead1.Add("变动提前期批量");
+            listHead1.Add("批量拆分间隔天数");
+            listHead1.Add("拆分批量");
+            listHead1.Add("需求时界天");
+            listHead1.Add("计划时界天");
+            listHead1.Add("默认工艺路线_FInterID");
+            listHead1.Add("默认工艺路线_FRoutingName");
+            listHead1.Add("默认生产类型_FName");
+            listHead1.Add("默认生产类型_FNumber");
+            listHead1.Add("生产负责人_FName");
+            listHead1.Add("生产负责人_FNumber");
+            listHead1.Add("计划员_FName");
+            listHead1.Add("计划员_FNumber");
+            listHead1.Add("是否倒冲");
+            listHead1.Add("倒冲仓库_FName");
+            listHead1.Add("倒冲仓库_FNumber");
+            listHead1.Add("倒冲仓位_FName");
+            listHead1.Add("倒冲仓位_FGroupName");
+            listHead1.Add("投料自动取整");
+            listHead1.Add("日消耗量");
+            listHead1.Add("MRP计算是否合并需求");
+            listHead1.Add("MRP计算是否产生采购申请");
+            listHead1.Add("控制类型_FName");
+            listHead1.Add("控制策略_FName");
+            listHead1.Add("容器名称");
+            listHead1.Add("看板容量");
+            listHead1.Add("辅助属性参与计划运算");
+            listHead1.Add("产品设计员_FName");
+            listHead1.Add("产品设计员_FNumber");
+            listHead1.Add("图号");
+            listHead1.Add("是否关键件");
+            listHead1.Add("毛重");
+            listHead1.Add("净重");
+            listHead1.Add("重量单位_FName");
+            listHead1.Add("重量单位_FGroupName");
+            listHead1.Add("长度");
+            listHead1.Add("宽度");
+            listHead1.Add("高度");
+            listHead1.Add("体积");
+            listHead1.Add("长度单位_FName");
+            listHead1.Add("长度单位_FGroupName");
+            listHead1.Add("版本号");
+            listHead1.Add("单位标准成本");
+            listHead1.Add("附加费率");
+            listHead1.Add("附加费所属成本项目_FNumber");
+            listHead1.Add("成本BOM_FBOMNumber");
+            listHead1.Add("成本工艺路线_FInterID");
+            listHead1.Add("成本工艺路线_FRoutingName");
+            listHead1.Add("标准加工批量");
+            listHead1.Add("单位标准工时小时");
+            listHead1.Add("标准工资率");
+            listHead1.Add("变动制造费用分配率");
+            listHead1.Add("单位标准固定制造费用金额");
+            listHead1.Add("单位委外加工费");
+            listHead1.Add("委外加工费所属成本项目_FNumber");
+            listHead1.Add("单位计件工资");
+            listHead1.Add("采购订单差异科目代码_FNumber");
+            listHead1.Add("采购发票差异科目代码_FNumber");
+            listHead1.Add("材料成本差异科目代码_FNumber");
+            listHead1.Add("加工费差异科目代码_FNumber");
+            listHead1.Add("废品损失科目代码_FNumber");
+            listHead1.Add("标准成本调整差异科目代码_FNumber");
+            listHead1.Add("采购检验方式_FName");
+            listHead1.Add("产品检验方式_FName");
+            listHead1.Add("委外加工检验方式_FName");
+            listHead1.Add("发货检验方式_FName");
+            listHead1.Add("退货检验方式_FName");
+            listHead1.Add("库存检验方式_FName");
+            listHead1.Add("其他检验方式_FName");
+            listHead1.Add("抽样标准致命_FName");
+            listHead1.Add("抽样标准致命_FNumber");
+            listHead1.Add("抽样标准严重_FName");
+            listHead1.Add("抽样标准严重_FNumber");
+            listHead1.Add("抽样标准轻微_FName");
+            listHead1.Add("抽样标准轻微_FNumber");
+            listHead1.Add("库存检验周期天");
+            listHead1.Add("库存周期检验预警提前期天");
+            listHead1.Add("检验方案_FInterID");
+            listHead1.Add("检验方案_FBrNo");
+            listHead1.Add("检验员_FName");
+            listHead1.Add("检验员_FNumber");
+            listHead1.Add("英文名称");
+            listHead1.Add("英文规格");
+            listHead1.Add("HS编码_FHSCode");
+            listHead1.Add("HS编码_FNumber");
+            listHead1.Add("外销税率");
+            listHead1.Add("HS第一法定单位");
+            listHead1.Add("HS第二法定单位");
+            listHead1.Add("进口关税率");
+            listHead1.Add("进口消费税率");
+            listHead1.Add("HS第一法定单位换算率");
+            listHead1.Add("HS第二法定单位换算率");
+            listHead1.Add("是否保税监管");
+            listHead1.Add("物料监管类型_FName");
+            listHead1.Add("物料监管类型_FNumber");
+            listHead1.Add("长度精度");
+            listHead1.Add("体积精度");
+            listHead1.Add("重量精度");
+            listHead1.Add("启用服务");
+            listHead1.Add("生成产品档案");
+            listHead1.Add("维修件");
+            listHead1.Add("保修期限月");
+            listHead1.Add("使用寿命月");
+            listHead1.Add("控制");
+            listHead1.Add("是否禁用");
+            listHead1.Add("全球唯一标识内码");
+
+            #endregion
+
+            for (int i = 0; i < listHead.Count; i++)
+            {
+                cells[0, i].PutValue(listHead[i]);
+                cells[0, i].Style = style;
+                cells.SetColumnWidth(i, 30);
+            }
+
+            List<PartViewForExport> list = new List<PartViewForExport>();
+            SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
+
+            List<PRContent> prcs = _prContentRepository.PRContents.Where(c => c.PurchaseRequestID == int_PurchaseRequestID).Where(c => c.Enabled == true).ToList() ?? new List<PRContent>();
+            int z = 1;
+            bool IsOver = false;
+            try
+            {
+                foreach (var prc in prcs)
+                {
+                    if (z == prcs.Count)
+                        IsOver = true;
+                    z++;
+                    #region 执行存储过程 
+                    string sql = "execute Pro_RefreshERPDataByPR " + prc.PRContentID + ",'" + IsOver.ToString() + "'";
+                    SqlCommand comm = new SqlCommand(sql, conn);
+                    SqlDataAdapter da = new SqlDataAdapter(comm);
+                    DataSet ds = new DataSet();
+                    da.Fill(ds, "test");
+                    #endregion
+                    if (ds == null && ds.Tables.Count == 0)
+                        return "false";
+                    if (ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                    {
+                        foreach (DataRow dr in ds.Tables[0].Rows)
+                        {
+                            PartViewForExport pvfe = new PartViewForExport();
+                            Type partInfo = typeof(PartViewForExport);
+                            PropertyInfo[] pis = partInfo.GetProperties();
+                            foreach (PropertyInfo pi in pis)
+                            {
+                                if (ds.Tables[0].Columns.Contains(pi.Name))
+                                {
+                                    pi.SetValue(pvfe, dr[pi.Name].ToString());
+                                }
+                            }
+                            list.Add(pvfe);
+                        }
+                    }
+
+                }
+            }
+            catch(Exception ex)
+            {
+                string WebLogPath = Server.MapPath("~/Log/");
+                if (!Directory.Exists(WebLogPath))
+                {
+                    DirectoryInfo dir = new DirectoryInfo(WebLogPath);
+                    dir.Create();
+                }
+                string logPath = WebLogPath + "采购单号_"+ PurchaseRequestID.ToString() + "_" + DateTime.Now.ToString("yyMMddhhmm") + ".txt";
+                Toolkits.WriteLog(logPath, ex.Message.ToString());
+            }
+            //过滤重复行 michael
+            List<PartViewForExport> list1 = new List<PartViewForExport>();
+            foreach (var pv in list)
+            {
+                int rowCount = (from PartViewForExport q in list1 where q.代码.ToString() == pv.代码.ToString() where pv.代码.ToString() != "未查询到物料分类，请至ERP创建" select q).ToList().Count();//where pv.代码.ToString() != "未查询到物料分类，请至ERP创建"
+                if (rowCount == 0)
+                {
+                    list1.Add(pv);
+                }
+            }
+            if (list1.Count > 0)
+            {
+                for (int i = 1; i <= list1.Count; i++)
+                {
+                    PartViewForExport pv = list1[i - 1];
+
+                    for (int j = 1; j <= listHead1.Count; j++)
+                    {
+                        string name = listHead1[j - 1];
+                        PropertyInfo p = typeof(PartViewForExport).GetProperty(name);
+                        string value = p.GetValue(pv, null) == null ? "" : p.GetValue(pv, null).ToString(); ;
+                        cells[i, j - 1].PutValue(value);
+                        cells.SetColumnWidth(i, 30);
+                    }
+                }
+                string prNum = _purchaseRequestRepository.GetByID(Convert.ToInt32(PurchaseRequestID)).PurchaseRequestNumber??"";
+                workbook.Save(prNum + "_物料" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".xlsx", FileFormatType.Excel2007Xlsx,SaveType.OpenInExcel, System.Web.HttpContext.Current.Response);
+            }
+            return "ok";
+        }
+        #endregion
+        /// <summary>
+        /// 过滤dt重复行
+        /// </summary>
+        /// <param name="Stable"></param>
+        /// <param name="colName"></param>
+        /// <returns></returns>
+        public DataTable FilterRepeatTable(DataTable Stable,string colName)
+        {
+            DataTable _table = Stable.Clone();
+            foreach (DataRow row in Stable.Rows)
+            {
+                int rowCount = (from DataRow q in _table.Rows where q[colName].ToString() == row[colName].ToString() where row[colName].ToString()!= "未查询到物料分类，请至ERP创建" select q).ToList().Count();
+                if (rowCount == 0)
+                {
+                    DataRow _row = _table.NewRow();
+                    _row.ItemArray = row.ItemArray;
+                    _table.Rows.Add(_row);
+                }
+            }
+            return _table;
+        }
+        /// <summary>
+        /// 导出采购信息
+        /// </summary>
+        /// <returns></returns>
+        public string ExportExcelForPurchase(string prNO)
+        {
+
+            //return ExportExcel<PartViewForExport>(ps);
+
+            Workbook workbook = new Workbook();
+            workbook.Open(AppDomain.CurrentDomain.BaseDirectory + "\\images\\purchase.xls");
+            //workbook.Worksheets.Clear();
+            //workbook.Worksheets.Add("Page1");
+            //workbook.Worksheets.Add("Page2");
+
+            Worksheet worksheet = workbook.Worksheets[1];
+            Cells cells = worksheet.Cells;
+            cells.InsertRow(0);
+            Aspose.Cells.Style style = workbook.Styles[workbook.Styles.Add()];//新增样式
+            style.HorizontalAlignment = TextAlignmentType.Center;//文字居中  
+            style.Font.Size = 11;//文字大小  
+            style.Font.IsBold = true;//粗体 
+            cells.SetRowHeight(0, 20);              //设置行高 
+
+            Worksheet worksheet2 = workbook.Worksheets[0];
+            Cells cells2 = worksheet2.Cells;
+            cells2.InsertRow(0);
+            Aspose.Cells.Style style2 = workbook.Styles[workbook.Styles.Add()];//新增样式
+            style2.HorizontalAlignment = TextAlignmentType.Center;//文字居中  
+            style2.Font.Size = 11;//文字大小  
+            style2.Font.IsBold = true;//粗体 
+            cells2.SetRowHeight(0, 20);              //设置行高 
+
+            List<string> listHead = new List<string>();
+            #region MyRegion
+            listHead.Add("行号");
+            listHead.Add("单据号_FBillno");
+            listHead.Add("单据号_FTrantype");
+            listHead.Add("物料代码_FNumber");
+            listHead.Add("物料代码_FName");
+            listHead.Add("物料代码_FModel");
+            listHead.Add("辅助属性_FNumber");
+            listHead.Add("辅助属性_FName");
+            listHead.Add("辅助属性_FClassName");
+            listHead.Add("单位_FNumber");
+            listHead.Add("单位_FName");
+            listHead.Add("数量");
+            listHead.Add("建议采购日期");
+            listHead.Add("BOM编号");
+            listHead.Add("用途");
+            listHead.Add("基本单位数量");
+            listHead.Add("供应商_FNumber");
+            listHead.Add("供应商_FName");
+            listHead.Add("到货日期");
+            listHead.Add("计划订单号");
+            listHead.Add("换算率");
+            listHead.Add("辅助数量");
+            listHead.Add("源单单号");
+            listHead.Add("源单类型");
+            listHead.Add("源单内码");
+            listHead.Add("源单分录");
+            listHead.Add("MRP计算标记");
+            listHead.Add("计划模式_FID");
+            listHead.Add("计划模式_FName");
+            listHead.Add("计划模式_FTypeID");
+            listHead.Add("计划跟踪号");
+            listHead.Add("是否询价");
+            listHead.Add("BOM类別_FID");
+            listHead.Add("BOM类別_FName");
+            listHead.Add("BOM类別_FTypeID");
+            listHead.Add("模具号");
+            listHead.Add("零件号");
+            listHead.Add("订单BOM行号");
+            listHead.Add("规格");
+            listHead.Add("备注1");
+            listHead.Add("件数");
+            listHead.Add("到货日期2");
+
+
+            #endregion
+            for (int i = 0; i < listHead.Count; i++)
+            {
+                cells[0, i].PutValue(listHead[i]);
+                cells[0, i].Style = style;
+                cells.SetColumnWidth(i, 30);
+            }
+
+            List<string> listHead2 = new List<string>();
+            #region MyRegion
+            listHead2.Add("FCheckDate");
+            listHead2.Add("日期");
+            listHead2.Add("制单人_FName");
+            listHead2.Add("编号");
+            listHead2.Add("审核人_FName");
+            listHead2.Add("FBrID_FNumber");
+            listHead2.Add("FBrID_FName");
+            listHead2.Add("事务类型");
+            listHead2.Add("单据号");
+            listHead2.Add("使用部门_FNumber");
+            listHead2.Add("使用部门_FName");
+            listHead2.Add("业务类型_FID");
+            listHead2.Add("业务类型_FName");
+            listHead2.Add("业务类型_FTypeID");
+            listHead2.Add("备注");
+            listHead2.Add("申请人_FNumber");
+            listHead2.Add("申请人_FName");
+            listHead2.Add("审批日期");
+            listHead2.Add("源单类型");
+            listHead2.Add("打印次数");
+            listHead2.Add("计划确认");
+            listHead2.Add("计划类别_FNumber");
+            listHead2.Add("计划类别_FName");
+
+            #endregion
+            for (int i = 0; i < listHead2.Count; i++)
+            {
+                cells2[0, i].PutValue(listHead2[i]);
+                cells2[0, i].Style = style;
+                cells2.SetColumnWidth(i, 30);
+            }
+
+            List<PurchaseViewForExport> list = new List<PurchaseViewForExport>();
+            List<Purchase2ViewForExport> list2 = new List<Purchase2ViewForExport>();
+            SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
+
+            if (prNO.Contains(","))
+            {
+                string[] strArr = prNO.Split(',');
+                #region MyRegion
+                foreach (string str in strArr)
+                {
+                    if (!string.IsNullOrEmpty(str))
+                    {
+                        //PurchaseRequest pr = _purchaseRequestRepository.GetByID(Convert.ToInt32(str)) ?? new PurchaseRequest();
+                        List<PRContent> prcs = _prContentRepository.QueryByRequestID(Convert.ToInt32(str)).ToList();
+                        foreach (var prc in prcs)
+                        {
+                            PurchaseRequest pr = _purchaseRequestRepository.GetByID(prc.PurchaseRequestID) ?? new PurchaseRequest();
+                            if (string.IsNullOrEmpty(prc.ERPPartID))
+                                return "NG|" + pr.PurchaseRequestNumber.ToString() + "|" + prc.JobNo;
+                        }
+                    }                       
+                }
+                foreach (string str in strArr)
+                {
+                    if (!string.IsNullOrEmpty(str))
+                    {
+
+                        #region MyRegion 
+                        string sql = "execute Pro_RefreshPR '" + str + "'";
+                        SqlCommand comm = new SqlCommand(sql, conn);
+                        SqlDataAdapter da = new SqlDataAdapter(comm);
+                        DataSet ds = new DataSet();
+                        da.Fill(ds, "test");
+                        #endregion
+
+
+                        if (ds == null && ds.Tables.Count == 0)
+                            return "false";
+
+                        foreach (DataRow dr in ds.Tables[1].Rows)
+                        {
+                            PurchaseViewForExport pvfe = new PurchaseViewForExport();
+                            Type partInfo = typeof(PurchaseViewForExport);
+                            PropertyInfo[] pis = partInfo.GetProperties();
+                            foreach (PropertyInfo pi in pis)
+                            {
+                                if (ds.Tables[1].Columns.Contains(pi.Name))
+                                {
+                                    pi.SetValue(pvfe, dr[pi.Name].ToString());
+                                }
+                            }
+                            list.Add(pvfe);
+                        }
+                        foreach (DataRow dr in ds.Tables[0].Rows)
+                        {
+                            Purchase2ViewForExport pvfe2 = new Purchase2ViewForExport();
+                            Type partInfo = typeof(Purchase2ViewForExport);
+                            PropertyInfo[] pis = partInfo.GetProperties();
+                            foreach (PropertyInfo pi in pis)
+                            {
+                                if (ds.Tables[0].Columns.Contains(pi.Name))
+                                {
+                                    pi.SetValue(pvfe2, dr[pi.Name].ToString());
+                                }
+                            }
+                            list2.Add(pvfe2);
+                        }
+                        for (int i = 1; i <= list.Count; i++)
+                        {
+                            PurchaseViewForExport pv = list[i - 1];
+
+                            for (int j = 1; j <= listHead.Count; j++)
+                            {
+                                string name = listHead[j - 1];
+                                PropertyInfo p = typeof(PurchaseViewForExport).GetProperty(name);
+                                string value = p.GetValue(pv, null) == null ? "" : p.GetValue(pv, null).ToString();
+                                cells[i, j - 1].PutValue(value);
+                                cells.SetColumnWidth(i, 30);
+                            }
+                        }
+
+                        for (int i = 1; i <= list2.Count; i++)
+                        {
+                            Purchase2ViewForExport pv = list2[i - 1];
+
+                            for (int j = 1; j <= listHead2.Count; j++)
+                            {
+                                string name = listHead2[j - 1];
+                                PropertyInfo p = typeof(Purchase2ViewForExport).GetProperty(name);
+                                string value = p.GetValue(pv, null) == null ? "" : p.GetValue(pv, null).ToString();
+                                cells2[i, j - 1].PutValue(value);
+                                cells2.SetColumnWidth(i, 30);
+                            }
+                        }
+                    }
+                }
+
+                #endregion
+                workbook.Save("采购申请" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".xls", FileFormatType.Excel2003,
+                    SaveType.OpenInExcel, System.Web.HttpContext.Current.Response);
+
+            }
+            return "ok";
+        }
+        /// <summary>
+        /// 判断是否全部同步erp料号
+        /// </summary>
+        /// <returns></returns>
+        public string IsErpPasrts(string prID)
+        {
+            List<PRContent> prcs = _prContentRepository.QueryByRequestID(Convert.ToInt32(prID)).ToList() ?? new List<PRContent>();
+            foreach (var prc in prcs)
+            {
+                PurchaseRequest pr = _purchaseRequestRepository.GetByID(prc.PurchaseRequestID) ?? new PurchaseRequest();
+                if (string.IsNullOrEmpty(prc.ERPPartID))
+                    return "NG|" + pr.PurchaseRequestNumber.ToString() + "|" + prc.JobNo;
+            }
+            return "ok";
+        }
+        /// <summary>
+        /// 检索供应商
+        /// </summary>
+        /// <param name="js"></param>
+        /// <returns></returns>
+        public string JsonSuppliersByJS(string js)
+        {
+            List<Supplier> _suppliers = _supplierRepository.GetSuppliersByJS(js)??new List<Supplier>();
+            string _nameStrs = "";
+            if (_suppliers.Count > 0)
+            {
+                foreach(var s in _suppliers)
+                {
+                    _nameStrs = _nameStrs + s.Name+"-"+s.JianSuo + ",";
+                }
+            }
+            if(!string.IsNullOrEmpty(_nameStrs))
+                _nameStrs = _nameStrs.Substring(0, _nameStrs.Length - 1);
+            else
+                _nameStrs = "";
+          return _nameStrs;
+        }
+        public int GetSupplierID(string _sName)
+        {
+            int _sID = _supplierRepository.Suppliers.Where(s => s.Name == _sName).FirstOrDefault().SupplierID;
+            return _sID;
+        }
     }
 }

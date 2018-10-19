@@ -22,7 +22,10 @@ namespace MoldManager.WebUI.Models.GridViewModel
             string CAMDrawingPath, 
             ICNCMachInfoRepository MachInfoRepository, 
             IEDMDetailRepository EDMDetailRepository, 
-            ITaskRepository TaskRepository, IProjectPhaseRepository ProjectPhaseRepository)
+            ITaskRepository TaskRepository, IProjectPhaseRepository ProjectPhaseRepository,
+            IMGSettingRepository MGSettingRepository,
+            IWEDMSettingRepository WEDMSettingRepository,
+            ITaskHourRepository TaskHourRepository)
         {
             ProjectPhase _phase;
             string _cad, _cam, _workshop, _qc, _planDate;
@@ -31,6 +34,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
            
             foreach (Task _task in Tasks)
             {
+                WEDMSetting wedmsetting=new WEDMSetting();
+                MGSetting mgsetting=new MGSetting();
                 switch (_task.TaskType)
                 {
                     case 1:
@@ -40,12 +45,14 @@ namespace MoldManager.WebUI.Models.GridViewModel
                         _phaseID = 9;
                         break;
                     case 3:
+                        wedmsetting = WEDMSettingRepository.QueryByTaskID(_task.TaskID);
                         _phaseID = 10;
                         break;
                     case 4:
                         _phaseID = 8;
                         break;
                     case 6:
+                        mgsetting = MGSettingRepository.QueryByTaskID(_task.TaskID);
                         _phaseID = 7;
                         break;
                 }
@@ -54,19 +61,27 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 _workshop = _task.WorkshopUser>0?UserRepository.GetUserByID(_task.WorkshopUser).FullName:"";
                 _qc = _task.QCUser > 0 ? UserRepository.GetUserByID(_task.QCUser).FullName : "";
                 CNCMachInfo _machinfo=GetCNCMachinfo(_task,MachInfoRepository, TaskRepository, EDMDetailRepository);
+                decimal TaskHour = 0;
                 try
                 {
                     _phase = ProjectPhaseRepository.GetProjectPhases(_task.ProjectID).Where(p => p.PhaseID == _phaseID).FirstOrDefault();
                     _planDate = _phase.PlanCFinish == new DateTime(1, 1, 1) ? _phase.PlanFinish.ToString("yyyy-MM-dd") :
-                        _phase.PlanCFinish.ToString("yyyy-MM-dd");
+                    _phase.PlanCFinish.ToString("yyyy-MM-dd");                   
                 }
                 catch
                 {
-                    _planDate = "-";
+                    _planDate = "-";                    
                 }
-                
-                
-                rows.Add( new TaskGridRowModel(_task, _cad, _cam, _workshop, _qc, CAMDrawingPath, _planDate, _machinfo));
+                try
+                {
+                    TaskHour = TaskHourRepository.GetTotalHourByTaskID(_task.TaskID);
+                }
+                catch
+                {
+                    TaskHour = 0;
+                }
+                string Operater = TaskHourRepository.GetOperaterByTaskID(_task.TaskID);           
+                rows.Add( new TaskGridRowModel(_task, _cad, _cam, _workshop, _qc, CAMDrawingPath, _planDate, TaskHour, Operater, _machinfo,wedmsetting,mgsetting));
             }
         }
 

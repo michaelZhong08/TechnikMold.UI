@@ -1,7 +1,7 @@
 ﻿using System.Web;
 using System.Web.Optimization;
 
-namespace TechnikMold.UI
+namespace TechnikSys.MoldManager.UI
 {
     public class BundleConfig
     {

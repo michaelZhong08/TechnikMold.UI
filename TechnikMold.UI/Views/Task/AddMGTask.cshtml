@@ -1,0 +1,109 @@
+﻿
+@{
+    ViewBag.Title = "AddMGTask";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-sm-12" style="margin-top:60px">
+    <h2>新增加工任务</h2>
+    <h4 id="GRIDURL"></h4>
+    <div class="col-sm-12">
+
+    </div>
+    <div class="col-sm-2">
+        <table>
+            <tr>
+                <td><label>任务类型</label></td>
+            </tr>
+            <tr>
+                <td>
+                    <select id="TaskType" class="form-control">
+                        <option value="0">铣床任务</option>
+                        <option value="1">磨床任务</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label>选择模具号</label></td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="text" id="Keyword" class="form-control" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <select id="MoldList" class="form-control" size="20"></select>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="col-sm-7">
+        <table id="TaskGrid"></table>
+    </div>
+    <div class="col-sm-2">
+
+        <table class="col-sm-12">
+            <tr>
+                <td><button id="AddSelected" class="btn btn-primary">添加选中任务</button></td>
+                <td><button id="RemoveSelected" class="btn btn-primary">移除选中任务</button></td>
+            </tr>
+            <tr>
+                <td colspan="2" class="col-sm-12"><label>新任务名称</label></td>
+            </tr>
+            <tr>
+                <td class="col-sm-12" colspan="2">
+                    <select size="16" id="TaskList" class="form-control" multiple></select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="col-sm-12">
+                    <button id="SaveTasks" class="btn btn-primary">新建任务</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<input type="hidden" id="TaskIDs" Name="TaskIDs" value="" />
+<script>
+    $(document).ready(function () {
+        TaskRecreateGrid(0, 1, true);
+
+
+        LoadMolds("");
+
+        $("#Keyword").on("keyup", function () {
+            LoadMolds($("#Keyword").val());
+        })
+
+        $("#MoldList").on("change", function () {
+            LoadTasks()
+        })
+        $("#RemoveSelected").on("click", function () {
+            $("#TaskList option:selected").remove();
+        })
+        function LoadMolds(Keyword) {
+            $("#MoldList option").remove();
+            $.getJSON("/Project/JsonMoldNumber?Keyword=" + Keyword + "&TakeAll=true", function (msg) {
+                $.each(msg, function (i, n) {
+                    $("#MoldList").append($("<option/>", {
+                        value: n,
+                        text: n
+                    }))
+                });
+            })
+        }
+
+        function LoadTasks() {
+
+            var _moldnumber = $("#MoldList option:selected").val();
+            var _taskType = 6;
+            //$("#TaskGrid").jqGrid("setGridParam", { url: "" }).trigger('reloadGrid');
+            //alert("Reload");
+            $("#TaskGrid").jqGrid("setGridParam", { datatype: "json", url: "/Task/JsonMachineTasks?MoldNumber=" + _moldnumber + "&TaskType=" + _taskType + "&state=1" }).trigger("reloadGrid");
+
+            //alert("Reload");
+        }
+    })
+</script>

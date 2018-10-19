@@ -10,7 +10,7 @@
                     <tr>
                         <td class="col-sm-2">加工设备</td>
                         <td class="col-sm-3">
-                            <select id="Machine" class="form-control"></select>
+                            <select id="Machine" class="form-control" style="width:200px;"></select>
                             <input type="hidden" id="SteelTaskID" />
                         </td>
                         <td class="col-sm-2">
@@ -48,8 +48,8 @@
 
 <script>
     $("document").ready(function(){
-        GetMachines();
-
+        //GetMachines();
+        LoadMachine('Machine');
         $("#SendSteelProgram").on("click", function () {
             var _checkboxes = $("#Program:checked");
             if (_checkboxes.length > 0) {
@@ -66,16 +66,17 @@
         })
     })
 
-    function GetMachines() {
-        $.getJSON("/Task/CNCMachines", function (msg) {
-            $.each(msg, function (i, n) {
-                $("#Machine").append($("<option/>", {
-                    value: n.MachineID,
-                    text: n.Name
-                }))
-            })
-        })
-    }
+    //function GetMachines() {
+    //    $("#Machine option").remove();
+    //    $.getJSON("/Task/Service_Json_GetMachincesByType?TaskType="+4, function (msg) {
+    //        $.each(msg, function (i, n) {
+    //            $("#Machine").append($("<option/>", {
+    //                value: n.MachineID,
+    //                text: n.Name + '_' + n.MachineCode
+    //            }))
+    //        })
+    //    })
+    //}
     function GetSteelTasks(TaskID) {
         $("#SteelTaskID").val(TaskID);
         $(".ProgramList").remove();

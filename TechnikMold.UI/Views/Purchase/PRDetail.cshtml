@@ -35,10 +35,15 @@
         PosID = 0;
     }
 }
+<style>
+    #SupplierIDD option{
+        color:rgba(0,0,0,0)!important;
+        font-size:44px!important;
+    }
+</style>
+<div style="margin-top:60px">
 
-<div style="margin-top:10px">
-    
-
+    <input type="hidden" value="@ViewBag.TaskType" id="TaskType"/>
     <div class="col-sm-11">
         <h2>采购申请单 @ViewBag.RequestNumber  </h2>
         @if (ViewBag.PurchaseRequestID != 0)
@@ -54,14 +59,9 @@
 
             @if (Model == null)
             {
-                
                 <button class="btn btn-primary" id="AddContent">添加零件</button>
                 <button class="btn btn-primary" id="DeleteContent">删除零件</button>
-                <button class="btn btn-primary" id="RequireDateSet">设置需求日期</button>
-                <button class="btn btn-primary" id="CostCenterBatch">设置成本中心</button>
-                <button class="btn btn-primary" id="PurchaseTypeBatch">设置采购类型</button>
                 <button class="btn btn-success" id="CreatePR">保存申请单</button>
-                
             }
             else
             {
@@ -69,27 +69,19 @@
                 switch (Model.State)
                 {
                     case (int)PurchaseRequestStatus.新建:
-                        if (Model.DepartmentID ==DeptID)
+                        if (Model.DepartmentID == DeptID)
                         {
                             <button class="btn btn-primary" id="AddContent">添加零件</button>
                             <button class="btn btn-primary" id="DeleteContent">删除零件</button>
-                            <button class="btn btn-primary" id="RequireDateSet">设置需求日期</button>
-                            <button class="btn btn-primary" id="CostCenterBatch">设置成本中心</button>
-                            <button class="btn btn-primary" id="PurchaseTypeBatch">设置采购类型</button>
-                            <button class="btn btn-success" id="CreatePR">保存申请单</button>
+                            <button class="btn btn-primary" id="CreatePR">保存申请单</button>
                             <button class="btn btn-success" id="SubmitPR">提交申请单</button>
                             <button class="btn btn-warning" id="CancelPR">取消申请单</button>
                         }
 
                         break;
                     case (int)PurchaseRequestStatus.待审批:
-                        if (Model.DepartmentID == DeptID)
-                        {
-                            <button class="btn btn-primary" id="DeleteContent">删除零件</button>
-                        }
                         if (PosID > 1)
                         {
-
                             <button class="btn btn-primary" id="ReviewPR">审批</button>
                         }
                         break;
@@ -97,18 +89,20 @@
                         if (DeptID == 4)
                         {
                             <button class="btn btn-primary" id="CreateQR">生成询价单</button>
+
                         }
                         if (Model.DepartmentID == DeptID)
                         {
                             <button class="btn btn-primary" id="RemoveCancel">移除订单取消项</button>
                         }
+                        <input type="button" class="btn btn-success" id="GetERPID" value="同步ERP料号">
                         break;
                     case (int)PurchaseRequestStatus.完成:
                         break;
                     case (int)PurchaseRequestStatus.拒绝:
                         if (Model.DepartmentID == DeptID)
                         {
-                        <button class="btn btn-primary" id="RestartPR">重启申请单</button>
+                            <button class="btn btn-primary" id="RestartPR">重启申请单</button>
                         }
                         break;
                 }
@@ -121,79 +115,157 @@
                 {
                     string status = Enum.GetName(typeof(PurchaseRequestStatus), Model.State);
                     <tr>
-                        <td class="col-sm-1"><label>申请单号</label></td>
-                        <td class="col-sm-2">
-                            <input type="text" id="PurchaseRequestNumber" class="form-control" value="" readonly />
-                            <input type="hidden" id="PurchaseRequestID" value="@Model.PurchaseRequestID" />
-                        </td>
-                        <td class="col-sm-1"><label>状态</label></td>
-                        <td class="col-sm-2"><input type="text" id="PurchaseRequestStatus" class="form-control" value="@status" readonly></td>
-                    </tr>
-                    <tr>
-                        <td class="col-sm-1"><label>推荐供应商</label></td>
                         <td class="col-sm-2">
                             @if (Model.State == 1)
-                            {
-                                <select id="SupplierID" name="SupplierID" class="form-control"></select>
+                            {                               
+                                <label>推荐供应商</label>
+                                @*<select id="SupplierID" name="SupplierID" class="form-control" style="display:inline;float:right;width:70%"></select>*@
+                                <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:70%" />                              
+                                <datalist id="SupplierIDD"></datalist>
+                                <input id="SupplierID" hidden>
                             }
                             else
                             {
-                                <input type="text" id="RecommandSupplierName" class="form-control" readonly />
+                                <label>推荐供应商</label>
+                                <input type="text" id="RecommandSupplierName" class="form-control" style="display:inline;float:right;width:70%" readonly />
                                 <input type="hidden" id="SupplierID" name="SupplierID" value="0" />
                             }
-                            
-                        </td>
-                        <td class="col-sm-1">
-                        @*    <label>采购类型</label>*@
+
                         </td>
                         <td class="col-sm-2">
-
+                            <label>采购类型</label>
                             <input type="hidden" name="PurchaseType" id="PurchaseType" value="@ViewBag.PurchaseTypeID" />
-                            @*<input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" readonly />*@
+                            <input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" style="display:inline;float:right;width:80%" readonly />
+                        </td>
 
-
+                        <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="@status" readonly></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2">
+                            <label>申请人</label>
+                            @if (Model.State == 1)
+                            {
+                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
+                                    <option value="0">-</option>
+                                    @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
+                                    {
+                                        if (@ViewBag.ApprovalUserName == @ApprovalUser.FullName)
+                                        {
+                                            <option value="@ApprovalUser.UserCode" selected>@ViewBag.ApprovalUserName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" style="display:inline;float:right;width:70%" readonly />
+                            }
+                        </td>
+                        <td class="col-sm-2">
+                            <label>创建人</label>
+                            <input type="text" id="CreUser" class="form-control" value="@ViewBag.CreUserName" style="display:inline;float:right;width:80%" readonly />
+                        </td>
+                        <td class="col-sm-2">
+                            <label>申请单号</label>
+                            <input type="text" id="PurchaseRequestNumber" class="form-control" value="" style="display:inline;float:right;width:80%" readonly />
+                            <input type="hidden" id="PurchaseRequestID" value="@ViewBag.PurchaseRequestID" />
                         </td>
                     </tr>
+                    if (@ViewBag.State < (int)PurchaseRequestStatus.待审批 && @ViewBag.State >= (int)PurchaseRequestStatus.新建)
+                    {
+                        <tr>
+                            <td class="col-sm-2"></td>
+                            <td class="col-sm-2">
+                                <label>成本中心</label>
+                                <select id="CostCenterID" class="form-control" style="display:inline;float:right;width:80%"></select>
+                            </td>
 
+                            <td class="col-sm-2">
+                                <label>需求日期</label>
+                                <input type="date" class="form-control" id="RequireDateVal" style="display:inline;float:right;width:80%" />
+                            </td>
+                        </tr>
+                    }
 
+                    <tr>
+                        <td colspan="3" class="col-sm-6">
+                            @if (@ViewBag.State < (int)PurchaseRequestStatus.待审批)
+                            {
+                                <label>备注信息</label>
+                                <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" maxlength="99" style="display:inline;float:right;width:90%" />
+                            }
+                            else
+                            {
+                                <label>备注信息</label>
+                                <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" maxlength="99" style="display:inline;float:right;width:90%" readonly />
+                            }
+                        </td>
+                    </tr>
                 }
                 else
                 {
-                    <tr>                        
-                        <td class="col-sm-1"><label>推荐供应商</label></td>
+                    <tr>
                         <td class="col-sm-2">
-                            <select id="SupplierID" name="SupplierID" class="form-control"></select>
+                            <label style="float:left">推荐供应商</label>
+                            <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:70%" />
+                            <datalist id="SupplierIDD"></datalist>
+                            <input id="SupplierID" hidden>
                         </td>
-                        <td class="col-sm-1">
-                            @*<label>采购类型</label>*@
-                        </td>
-                        <td class="col-sm-2">
-                            <input type="hidden" id="PurchaseType" value="0" />
-                            @*<select id="PurchaseType" class="form-control" name="PurchaseType" value="0"></select>*@
 
+                        <td class="col-sm-2">
+                            <label>采购类型</label>
+                            <select id="PurchaseType" class="form-control" name="PurchaseType" style="display:inline;float:right;width:80%"></select>
+                        </td>
+                        <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="新建" readonly></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-2">
+                            @try
+                            {
+                                <label style="float:left">申请人</label>
+                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
+                                    <option value="0">-</option>
+                                    @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
+                                    {
+                                        <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
+                                    }
+                                </select>
+                            }
+                            catch
+                            {
+                                <label>申请人</label>
+                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
+                                    <option value="0">-</option>
+                                    @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
+                                    {
+                                        <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
+                                    }
+                                </select>
+                            }
+                        </td>
+
+                        <td class="col-sm-2">
+                            <label>成本中心</label>
+                            <select id="CostCenterID" class="form-control" style="display:inline;float:right;width:80%"></select>
+                        </td>
+
+                        <td class="col-sm-2">
+                            <label>需求日期</label>
+                            <input type="date" class="form-control" id="RequireDateVal" style="display:inline;float:right;width:80%" />
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="col-sm-6">
+                            <label>备注信息</label>
+                            <input type="text" id="PRMemo" value="" class="form-control" style="display:inline;float:right;width:90%" maxlength="99" />
                         </td>
                     </tr>
                 }
-                <tr>                  
-                    <td class="col-sm-1"><label>备注信息</label></td>
-                    <td colspan="3" class="col-sm-5">
-
-                        @try{
-                            if (Model.State < (int)PurchaseRequestStatus.待审批)
-                        {
-                            <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" maxlength="99" />
-                        }
-                        else
-                        {
-                            <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" maxlength="99" readonly />
-                        }
-                        }
-                        catch
-                        {
-                            <input type="text" id="PRMemo" value="" class="form-control" maxlength="99" />
-                        }
-                    </td>
-                </tr>
             </table>
         </div>
 
@@ -208,7 +280,7 @@
 
 <input type="hidden" id="row" />
 @*手工添加/编辑采购项信息对话框*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PRContentAdd" tabindex="-1" role="dialog" aria-labelledby="PRContentAddLabel">
+<div class="modal" id="PRContentAdd" tabindex="-1" role="dialog" aria-labelledby="PRContentAddLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -218,18 +290,28 @@
             <div class="modal-body">
                 <table class="table-striped col-sm-12">
                     <tr>
-                        <td class="col-sm-4">零件名称</td>
+                        <td class="col-sm-4">模号</td>
                         <td class="col-sm-8">
-                            <input type="text" class="form-control required" name="Name" id="Name" maxlength="50" />
-                            <input type="hidden" id="PRContentID" value="0" />
-                            <input type="hidden" id="MoldNumber" value="" />
-                            <input type="hidden" id="VerifyFail" value="0" />
-                            <input type="hidden" id="State" value="" />
+                            <input type="text" class="form-control required" name="MoldNum" id="MoldNum" min="0" value="" placeholder="请输入模号" />
                         </td>
                     </tr>
                     <tr>
                         <td class="col-sm-4">零件号</td>
-                        <td class="col-sm-8"><input type="text" class="form-control required" name="PartNumber" id="PartNumber" min="0" maxlength="20" value="" /></td>
+                        <td class="col-sm-8">
+                            <input type="hidden" class="form-control" name="PartNumber" id="PartNumber" min="0" value="" />
+                            <input type="text" class="form-control required" name="JobNo" id="JobNo" min="0" value="" placeholder="请输入JOB NO" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4">零件短名</td>
+                        <td class="col-sm-8">
+                            <input type="text" class="form-control required" name="Name" id="Name" maxlength="50" placeholder="请输入零件短名" />
+                            <input type="hidden" id="PRContentID" value="0" />
+                            <input type="hidden" id="MoldNumber" value="" />
+                            <input type="hidden" id="VerifyFail" value="0" />
+                            <input type="hidden" id="State" value="" />
+                            <input type="hidden" id="ViewType" value="" />
+                        </td>
                     </tr>
                     <tr>
                         <td class="col-sm-4">数量</td>
@@ -237,12 +319,12 @@
                     </tr>
                     <tr>
                         <td class="col-sm-4">规格</td>
-                        <td class="col-sm-8"><input type="text" class="form-control required" name="Specification" id="Specification" maxlength="100" /></td>
+                        <td class="col-sm-8"><input type="text" class="form-control required" name="Specification" id="Specification" maxlength="100" placeholder="请输入规格或尺寸" /></td>
                     </tr>
                     <tr>
                         <td class="col-sm-4">材料</td>
                         <td class="col-sm-8">
-                            <select class="form-control" id="MaterialID" name="MaterialID">
+                            <select class="form-control required" id="MaterialID" name="MaterialID">
                                 <option value="0">-</option>
                             </select>
                         </td>
@@ -255,10 +337,10 @@
                             </select>
                         </td>
                     </tr>
-                    <tr>
+                    <tr id="brandtr" style="display:none;">
                         <td class="col-sm-4">品牌</td>
                         <td class="col-sm-8">
-                            <select class="form-control" id="Brand" name="BrandID"></select>
+                            <select class="form-control required" id="Brand" name="BrandID"></select>
                         </td>
                     </tr>
                     <tr>
@@ -280,11 +362,11 @@
                         </td>
                     </tr>
                     @*<tr>
-                        <td class="col-sm-4">成本归属</td>
-                        <td class="col-sm-8">
-                            <select class="form-control" name="CostCenterID" id="CostCenterID"></select>
-                        </td>
-                    </tr>*@
+                            <td class="col-sm-4">成本归属</td>
+                            <td class="col-sm-8">
+                                <select class="form-control" name="CostCenterID" id="CostCenterID"></select>
+                            </td>
+                        </tr>*@
                 </table>
             </div>
             <div class="modal-footer">
@@ -296,7 +378,7 @@
 </div>
 
 @*申请单提交*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PRSubmitModal" tabindex="-1" role="dialog" aria-labelledby="PRSubmitModalLabel">
+<div class="modal" id="PRSubmitModal" tabindex="-1" role="dialog" aria-labelledby="PRSubmitModalLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -307,7 +389,7 @@
                 <table>
                     <tr>
                         <td class="col-sm-2"><label>备注</label></td>
-                        </tr>
+                    </tr>
                     <tr>
                         <td class="col-sm-4">
                             <textarea id="SubmitMemo" class="form-control" rows="5" style="resize:none" maxlength="99"></textarea>
@@ -324,7 +406,7 @@
 </div>
 
 @*申请单接受/拒绝*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PRReviewModal" tabindex="-1" role="dialog" aria-labelledby="PRReviewModalLabel">
+<div class="modal" id="PRReviewModal" tabindex="-1" role="dialog" aria-labelledby="PRReviewModalLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -366,7 +448,7 @@
 
 
 @*重启申请单对话框*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="RestartPRDialog" tabindex="-1" role="dialog" aria-labelledby="RestartPRLabel">
+<div class="modal" id="RestartPRDialog" tabindex="-1" role="dialog" aria-labelledby="RestartPRLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -388,7 +470,7 @@
 
 
 @*申请单历史显示*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PRHistoryModal" tabindex="-1" role="dialog" aria-labelledby="PRHistoryLabel">
+<div class="modal" id="PRHistoryModal" tabindex="-1" role="dialog" aria-labelledby="PRHistoryLabel">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -405,29 +487,9 @@
     </div>
 </div>
 
-@*需求日期*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="RequireDateModal" tabindex="-1" role="dialog" aria-labelledby="RequireDateLabel" >
-    <div class="modal-dialog" style="width:350px">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="RequireDateLabel">需求日期</h4>
-            </div>
-            <div class="modal-body">
-                <input type="date" id="RequireDateVal" class="form-control">
-                <input type="hidden" id="ItemIDs" />
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="SaveRequireDateBtn">确认</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 
 @*规格查询*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PartSearch" tabindex="-1" role="dialog" aria-labelledby="RequireDateLabel">
+<div class="modal" id="PartSearch" tabindex="-1" role="dialog" aria-labelledby="RequireDateLabel">
     <div class="modal-dialog" style="width:700px">
         <div class="modal-content">
             <div class="modal-header">
@@ -439,7 +501,7 @@
                     <tr>
                         <td class="col-sm-3"><label>规格关键字</label></td>
                         <td class="col-sm-8">
-                            <input type="text" class="form-control" id="SpecKeyword"/>
+                            <input type="text" class="form-control" id="SpecKeyword" />
                         </td>
                         <td class="col-sm-1">
                             <button class="btn btn-default" id="PartSearchBtn">查询</button>
@@ -449,76 +511,18 @@
                 <table class="table-striped col-sm-12" style="display:none" id="AllParts">
                     <thead>
                         <tr>
-                            <td class="col-sm-3"><label>零件名</label></td>
+                            <td class="col-sm-3"><label>物料编号</label></td>
                             <td class="col-sm-3"><label>规格</label></td>
                             <td class="col-sm-3"><label>材料</label></td>
+                            <td class="col-sm-3"><label>版本</label></td>
                         </tr>
                     </thead>
-                    <tbody id="PartList">
-                    </tbody>
+                    <tbody id="PartList"></tbody>
                 </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
                 <button type="button" class="btn btn-primary" id="NewPart">新建采购项</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@*更新明细采购类型*@
-<div class="modal fade" id="PurchaseTypeModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="PurchaseTypeModal-label">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="PurchaseTypeModal-label">采购类型设置</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-3"><label>一级类型</label></td>
-                        <td class="col-sm-9">
-                            <select id="MainType" class="form-control"></select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="col-sm-3"><label>二级类型</label></td>
-                        <td class="col-sm-9">
-                            <select id="SubType" class="form-control"></select>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="SetType">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@*更新明细成本中心*@
-<div class="modal fade" id="CostCenterModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="CostCenterModal-label">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="CostCenterModal-label">成本中心设置</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-3"><label>成本中心</label></td>
-                        <td class="col-sm-9">
-                            <select id="CostCenterID" class="form-control"></select>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="SetCostCenter">保存</button>
             </div>
         </div>
     </div>
@@ -538,9 +542,8 @@
     $(document).ready(function () {
         LoadMaterials();
         LoadSuppliers(0,1);
-        //LoadCostCenters();
+        LoadCostCenters();
         GetPurchaseType();
-        SetEditItemStatus();
         var _supplierID;
         @try{
             @:_supplierID=@Model.SupplierID
@@ -548,38 +551,46 @@
         catch
         {
             @:_supplierID=-1;
-        }
-        LoadRecommandSuppliers(_supplierID);
+                                                        }
+        //LoadRecommandSuppliers(_supplierID);
         @if (ViewBag.PurchaseRequestID != 0)
         {
             @:PRContentGrid("", @ViewBag.PurchaseRequestID, @ViewBag.PRState,"");
-                                            @:LoadProject(@ViewBag.ProjectID);
-                                            @:LoadPR(@ViewBag.PurchaseRequestID);
-            if (Model.SupplierID != 0)
+                                                                                            @:LoadProject(@ViewBag.ProjectID);
+                                                                                            @:LoadPR(@ViewBag.PurchaseRequestID);
+                                                            if (Model.SupplierID != 0)
             {
             @:LoadAssignedSupplier(@Model.SupplierID);
-                                             }
+                                                                                             }
             @:LoadUser(@Model.UserID, "UserName");
-        }
+                                                        }
         else if (ViewBag.PartIDs!="")
         {
             @:PRContentGrid("@ViewBag.PartIDs", 0, 0,"");
-                                            if (ViewBag.ProjectID != 0)
+                                                                                            if (ViewBag.ProjectID != 0)
             {
                 @:LoadProject(@ViewBag.ProjectID);
-                                             }
+                                                                                             }
         }
         else if (ViewBag.TaskIDs != "")
         {
             @:PRContentGrid("", 0, 0,"@ViewBag.TaskIDs");
-                        }
+                                                                        }
         else if (ViewBag.WarehouseStockID != "") {
             @:PRContentGrid("",0,0,"","@ViewBag.WarehouseStockIDs");
-                }
+                                                                }
         else
         {
             @:PRContentGrid("", 0, 0,"");
-                                }
+                                                                                                }
+        //设置成本中心
+        $('#CostCenterID').on('change',function(){
+            SetCostCenter();
+        })
+        //设置需求日期
+        $('#RequireDateVal').on('change',function(){
+            SaveRequireDate( $("#RequireDateVal").val());
+        })
 
         $("#SelectProject").on("click", function(){
             GetProjectID($("#MoldList option:selected").val());
@@ -592,7 +603,7 @@
         $("#PartNumber").on("change", function(){
             if ($("#PartNumber").val()!=""){
                 VerifyMoldNumber($("#PartNumber").val(), $("#PurchaseType").val());
-            }            
+            }
         })
 
         $("#RequireDateSet").on("click", function(){
@@ -620,45 +631,29 @@
             RemoveCancelItems();
         })
 
-        $("#PurchaseTypeBatch").on("click", function(){
-            //var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
-            //if (selrows.length>0){
+        if(@ViewBag.PurchaseRequestID!=0){
+            var prID=$('#PurchaseRequestID').val();
+            $.ajax({
+                url:"/Purchase/IsErpPasrts?prID="+prID,
+                type:"Get",
+                success:function(result){
+                    if(result!='ok'){
+                        return
+                    }
+                    else{
+                        $('#GetERPID').css('pointer-events', 'none');
+                        $('#GetERPID').css('cursor', 'not-allowed');
+                        $('#GetERPID').css('background-color', 'darkgray');
+                        $('#GetERPID').css('border-color', 'darkgray');
+                    }
+                }
+            })
+        }
+        SupplierListImport();
 
-                $("#PurchaseTypeModal").modal("show")
-            //}else{
-            //    alert("请至少选择一项申请内容")
-            //}
-            
-        })
-
-        $("#PurchaseTypeModal").on("shown.bs.modal", function(){
-            LoadPurchaseTypeLevel("MainType")
-        })
-
-        $("#MainType").on("change", function(){
-            LoadPurchaseTypeLevel("SubType", $("#MainType").val())
-        })
-
-        $("#SetType").on('click', function(){
-            SetType();
-        })
-
-        $("#CostCenterBatch").on('click', function(){
-            //var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
-            //if (selrows.length>0){
-                $("#CostCenterModal").modal("show")
-            //}else{
-            //    alert("请至少选择一项申请内容")
-            //}
-            
-        })
-
-        $("#CostCenterModal").on("shown.bs.modal", function(){
-            LoadCostCenters()
-        })
-
-        $("#SetCostCenter").on('click', function(){
-            SetCostCenter();
+        $("#SupplierName").on('change', function(){
+            SetSupplier();
+            GetSupplierID($('#SupplierName').val());
         })
     });
 
@@ -680,42 +675,36 @@
         @if (ViewBag.PartIDs != "")
         {
             @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具直接材料&ContainParent=false";
-                        }
+                                                                        }
         else if (ViewBag.TaskIDs!="")
         {
             @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具委外加工&ContainParent=false";
-                }
-        else if (ViewBag.WarehouseStockIDs!="")
-        {
-            @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具耗材";
-        }
+                                                                }
         else
         {
             @:_url = "/Purchase/JsonPurchaseTypes?ContainParent=false";
-        }
+                                                        }
         if (_url!=""){
             $.getJSON(_url, function(msg){
                 $("#PurchaseType").append($("<option/>", {value:0,text:"-"}))
                 $.each(msg, function(i,n){
-                    //if (@ViewBag.TaskType==n.TaskType){
-                    //    $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID,text:n.Name, selected:true}))
-                    //}else{
-                        $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID,text:n.Name}))
-                    //}
-                    
-                        
+                    if (@ViewBag.TaskType==n.TaskType){
+                        $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID,text:n.Name, selected:true}))
+                    }else{
+                    $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID,text:n.Name}))
+                    }
                 })
             })
         }
     }
 
     function VerifyMoldNumber(PartNumber, PurchaseType){
-        if (PartNumber.length>=11){
+        if (PartNumber.length==9){
             if (PurchaseType!=2){
                 var _url = "/Purchase/VerifyMoldNumber?PartNumber="+PartNumber;
                 $.ajax({
-                    url:_url, 
-                    type:"Get", 
+                    url:_url,
+                    type:"Get",
                     success:function(msg){
                         if (msg!=""){
                             $("#MoldNumber").val(msg);
@@ -731,7 +720,7 @@
                 $("#VerifyFail").val(0);
             }
         }else{
-            alert("零件号长度不能少于11位");
+            alert("零件号长度必须为9位");
         }
     }
 
@@ -743,31 +732,35 @@
 
     function SaveRequireDate(RequireDate){
         var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
-        if (selrows.length==0){
-            selrows = $('#PRContentGrid').getDataIDs();
-        }
-        
-        for (i=0;i< selrows.length;i++){
-            $("#PRContentGrid").jqGrid('setCell', selrows[i], 'RequireTime', RequireDate);
+
+        if (selrows.length>0){
+            for (i=0;i<selrows.length;i++){
+                $("#PRContentGrid").jqGrid('setCell', selrows[i], 'RequireTime', RequireDate);
+            }
+        }else{
+            var _rows =  $('#PRContentGrid').getDataIDs();
+            for (i=0;i< _rows.length;i++){
+                //$("#PRContentGrid").jqGrid('setCell', i+1, 'RequireTime', RequireDate);
+                $("#PRContentGrid").setCell(_rows[i], 'RequireTime', RequireDate);
+            }
         }
 
-        
-        
+
     }
-    
+
     function SetDefaultDate(){
         var _typeID=Number($("#PurchaseType").val());
         if (_typeID!=0){
             var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+_typeID;
             $.ajax({
-                url:_url, 
-                type:"Get", 
+                url:_url,
+                type:"Get",
                 success:function(msg){
                     var _defaultPeriod = Number(msg.DefaultPeriod);
                     var _curDate = new Date();
                     _curDate.setDate(_curDate.getDate()+_defaultPeriod);
-                    var _defaultDate = _curDate.getFullYear()+"-"+(_curDate.getMonth()+1)+"-"+_curDate.getDate();
-                    
+                    var _defaultDate = _curDate.getFullYear()+"-0"+(_curDate.getMonth()+1)+"-"+_curDate.getDate();
+
                     SaveRequireDate(_defaultDate);
                 }
             })
@@ -785,7 +778,7 @@
         $("#PartList tr").remove();
         $.getJSON(_url, function(msg){
             $.each(msg, function(i, n){
-                _row = "<tr><td>"+n.PartNumber+"</td><td>"+n.Specification+"</td><td>"+n.MaterialName+"</td><td>"+
+                _row = "<tr><td>"+n.PartNumber+"</td><td>"+n.Specification+"</td><td>"+n.MaterialName+"</td><td>"+n.Version+"</td><td>"+
                     "<button class='btn btn-primary' id='"+n.PartID+"' onclick='AddPart("+n.PartID+")'>添加</button>"+
                     "</td></tr>";
                 $("#PartList").append(_row);
@@ -800,10 +793,11 @@
         $.getJSON(_url, function(msg){
             var _tempID = Number($("#tempID").val())- 1;
             $("#tempID").val(_tempID);
-            var _moldNumber = msg.PartNumber.substring(0,msg.PartNumber.indexOf('-'))
+            var _moldNumber = msg.Name.substring(0,msg.Name.indexOf('_'))
             data = {
-                ID: _tempID,
-                DrawingName: msg.Name,
+                ID: "",
+                PartID:PartID,
+                Name: msg.ShortName,
                 Quantity: msg.Quantity,
                 PartNumber: msg.PartNumber,
                 Material:  msg.MaterialName,
@@ -811,13 +805,14 @@
                 Specification: msg.Specification,
                 BrandName: msg.BrandName,
                 SupplierName: msg.SupplierName,
+                JobNo:msg.JobNo,
                 Memo: "",
                 State:"",
                 RequireTime: "",
-                MoldNumber:_moldNumber
+                MoldNumber:_moldNumber,
+                ERPPartID:msg.ERPPartID
             };
             $("#PRContentGrid").addRowData(_tempID, data, 0, 0);
-
         })
     }
 
@@ -825,7 +820,8 @@
         $("#PartSearch").modal("hide");
         $("#PRContentAdd input").val("");
         $("#PRContentAdd select").val(0);
-
+        LoadBrands();
+        
         $("#PRContentAdd").modal("show");
     }
 
@@ -833,16 +829,20 @@
         var _url ="/Purchase/JsonCostCenters";
         $("#CostCenterID option").remove();
         $.getJSON(_url, function(msg){
+            $("#CostCenterID").append($("<option/>",{
+                value:0,
+                text:'-'
+            }))
             $.each(msg, function(i,n){
+
                 //$("#CostCenterID").append($("<option/>", {value:n.CostCenterID, text:n.Name}));
                 $("#CostCenterID").append($("<option/>",{
-                    value:n.CostCenterID, 
+                    value:n.CostCenterID,
                     text:n.Name
                 }))
             })
         })
     }
-
     function RemoveCancelItems(){
         var selr = $('#PRContentGrid').jqGrid('getGridParam', 'selarrrow');
         if(selr.length==0){
@@ -853,7 +853,7 @@
             for (var i = 0; i < selr.length; i++) {
                 var stateText = $("#PRContentGrid").getCell(selr[i], "State");
                 if (stateText!="订单取消"){
-                    var _name = $("#PRContentGrid").getCell(selr[i], "DrawingName")
+                    var _name = $("#PRContentGrid").getCell(selr[i], "Name")
                     cancelItemName= cancelItemName==""?_name:cancelItemName+","+_name;
                 }else{
                     var _id =  $("#PRContentGrid").getCell(selr[i], "ID");
@@ -866,108 +866,73 @@
                 }
             }
         }
-        
+
     }
 
     function RemovePOCancelItems(IDs){
         var _url = "/Purchase/RemovePOCancelItems?PRContentIDs="+IDs+"&PurchaseRequestID="+$("#PurchaseRequestID").val();
         $.ajax({
-            url:_url, 
-            type:"Get", 
+            url:_url,
+            type:"Get",
             success:function(msg){
                 alert(msg);
                 location.reload();
             }
         })
     }
-
-    function SetEditItemStatus(){
-        @if ((Model!=null)&&(Model.State == 2))
-        {
-            @:$("#PRContentAdd input").attr("disabled", "disabled");
-            @:$("#PRContentAdd select").attr("disabled", "disabled");
-            @:$("#Quantity").removeAttr("disabled");
-        }
-    }
-
-
-    function LoadPurchaseTypeLevel(target, parent){
-        $("#"+target+" option").remove();
-        
-        if (parent==undefined){
-            parent = 0
-        }
-        var _url = '/Purchase/JsonPurchaseTypeLevel?ParentID='+parent;
-        var _maintext = CheckBasicType();
-        $.getJSON(_url, function(msg){
-            $.each(msg, function(i, n){
-                if ((target=='MainType')&&(n.Name==_maintext)){
-                    $("#"+target).append($("<option/>",{
-                        value:n.PurchaseTypeID, 
-                        text:n.Name,
-                        selected:true
-                    }))
-                }else{
-                    $("#"+target).append($("<option/>",{
-                        value:n.PurchaseTypeID, 
-                        text:n.Name
-                    }))
-                }                
-            })
-            if (target=='MainType'){
-                LoadPurchaseTypeLevel('SubType', $('#MainType option:selected').val())
-            }
-            //LoadPurchaseTypeLevel("SubType", $("#MainType").val())
-
-        })
-    }
-
-    function SetType(){
-        var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
-        if (selrows.length==0){
-            selrows=  $('#PRContentGrid').getDataIDs();
-        }
-        
-
-        var _text = $("#SubType option:selected").val()==undefined?$("#MainType option:selected").text():$("#SubType option:selected").text()
-        var _val = $("#SubType option:selected").val()==undefined?$("#MainType option:selected").val():$("#SubType option:selected").val()
-        for (i=0;i<selrows.length;i++){
-            $("#PRContentGrid").setCell(selrows[i], "PurchaseType", _text);
-            $("#PRContentGrid").setCell(selrows[i], "PurchaseTypeID", _val);
-        }
-        $("#PurchaseTypeModal").modal('hide')
-    }
-
-    function CheckBasicType(){
-        var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
-        var _partid = $("#PRContentGrid").getCell(selrows[0], "PartID")
-        var _taskid = $("#PRContentGrid").getCell(selrows[0], "TaskID")
-        var _stockid = $("#PRContentGrid").getCell(selrows[0], "WarehouseStockID")
-        if (Number(_partid)>0){
-            return "模具直接材料"
-        }else if (Number(_taskid)>0){
-            return "模具委外加工"
-        }else if (Number(_stockid)>0){
-            return "模具耗材"
-        }else{
-            return "固定资产"
-        }
-    }
-
+    $("#CostCenterBatch").on('click', function(){
+        $("#CostCenterModal").modal("show")
+    })
+    $("#CostCenterModal").on("shown.bs.modal", function(){
+        LoadCostCenters()
+    })
+    $("#SetCostCenter").on('click', function(){
+        SetCostCenter();
+    })
     function SetCostCenter(){
         var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
         if (selrows.length==0){
             selrows=  $('#PRContentGrid').getDataIDs();
         }
-        
-        
         var _text = $("#CostCenterID option:selected").text();
         var _val = $("#CostCenterID option:selected").val();
+        _text=_text=='-'?' ':_text;
         for (i=0;i<selrows.length;i++){
             $("#PRContentGrid").setCell(selrows[i], "CostCenterName", _text);
             $("#PRContentGrid").setCell(selrows[i], "CostCenterID", _val);
         }
-        $("#CostCenterModal").modal('hide')
+        //$("#CostCenterModal").modal('hide')
     }
     
+    function SetSupplier(){
+        var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
+        if (selrows.length==0){
+            selrows=  $('#PRContentGrid').getDataIDs();
+        }
+        //var _text = $("#SupplierID option:selected").text();
+        //var _val = $("#SupplierID option:selected").val();
+        var _suppliername=$('#SupplierName').val();
+        for (i=0;i<selrows.length;i++){
+            $("#PRContentGrid").setCell(selrows[i], "SupplierName", _suppliername);
+        }
+    }
+
+    function SupplierListImport(){
+        var js='';
+        $('#SupplierIDD').html('');
+        $.get('/Purchase/JsonSuppliersByJS?js='+js,function(res){
+            console.log(typeof(res));
+            var fo=res.toString();
+            fo=fo.split(",");
+            for(var i=0;i<fo.length;i++){
+                //中文
+                var v1=fo[i].split('-')[0];
+                //英文
+                var v2=fo[i].split('-')[1];
+                var ohtml = "<option value='"+v1+"'>"+v2+"</option>";
+                var $ohtml = $(ohtml);
+                $('#SupplierIDD').append($ohtml);
+            }
+        });
+    }
 </script>

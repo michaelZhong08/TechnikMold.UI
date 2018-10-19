@@ -20,8 +20,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[5] = Item.SafetyHeight.ToString();
             cell[6] = RawSize;
             cell[7] = Item.LabelPrinted.ToString();
-            cell[8] = Item.Status.ToString();            
-            //cell[8] = Item.CNCFinishTime.ToString("yyyy-MM-dd") == "1900-1-1" ? "false" : "true";
+            cell[8] = Item.Status >= 20 ? true.ToString() : false.ToString();
         }
     }
 }

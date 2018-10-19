@@ -3,67 +3,366 @@
     ViewBag.Title = "加工设备管理";
 }
 
-<div style="margin-top:10px">
-    <div class="col-sm-1 sidebar">
-        <ul class="nav nav-sidebar">            
-            <li><a href="/List">列表管理</a></li>
-            <li><a href="/Administrator/TaskhourCost">工时费率管理</a></li>
-            <li><a href="/Administrator/UserManagement">用户管理</a></li>
-            @*<li><a href="/Administrator/EquipmentList">设备管理</a></li>
-            <li><a href="/Administrator/Customer">客户信息</a></li>
-            <li><a href="/Administrator/Warehouse">仓库信息</a></li>*@
-        </ul>
-    </div>
+<div style="margin-top:60px">
     <div class="col-sm-11 col-sm-offset-1">
         <h3 class="page-header">设备管理</h3>
-        <div class="col-sm-5">
-            <div class="panel panel-info" style="height:200px">
-                <div class="panel-heading"><h3 class="panel-title">设备类型</h3></div>
-                <div class="panel-body">
-
-                    <div>
-                        <nav class="navbar navbar-default">
-                            <div class="navbar-collapse collapse">
-
-                            </div>
-                        </nav>
-                        <select class="form-control" size="5" id="ListType"></select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-5">
-            <div class="panel panel-info" style="height:200px">
-                <div class="panel-heading"><h3 class="panel-title">设备名称</h3></div>
-                <div class="panel-body">
-                    
-                    <div>
-                        <select class="form-control" size="5" id="ListType"></select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-10">
-            <div class="panel panel-info" style="height:400px">
-                <div class="panel-heading"><h3 class="panel-title">设备信息</h3></div>
-                <div class="panel-body">
-
-                    <div>
-                        
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-
-
-
-
-
+        <ul class="nav nav-pills">
+            <li>
+                <input type="text" class="col-sm-1 form-control" id="MInfoKeyword" placeholder="设备信息关键字" />
+            </li>
+            <li>
+                <button class="btn btn-default" id="QueryMInfo"><span class="glyphicon glyphicon-refresh"></span> 重载表格</button>
+            </li>
+            <li>
+                <button class="btn btn-success btn" id="AddMInfo"><span class="glyphicon glyphicon-plus-sign"></span> 新增设备</button>
+            </li>
+            <li>
+                <button class="btn btn-danger" id="DelMInfo"><span class="glyphicon glyphicon-remove-circle"></span> 删除设备</button>
+            </li>
+        </ul>
+        <table id="tb_MachinesInfo"></table>
     </div>
 </div>
+@*设备信息编辑*@
+<div class="modal fade" id="EditMInfoModal" tabindex="-1" role="dialog" aria-labelledby="EleStateModal-label">
+    <div class="modal-dialog" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">编辑设备信息</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table-striped col-sm-12">
+                    <tr>
+                        <td class="col-sm-4"><label>设备代码</label></td>
+                        <td><input type="text" id="MCode" name="MCode" class="form-control" placeholder="系统自动生成"/> </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>设备名称</label></td>
+                        <td><input type="text" id="MName" name="MName" class="form-control required" placeholder="请输入设备名称" /> </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>设备品牌</label></td>
+                        <td><input type="text" id="EquipBrand" name="EquipBrand" class="form-control required" /> </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>部门</label></td>
+                        <td><select  id="DepartmentID" name="DepartmentID" class="form-control" >
+                            </select> </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>工艺</label></td>
+                        <td>
+                            <table style="width:100%">
+                                <tr>
+                                    <td><input type="checkbox" id="TaskType_ELE" /> &nbsp;<label>电极</label></td>
+                                    <td><input type="checkbox" id="TaskType_EDM" /> &nbsp;<label>EDM</label></td>
+                                    <td><input type="checkbox" id="TaskType_WEDM" /> &nbsp;<label>WEDM</label></td>
+                                    <td><input type="checkbox" id="TaskType_CNC" /> &nbsp;<label>铣铁</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" id="TaskType_MG" /> &nbsp;<label>MG</label></td>
+                                    <td><input type="checkbox" id="TaskType_M" /> &nbsp;<label>铣床</label></td>
+                                    <td><input type="checkbox" id="TaskType_G" /> &nbsp;<label>磨床</label></td>
+                                    <td><input type="checkbox" id="TaskType_CHE" /> &nbsp;<label>车</label></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" id="TaskType_QC" /> &nbsp;<label>QC</label></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>产能(min)</label></td>
+                        <td><input type="number" id="Capacity" name="Capacity" class="form-control"  /> </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>计划停机时间(min)</label></td>
+                        <td><input type="number" id="Downtime" name="Downtime" class="form-control "  /> </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>机器费率</label></td>
+                        <td><input type="number" id="Cost" name="Cost" class="form-control "/> </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>设备状态</label></td>
+                        <td><select id="Status" name="Status" class="form-control">
+                            </select> 
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove-sign"></span>关闭</button>
+                <button type="button" id="SaveMInfo" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span>保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        //配置设备信息表格
+        MachinesInfoGrid();
+        //查询
+        $('#QueryMInfo').on('click', function () {
+            ReloadMInfoGrid();
+        })
+        //新增
+        $('#AddMInfo').on('click', function () {            
+            LoadDepList();
+            LoadStatusList('Yes');
+            ClearModalForm();
+            $("#MCode").attr('readonly', true);
+            $("#EditMInfoModal").modal("show");
+        })
+        //保存
+        $('#SaveMInfo').on('click', function () {
+            if (ValidateCreate('EditMInfoModal')) {
+                var _tasktype = '';
+                var _stype = '';
+                if (document.getElementById('TaskType_ELE').checked == true)
+                    _tasktype = _tasktype + '1,';
+                if (document.getElementById('TaskType_EDM').checked == true)
+                    _tasktype = _tasktype + '2,';
+                if (document.getElementById('TaskType_WEDM').checked == true)
+                    _tasktype = _tasktype + '3,';
+                if (document.getElementById('TaskType_CNC').checked == true)
+                    _tasktype = _tasktype + '4,';
+                if (document.getElementById('TaskType_MG').checked == true) {
+                    _stype = _stype + '0,';
+                    _tasktype = _tasktype + '6,';
+                }
+                if (document.getElementById('TaskType_M').checked == true) {
+                    _stype =_stype+ '1,';
+                    _tasktype = _tasktype + '6,';
+                }
+                if (document.getElementById('TaskType_G').checked == true) {
+                    _stype =_stype+ '2,';
+                    _tasktype = _tasktype + '6,';
+                }
+                if (document.getElementById('TaskType_CHE').checked == true) {
+                    _stype =_stype+ '3,';
+                    _tasktype = _tasktype + '6,';
+                }
+                if (document.getElementById('TaskType_QC').checked == true)
+                    _tasktype = _tasktype + '100,';               
+                if (_stype == '')
+                    _stype = '0,';
 
+                var minfo={};
+                var _code=$('#MCode').val();
+                if(_code==undefined)
+                    _code='';
+                minfo.MachineCode = _code;
+                minfo.MachineName=$('#MName').val();
+                minfo.EquipBrand=$('#EquipBrand').val();
+                minfo.DepartmentID=$('#DepartmentID').val();
+                minfo.TaskType = _tasktype;
+                minfo.Stype = _stype;
+                minfo.Capacity=$('#Capacity').val();
+                minfo.Downtime=$('#Downtime').val();
+                minfo.Cost = $('#Cost').val();
+                minfo.IsActive = 'true';
+                minfo.Status = $('#Status').val();
+                $.post('/Administrator/Service_Save_MachinesInfo/', minfo, function (res) {
+                    //res = JSON.parse(res);
+                    if (res.Code == 0){                     
+                        $('#EditMInfoModal').modal('hide');
+                        alert('保存成功！');
+                        ReloadMInfoGrid();
+                    }                       
+                    else {
+                        alert(res.Message);
+                    }
+                })               
+            }
+        })
+        //删除
+        $('#DelMInfo').on('click', function () {
+            if (confirm("确认删除?")) {
+                var _selrows = $('#tb_MachinesInfo').jqGrid('getGridParam', 'selarrrow');
+                if (_selrows.length > 0) {
+                    var sname = '';
+                    for (var i = 0; i < _selrows.length; i++) {
+                        var _code = $("#tb_MachinesInfo").getCell(_selrows[i], "MachineCode");
+                        $.get('/Administrator/Service_Del_MachinesInfo?MCode=' + _code, function (res) {
+                            if (Number(res) < 0)
+                                sname = sname + _code + ';';
+                        });
+                    }
+                    if (sname == '') {
+                        alert('删除成功！');
+                        ReloadMInfoGrid();
+                    }
+                    else
+                        alert('以下设备——' + sname + '删除失败！');
+                }
+                else
+                    alert('请在列表中选择需要删除的信息！');
+            }          
+        })      
+    })
+    //清空 模态框Form内容
+    function ClearModalForm() {
+        if ($("#MCode").val() == '') {
+            //$("#MaterialID option:first-child").attr("selected", "true");
+            //LoadHardness($("#MaterialID option:selected").val());
+        }
+        $("#MCode").val('');
+        $("#MCode").removeClass("invalidefield");
+        $("#MName").val('');
+        $("#MName").removeClass("invalidefield");
+        $("#EquipBrand").val('');
+        document.getElementById('TaskType_ELE').checked = false;
+        document.getElementById('TaskType_EDM').checked = false;
+        document.getElementById('TaskType_WEDM').checked = false;
+        document.getElementById('TaskType_CNC').checked = false;
+        document.getElementById('TaskType_MG').checked = false;
+        document.getElementById('TaskType_M').checked = false;
+        document.getElementById('TaskType_G').checked = false;
+        document.getElementById('TaskType_QC').checked = false;
+        $("#Capacity").val(0);
+        $("#Downtime").val(0);
+        $("#Cost").val(0);
+    }
+    //编辑 填充模态框内容 
+    function ShowEditMInfo(row) {      
+        $('#EditMInfoModal').modal('show');
+        //填充Form
+        $("#MCode").val($("#tb_MachinesInfo").getCell(row, "MachineCode"));
+        $("#MCode").attr('readonly', true);
+        $("#MName").val($("#tb_MachinesInfo").getCell(row, "MachineName"));
+        $("#EquipBrand").val($("#tb_MachinesInfo").getCell(row, "EquipBrand"));
+        $("#Capacity").val($("#tb_MachinesInfo").getCell(row, "Capacity"));
+        $("#Downtime").val($("#tb_MachinesInfo").getCell(row, "Downtime"));
+        $("#Cost").val($("#tb_MachinesInfo").getCell(row, "Cost"));
+        var _depname = $("#tb_MachinesInfo").getCell(row, "DepName");
+        //生成部门列表
+        LoadDepList(_depname);
+        //任务类型
+        document.getElementById('TaskType_ELE').checked = false;
+        document.getElementById('TaskType_EDM').checked = false;
+        document.getElementById('TaskType_WEDM').checked = false;
+        document.getElementById('TaskType_CNC').checked = false;
+        document.getElementById('TaskType_MG').checked = false;
+        document.getElementById('TaskType_M').checked = false;
+        document.getElementById('TaskType_G').checked = false;
+        document.getElementById('TaskType_QC').checked = false;
+        var _tasktypeName = $("#tb_MachinesInfo").getCell(row, "TaskTypeName");
+        _tasktypeName = _tasktypeName.split(';');
+        if (_tasktypeName.length > 0) {
+            for (var i = 0; i < _tasktypeName.length; i++) {
+                if(_tasktypeName[i]=="电极")
+                    document.getElementById('TaskType_ELE').checked = true;
+                if (_tasktypeName[i] == "EDM")
+                    document.getElementById('TaskType_EDM').checked = true;
+                if (_tasktypeName[i] == "WEDM")
+                    document.getElementById('TaskType_WEDM').checked = true;
+                if (_tasktypeName[i] == "CNC")
+                    document.getElementById('TaskType_CNC').checked = true;
+                if (_tasktypeName[i] == "MG")
+                    document.getElementById('TaskType_MG').checked = true;
+                if (_tasktypeName[i] == "铣床")
+                    document.getElementById('TaskType_M').checked = true;
+                if (_tasktypeName[i] == "磨床")
+                    document.getElementById('TaskType_G').checked = true;
+                if (_tasktypeName[i] == "车")
+                    document.getElementById('TaskType_CHE').checked = true;
+                if (_tasktypeName[i] == "QC")
+                    document.getElementById('TaskType_QC').checked = true;
+            }
+        }
+        ////
+        var status = $("#tb_MachinesInfo").getCell(row, "Status");
+        LoadStatusList(status);
+    }
+    //重载 表格
+    function ReloadMInfoGrid() {
+        RefreshMInfoGrid($("#MInfoKeyword").val());
+    }
+    //刷新 表格数据
+    function RefreshMInfoGrid(Keyword) {
+        if (Keyword == "") {
+            $("#Keyword").val("");
+        }
+        var _url = '/Administrator/Service_Json_GetMachinesInfo?Keyword=' + Keyword;
+        $("#tb_MachinesInfo").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+    //Form内容验证
+    function ValidateCreate(FormID) {
+        var RequiredFieldValid = true;
+        var PhaseDateValid = true;
+        var errorMessage = "";
+
+        var selector = "input.required";
+        if (FormID != "") {
+            selector = "#" + FormID + " :input.required"
+        }
+
+        //Required field is filled
+        $(selector).each(function () {
+            var item = $("#" + UnifyName(this.id));
+            if ((item.val() == "") || (item.val() == undefined)) {
+                item.addClass("invalidefield");
+                RequiredFieldValid = false;
+            } else {
+                item.removeClass("invalidefield");
+            }
+        });
+        return RequiredFieldValid;
+    }
+    //加载部门selet列表
+    function LoadDepList(depName) {
+        $('#DepartmentID').empty();
+        var _Inihtml = '<option value="-99">-</option>';
+        $('#DepartmentID').append(_Inihtml);
+        $.get('/Administrator/Service_Json_Department', function (res) {
+            if (res.length > 0) {
+                for (var i = 0; i < res.length; i++) {
+                    if (depName == res[i].Name) {
+                        $("#DepartmentID").append($("<option/>", {
+                            value: res[i].DepartmentID,
+                            text: res[i].Name,
+                            selected:true
+                        }))
+                    }
+                    else {
+                        $("#DepartmentID").append($("<option/>", {
+                            value: res[i].DepartmentID,
+                            text: res[i].Name,
+                        }))
+                    }
+                }
+            }
+        })
+    }
+    function LoadStatusList(status) {
+        $('#Status').empty();
+        if (status=='Yes') {
+            $("#Status").append($("<option/>", {
+                value: '1',
+                text: '正常',
+                selected: true
+            }));
+            $("#Status").append($("<option/>", {
+                value: '-1',
+                text: '检修',
+            }));
+        }
+        else {
+            $("#Status").append($("<option/>", {
+                value: '1',
+                text: '正常',               
+            }));
+            $("#Status").append($("<option/>", {
+                value: '-1',
+                text: '检修',
+                selected: true
+            }));
+        }
+    }
+</script>
 

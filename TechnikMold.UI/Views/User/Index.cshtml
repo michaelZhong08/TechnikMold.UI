@@ -15,7 +15,7 @@
 <script src="~/Scripts/Administrator.js"></script>
 <script src="~/Scripts/User.js"></script>
 
-<div style="margin-top:1px">
+<div style="margin-top:20px">
     <div class="col-sm-10">
         <h2 class="page-header">@ViewBag.Title</h2>
             
@@ -48,6 +48,10 @@
 
                         <table class="table-striped  colsm-12">
                             <tr>
+                                <td class="col-sm-4"><label>用户代码</label></td>
+                                <td class="col-sm-8"><input type="text" id="UserCode" name="UserCode" class="form-control required" /></td>
+                            </tr>
+                            <tr>
                                 <td class="col-sm-4"><label>域用户名</label></td>
                                 <td class="col-sm-8">
                                     <input type="text" id="LogonName" name="LogonName" maxlength="20" class="form-control required" />
@@ -57,6 +61,7 @@
                                     <input type="hidden" id="Enabled" name="Enabled" value="true" />
                                 </td>
                             </tr>
+                            
                             <tr>
                                 <td class="col-sm-4"><label>姓名</label></td>
                                 <td class="col-sm-8"><input type="text" id="FullName"maxlength="20" name="FullName" class="form-control required" /></td>

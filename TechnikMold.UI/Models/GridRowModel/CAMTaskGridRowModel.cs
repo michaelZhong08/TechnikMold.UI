@@ -25,7 +25,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             }
             else
             {
-                cell[1] = "<a href='file://"+CAMTask.DrawingFile+"' target='new'>打开</a>";
+                cell[1] = "<a href='file://"+CAMTask.DrawingFile + "' target='new'>打开</a>";
             }
             
 
