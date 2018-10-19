@@ -1907,9 +1907,9 @@ namespace MoldManager.WebUI.Controllers
         /// <summary>
         /// Git Test
         /// </summary>
-        public void GitTest()
+        public int GitTest()
         {
-            
+            return 1;
         }
     }
 }
