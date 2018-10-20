@@ -67,5 +67,6 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         /// <param name="MoldNumber"></param>
         /// <returns></returns>
         List<MoldVersionInfo> GetMoldVerList(string MoldNumber);
+        IQueryable<Part> GetLatestVerParts();
     }
 }

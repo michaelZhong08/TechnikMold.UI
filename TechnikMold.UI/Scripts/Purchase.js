@@ -39,6 +39,8 @@
         //    $("#MoldNumber").val("XX")
         //}
         //$("#PRContentAdd").modal("show");
+        $('#tb_PartSearch').jqGrid('clearGridData');
+        var _key = $("#SpecKeyword").val('');
         $("#PartSearch").modal("show");
     });
 
@@ -857,17 +859,19 @@ function AddPRContent(row) {
     }
 }
 
-
-
-
-function EditPrContent(id, row) {
-    //外发采购不强制填写品牌 采购项taskid为0时 显示品牌
+function showBrand(row) {
     var taskid = $("#PRContentGrid").getCell(row, "TaskID");
     if (taskid == 0) {
         $('#brandtr').show();
     }
     else
         $('#brandtr').hide();
+}
+
+
+function EditPrContent(id, row) {
+    //外发采购不强制填写品牌 采购项taskid为0时 显示品牌
+    showBrand(row);
     $("#row").val(row);
     $("#PRContentAddLabel").html("编辑零件");
     $("#State").val($("#PRContentGrid").getCell(row, "State"));

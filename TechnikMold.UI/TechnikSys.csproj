@@ -243,6 +243,7 @@
     <Compile Include="Models\GridRowModel\CNCItemGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\ElectrodeGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\ElectrodeStockGridRowModel.cs" />
+    <Compile Include="Models\GridRowModel\PartSearchGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\SetupTaskGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\MachinesInfoGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\MGUptVerGridRowModel.cs" />
@@ -277,6 +278,7 @@
     <Compile Include="Models\GridViewModel\CNCItemGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\ElectrodeGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\ElectrodeStockGridViewModel.cs" />
+    <Compile Include="Models\GridViewModel\PartSearchGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\SetupTaskGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\MachinesInfoGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\MGUptVerGridViewModel.cs" />

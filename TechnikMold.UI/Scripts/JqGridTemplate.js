@@ -376,10 +376,6 @@ function PartListGrid(MoldID, Height) {
             }
         },
         loadComplete: function () {
-            //if ($("#PartGrid").jqGrid("getRowData").length == 0) {
-            //$("#CreatePR").remove();
-            //}
-
             var ids = $("#PartGrid").getDataIDs();
             for (var i = 0; i < ids.length; i++) {
                 var rowData = $("#PartGrid").getRowData(ids[i]);
@@ -417,6 +413,30 @@ function PartListGrid(MoldID, Height) {
         }
     });
     //$(grid).closest(".ui-jqgrid-bdiv").css({ 'overflow-y': 'scroll' });
+}
+
+//零件查询
+function PartSearchGrid() {
+    var _url = "/Part/Service_Json_GetPartByKeys";
+    $("#tb_PartSearch").jqGrid({
+        url: _url,
+        styleUI: 'Bootstrap',
+        datatype: "json",
+        width: 650,
+        colModel: [
+            { label: 'PartID', name: 'PartID', width: 80, hidden: true },
+            { label: '零件短名', name: 'ShortName', width: 80 },
+            { label: '物料编号', name: 'PartNumber', width: 80 },
+            { label: '规格', name: 'Specification', width: 80},
+            { label: '材料', name: 'MaterialName', width: 80 },
+            { label: '品牌', name: 'BrandName', width: 120 },
+            { label: '数量', name: 'Quantity', width: 60 ,formatter:'number'},
+            { label: '版本', name: 'Version', width: 60 },
+        ],
+        autoScroll: true,
+        multiselect: true,
+        cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
+    })
 }
 
 //CAM任务列表

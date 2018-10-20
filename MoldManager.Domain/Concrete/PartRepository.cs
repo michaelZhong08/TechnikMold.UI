@@ -533,6 +533,18 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             return list;
         }
         #endregion
+        /// <summary>
+        /// 获取最高版本Partlist中的Part
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Part> GetLatestVerParts()
+        {
+            var _parts = from p1 in _context.Parts
+                          join p2 in _context.PartLists on p1.PartListID equals p2.PartListID
+                          where p1.Enabled == true && p2.Latest == true
+                          select p1;
+            return _parts;
+        }
     }
     public class PartGroupVer
     {

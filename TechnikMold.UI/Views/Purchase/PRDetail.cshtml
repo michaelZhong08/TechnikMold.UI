@@ -307,6 +307,7 @@
                         <td class="col-sm-8">
                             <input type="text" class="form-control required" name="Name" id="Name" maxlength="50" placeholder="请输入零件短名" />
                             <input type="hidden" id="PRContentID" value="0" />
+                            <input type="hidden" id="PartID" value="0" />
                             <input type="hidden" id="MoldNumber" value="" />
                             <input type="hidden" id="VerifyFail" value="0" />
                             <input type="hidden" id="State" value="" />
@@ -488,41 +489,41 @@
 </div>
 
 
-@*规格查询*@
+@*添加零件*@
 <div class="modal" id="PartSearch" tabindex="-1" role="dialog" aria-labelledby="RequireDateLabel">
     <div class="modal-dialog" style="width:700px">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="RequireDateLabel">零件规格查询</h4>
+                <h4 class="modal-title" id="RequireDateLabel">零件查询</h4>
             </div>
             <div class="modal-body">
-                <table class="table-striped col-sm-12">
+                <table>
                     <tr>
-                        <td class="col-sm-3"><label>规格关键字</label></td>
-                        <td class="col-sm-8">
-                            <input type="text" class="form-control" id="SpecKeyword" />
+                        <td>
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <label>查询关键字：</label>
+                                    <select id="_sel" class="form-control" style="width:120px;position:relative;">
+                                        <option value="2">物料编号</option>
+                                        <option value="1">零件短名</option>                                        
+                                        <option value="3">规格</option>
+                                    </select>
+                                </div>
+                                <input type="text" class="form-control" id="SpecKeyword" placeholder="请键入搜索关键字"/>
+                            </div>
                         </td>
-                        <td class="col-sm-1">
-                            <button class="btn btn-default" id="PartSearchBtn">查询</button>
+                        <td>
+                            <button class="btn btn-default" id="PartSearchBtn"><span class="glyphicon glyphicon-search"></span>查询</button>
+                            <button class="btn btn-primary" id="modal_AddPart"><span class="glyphicon glyphicon-share-alt"></span>添加至表格</button>
                         </td>
                     </tr>
                 </table>
-                <table class="table-striped col-sm-12" style="display:none" id="AllParts">
-                    <thead>
-                        <tr>
-                            <td class="col-sm-3"><label>物料编号</label></td>
-                            <td class="col-sm-3"><label>规格</label></td>
-                            <td class="col-sm-3"><label>材料</label></td>
-                            <td class="col-sm-3"><label>版本</label></td>
-                        </tr>
-                    </thead>
-                    <tbody id="PartList"></tbody>
-                </table>
+                <table class="table-striped col-sm-12" id="tb_PartSearch"></table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="NewPart">新建采购项</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove-sign"></span>关闭</button>
+                <button type="button" class="btn btn-success" id="NewPart"><span class="glyphicon glyphicon-plus-sign"></span>新建采购项</button>
             </div>
         </div>
     </div>
@@ -544,6 +545,7 @@
         LoadSuppliers(0,1);
         LoadCostCenters();
         GetPurchaseType();
+        PartSearchGrid();
         var _supplierID;
         @try{
             @:_supplierID=@Model.SupplierID
@@ -619,7 +621,7 @@
             SetDefaultDate();
         })
 
-        $("#PartSearchBtn").on("click", function(){
+        $("#PartSearchBtn").on("click", function(){           
             PartSearch();
         })
 
@@ -654,6 +656,37 @@
         $("#SupplierName").on('change', function(){
             SetSupplier();
             GetSupplierID($('#SupplierName').val());
+        })
+
+        $('#modal_AddPart').on('click',function(){
+            var selrows = $("#tb_PartSearch").jqGrid('getGridParam', 'selarrrow');
+            if (selrows.length==0){
+                selrows=  $('#tb_PartSearch').getDataIDs();
+            }
+            for(var i=0;i<selrows.length;i++){
+                var _partid= $("#tb_PartSearch").getCell(selrows[i], "PartID");
+                AddPart(_partid);
+            }
+        })
+
+        $('#JobNo').on('blur',function(){
+            var _prid=$("#PRContentID").val();
+            if(_prid==0){
+                if($('#MoldNum').val()!='' && $('#MoldNum').val()!=undefined){
+                    var _partnumber=$('#MoldNum').val()+'-'+$('#JobNo').val();
+                    $.get('/Part/Service_Chk_Part?_partnum='+_partnumber,function(res){
+                        if(res!=''){
+                            alert(res);
+                            $('#JobNo').val('');
+                        }
+                    })
+                }
+                else{
+                    alert('请先输入模号！');
+                    $('#MoldNum').val('');
+                    $('#JobNo').val('');
+                }
+            }   
         })
     });
 
@@ -767,27 +800,31 @@
         }
     }
 
-
-
-
+    //查询零件
     function PartSearch(){
-        var _spec = $("#SpecKeyword").val();
-        var _url = "/Part/QueryBySpec?Keyword="+_spec;
-        var _row = "";
-        $("#AllParts").removeAttr("style");
-        $("#PartList tr").remove();
-        $.getJSON(_url, function(msg){
-            $.each(msg, function(i, n){
-                _row = "<tr><td>"+n.PartNumber+"</td><td>"+n.Specification+"</td><td>"+n.MaterialName+"</td><td>"+n.Version+"</td><td>"+
-                    "<button class='btn btn-primary' id='"+n.PartID+"' onclick='AddPart("+n.PartID+")'>添加</button>"+
-                    "</td></tr>";
-                $("#PartList").append(_row);
-            })
-        })
-
+        var _key = $("#SpecKeyword").val();
+        var _sel=$('#_sel').val();
+        var _url = "/Part/Service_Json_GetPartByKeys?sel=" + _sel + "&Keywords=" + _key;
+        reloadGrid(_url,'tb_PartSearch');
+        //var _url = "/Part/QueryBySpec?Keyword="+_key;
+        //var _row = "";
+        //$("#AllParts").removeAttr("style");
+        //$("#PartList tr").remove();
+        //$.getJSON(_url, function(msg){
+        //    $.each(msg, function(i, n){
+        //        _row = "<tr><td>"+n.PartNumber+"</td><td>"+n.Specification+"</td><td>"+n.MaterialName+"</td><td>"+n.Version+"</td><td>"+
+        //            "<button class='btn btn-primary' id='"+n.PartID+"' onclick='AddPart("+n.PartID+")'>添加</button>"+
+        //            "</td></tr>";
+        //        $("#PartList").append(_row);
+        //    })
+        //})
+    }
+    function reloadGrid(_url,_tbID){
+        //var _url = '/Task/JsonMachineTasks?MoldNumber=' + _MoldNumber + "&TaskType=" + _TaskType + "&State=" + _State+"&Keyword="+Keyword;
+        $('#'+_tbID).jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
     }
 
-
+    //添加至表格
     function AddPart(PartID){
         var _url = "/Part/JsonPart?PartID="+PartID;
         $.getJSON(_url, function(msg){
@@ -821,7 +858,7 @@
         $("#PRContentAdd input").val("");
         $("#PRContentAdd select").val(0);
         LoadBrands();
-        
+        showBrand('');
         $("#PRContentAdd").modal("show");
     }
 

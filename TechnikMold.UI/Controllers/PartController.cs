@@ -16,6 +16,9 @@ using System.IO;
 using NPOI.XSSF.UserModel;
 using NPOI.SS.UserModel;
 using TechnikMold.UI.Models;
+using System.Linq.Expressions;
+using MoldManager.WebUI.Tools;
+using TechnikMold.UI.Models.GridViewModel;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -1905,12 +1908,59 @@ namespace MoldManager.WebUI.Controllers
         }
         #endregion
         /// <summary>
-        /// Git Test
+        /// 根据关键字查询零件
         /// </summary>
-        public int GitTest()
+        /// <param name="sel">1:零件短名 2:物料编号 3:规格</param>
+        /// <param name="Keywords"></param>
+        /// <returns></returns>
+        public JsonResult Service_Json_GetPartByKeys(int sel=0,string Keywords="")
         {
-            //更新代码
-            return 1;
+            Expression<Func<Part, bool>> _kwexp = null;
+            if (sel != 0)
+            {
+                _kwexp = p => p.Enabled == true;
+                try
+                {
+                    switch (sel)
+                    {
+                        case 1:
+                            _kwexp = PredicateBuilder.And(_kwexp, p => p.ShortName.Contains(Keywords));
+                            break;
+                        case 2:
+                            _kwexp = PredicateBuilder.And(_kwexp, p => p.PartNumber.Contains(Keywords));
+                            break;
+                        default:
+                            _kwexp = PredicateBuilder.And(_kwexp, p => p.Specification.Contains(Keywords));
+                            break;
+                    }
+                    IQueryable<Part> _parts = _partRepository.GetLatestVerParts();
+                    if (_parts != null)
+                    {
+                        _parts = _parts.Where(_kwexp);
+                        PartSearchGridViewModel _viewmodel = new PartSearchGridViewModel(_parts.ToList());
+                        return Json(_viewmodel, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                catch { }
+            }            
+            return null;
+        }
+        public string Service_Chk_Part(string _partnum)
+        {
+            try
+            {
+                var _part = _partRepository.Parts.Where(p => p.PartNumber == _partnum).FirstOrDefault();
+                if (_part != null)
+                {
+                    return "物料编号已存在！";
+                }
+                return "";
+            }
+            catch(Exception ex)
+            {
+                return ex.Message;
+            }
+
         }
     }
 }
