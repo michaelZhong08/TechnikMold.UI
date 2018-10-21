@@ -695,21 +695,6 @@ function CreatePR(Submit) {
     }
     var itemData = "";
     var name = "PRContents";
-    //暂时注释掉
-    //for (var i = 0; i < rowData.length; i++) {
-    //    if (rowData[i].ERPPartID == "") {
-    //        alertMsg = rowData[i].DrawingName + ";" + alertMsg;
-
-    //        m = false;
-    //        //return false;
-    //    }
-    //}
-    
-    //if (!m) {
-    //    alert("零件[" + alertMsg + "]的ERP料号为空，请同步后再保存.");
-    //    $("#CreatePR").removeAttr("disabled");
-    //    return false;
-    //};
     var rowData = $("#PRContentGrid").jqGrid("getRowData");
     var m = true;
     var alertMsg = "";
@@ -756,7 +741,8 @@ function CreatePR(Submit) {
         }
         itemData = itemData + "PurchaseRequestID=" + ($("#PurchaseRequestID").val() == undefined ? 0 : $("#PurchaseRequestID").val()) +
             "&ProjectID=" + $("#ProjectID").val() + "&Memo=" + $("#PRMemo").val() +
-            "&SupplierID=" + $("#SupplierID").val() + "&PurchaseType=" + $("#PurchaseType").val() + "&ApprovalERPUserID=" + $("#ApprovalUserID").val();
+            "&SupplierID=" + $("#SupplierID").val() + "&PurchaseType=" + $("#PurchaseType").val() + "&ApprovalERPUserID=" + $("#ApprovalUserID").val() +
+            "&wsUserID=" + $("#wsUserID").val();
         //$.post("/Purchase/PRSave?", PRContents);
         //location.href = "/Purchase/Index";
         ////console.log(itemData);

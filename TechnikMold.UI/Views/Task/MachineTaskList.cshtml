@@ -318,7 +318,7 @@
     <script src="~/Scripts/jquery.ba-throttle-debounce.js"></script>
 
 
-    <div class="modal fade" id="EleStateModal" tabindex="-1" role="dialog" aria-labelledby="EleStateModal-label">
+<div class="modal fade" id="EleStateModal" tabindex="-1" role="dialog" aria-labelledby="EleStateModal-label">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -335,7 +335,26 @@
         </div>
     </div>
 
+@*设置任务结束*@
+<div class="modal fade" id="SetupWFTaskHourModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">设置任务结束</h4>
+            </div>
+            <div class="modal-body">
+                <table id="tb_SetupWFTaskHour"></table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="modal_btn_FinishTask"><span class="glyphicon glyphicon glyphicon-off"></span> 结束任务</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+@*设置任务开始*@
 <div class="modal fade" id="SetTaskStartModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -349,6 +368,8 @@
                         <td><label>选择机器：</label></td>
                         <td><input id="modal_sel_machinesinfo" list="MInfoCodeDL" type="text" name="MInfoCode" class="form-control" style="width:180px;" />
                             <datalist id="MInfoCodeDL"></datalist></td>
+                        <td><label>选择人员：</label></td>
+                        <td><select id="CheckUser" class="form-control" style="width:100px;"></select></td>
                     </tr>
                 </table>               
                 <table id="tb_TaskStart"></table>
@@ -361,33 +382,35 @@
     </div>
 </div>
 
-    <script>
-        $(document).ready(function () {
-            $("#target").val("/Task/MachineTaskList?State=@ViewBag.State&TaskType=@ViewBag.TaskType&MoldNumber=")
+<script>
+     $(document).ready(function () {
+         $("#target").val("/Task/MachineTaskList?State=@ViewBag.State&TaskType=@ViewBag.TaskType&MoldNumber=")
 
-            $("#Keyword").on("keyup", function(){
-                $.debounce(100,LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()))
-                //delay_till_last("MachineTask", LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()), 500);
-            })
-            LoadMInfoList($('#FTaskType').val());
+         $("#Keyword").on("keyup", function(){
+             $.debounce(100,LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()))
+             //delay_till_last("MachineTask", LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()), 500);
+         })
+         LoadMInfoList($('#FTaskType').val());
 
-            LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, "", "@ViewBag.MoldNumber");
+         LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, "", "@ViewBag.MoldNumber");
 
-            //Create the task grid
-            //任务信息表格初始化
-            TaskList("@ViewBag.MoldNumber", @ViewBag.TaskType, @ViewBag.State);
-            //任务开始表格初始化
-            TaskStartGrid('');
-            //Hide the not wanted columns
-            $("#TaskGrid").setGridParam().showHideCol("Quantity");
-            $("#TaskGrid").setGridParam().showHideCol("StateMemo");
-            $("#TaskGrid").setGridParam().showHideCol("State");
-            $("#TaskGrid").setGridParam().showHideCol("CreateTime");
-            $("#TaskGrid").setGridParam().showHideCol("PlanTime");
-            $("#TaskGrid").setGridParam().showHideCol("AcceptTime");
-            $("#TaskGrid").setGridParam().showHideCol("StartTime");
-            $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
-            switch(@ViewBag.TaskType){
+         //Create the task grid
+         //任务信息表格初始化
+         TaskList("@ViewBag.MoldNumber", @ViewBag.TaskType, @ViewBag.State);
+         //任务开始表格初始化
+         TaskStartGrid('');
+         //外发任务结束表格初始化
+         WFTaskFinishGrid('');
+         //Hide the not wanted columns
+         $("#TaskGrid").setGridParam().showHideCol("Quantity");
+         $("#TaskGrid").setGridParam().showHideCol("StateMemo");
+         $("#TaskGrid").setGridParam().showHideCol("State");
+         $("#TaskGrid").setGridParam().showHideCol("CreateTime");
+         $("#TaskGrid").setGridParam().showHideCol("PlanTime");
+         $("#TaskGrid").setGridParam().showHideCol("AcceptTime");
+         $("#TaskGrid").setGridParam().showHideCol("StartTime");
+         $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
+         switch(@ViewBag.TaskType){
                 case 1:
                     TaskListCNC()
                     break;
@@ -403,57 +426,58 @@
                 case 6:
                     TaskListGrind();
             }
-            //TODO: 加工(历史)界面显示隐藏列
-            if (@ViewBag.State==1){
-                $("#TaskGrid").setGridParam().showHideCol("ActualTime");
-                $("#TaskGrid").setGridParam().showHideCol("Operater");
-                $("#TaskGrid").setGridParam().showHideCol("Machine");
-                $("#TaskGrid").setGridParam().showHideCol("FinishTime");
-                if ((@ViewBag.TaskType==1)||(@ViewBag.TaskType==2)){
+         //TODO: 加工(历史)界面显示隐藏列
+         if (@ViewBag.State==1){
+             $("#TaskGrid").setGridParam().showHideCol("ActualTime");
+             $("#TaskGrid").setGridParam().showHideCol("Operater");
+             $("#TaskGrid").setGridParam().showHideCol("Machine");
+             $("#TaskGrid").setGridParam().showHideCol("FinishTime");
+             if ((@ViewBag.TaskType==1)||(@ViewBag.TaskType==2)){
                     $("#TaskGrid").setGridParam().showHideCol("Surface");
                     $("#TaskGrid").setGridParam().showHideCol("Obit");
                     $("#TaskGrid").setGridParam().showHideCol("ELEPos");
                 }
-                else if(@ViewBag.TaskType==3){
+             else if(@ViewBag.TaskType==3){
                     $("#TaskGrid").setGridParam().showHideCol("Preciston");
                     $("#TaskGrid").setGridParam().showHideCol("CADPartName");
                 }
-                else if(@ViewBag.TaskType==6){
+             else if(@ViewBag.TaskType==6){
                     $("#TaskGrid").setGridParam().showHideCol("CADPartName");
                 }
-            }
-            //当前
-            else{
-                $("#TaskGrid").setGridParam().showHideCol("Time");
-                $("#TaskGrid").setGridParam().showHideCol("Priority");
-            }
+         }
+         //当前
+         else{
+             $("#TaskGrid").setGridParam().showHideCol("Time");
+             $("#TaskGrid").setGridParam().showHideCol("Priority");
+         }
 
-            $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
+         $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
 
 
-            $("#SelMold").on("click", function(){
-                ShowMoldSelect();
-            })
+         $("#SelMold").on("click", function(){
+             ShowMoldSelect();
+         })
 
-            ///Task/MachineTaskList?TaskType=1&MoldNumber=&State=0
-            $("#MoldSelect").on("change", function(){
-                @*location.href="/Task/MachineTaskList?TaskType=@ViewBag.TaskType&MoldNumber="+$("#MoldSelect option:selected").val()+"&State=@ViewBag.State";*@
-                if ($("#MoldSelect").val()!=null){
-                    $("#FMoldNumber").val($("#MoldSelect").val());
-                    RefreshTaskGrid("");
-                    var _links = $(".TaskTypeLink")
+         ///Task/MachineTaskList?TaskType=1&MoldNumber=&State=0
+         $("#MoldSelect").on("change", function(){
+             @*location.href="/Task/MachineTaskList?TaskType=@ViewBag.TaskType&MoldNumber="+$("#MoldSelect option:selected").val()+"&State=@ViewBag.State";*@
+             if ($("#MoldSelect").val()!=null){
+                 $("#FMoldNumber").val($("#MoldSelect").val());
+                 RefreshTaskGrid("");
+                 var _links = $(".TaskTypeLink")
 
-                    for (i=0;i<_links.length;i++){
-                        _links[i].href=AttachMoldNumber(_links[i].href, $("#MoldSelect").val());
-                    }
-                }
-            })
+                 for (i=0;i<_links.length;i++){
+                     _links[i].href=AttachMoldNumber(_links[i].href, $("#MoldSelect").val());
+                 }
+             }
+         })
 
-            $("#CheckEleStatus").on('click', function(){
-                ShowEleStatus();
-            })
-            //设置加工开始
-            $('#modal_btn_StartTask').on('click',function(){
+         $("#CheckEleStatus").on('click', function(){
+             ShowEleStatus();
+         })
+
+         //设置加工开始
+         $('#modal_btn_StartTask').on('click',function(){
                 //获取第2行(除表头)第2个单元格(第一个默认隐藏)
                 var firsttdobj= $('#tb_TaskStart td:eq(8)');
                 //模拟单元格点击事件
@@ -466,16 +490,22 @@
                     if(rowData.MachinesCode==''||rowData.MachinesCode==null){
                         alert('请选择机器！');
                         return false;
-                    }                       
+                    }
+                    else if(rowData.UserName==''||rowData.UserName==null){
+                        alert('请选择人员！');
+                        return false;
+                    }
                     itemData=itemData+name+'['+i+'].TaskID='+rowData.TaskID+'&'+
                                       //name+'['+i+'].TaskName='+rowData.TaskName+'&'+
                                       name+'['+i+'].State='+rowData.State+'&'+
                                       name+'['+i+'].MachinesCode='+rowData.MachinesCode+'&'+
-                                      name+'['+i+'].MachinesName='+rowData.MachinesName+'&'                    
+                                      name+'['+i+'].MachinesName='+rowData.MachinesName+'&' +
+                                      name+'['+i+'].UserID='+rowData.UserID+'&' + 
+                                      name+'['+i+'].UserName='+rowData.UserName+'&' 
                 }
                 //去掉最后一个字符
                 itemData=itemData.substring(0,itemData.length-1);
-
+                
                 $.ajax({
                     url: "/Task/Service_StartTask",
                     data:itemData,
@@ -491,9 +521,23 @@
                         }
                     }
                 })
-            })
-            //选择加工开始机器
-            $('#modal_sel_machinesinfo').on('change',function(){
+         })
+         //选择人员
+         $('#CheckUser').on('change',function(){
+             var _userid=$('#CheckUser').val();
+             var _username = $('#CheckUser').text();
+
+             var selrows = $("#tb_TaskStart").jqGrid('getGridParam', 'selarrrow');
+             if (selrows.length==0){
+                 selrows=  $('#tb_TaskStart').getDataIDs();
+             }
+             for (i=0;i<selrows.length;i++){
+                 $("#tb_TaskStart").setCell(selrows[i], "wsUser", _username);
+                 $("#tb_TaskStart").setCell(selrows[i], "wsUserID", _userid);
+             }
+         })
+         //选择加工开始机器
+         $('#modal_sel_machinesinfo').on('change',function(){
                 var val = $('#modal_sel_machinesinfo').val();
                 val = val.split(',');
 
@@ -507,70 +551,187 @@
                     $("#tb_TaskStart").setCell(selrows[i], "MachinesName", mInfoname);
                     $("#tb_TaskStart").setCell(selrows[i], "MachinesCode", mInfocode);
                 }
-            })
-        })
+         })
+         //设置加工结束
+         $("#FinishTask").on("click", function () {             
+             if (confirm("确认将选中任务设为结束？")) {
+                 var selr = $('#TaskGrid').jqGrid('getGridParam', 'selarrrow');
+                 var _ids = "";//正在加工 任务
+                 var _wfids='';//外发 任务
+                 var _ycids='';//其它状态 任务
+                 for (var i = 0; i < selr.length; i++) {
+                     var _state=$("#TaskGrid").getCell(selr[i], 'State');
+                     if(_state=='正在加工'){
+                         _ids=addColumnlists(_ids,'TaskGrid',selr[i],'ID');
+                     }
+                     else if(_state=='外发'){
+                         _wfids=addColumnlists(_wfids,'TaskGrid',selr[i],'ID');
+                     }
+                     else{
+                         _ycids=addColumnlists(_ycids,'TaskGrid',selr[i],'TaskName');
+                     }
+                 }
+                 if(_ycids==''){
+                     ////正常加工任务结束
+                     if(_ids!=''&& _wfids=='')
+                         FinishTask(_ids);                    
+                     ////外发任务结束                     
+                     if(_wfids!=''){
+                         //正常任务结束
+                         if(_ids!='')
+                             $.get("/Task/SetTaskFinish?TaskIDs=" + _ids);                         
+                         //外发任务列表
+                         //clear table data
+                         $('#tb_SetupWFTaskHour').jqGrid("clearGridData");
+                         $('#SetupWFTaskHourModal').modal('show');
+                         var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _wfids + '&type=' + 2;
+                         $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+                     }                     
+                 }
+                 else
+                     alert('以下任务['+_ycids+']尚未开始加工，不允许结束！');
+             }     
+         })
+         //结束外发任务
+         $('#modal_btn_FinishTask').on('click',function(){
+             //获取第2行(除表头)第2个单元格(第一个默认隐藏)
+             var firsttdobj= $('#tb_SetupWFTaskHour td:eq(8)');
+             //模拟单元格点击事件
+             firsttdobj.trigger("click");
 
-        function AttachMoldNumber(Link, MoldNumber){
-            var _link = Link.substring(0, Link.lastIndexOf('=')+1)+MoldNumber;
-            return _link;
-        }
+             var _rows = $('#tb_SetupWFTaskHour').jqGrid('getRowData');
+             var msg='';
+             var _taskids=GetAllValues('tb_SetupWFTaskHour','ID');
+             for(var i=0;i<_rows.length;i++){
+                 var _taskid=_rows[i].ID;
+                 var _tasktime=_rows[i].TotalTime;
+                 if(_taskid>0){
+                     $.get('/Task/SetWFTaskFinish?TaskID='+_taskid+'&Time='+_tasktime,function(res){
+                         if (res != "") {
+                             msg=msg+res+';';
+                         }                      
+                     })
+                 }
+             }
+             if(msg==''){
+                 location.reload();
+                 $('#SetupWFTaskHourModal').modal('hide');
+             }
+             else{
+                 //重载表格
+                 var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _taskids + '&type=' + 2;
+                 $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+                 alert(msg+'——任务结束失败！');
+             }             
+         })
 
-        function RefreshTaskGrid(Keyword){
-            var _MoldNumber = $("#FMoldNumber").val();
-            var _TaskType = $("#FTaskType").val();
-            var _State = $("#FState").val();
-            if (Keyword==""){
-                $("#Keyword").val("");
-            }
-            var _url = '/Task/JsonMachineTasks?MoldNumber=' + _MoldNumber + "&TaskType=" + _TaskType + "&State=" + _State+"&Keyword="+Keyword;
-            $("#TaskGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
-        }
-        function ChangeTaskType(TaskType){
-            $("#FTaskType").val(TaskType);
-            RefreshTaskGrid();
-        }
+         $("#SetTaskStartModal").on("shown.bs.modal", function () {
+             LoadWSUser($('#FTaskType').val());
+         })
+     })
 
-        function ChangeViewState(State){
-            $("#FState").val(State);
-            RefreshTaskGrid();
-        }
-
-        function ShowEleStatus() {
-            var _taskID = GetCurrentID("TaskGrid");
-            if (_taskID != "") {
-                $("#EleState option").remove();
-                var _url = "/Task/EleStateCheck?TaskID="+_taskID;
-                $.getJSON(_url, function(msg){
-                    $.each(msg, function(i, n){
-                        $("#EleState").append($("<option/>", {text:n}))
-                    })
-                })
-                $("#EleStateModal").modal("show");
-            } else {
-                alert("请选择一个任务");
-            }
-        }
-
-    </script>
-
-    @{
-        int _task = ViewBag.TaskType;
-        switch (_task)
-        {
+    //加载workshop对应部门人员
+    function LoadWSUser(type) {
+        $("#CheckUser option").remove();
+        var _depid=0;
+        type=Number(type);
+        switch(type){
             case 1:
-                Html.RenderAction("CncTaskDialog");
-                Html.RenderAction("ScanBarCodeDialog");
+                _depid=7;
                 break;
             case 2:
-                Html.RenderAction("EdmTaskDialog");
-                Html.RenderAction("ELECompensationDialog");
+                _depid=8;
                 break;
             case 3:
-                Html.RenderAction("WedmTaskDialog");
+                _depid=9;
                 break;
             case 4:
-                Html.RenderAction("MillingTaskDialog");
-                Html.RenderAction("SteelProgramSelect");
+                _depid=7;
+                break;
+            case 6:
+                _depid=5;
                 break;
         }
+        $.getJSON("/User/GetUsersByDepartment?DepartmentID="+_depid, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#CheckUser").append($("<option/>", {
+                    value: n.UserID,
+                    text: n.FullName
+                }))
+            })
+        })
     }
+
+    function addColumnlists(ids,GridTableName,row,ColName){
+        if (ids == "") {
+            ids = $("#" + GridTableName).getCell(row, ColName);
+        } else {
+            ids = ids + "," + $("#" + GridTableName).getCell(row, ColName);
+        }
+        return ids;
+    }
+
+     function AttachMoldNumber(Link, MoldNumber){
+         var _link = Link.substring(0, Link.lastIndexOf('=')+1)+MoldNumber;
+         return _link;
+     }
+
+     function RefreshTaskGrid(Keyword){
+         var _MoldNumber = $("#FMoldNumber").val();
+         var _TaskType = $("#FTaskType").val();
+         var _State = $("#FState").val();
+         if (Keyword==""){
+             $("#Keyword").val("");
+         }
+         var _url = '/Task/JsonMachineTasks?MoldNumber=' + _MoldNumber + "&TaskType=" + _TaskType + "&State=" + _State+"&Keyword="+Keyword;
+         $("#TaskGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+     }
+     function ChangeTaskType(TaskType){
+         $("#FTaskType").val(TaskType);
+         RefreshTaskGrid();
+     }
+
+     function ChangeViewState(State){
+         $("#FState").val(State);
+         RefreshTaskGrid();
+     }
+
+     function ShowEleStatus() {
+         var _taskID = GetCurrentID("TaskGrid");
+         if (_taskID != "") {
+             $("#EleState option").remove();
+             var _url = "/Task/EleStateCheck?TaskID="+_taskID;
+             $.getJSON(_url, function(msg){
+                 $.each(msg, function(i, n){
+                     $("#EleState").append($("<option/>", {text:n}))
+                 })
+             })
+             $("#EleStateModal").modal("show");
+         } else {
+             alert("请选择一个任务");
+         }
+     }
+
+ </script>
+
+@{
+    int _task = ViewBag.TaskType;
+    switch (_task)
+    {
+        case 1:
+            Html.RenderAction("CncTaskDialog");
+            Html.RenderAction("ScanBarCodeDialog");
+            break;
+        case 2:
+            Html.RenderAction("EdmTaskDialog");
+            Html.RenderAction("ELECompensationDialog");
+            break;
+        case 3:
+            Html.RenderAction("WedmTaskDialog");
+            break;
+        case 4:
+            Html.RenderAction("MillingTaskDialog");
+            Html.RenderAction("SteelProgramSelect");
+            break;
+    }
+}

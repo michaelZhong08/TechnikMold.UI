@@ -26,6 +26,7 @@ namespace MoldManager.WebUI.Controllers
 {
     public class PurchaseController : Controller
     {
+        #region 定义参数
         private IPartRepository _partRepository;
         private IPRContentRepository _prContentRepository;
         private IPurchaseRequestRepository _purchaseRequestRepository;
@@ -55,8 +56,9 @@ namespace MoldManager.WebUI.Controllers
         private IBrandRepository _brandRepository;
         private ICostCenterRepository _costCenterRepository;
         private IPartListRepository _partListRepository;
-
-
+        private ITaskHourRepository _taskHourRepository;
+        #endregion
+        #region 构造
         public PurchaseController(IPartRepository PartRepository,
             IPRContentRepository PRContentRepository,
             IPurchaseRequestRepository PurchaseRequestRepository,
@@ -84,7 +86,8 @@ namespace MoldManager.WebUI.Controllers
             ISupplierBrandRepository SupplierBrandRepository,
             IBrandRepository BrandRepository,
             ICostCenterRepository CostCenterRepository,
-            IPartListRepository partListRepository)
+            IPartListRepository partListRepository,
+            ITaskHourRepository taskHourRepository)
         {
             _partRepository = PartRepository;
             _prContentRepository = PRContentRepository;
@@ -115,8 +118,9 @@ namespace MoldManager.WebUI.Controllers
             _costCenterRepository = CostCenterRepository;
             _partListRepository = partListRepository;
             _status = new PurchaseRequestStatus();
+            _taskHourRepository = taskHourRepository;
         }
-
+        #endregion
 
         #region PageView
         // GET: Purchase
@@ -387,7 +391,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="PRContents"></param>
         /// <returns></returns>
         [HttpPost]
-        public int PRSave(List<PRContent> PRContents, int PurchaseType, int PurchaseRequestID = 0, int SupplierID = 0, string Memo = "",string ApprovalERPUserID="")
+        public int PRSave(List<PRContent> PRContents, int PurchaseType, int PurchaseRequestID = 0, int SupplierID = 0, string Memo = "",string ApprovalERPUserID="",int wsUserID=0)
         {
             int _requestID;
             PurchaseRequest _request;
@@ -495,7 +499,38 @@ namespace MoldManager.WebUI.Controllers
                 //Modify task outsource state
                 if (_content.TaskID > 0)
                 {
+                    #region 外发任务
                     _taskRepository.OutSource(_content.TaskID);
+                    Task _task = _taskRepository.QueryByTaskID(_content.TaskID);
+                    DateTime _iniTime = DateTime.Parse("1900/1/1");
+                    try
+                    {
+                        TaskHour _taskhour = new TaskHour();
+                        _taskhour.TaskID = _task.TaskID;
+                        _taskhour.Enabled = true;
+                        _taskhour.StartTime = DateTime.Now;
+                        _taskhour.FinishTime = _iniTime;
+                        _taskhour.TaskType = _task.TaskType;
+                        _taskhour.MoldNumber = _task.MoldNumber;
+                        _taskhour.Time = 0;
+                        _taskhour.RecordType = 2; //外发任务工时记录
+                        _taskhour.State = (int)TaskHourStatus.外发;
+                        try
+                        {
+                            User _user = _userRepository.GetUserByID(wsUserID) ?? new User();
+                            _taskhour.Operater = _user.FullName;
+                            Supplier _supplier = _supplierRepository.QueryByID(SupplierID) ?? new Supplier();
+                            _taskhour.MachineCode = _supplier.MachineCode ?? "";
+                        }
+                        catch { }                        
+                        _taskhour.Memo = "记录创建于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + GetCurrentUser() + "/r/n";
+                        _taskHourRepository.Save(_taskhour);
+                    }
+                    catch (Exception ex)
+                    {
+                        
+                    }
+                    #endregion
                 }
                 if (_content.PartID > 0)
                 {
@@ -4321,8 +4356,10 @@ namespace MoldManager.WebUI.Controllers
         }
         public int GetSupplierID(string _sName)
         {
-            int _sID = _supplierRepository.Suppliers.Where(s => s.Name == _sName).FirstOrDefault().SupplierID;
-            return _sID;
+            Supplier _supplier = _supplierRepository.Suppliers.Where(s => s.Name == _sName).FirstOrDefault();
+            if(_supplier!=null)
+                return _supplier.SupplierID;
+            return 0;
         }
     }
 }

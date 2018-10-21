@@ -59,6 +59,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Account = Supplier.Account;
                     _dbEntry.TaxRate = Supplier.TaxRate;
                     _dbEntry.JianSuo = Supplier.JianSuo;
+                    _dbEntry.MachineCode = Supplier.MachineCode;
                 }
             }
             _context.SaveChanges();

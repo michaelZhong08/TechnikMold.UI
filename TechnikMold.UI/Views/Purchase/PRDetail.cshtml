@@ -141,30 +141,50 @@
                         <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="@status" readonly></td>
                     </tr>
                     <tr>
-                        <td class="col-sm-2">
-                            <label>申请人</label>
-                            @if (Model.State == 1)
-                            {
-                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
-                                    <option value="0">-</option>
-                                    @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
-                                    {
-                                        if (@ViewBag.ApprovalUserName == @ApprovalUser.FullName)
+                        @*非外发任务时显示申请人*@
+                        @if (@ViewBag.TaskType==0)
+                        {
+                            <td class="col-sm-2">
+                                <label>申请人</label>
+                                @if (Model.State == 1)
+                                {
+                                    <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
+                                        <option value="0">-</option>
+                                        @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
                                         {
-                                            <option value="@ApprovalUser.UserCode" selected>@ViewBag.ApprovalUserName</option>
+                                            if (@ViewBag.ApprovalUserName == @ApprovalUser.FullName)
+                                            {
+                                                <option value="@ApprovalUser.UserCode" selected>@ViewBag.ApprovalUserName</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
+                                            }
                                         }
-                                        else
-                                        {
-                                            <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
-                                        }
-                                    }
-                                </select>
-                            }
-                            else
-                            {
-                                <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" style="display:inline;float:right;width:70%" readonly />
-                            }
-                        </td>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" style="display:inline;float:right;width:70%" readonly />
+                                }
+                            </td>
+                        }
+                        @*外发任务时显示Workshop人员*@
+                        else
+                        {
+                            <td class="col-sm-2">
+                                <label>外发申请人</label>
+                                @if (Model.State == 1)
+                                {
+                                    <select id="wsUserID" class="form-control" name="wsUserID" style="display:inline;float:right;width:70%">
+                                    </select>
+                                }
+                                else
+                                {
+                                    <input id="wsUserID" name="wsUserID" class="form-control" value="@ViewBag.wsUserName" style="display:inline;float:right;width:70%" readonly />
+                                }
+                            </td>
+                        }
                         <td class="col-sm-2">
                             <label>创建人</label>
                             <input type="text" id="CreUser" class="form-control" value="@ViewBag.CreUserName" style="display:inline;float:right;width:80%" readonly />
@@ -546,6 +566,7 @@
         LoadCostCenters();
         GetPurchaseType();
         PartSearchGrid();
+        LoadWSUser($('#TaskType').val());
         var _supplierID;
         @try{
             @:_supplierID=@Model.SupplierID
@@ -971,5 +992,36 @@
                 $('#SupplierIDD').append($ohtml);
             }
         });
+    }
+
+    //加载workshop对应部门人员
+    function LoadWSUser(type) {
+        $("#wsUserID option").remove();
+        var _depid=0;
+        switch(type){
+            case 1:
+                _depid=7;
+                break;
+            case 2:
+                _depid=8;
+                break;
+            case 3:
+                _depid=9;
+                break;
+            case 4:
+                _depid=7;
+                break;
+            case 6:
+                _depid=5;
+                break;
+        }
+        $.getJSON("/User/GetUsersByDepartment?DepartmentID="+_depid, function (msg) {
+            $.each(msg, function (i, n) {
+                $("#wsUserID").append($("<option/>", {
+                    value: n.UserID,
+                    text: n.FullName
+                }))
+            })
+        })
     }
 </script>

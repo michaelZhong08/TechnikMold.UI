@@ -41,7 +41,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 dbentry.TaskType = model.TaskType;
                 dbentry.Enabled = model.Enabled;
                 dbentry.Time = model.Time ;
-                // RecordType:0正常开始 ? 1暂停后重启 ? -1取消/删除任务
+                // RecordType:0正常开始  1暂停后重启  -1取消/删除任务 2 外发
                 dbentry.RecordType = model.RecordType;
                 //dbentry.Memo = "任务开始于：" + DateTime.Now.ToString("yyMMddhhmm") + "；操作者：" + operater + "/r/n";
                 dbentry.Memo = model.Memo;
@@ -69,7 +69,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     TimeSpan timeSpan;
                     dbentry.FinishTime = model.FinishTime;
                     timeSpan = dbentry.FinishTime - dbentry.StartTime;
-                    dbentry.Time = Convert.ToDecimal(timeSpan.TotalMinutes);                    
+                    //正常结束
+                    if (model.Time == 0)
+                    {
+                        dbentry.Time = Convert.ToDecimal(timeSpan.TotalMinutes);
+                    }
+                    //外发结束
+                    else
+                        dbentry.Time = model.Time;
                     dbentry.MachineCode = model.MachineCode;
                     dbentry.Enabled = model.Enabled;
                     dbentry.RecordType = model.RecordType;                   

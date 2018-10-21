@@ -12,6 +12,8 @@ namespace TechnikMold.UI.Models.ViewModel
         public string State { get; set; }
         public string MachinesCode { get; set; }
         public string MachinesName { get; set; }
+        public int UserID  { get; set; }
+        public string UserName  { get; set; }
         public decimal TotalTime { get; set; }
     }
 }

@@ -34,5 +34,6 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public string Account { get; set; }
         public string TaxRate { get; set; }
         public string JianSuo { get; set; }
+        public string MachineCode { get; set; }
     }
 }

@@ -291,15 +291,41 @@ function TaskStartGrid(_TaskIDs) {
             { label: '状态', name: 'State', width: 120 },
             { label: 'MachinesCode', name: 'MachinesCode', width: 120, hidden: true },
             { label: '机器', name: 'MachinesName', width: 120 },
-            //{ label: '加工时间', name: 'TotalTime', width: 120 ,formatter:'number',editable:true}
+            { label: '人员', name: 'UserName', width: 120 },
+            { label: 'wsUserID', name: 'UserID', width: 120, hidden: true },
+            { label: '加工时间(min)', name: 'TotalTime', width: 120, formatter: 'number', hidden: true }
         ],
-        //cellEdit: true,
         autoScroll: true,
         multiselect: true,
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
     })
 }
 
+//设置外发任务结束
+function WFTaskFinishGrid(_TaskIDs) {
+    var _url = "/Task/Service_Json_GetTaskByIDs?TaskIDs=" + _TaskIDs;
+    $("#tb_SetupWFTaskHour").jqGrid({
+        url: _url,
+        styleUI: 'Bootstrap',
+        datatype: "json",
+        mtype: "post",
+        width: 550,
+        colModel: [
+            { label: '任务ID', name: 'ID', width: 120, hidden: true },
+            { label: '任务名', name: 'TaskName', width: 120 },
+            { label: '状态', name: 'State', width: 120 },
+            { label: 'MachinesCode', name: 'MachinesCode', width: 120, hidden: true },
+            { label: '机器', name: 'MachinesName', width: 120, hidden: true },
+            { label: '人员', name: 'UserName', width: 120 },
+            { label: 'wsUserID', name: 'UserID', width: 120, hidden: true },
+            { label: '加工时间(min)', name: 'TotalTime', width: 120, formatter: 'number', editable: true }
+        ],
+        cellEdit: true,
+        autoScroll: true,
+        //multiselect: true,
+        cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
+    })
+}
 //零件列表
 function PartListGrid(MoldID, Height) {
     $("#PartGrid").jqGrid({

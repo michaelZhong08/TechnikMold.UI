@@ -162,9 +162,7 @@ else if (ViewBag.TaskType == 4)
         })
 
         $("#SpotCheckDlg").on("shown.bs.modal", function () {
-            $("#")
             LoadCNCUser();
-
         })
 
         $("#BarCode").on("keyup", function () {
@@ -172,7 +170,6 @@ else if (ViewBag.TaskType == 4)
                 // run something
                 ScanConfirm($("#BarCode").val());
             }, 500);
-
         })
 
         $("#SpotCheckBtn").on("click", function () {
@@ -192,7 +189,6 @@ else if (ViewBag.TaskType == 4)
 
     function LoadCNCUser() {
         $("#CheckUser option").remove();
-
         $.getJSON("/User/GetUsersByDepartment?DepartmentID=7", function (msg) {
             $.each(msg, function (i, n) {
                 $("#CheckUser").append($("<option/>", {

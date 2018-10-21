@@ -311,10 +311,6 @@
         }
     })
 
-    $("#FinishTask").on("click", function () {
-        FinishTask(GetMultiSelectedIDs("TaskGrid"))        
-    })
-
     $("#SetAccept").on("click", function () {
         SetTaskAccept()
     })
@@ -498,7 +494,7 @@ function SetupTaskStart() {
     if (_taskIDs.length > 0) {
         $('#modal_sel_machinesinfo').val('');
         $('#SetTaskStartModal').modal('show');
-        var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _taskIDs;
+        var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _taskIDs + '&type=' + 1;
         $("#tb_TaskStart").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
     }
     else
@@ -1441,22 +1437,35 @@ function FinishCNCTask(TaskIDs) {
     }
 }
 
-function FinishTask(TaskIDs) {
-    if (confirm("确认将选中任务设为结束？")) {
-        $.ajax({
-            url: "/Task/SetTaskFinish?TaskIDs=" + TaskIDs,
-            type: "Get",
-            dataType: "html",
-            success: function (msg) {
-                if (msg == "") {
-                    alert("任务已结束")
-                } else {
-                    alert("操作失败");
-                }
-                location.reload();
+function FinishTask(TaskIDs,Time) {
+    $.ajax({
+        url: "/Task/SetTaskFinish?TaskIDs=" + TaskIDs,
+        type: "Get",
+        dataType: "html",
+        success: function (msg) {
+            if (msg == "") {
+                alert("任务已结束")
+            } else {
+                alert("操作失败");
             }
-        })
-    }
+            location.reload();
+        }
+    })
+    //if (confirm("确认将选中任务设为结束？")) {
+    //    $.ajax({
+    //        url: "/Task/SetTaskFinish?TaskIDs=" + TaskIDs,
+    //        type: "Get",
+    //        dataType: "html",
+    //        success: function (msg) {
+    //            if (msg == "") {
+    //                alert("任务已结束")
+    //            } else {
+    //                alert("操作失败");
+    //            }
+    //            location.reload();
+    //        }
+    //    })
+    //}
 }
 
 function EletrodePositionSetup() {

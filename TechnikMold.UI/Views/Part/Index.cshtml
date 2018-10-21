@@ -34,7 +34,6 @@
                 <button class="btn btn-primary" id="UpdradePart">升级Part</button>
                 <button class="btn btn-success" id="PLImport">外部导入</button>
             }
-
         </div>
         <div id="PartGridDiv" style="overflow-x:auto;overflow-y:hidden;">
             <table id="PartGrid" style="width:100%"></table>
@@ -42,7 +41,6 @@
         </div>
     </div>
 </div>
-
 
 @*手工创建零件对话框*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="PartEditModal" tabindex="-1" role="dialog" aria-labelledby="PartEditLabel">
@@ -126,31 +124,6 @@
                                 <input type="checkbox" id="ExtraMaching" name="ExtraMaching" /> &nbsp;<label>追加工</label>
                             </td>
                         </tr>
-                        @*<tr>
-                            <td class="col-sm-4"><label>附图订购</label> &nbsp; &nbsp;<input type="checkbox" id="PurchaseDrawing" name="PurchaseDrawing" /></td>
-                            <td>
-                                <label>追加工</label> &nbsp; &nbsp;<input type="checkbox" id="ExtraMaching" name="ExtraMaching" />
-                            </td>
-                        </tr>*@
-                        @*<tr>
-                            <td class="col-sm-4"><label>简图</label></td>
-                            <td>
-                                <input type="checkbox" id="BriefDrawing" name="BriefDrawing" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>附图订购</label></td>
-                            <td>
-                                <input type="checkbox" id="PurchaseDrawing" name="PurchaseDrawing"  />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>追加工</label></td>
-                            <td>
-                                <input type="checkbox" id="ExtraMaching" name="ExtraMaching"  />
-                            </td>
-                        </tr>*@
-                        @**@
                         <tr>
                             <td class="col-sm-4"><label>备注</label></td>
                             <td>
@@ -173,6 +146,7 @@
     </div>
 </div>
 
+@*设计清单导入*@
 <div class="modal" id="PLImportModal" aria-labelledby="PLImportLabel">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -222,8 +196,6 @@
 
     </ul>
 </div>
-
-
 
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/Part.js"></script>
@@ -312,7 +284,26 @@
                 error: function (error) { alert('程序出错！'); }
             })
         });
-
+        //物料编号 失去焦点 CHk
+        $('#JobNo').on('blur', function () {
+            var _partid = $("#PartID").val();
+            if (_partid == 0) {
+                if ($('#MoldNumber').val() != '' && $('#MoldNumber').val() != undefined) {
+                    var _partnumber = $('#MoldNumber').val() + '-' + $('#JobNo').val();
+                    $.get('/Part/Service_Chk_Part?_partnum=' + _partnumber, function (res) {
+                        if (res != '') {
+                            alert(res);
+                            $('#JobNo').val('');
+                        }
+                    })
+                }
+                else {
+                    alert('未获取到模具号，请重新选择零件编辑！');
+                    $('#MoldNumber').val('');
+                    $('#JobNo').val('');
+                }
+            }
+        })
     });
 
 </script>
