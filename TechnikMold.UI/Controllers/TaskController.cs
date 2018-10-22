@@ -4006,6 +4006,21 @@ namespace MoldManager.WebUI.Controllers
             List<MachinesInfo> _minfos = _machinesinfoRepository.GetMInfoByTaskType(Convert.ToInt32(TaskType)).Where(m=> !_existcodes.Contains(m.MachineCode)).ToList();
             return Json(_minfos, JsonRequestBehavior.AllowGet);
         }
+        public JsonResult Service_Get_TaskMInfoByTaskType(string TaskType,bool isWF=false)
+        {
+            List<MachinesInfo> _minfos;
+            //虚拟委外
+            if (isWF)
+            {
+                _minfos = _machinesinfoRepository.GetMInfoByTaskType(Convert.ToInt32(TaskType)).Where(m => m.EquipBrand == "委外").ToList();
+            }
+            //
+            else
+            {
+                _minfos = _machinesinfoRepository.GetMInfoByTaskType(Convert.ToInt32(TaskType)).Where(m => m.EquipBrand != "委外").ToList();
+            }
+            return Json(_minfos,JsonRequestBehavior.AllowGet);
+        }
         public ActionResult GetMachineInfo(int MachineID)
         {
             Machine _machine = _machineRepository.QueryByID(MachineID);
@@ -4044,6 +4059,7 @@ namespace MoldManager.WebUI.Controllers
                     case 1:
                         _typelists.Add((int)CNCStatus.等待);
                         _typelists.Add((int)CNCStatus.等待中);
+                        _typelists.Add((int)CNCStatus.已接收);
                         break;
                     case 2:
                         _typelists.Add((int)CNCStatus.外发);
@@ -5717,7 +5733,7 @@ namespace MoldManager.WebUI.Controllers
         /// 创建工时记录
         /// </summary>
         /// <param name="_task">任务对象</param>
-        /// <param name="RecordType">0 正常开始 1 重启</param>
+        /// <param name="RecordType">0 正常开始 1 重启 2外发</param>
         public void CreateTaskHour(Task _task,int RecordType,string MachineCode,string wsUserName="")
         {
             DateTime _iniTime = DateTime.Parse("1900/1/1");
@@ -5797,5 +5813,34 @@ namespace MoldManager.WebUI.Controllers
             }
         }
         #endregion
+        public string Service_Save_wfTaskHour()
+        {
+            string res = "";
+            List<SetupTaskStart> _viewmodel = new List<SetupTaskStart>();
+            if (Session["setupTask"] != null)
+            {
+                _viewmodel = Session["setupTask"] as List<SetupTaskStart>;
+            }
+            if (_viewmodel.Count > 0)
+            {
+                foreach(var t in _viewmodel)
+                {
+                    try
+                    {
+                        Task _task = _taskRepository.QueryByTaskID(t.TaskID);
+                        CreateTaskHour(_task, 2, t.MachinesCode, t.UserName);
+                    }
+                    catch
+                    {
+                        res = res + t.TaskID.ToString() + ";";
+                    }
+                }
+            }
+            else
+            {
+                res = "-";
+            }
+            return res;
+        }
     }
 }

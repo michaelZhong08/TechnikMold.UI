@@ -578,7 +578,7 @@
         //LoadRecommandSuppliers(_supplierID);
         @if (ViewBag.PurchaseRequestID != 0)
         {
-            @:PRContentGrid("", @ViewBag.PurchaseRequestID, @ViewBag.PRState,"");
+            @:PRContentGrid("", @ViewBag.PurchaseRequestID, @ViewBag.PRState,"","");
                                                                                             @:LoadProject(@ViewBag.ProjectID);
                                                                                             @:LoadPR(@ViewBag.PurchaseRequestID);
                                                             if (Model.SupplierID != 0)
@@ -589,7 +589,7 @@
                                                         }
         else if (ViewBag.PartIDs!="")
         {
-            @:PRContentGrid("@ViewBag.PartIDs", 0, 0,"");
+            @:PRContentGrid("@ViewBag.PartIDs", 0, 0,"","");
                                                                                             if (ViewBag.ProjectID != 0)
             {
                 @:LoadProject(@ViewBag.ProjectID);
@@ -597,14 +597,14 @@
         }
         else if (ViewBag.TaskIDs != "")
         {
-            @:PRContentGrid("", 0, 0,"@ViewBag.TaskIDs");
+            @:PRContentGrid("", 0, 0,"@ViewBag.TaskIDs","");
                                                                         }
         else if (ViewBag.WarehouseStockID != "") {
             @:PRContentGrid("",0,0,"","@ViewBag.WarehouseStockIDs");
                                                                 }
         else
         {
-            @:PRContentGrid("", 0, 0,"");
+            @:PRContentGrid("", 0, 0,"","","");
                                                                                                 }
         //设置成本中心
         $('#CostCenterID').on('change',function(){
@@ -709,6 +709,8 @@
                 }
             }   
         })
+
+        _wfViewConfig($('#TaskType').val());
     });
 
 
@@ -1023,5 +1025,15 @@
                 }))
             })
         })
+    }
+
+    function _wfViewConfig(type){
+        if(type){
+            $("#PRContentGrid").setGridParam().showHideCol("Operater");
+            $("#PRContentGrid").setGridParam().showHideCol("MachineName");
+        }
+        else{
+            $("#PRContentGrid").setGridParam().showHideCol("BrandName");
+        }
     }
 </script>

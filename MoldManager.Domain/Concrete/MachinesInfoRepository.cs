@@ -125,22 +125,24 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 return true;
             return false;
         }
-        public string GenerateCode(string TaskType)
+        public string GenerateCode(string TaskType, string _FirstLetter="")
         {
-            string _FirstLetter="";
             string _Code = "";
-            if (TaskType.Contains("1") || TaskType.Contains("4"))
-                _FirstLetter = "C";
-            else if (TaskType.Contains("2"))
-                _FirstLetter = "E";
-            else if (TaskType.Contains("3"))
-                _FirstLetter = "W";
-            else if (TaskType.Contains("6"))
-                _FirstLetter = "G";
-            else if (TaskType.Contains("100"))
-                _FirstLetter = "Q";
-            else
-                _FirstLetter = "Oth";
+            if (string.IsNullOrEmpty(_FirstLetter))
+            {
+                if (TaskType.Contains("1") || TaskType.Contains("4"))
+                    _FirstLetter = "C";
+                else if (TaskType.Contains("2"))
+                    _FirstLetter = "E";
+                else if (TaskType.Contains("3"))
+                    _FirstLetter = "W";
+                else if (TaskType.Contains("6"))
+                    _FirstLetter = "G";
+                else if (TaskType.Contains("100"))
+                    _FirstLetter = "Q";
+                else
+                    _FirstLetter = "Oth";
+            }            
             int _maxNum=0;
             int _curNum=0;
              MachinesInfo dbEntry= _context.MachinesInfo.Where(m=>m.MachineCode.Contains(_FirstLetter)).OrderByDescending(m => m.MachineCode).FirstOrDefault();

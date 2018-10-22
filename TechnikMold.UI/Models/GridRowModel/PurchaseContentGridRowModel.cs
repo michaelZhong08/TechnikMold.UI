@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using TechnikSys.MoldManager.Domain.Entity;
 using TechnikSys.MoldManager.Domain.Abstract;
+using TechnikMold.UI.Models.ViewModel;
 
 namespace MoldManager.WebUI.Models.GridRowModel
 {
@@ -39,10 +40,10 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[21] = Part.Memo;
         }
         //外发任务
-        public PurchaseContentGridRowModel(Task Task, IProjectPhaseRepository ProjectPhaseRepository, ISteelCAMDrawingRepository SteelDrawingRepo)
+        public PurchaseContentGridRowModel(Task Task, SetupTaskStart _setuptaskStart, IProjectPhaseRepository ProjectPhaseRepository, ISteelCAMDrawingRepository SteelDrawingRepo)
         {
             int _phaseID = 0;
-            cell = new string[22];
+            cell = new string[25];
             cell[0] = "";
             cell[1] = "0";
             cell[2] = Task.TaskID.ToString();
@@ -62,23 +63,6 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[6] = Task.MoldNumber+"-"+Task.TaskID.ToString();
             //规格
             cell[7] = Task.Raw;
-            //if (Task.TaskType == 4)
-            //{
-            //    SteelCAMDrawing _steeldrawing = SteelDrawingRepo.QueryByFullName(Task.TaskName);
-            //    if (_steeldrawing != null)
-            //    {
-            //        cell[7] = _steeldrawing.CADPartName;
-            //    }
-            //    else
-            //    {
-            //        cell[7] = "";
-            //    }
-
-            //}
-            //else
-            //{
-            //    cell[7] = Task.Raw;
-            //}
             //材料
             cell[8] = Task.Material;
             //硬度
@@ -91,44 +75,15 @@ namespace MoldManager.WebUI.Models.GridRowModel
             
             cell[14] = "新建";
             cell[15] = "0";
-            //switch (Task.TaskType)
-            //{
-            //    case 1:
-            //        _phaseID = 8;
-            //        break;
-            //    case 2:
-            //        _phaseID = 9;
-            //        break;
-            //    case 3:
-            //        _phaseID = 10;
-            //        break;
-            //    case 4:
-            //        _phaseID = 8;
-            //        break;
-            //    case 6:
-            //        _phaseID = 7;
-            //        break;
-            //    default:
-            //        _phaseID = 8;
-            //        break;
-            //}
-
-            //try
-            //{
-            //    ProjectPhase _phase = ProjectPhaseRepository.GetProjectPhases(Task.ProjectID).Where(p => p.PhaseID == _phaseID).FirstOrDefault();
-            //    cell[16] = _phase.PlanCFinish == new DateTime(1, 1, 1) ? _phase.PlanFinish.ToString("yyyy-MM-dd") :
-            //        _phase.PlanCFinish.ToString("yyyy-MM-dd");
-            //}
-            //catch
-            //{
-            //    cell[16] = "-";
-            //}
             cell[16] = Task.PlanTime.ToString("yyyy-MM-dd");
             cell[17] = Task.MoldNumber;
             cell[18] = "";
             cell[19] = "";
             cell[20] = "";
             cell[21] = Task.Memo;
+            cell[22] = _setuptaskStart.UserName ?? "";
+            cell[23] = _setuptaskStart.MachinesName ?? "";
+            cell[24] = _setuptaskStart.MachinesCode ?? "";
         }
         //库存新增
         public PurchaseContentGridRowModel(WarehouseStock StockItem)

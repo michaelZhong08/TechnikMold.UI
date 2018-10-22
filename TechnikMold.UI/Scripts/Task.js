@@ -79,7 +79,7 @@
                     StartSteelTask();
                     break;
                 default:
-                    SetupTaskStart();
+                    SetupTaskStart('false');
                     //StartTask();
                     break;
             }
@@ -110,11 +110,12 @@
         if (_ids == "") {
             alert("请选择至少一个任务");
         } else {
-            if (confirm("外发选中任务？")) {
-                var _ids = GetMultiSelectedIDs("TaskGrid");
-                Outsource(_ids);
-
-            }
+            //if (confirm("外发选中任务？")) {
+            //    var _ids = GetMultiSelectedIDs("TaskGrid");
+            //    //Outsource(_ids);
+            //}
+            var _ids = GetMultiSelectedIDs("TaskGrid");
+            SetupTaskStart('true')
         }
     })
 
@@ -489,10 +490,19 @@ function TaskListGrind() {
     $("#TaskGrid").setGridParam().showHideCol("ProcessName");//工艺
 }
 
-function SetupTaskStart() {
+function SetupTaskStart(isWF) {
     var _taskIDs= GetMultiSelectedIDs("TaskGrid");
     if (_taskIDs.length > 0) {
+        LoadTaskMInfoList($('#FTaskType').val(), isWF);
         $('#modal_sel_machinesinfo').val('');
+        if (isWF == 'true') {
+            $('#modal_btn_wfTask').show();
+            $('#modal_btn_StartTask').hide();
+        }
+        else {
+            $('#modal_btn_wfTask').hide();
+            $('#modal_btn_StartTask').show();
+        }
         $('#SetTaskStartModal').modal('show');
         var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _taskIDs + '&type=' + 1;
         $("#tb_TaskStart").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
@@ -978,7 +988,7 @@ function SetPriority(TaskIDs, Level) {
     }
 }
 
-function Outsource(ids) {
+function Outsource(ids,itemData) {
     $.ajax({
         dataType: "html",
         url: "/Task/OutSource?TaskIDs=" + ids,
@@ -987,7 +997,12 @@ function Outsource(ids) {
         },
         success: function (msg) {
             if (msg == "") {
-                location.href = "/Purchase/PRDetail?TaskIDs=" + ids + "&MoldNumber=" + $("#MoldSelect").val() + "&TaskType=" + $("#CurrentTaskType").val();
+                $.post('/Purchase/AccsetupTaskData', itemData, function () {
+                    location.href = "/Purchase/PRDetail?TaskIDs=" + ids + "&MoldNumber=" + $("#MoldSelect").val() + "&TaskType=" + $("#CurrentTaskType").val();
+                });               
+                //var _urldata=itemData+"&TaskIDs=" + ids + "&MoldNumber=" + $("#MoldSelect").val() + "&TaskType=" + $("#CurrentTaskType").val();
+                //$.post('/Purchase/AccOutSourceData', _urldata);
+                //location.href = '/Purchase/PRDetail?' + _urldata;
             } else {
                 alert(msg);
                 return false;
@@ -2116,6 +2131,19 @@ function ShowElePDF(taskid) {
 function LoadMInfoList(tasktype) {
     $('#MInfoCodeDL').html('');
     $.get('/Task/Service_Get_MInfoByTaskType?TaskType=' + tasktype, function (res) {
+        var jsonObj = eval(res);
+        $.each(jsonObj, function (i, n) {
+            var ohtml = "<option value='" + n.MachineName + ',' + n.MachineCode + "'></option>";
+            var $ohtml = $(ohtml);
+            $('#MInfoCodeDL').append($ohtml);
+        });
+    })
+}
+
+//isWF true 外发
+function LoadTaskMInfoList(tasktype, isWF) {
+    $('#MInfoCodeDL').html('');
+    $.get('/Task/Service_Get_TaskMInfoByTaskType?TaskType=' + tasktype + '&isWF=' + isWF, function (res) {
         var jsonObj = eval(res);
         $.each(jsonObj, function (i, n) {
             var ohtml = "<option value='" + n.MachineName + ',' + n.MachineCode + "'></option>";

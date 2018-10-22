@@ -709,6 +709,17 @@ function CreatePR(Submit) {
         $("#CreatePR").removeAttr("disabled");
         return false;
     };
+    var _wfFlag = true;
+    //添加外发任务工时记录创建逻辑 michael
+    if ($('#TaskType').val() > 0) {
+        $.get('/Task/Service_Save_wfTaskHour', function (res) {
+            if (res != '') {
+                _wfFlag=false;
+                alert('任务 ' + res+'创建工时记录时失败！')
+            }
+        })
+    }
+    
     if (rowData.length > 0) {
         for (var i = 0; i < rowData.length; i++) {
             var _purchaseDrawing = false;
@@ -743,9 +754,6 @@ function CreatePR(Submit) {
             "&ProjectID=" + $("#ProjectID").val() + "&Memo=" + $("#PRMemo").val() +
             "&SupplierID=" + $("#SupplierID").val() + "&PurchaseType=" + $("#PurchaseType").val() + "&ApprovalERPUserID=" + $("#ApprovalUserID").val() +
             "&wsUserID=" + $("#wsUserID").val();
-        //$.post("/Purchase/PRSave?", PRContents);
-        //location.href = "/Purchase/Index";
-        ////console.log(itemData);
         $.ajax({
             type: "Post",
             dataType: "html",
@@ -768,7 +776,6 @@ function CreatePR(Submit) {
     } else {
         alert("申请单内容不能为空!");
         return false;
-
     }
 }
 

@@ -286,7 +286,7 @@ function TaskStartGrid(_TaskIDs) {
         mtype: "post",
         width: 550,
         colModel: [
-            { label: '任务ID', name: 'TaskID', width: 120, hidden: true },
+            { label: '任务ID', name: 'ID', width: 120, hidden: true },
             { label: '任务名', name: 'TaskName', width: 120 },
             { label: '状态', name: 'State', width: 120 },
             { label: 'MachinesCode', name: 'MachinesCode', width: 120, hidden: true },
@@ -301,7 +301,7 @@ function TaskStartGrid(_TaskIDs) {
     })
 }
 
-//设置外发任务结束
+//设置任务结束
 function WFTaskFinishGrid(_TaskIDs) {
     var _url = "/Task/Service_Json_GetTaskByIDs?TaskIDs=" + _TaskIDs;
     $("#tb_SetupWFTaskHour").jqGrid({
@@ -1025,7 +1025,7 @@ function PRContentGrid(PartIDs, PRID, state, TaskIDs, WHIDs) {
     } else if (TaskIDs != "") {
         //外发任务请购
         _type = 2;
-        _url = "/Purchase/JsonPROutSource?TaskIDs=" + TaskIDs;
+        _url = "/Purchase/JsonPROutSource?TaskIDs=" + TaskIDs ;
     } else if (PRID != 0) {
         //请购明细查询
         _type = 10;
@@ -1055,7 +1055,7 @@ function PRContentGrid(PartIDs, PRID, state, TaskIDs, WHIDs) {
             { label: '材料', name: 'Material', width: 75 },
             { label: '硬度', name: 'Hardness', width: 75 },
             { label: '零件号', name: 'JobNo', width: 75 },
-            { label: '品牌', name: 'BrandName', width: 75 },
+            { label: '品牌', name: 'BrandName', width: 75, hidden: true },
             { label: '供应商', name: "SupplierName", width: 150 },
             { label: '附图', name: 'Drawing', formatter: "checkbox", width: 75 },
 
@@ -1067,6 +1067,9 @@ function PRContentGrid(PartIDs, PRID, state, TaskIDs, WHIDs) {
             { label: "归属部门", name: "CostCenterName" },
             { label: 'ERP料号', name: "ERPPartID", width: 100 },
             { label: '备注', name: 'Memo', width: 150 },
+            { label: '人员', name: 'Operater', width: 150, hidden: true },
+            { label: '设备', name: 'MachineName', width: 150, hidden: true },
+            { label: 'MachineCode', name: 'MachineCode', width: 150, hidden: true },
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 200,

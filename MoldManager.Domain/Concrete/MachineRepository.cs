@@ -38,6 +38,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.System_3R = Machine.System_3R;
                     _dbEntry.Pallet = Machine.Pallet;
                     _dbEntry.SystemType = Machine.SystemType;
+                    _dbEntry.MachineCode = Machine.MachineCode;
                 }
             }
             _context.SaveChanges();

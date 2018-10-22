@@ -21,6 +21,7 @@ using System.Data;
 using System.Configuration;
 using TechnikSys.MoldManager.UI.Models.ViewModel;
 using TechnikMold.UI.Models;
+using TechnikMold.UI.Models.ViewModel;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -193,7 +194,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="ProjectID"></param>
         /// <param name="PartIDs"></param>
         /// <returns></returns>
-        public ActionResult PRDetail(int PurchaseRequestID = 0,
+        public ActionResult PRDetail(int PurchaseRequestID = 0,//List<SetupTaskStart> _viewmodel,
             string MoldNumber = "",
             string PartIDs = "",
             string TaskIDs = "",
@@ -222,6 +223,13 @@ namespace MoldManager.WebUI.Controllers
                 ViewBag.ApprovalUserName = ApprolUser.FullName ?? "";
                 User CreUser = _userRepository.Users.Where(u => u.UserID == _request.UserID).FirstOrDefault() ?? new User();
                 ViewBag.CreUserName = CreUser.FullName ?? "";
+                //外发申请单 页面添加外发类型
+                PRContent _prcontent = _prContentRepository.QueryByRequestID(PurchaseRequestID).FirstOrDefault() ?? new PRContent();
+                if (_prcontent.TaskID > 0)
+                {
+                    Task _task = _taskRepository.QueryByTaskID(_prcontent.TaskID);
+                    ViewBag.TaskType = _task.TaskType;
+                }
                 try
                 {
                     PurchaseType _purchaseType = _purchaseTypeRepository.QueryByID(_request.PurchaseType);
@@ -232,8 +240,7 @@ namespace MoldManager.WebUI.Controllers
                 {
                     ViewBag.PurchaseTypeID = 0;
                     ViewBag.PurchaseType = "";
-                }
-
+                }                
                 return View(_request);
             }
             #endregion
@@ -268,6 +275,9 @@ namespace MoldManager.WebUI.Controllers
                     ViewBag.PartIDs = "";
                     ViewBag.TaskIDs = TaskIDs;
                     ViewBag.WarehouseStockIDs = "";
+                    //ViewBag.setupTaskModel = _viewmodel;
+                    //if(_viewmodel.Count>0)
+                        //Session["setupTask"] = _viewmodel;
                 }
                 #endregion
                 return View();
@@ -297,10 +307,24 @@ namespace MoldManager.WebUI.Controllers
             }
             #endregion
         }
-
-
-
-
+        /// <summary>
+        /// 接收外发任务机器、人员等信息 并设置到Session
+        /// </summary>
+        /// <param name="_viewmodel"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public string AccsetupTaskData(List<SetupTaskStart> _viewmodel)
+        {
+            if (Session["setupTask"] == null)
+                Session["setupTask"] = null;
+            if (_viewmodel.Count > 0)
+                Session["setupTask"] = _viewmodel;
+            return "";
+        }
+        //public ActionResult AccOutSourceData(List<SetupTaskStart> _viewmodel, string MoldNumber, string TaskIDs = "")
+        //{
+        //    return RedirectToAction("PRDetail", "Purchase", new { _viewmodel = _viewmodel, MoldNumber = MoldNumber, TaskIDs = TaskIDs });
+        //}
         ///// <summary>
         ///// Display the Quotation input page
         ///// </summary>
@@ -880,6 +904,11 @@ namespace MoldManager.WebUI.Controllers
 
         public JsonResult JsonPROutSource(string TaskIDs)
         {
+            List<SetupTaskStart> _viewmodel=new List<SetupTaskStart>();
+            if (Session["setupTask"] != null)
+            {
+                _viewmodel = Session["setupTask"] as List<SetupTaskStart>;
+            }
             if (TaskIDs != "")
             {
                 string[] _taskId = TaskIDs.Split(',');
@@ -894,10 +923,8 @@ namespace MoldManager.WebUI.Controllers
                 {
                     _task.Memo = GetOutSourceMemo(_task);
                 }
-                PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_taskList, _projectPhaseRepository, _steelDrawingRepository);
-
-
-                return Json(_model, JsonRequestBehavior.AllowGet);
+                PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_taskList, _viewmodel, _projectPhaseRepository, _steelDrawingRepository,_taskRepository );
+               return Json(_model, JsonRequestBehavior.AllowGet);
             }
             else
             {
@@ -907,7 +934,7 @@ namespace MoldManager.WebUI.Controllers
 
         public JsonResult JsonPRWarehouseStock(string WarehouseStockIDs)
         {
-            if (WarehouseStockIDs != "")
+            if (!string.IsNullOrEmpty(WarehouseStockIDs) && WarehouseStockIDs!="undefined")
             {
                 string[] _whId = WarehouseStockIDs.Split(',');
                 List<WarehouseStock> _stockItems = new List<WarehouseStock>();
@@ -2495,7 +2522,8 @@ namespace MoldManager.WebUI.Controllers
                 }
                 else
                 {
-                    _types = _purchaseTypeRepository.PurchaseTypes.Where(p => p.ParentTypeID > 0).ToList();
+                    //默认类型 去掉委外加工
+                    _types = _purchaseTypeRepository.PurchaseTypes.Where(p => p.ParentTypeID > 0 && p.ParentTypeID!= 3).ToList();
                 }
 
             }

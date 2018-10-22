@@ -6,6 +6,7 @@ using TechnikSys.MoldManager.Domain.Entity;
 using MoldManager.WebUI.Models.GridRowModel;
 using TechnikSys.MoldManager.Domain.Abstract;
 using TechnikSys.MoldManager.Domain.Status;
+using TechnikMold.UI.Models.ViewModel;
 
 namespace MoldManager.WebUI.Models.GridViewModel
 {
@@ -31,13 +32,18 @@ namespace MoldManager.WebUI.Models.GridViewModel
             Records = 500;
         }
 
-        public PurchaseContentGridViewModel(IEnumerable<Task> Tasks, 
+        public PurchaseContentGridViewModel(IEnumerable<Task> Tasks,
+            List<SetupTaskStart> _viewmodel,
             IProjectPhaseRepository ProjectPhaseRepository, 
-            ISteelCAMDrawingRepository SteelDrawingRepo)
+            ISteelCAMDrawingRepository SteelDrawingRepo,
+            ITaskRepository TaskRepository
+            )
         {
             rows = new List<PurchaseContentGridRowModel>();
-            foreach (Task _task in Tasks){
-                rows.Add(new PurchaseContentGridRowModel(_task, ProjectPhaseRepository, SteelDrawingRepo));
+            foreach (var m in _viewmodel)
+            {
+                Task _task = TaskRepository.QueryByTaskID(m.TaskID) ?? new Task();
+                rows.Add(new PurchaseContentGridRowModel(_task, m, ProjectPhaseRepository, SteelDrawingRepo));
             }
             Page=1;
             Total=Tasks.Count();

@@ -16,7 +16,7 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         MachinesInfo GetMInfoByKeyWord(string KeyWord);
         string CheckExistMachinesInfo(MachinesInfo model);
         int IsNullMachinesInfo(MachinesInfo model);
-        string GenerateCode(string TaskType);
+        string GenerateCode(string TaskType, string _FirstLetter = "");
         List<MachinesInfo> GetMInfoByTaskType(int TaskType);
     }
 }

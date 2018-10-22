@@ -360,6 +360,7 @@
     <Content Include="App_Start\Content\ui.jqgrid-bootstrap-ui.css" />
     <Content Include="App_Start\Content\ui.jqgrid-bootstrap.css" />
     <Content Include="App_Start\Content\ui.jqgrid.css" />
+    <Content Include="Content\bootstrap-switch.css" />
     <Content Include="Content\bootstrap-treeview.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
@@ -406,6 +407,7 @@
     <Content Include="Scripts\ai.0.22.9-build00167.js" />
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\bootstrap-datepicker.js" />
+    <Content Include="Scripts\bootstrap-switch.js" />
     <Content Include="Scripts\bootstrap-treeview.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

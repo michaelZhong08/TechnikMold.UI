@@ -267,7 +267,12 @@ namespace MoldManager.WebUI.Controllers
             try
             {
                 if (string.IsNullOrEmpty(model.MachineCode) && !string.IsNullOrEmpty(model.TaskType))
-                    model.MachineCode = _machinesinfoRepository.GenerateCode(model.TaskType);
+                {
+                    string _firstletter = "";
+                    if (model.EquipBrand == "委外")
+                        _firstletter = "Y";
+                    model.MachineCode = _machinesinfoRepository.GenerateCode(model.TaskType, _firstletter);
+                }                    
                 if (_machinesinfoRepository.IsNullMachinesInfo(model) < 0)
                     return Json(new { Code = -1, Message = "关键信息(名称/工艺)不能为空！" });
                 int r = _machinesinfoRepository.Save(model);
