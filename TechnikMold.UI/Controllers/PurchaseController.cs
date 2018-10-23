@@ -527,33 +527,6 @@ namespace MoldManager.WebUI.Controllers
                     _taskRepository.OutSource(_content.TaskID);
                     Task _task = _taskRepository.QueryByTaskID(_content.TaskID);
                     DateTime _iniTime = DateTime.Parse("1900/1/1");
-                    try
-                    {
-                        TaskHour _taskhour = new TaskHour();
-                        _taskhour.TaskID = _task.TaskID;
-                        _taskhour.Enabled = true;
-                        _taskhour.StartTime = DateTime.Now;
-                        _taskhour.FinishTime = _iniTime;
-                        _taskhour.TaskType = _task.TaskType;
-                        _taskhour.MoldNumber = _task.MoldNumber;
-                        _taskhour.Time = 0;
-                        _taskhour.RecordType = 2; //外发任务工时记录
-                        _taskhour.State = (int)TaskHourStatus.外发;
-                        try
-                        {
-                            User _user = _userRepository.GetUserByID(wsUserID) ?? new User();
-                            _taskhour.Operater = _user.FullName;
-                            Supplier _supplier = _supplierRepository.QueryByID(SupplierID) ?? new Supplier();
-                            _taskhour.MachineCode = _supplier.MachineCode ?? "";
-                        }
-                        catch { }                        
-                        _taskhour.Memo = "记录创建于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + GetCurrentUser() + "/r/n";
-                        _taskHourRepository.Save(_taskhour);
-                    }
-                    catch (Exception ex)
-                    {
-                        
-                    }
                     #endregion
                 }
                 if (_content.PartID > 0)

@@ -670,6 +670,8 @@ function ExportExcelForPurchase() {
 
 }
 //Store all the grid data to PRContent and send it to controller
+
+//TODO: 保存PR单
 function CreatePR(Submit) {
     var PRContents = new Object();
     //if ($("#MoldNumber").val() != "") {
