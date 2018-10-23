@@ -309,21 +309,39 @@ function WFTaskFinishGrid(_TaskIDs) {
         styleUI: 'Bootstrap',
         datatype: "json",
         mtype: "post",
-        width: 550,
+        width: 420,
         colModel: [
-            { label: '任务ID', name: 'ID', width: 120, hidden: true },
+            { label: '任务ID', name: 'ID', width: 30, hidden: true },
             { label: '任务名', name: 'TaskName', width: 120 },
-            { label: '状态', name: 'State', width: 120 },
-            { label: 'MachinesCode', name: 'MachinesCode', width: 120, hidden: true },
+            { label: '状态', name: 'State', width: 60 },
+            { label: 'MachinesCode', name: 'MachinesCode', width: 30, hidden: true },
             { label: '机器', name: 'MachinesName', width: 120, hidden: true },
-            { label: '人员', name: 'UserName', width: 120 },
-            { label: 'wsUserID', name: 'UserID', width: 120, hidden: true },
-            { label: '加工时间(min)', name: 'TotalTime', width: 120, formatter: 'number', editable: true }
+            { label: '人员', name: 'UserName', width: 60 },
+            { label: 'wsUserID', name: 'UserID', width: 60, hidden: true },
+            { label: '加工时间(min)', name: 'TotalTime', width: 100, formatter: 'number', editable: true, }
         ],
         cellEdit: true,
         autoScroll: true,
         //multiselect: true,
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
+        onCellSelect: function (rowid, iCol, cellcontent, event) {
+            //列 TotalTime
+            if (iCol == 7) {
+                var rowState = $("#tb_SetupWFTaskHour").getCell(rowid, "State");
+                if (rowState == '外发') {
+                    $("#tb_SetupWFTaskHour").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                }
+                else {
+                    //加工时间为0 时可以编辑
+                    cellcontent = Number(cellcontent);
+                    if (cellcontent > 0) {
+                        $("#tb_SetupWFTaskHour").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+                    } else {
+                        $("#tb_SetupWFTaskHour").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                    }
+                }
+            }           
+        },
     })
 }
 //零件列表
@@ -1065,7 +1083,7 @@ function PRContentGrid(PartIDs, PRID, state, TaskIDs, WHIDs) {
             { label: "", name: "MoldNumber", hidden: true },
             { label: "", name: "CostCenterID", hidden: true },
             { label: "归属部门", name: "CostCenterName" },
-            { label: 'ERP料号', name: "ERPPartID", width: 100 },
+            { label: 'ERP料号', name: "ERPPartID", width: 100, hidden: true },
             { label: '备注', name: 'Memo', width: 150 },
             { label: '人员', name: 'Operater', width: 150, hidden: true },
             { label: '设备', name: 'MachineName', width: 150, hidden: true },
@@ -1366,7 +1384,7 @@ function SupplierGrid(Mode) {
         viewrecords: true,
         height: document.documentElement.clientHeight - 250,
         width: document.body.clientWidth * 0.875,
-        multiselect: true,
+        //multiselect: true,
         rowNum: 500,
         loadonce: true,
         ondblClickRow: function (iRow) {

@@ -53,6 +53,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     entity.ReleaseDate = DateTime.Parse("1900/1/1");
                     entity.DeleteDate = DateTime.Parse("1900/1/1");
                     entity.active = true;
+                    entity.State = (int)MGSettingStatus.新建;
                     _context.MGSettings.Add(entity);
                 }
                 #endregion
@@ -71,6 +72,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbentity.Rev = entity.Rev;
                     _dbentity.RawSize = entity.RawSize;
                     _dbentity.MoldName = entity.MoldName;
+                    _dbentity.State = entity.State;
                 }
                 #endregion
                 _context.SaveChanges();
@@ -122,6 +124,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 dbentity.ReleaseFlag = true;
                 dbentity.ReleaseDate = DateTime.Now;
                 dbentity.ReleaseBy = ReleaseBy;
+                dbentity.State = (int)MGSettingStatus.已发布但任务未发布;
                 #endregion
                 MGTypeName typename = _context.MGTypeNames.Where(m => m.ID == dbentity.ProcessType).FirstOrDefault() ?? new MGTypeName();
                 WarehouseRecord whrecord = _context.WarehouseRecords.Where(w => w.Name == dbentity.ItemNO).Where(w => w.Quantity > 0).FirstOrDefault() ?? new WarehouseRecord();
@@ -245,7 +248,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public bool IsMGTaskReleasedByName(string TaskName)
         {
             DateTime IntialTime = DateTime.Parse("1900/1/1");
-            Task mgTask = _context.Tasks.Where(t => t.TaskType == 6 && t.Enabled == true && t.TaskName == TaskName && t.ReleaseTime > IntialTime).FirstOrDefault() ?? new Task();
+            Task mgTask = _context.Tasks.Where(t => t.TaskType == 6 && t.Enabled == true && t.TaskName == TaskName && t.State!=-99).FirstOrDefault() ?? new Task();
             if (mgTask.TaskID > 0)
                 return true;
             return false;

@@ -229,6 +229,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             Task _task = QueryByTaskID(TaskID);
             _task.State = (int)CNCStatus.外发;
+            _task.StartTime = DateTime.Now;
             //if (_task.TaskType == 1)
             //{
             //    _task.State = (int)CNCStatus.外发;

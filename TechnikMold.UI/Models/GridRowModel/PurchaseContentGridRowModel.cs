@@ -70,7 +70,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //零件号
             cell[10]= Task.TaskID.ToString();
             cell[11] = "";
-            cell[12] = "";
+            cell[12] = _setuptaskStart.MachinesName ?? "";
             cell[13] = "true";
             
             cell[14] = "新建";

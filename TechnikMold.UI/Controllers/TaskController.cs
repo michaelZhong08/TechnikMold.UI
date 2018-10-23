@@ -1027,6 +1027,16 @@ namespace MoldManager.WebUI.Controllers
                         return 13;
                     }
                     #region Release Task
+                    //铣铁任务 发布 更新MGsetting State
+                    if (_task.TaskType == 4)
+                    {
+                        MGSetting _mgsetting = _mgSettingRepository.QueryByTaskID(_task.TaskID);
+                        if (_mgsetting != null)
+                        {
+                            _mgsetting.State = (int)MGSettingStatus.任务发布;
+                            _mgSettingRepository.Save(_mgsetting);
+                        }
+                    }
                     _taskRepository.Release(Convert.ToInt32(_taskIDs[i]));
                     #endregion
                     #region Create CNCItems
@@ -5712,6 +5722,7 @@ namespace MoldManager.WebUI.Controllers
                                 dbMaxVer = _taskRepository.GetMaxVerMGTask(_duptask.TaskName,i);
                                 _duptask.DrawingFile = t.DrawingFile ?? "";
                                 _duptask.CreateTime = DateTime.Now;
+                                _duptask.ReleaseTime = DateTime.Now;
                                 _duptask.Creator = (_userRepository.GetUserByName(FullName ?? "")??new User()).UserID;
                                 _duptask.Version = dbMaxVer + 1;//////
                                 _duptask.ProcessName = i == 1 ? "铣床" : "磨床";
@@ -5730,6 +5741,7 @@ namespace MoldManager.WebUI.Controllers
                             dbMaxVer = _taskRepository.GetMaxVerMGTask(_duptask.TaskName,type);
                             _duptask.DrawingFile = t.DrawingFile ?? "";
                             _duptask.CreateTime = DateTime.Now;
+                            _duptask.ReleaseTime = DateTime.Now;
                             _duptask.Creator = (_userRepository.GetUserByName(FullName ?? "") ?? new User()).UserID;
                             _duptask.Version = dbMaxVer + 1;//////
                             _duptask.ProcessName = type == 1 ? "铣床" : type == 2 ? "磨床" : "车";
@@ -5824,7 +5836,8 @@ namespace MoldManager.WebUI.Controllers
                     _taskhour.Enabled = false;
                     _taskhour.State = (int)TaskHourStatus.完成;
                     _taskhour.Operater = _operater;
-                    if (Time > 0)
+                    //外发
+                    if (_taskhour.RecordType == 2)
                         _taskhour.Time = Time;
                     _taskhour.Memo=_taskhour.Memo+ " 记录结束于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + (string.IsNullOrEmpty(djUserName) ? GetCurrentUser() : djUserName) + "/r/n";
                     _taskHourRepository.Save(_taskhour);

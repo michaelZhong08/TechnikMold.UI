@@ -70,13 +70,13 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     dbentry.FinishTime = model.FinishTime;
                     timeSpan = dbentry.FinishTime - dbentry.StartTime;
                     //正常结束
-                    if (model.Time == 0)
+                    if (dbentry.RecordType==2)
                     {
-                        dbentry.Time = Convert.ToDecimal(timeSpan.TotalMinutes);
+                        dbentry.Time = model.Time;                        
                     }
                     //外发结束
                     else
-                        dbentry.Time = model.Time;
+                        dbentry.Time = Convert.ToDecimal(timeSpan.TotalMinutes);
                     dbentry.MachineCode = model.MachineCode;
                     dbentry.Enabled = model.Enabled;
                     dbentry.RecordType = model.RecordType;                   

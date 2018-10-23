@@ -31,9 +31,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public string CreateBy { get; set; }
         public DateTime CreateDate { get; set; }
         public bool active { get; set; }
-        //public MGSetting()
-        //{
-
-        //}
+        //State -100 新建 -99 已发布但任务未发布  0 生成任务
+        public int State { get; set; }
     }
 }

@@ -58,6 +58,7 @@ namespace MoldManager.WebUI.Controllers
         private ICostCenterRepository _costCenterRepository;
         private IPartListRepository _partListRepository;
         private ITaskHourRepository _taskHourRepository;
+        private IMachinesInfoRepository _machinesinfoRepository;
         #endregion
         #region 构造
         public PurchaseController(IPartRepository PartRepository,
@@ -88,7 +89,8 @@ namespace MoldManager.WebUI.Controllers
             IBrandRepository BrandRepository,
             ICostCenterRepository CostCenterRepository,
             IPartListRepository partListRepository,
-            ITaskHourRepository taskHourRepository)
+            ITaskHourRepository taskHourRepository,
+            IMachinesInfoRepository MachinesInfoRepository)
         {
             _partRepository = PartRepository;
             _prContentRepository = PRContentRepository;
@@ -120,6 +122,7 @@ namespace MoldManager.WebUI.Controllers
             _partListRepository = partListRepository;
             _status = new PurchaseRequestStatus();
             _taskHourRepository = taskHourRepository;
+            _machinesinfoRepository = MachinesInfoRepository;
         }
         #endregion
 
@@ -727,6 +730,19 @@ namespace MoldManager.WebUI.Controllers
         [HttpPost]
         public ActionResult Supplier(Supplier Supplier)
         {
+            #region 更新设备信息
+            if (Supplier.SupplierID > 0)
+            {
+                //未更新的设备名
+                string _name = _supplierRepository.QueryByID(Supplier.SupplierID).Name;
+                MachinesInfo _machinesinfo = _machinesinfoRepository.GetMInfoByName(_name);
+                if (!string.IsNullOrEmpty(_machinesinfo.MachineCode))
+                {
+                    _machinesinfo.MachineName = Supplier.Name;
+                    _machinesinfoRepository.Save(_machinesinfo);
+                }
+            }            
+            #endregion
             int id = _supplierRepository.Save(Supplier);
             return RedirectToAction("Suppliers", "Purchase");
         }
@@ -1316,6 +1332,14 @@ namespace MoldManager.WebUI.Controllers
             string msg = "";
             int _prCount = _purchaseRequestRepository.PurchaseRequests.Where(p => p.SupplierID == SupplierID).Count();
             int _poCount = _purchaseOrderRepository.PurchaseOrders.Where(p => p.SupplierID == SupplierID).Count();
+            #region chk 设备信息表
+            Supplier _supplier = _supplierRepository.QueryByID(SupplierID);
+            MachinesInfo _machinesinfo = _machinesinfoRepository.MachinesInfo.Where(m =>m.IsActive==true && m.MachineName == _supplier.Name).FirstOrDefault();
+            if (_machinesinfo != null)
+            {
+                msg = "系统中存在设备——" + _machinesinfo.MachineName + ";请先删除设备！";
+            }
+            #endregion
             if (_prCount + _poCount == 0)
             {
                 _supplierRepository.Delete(SupplierID);
@@ -1323,7 +1347,7 @@ namespace MoldManager.WebUI.Controllers
             }
             else
             {
-                msg = "系统中有该供应商相关订单记录，无法删除供应商";
+                msg = msg+ "系统中有该供应商相关订单记录，无法删除供应商";
             }
             return msg;
         }

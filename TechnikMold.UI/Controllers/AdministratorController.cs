@@ -253,7 +253,12 @@ namespace MoldManager.WebUI.Controllers
             try
             {
                 if (!string.IsNullOrEmpty(KeyWord))
-                    _machinesInfos = _machinesInfos.Where(m => m.MachineCode.ToUpper().Contains(KeyWord.ToUpper()) || m.MachineName.ToUpper().Contains(KeyWord.ToUpper()) || m.EquipBrand.ToUpper().Contains(KeyWord.ToUpper())).ToList();
+                {
+                    _machinesInfos = _machinesInfos.Where(m => m.MachineCode.Contains(KeyWord)).ToList();
+                                     //.Union(_machinesInfos.Where(m => m.MachineName.Contains(KeyWord)))
+                                     //.Union(_machinesInfos.Where(m => m.EquipBrand.Contains(KeyWord))).ToList();
+                }
+                    
             }
             catch { }
             if (_machinesInfos == null)

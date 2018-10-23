@@ -350,6 +350,7 @@
     <Compile Include="Status\CNCStatus.cs" />
     <Compile Include="Status\EDMStatus.cs" />
     <Compile Include="Status\GrindStatus.cs" />
+    <Compile Include="Status\MGSettingStatus.cs" />
     <Compile Include="Status\PurchaseItemStatus.cs" />
     <Compile Include="Status\PurchaseStatus.cs" />
     <Compile Include="Status\QCEleStatus.cs" />

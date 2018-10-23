@@ -352,7 +352,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" id="modal_btn_FinishTask"><span class="glyphicon glyphicon glyphicon-off"></span> 结束任务</button>
+                <button type="button" class="btn btn-primary" id="modal_btn_FinishTask"><span class="glyphicon glyphicon glyphicon-off"></span> 结束任务</button>
             </div>
         </div>
     </div>
@@ -560,6 +560,7 @@
              }
              else{
                  $('#tb_SetupWFTaskHour').jqGrid("clearGridData");
+                 $("#tb_SetupWFTaskHour").setGridParam().showHideCol("MachinesName");
                  $('#SetupWFTaskHourModal').modal('show');
                  var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _jgIDs + '&type=' + 2;
                  $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
@@ -614,15 +615,20 @@
              //    $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
              //    alert(msg+'——任务结束失败！');
              //} 
-             if (confirm("确认将选中任务设为结束？")) {
+             if (confirm("确认结束任务？")) {
                  var itemData=compactTSObj(2,'_viewmodel');
-                 $.get('/Task/SetWFTaskFinish',itemData,function(res){
-                     if(res=='')
-                         alert('结束成功！');
-                     else{
-                         alert('以下任务:'+res+'没有正常结束！');
-                     }
-                 }) 
+                 if(itemData!='' && itemData!=undefined){
+                     $.get('/Task/SetWFTaskFinish',itemData,function(res){
+                         if(res==''){
+                             alert('结束成功！');
+                             $('#SetupWFTaskHourModal').modal('hide');
+                             location.reload();
+                         }                            
+                         else{
+                             alert('任务:'+res+'没有正常结束！');
+                         }
+                     }) 
+                 }                
              }              
          })
 
@@ -746,18 +752,20 @@
 
     //type 1 开始加工 2 结束加工
      function compactTSObj(type,name){
+         var _tbname;
+         if(type==1){
+             _tbname= 'tb_TaskStart';
+         }
+         else{
+             _tbname= 'tb_SetupWFTaskHour';
+         }
          //获取第2行(除表头)第2个单元格(第一个默认隐藏)
-         var firsttdobj= $('#tb_TaskStart td:eq(8)');
+         var firsttdobj= $('#'+_tbname+' td:eq(8)');
          //模拟单元格点击事件
          firsttdobj.trigger("click");
          var data;
          var itemData='';
-         if(type==1){
-             data= $('#tb_TaskStart').jqGrid('getRowData');
-         }
-         else{
-             data= $('#tb_SetupWFTaskHour').jqGrid('getRowData');
-         }
+         data= $('#'+_tbname).jqGrid('getRowData');
          for(var i=0;i<data.length;i++){
              var rowData =data[i];
              if(type==1){
