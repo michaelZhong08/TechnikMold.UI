@@ -5,7 +5,8 @@ using System.Web;
 using TechnikSys.MoldManager.Domain.Entity;
 using MoldManager.WebUI.Models.GridRowModel;
 using TechnikSys.MoldManager.Domain.Abstract;
-
+using TechnikMold.UI.Models.ViewModel;
+using TechnikSys.MoldManager.Domain.Status;
 
 namespace MoldManager.WebUI.Models.GridViewModel
 {
@@ -80,8 +81,20 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 {
                     TaskHour = 0;
                 }
-                string Operater = TaskHourRepository.GetOperaterByTaskID(_task.TaskID);           
-                rows.Add( new TaskGridRowModel(_task, _cad, _cam, _workshop, _qc, CAMDrawingPath, _planDate, TaskHour, Operater, _machinfo,wedmsetting,mgsetting));
+                string _machineCode = TaskHourRepository.GetMachineByTask(_task.TaskID) ?? "";
+                string Operater = TaskHourRepository.GetOperaterByTaskID(_task.TaskID) ?? "";
+                SetupTaskStart _setupTask = new SetupTaskStart
+                {
+                    TaskID = _task.TaskID,
+                    TaskName = _task.TaskName,
+                    State = Enum.GetName(typeof(CNCStatus), _task.State),
+                    MachinesCode = "",
+                    MachinesName = _machineCode,
+                    TotalTime = TaskHour,
+                    UserID = 0,
+                    UserName = Operater,
+                };
+                rows.Add( new TaskGridRowModel(_task, _cad, _cam, _workshop, _qc, CAMDrawingPath, _planDate, _setupTask, _machinfo,wedmsetting,mgsetting));
             }
         }
 

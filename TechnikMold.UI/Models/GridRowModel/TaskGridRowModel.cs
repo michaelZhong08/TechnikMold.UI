@@ -5,6 +5,7 @@ using System.Web;
 using TechnikSys.MoldManager.Domain.Entity;
 using MoldManager.WebUI.Models.Helpers;
 using TechnikSys.MoldManager.Domain.Status;
+using TechnikMold.UI.Models.ViewModel;
 
 namespace MoldManager.WebUI.Models.GridRowModel
 {
@@ -12,7 +13,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
     {
         public string[] cell;
         string _dateVal = "";
-        public TaskGridRowModel(Task Task, string CAD, string CAM, string Workshop, string QC, string FilePath, string PlanDate,decimal TaskHour,string Operater, CNCMachInfo Machinfo,WEDMSetting wedmsetting,MGSetting mgsetting)
+        public TaskGridRowModel(Task Task, string CAD, string CAM, string Workshop, string QC, string FilePath, string PlanDate, SetupTaskStart _setupTask, CNCMachInfo Machinfo,WEDMSetting wedmsetting,MGSetting mgsetting)
         {
             TaskStatus _status = new TaskStatus();
             cell = new string[42];
@@ -137,7 +138,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //工艺
             cell[25] = Task.ProcessName;
             //实际工时
-            cell[26] = TaskHour.ToString();
+            cell[26] = _setupTask.TotalTime.ToString();
             //优先
             cell[27] = Task.Priority.ToString();
 
@@ -173,9 +174,9 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //加工人员FullName
             cell[39] = Workshop;
             //机器号
-            cell[40] = "";
+            cell[40] = _setupTask.MachinesName;
             //操作人员
-            cell[41] = Operater;
+            cell[41] = _setupTask.UserName;
         }
     }
 }

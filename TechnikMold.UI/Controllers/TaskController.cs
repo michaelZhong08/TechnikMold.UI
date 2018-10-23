@@ -2318,20 +2318,30 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="TaskID">任务ID</param>
         /// <param name="Time">工时</param>
         /// <returns></returns>
-        public string SetWFTaskFinish(int TaskID,decimal Time=0)
+        public string SetWFTaskFinish(List<SetupTaskStart> _viewmodel)
         {
             string msg = "";
-            try
+            if (_viewmodel!=null && _viewmodel.Count > 0)
             {
-                #region 工时结束
-                EndTaskHour(TaskID, Time);
-                #endregion
-                _taskRepository.Finish(TaskID, GetCurrentUser());
-            }
-            catch
-            {
-                Task _task = _taskRepository.QueryByTaskID(TaskID);
-                msg = _task.TaskName;
+                foreach (var t in _viewmodel)
+                {
+                    try
+                    {
+                        decimal _time = 0;
+                        if (t.State == "外发")
+                            _time = t.TotalTime;
+                        #region 工时结束
+                        EndTaskHour(t.TaskID, _time);
+                        #endregion
+                        //FinishBy 暂时记录当前系统用户
+                        _taskRepository.Finish(t.TaskID, GetCurrentUser());
+                    }
+                    catch
+                    {
+                        Task _task = _taskRepository.QueryByTaskID(t.TaskID);
+                        msg = _task.TaskName;
+                    }
+                }
             }
             return msg;
         }
@@ -4052,7 +4062,7 @@ namespace MoldManager.WebUI.Controllers
         {
             try
             {
-                List<Task> _tasks = new List<Task>();
+                List<SetupTaskStart> _setupTasks = new List<SetupTaskStart>();
                 List<int> _typelists = new List<int>();
                 switch (type)
                 {
@@ -4068,23 +4078,58 @@ namespace MoldManager.WebUI.Controllers
                 }
                 if (TaskIDs != null)
                 {
+                    #region region
                     if (TaskIDs.IndexOf(',') > 0)
                     {
                         string[] _taskids = TaskIDs.Split(',');
                         foreach (var _tid in _taskids)                            
-                        {
-                            var _task = _taskRepository.QueryByTaskID(Convert.ToInt32(_tid));
+                        {                            
+                            var _task= _taskRepository.QueryByTaskID(Convert.ToInt32(_tid));
+                            var _setuptask = _taskHourRepository.GetCurTHByTaskID(Convert.ToInt32(_tid)) ?? new TaskHour();
+                            decimal _totalTime = 0;
+                            if (_task.State == (int)CNCStatus.正在加工)
+                            {
+                                _totalTime = _taskHourRepository.GetTotalHourByTaskID(Convert.ToInt32(_tid));
+                            }
+                            SetupTaskStart _setupTask = new SetupTaskStart() {
+                                TaskID = _task.TaskID,
+                                TaskName = _task.TaskName,
+                                State = Enum.GetName(typeof(CNCStatus), _task.State),
+                                MachinesCode = _setuptask.MachineCode??"",
+                                MachinesName = _taskHourRepository.GetMachineByTask(Convert.ToInt32(_tid))??"",
+                                UserID = (_userRepository.GetUserByName(_setuptask.Operater)??new User()).UserID,
+                                UserName = _setuptask.Operater??"",
+                                TotalTime=_totalTime
+                            };
                             if (_typelists.Contains(_task.State))
-                                _tasks.Add(_task);
+                                _setupTasks.Add(_setupTask);
                         }
                     }
                     else
                     {
                         var _task = _taskRepository.QueryByTaskID(Convert.ToInt32(TaskIDs));
+                        var _setuptask = _taskHourRepository.GetCurTHByTaskID(Convert.ToInt32(TaskIDs)) ?? new TaskHour();
+                        decimal _totalTime = 0;
+                        if (_task.State == (int)CNCStatus.正在加工)
+                        {
+                            _totalTime = _taskHourRepository.GetTotalHourByTaskID(Convert.ToInt32(TaskIDs));
+                        }
+                        SetupTaskStart _setupTask = new SetupTaskStart()
+                        {
+                            TaskID = _task.TaskID,
+                            TaskName = _task.TaskName,
+                            State = Enum.GetName(typeof(CNCStatus), _task.State),
+                            MachinesCode = _setuptask.MachineCode ?? "",
+                            MachinesName = _taskHourRepository.GetMachineByTask(Convert.ToInt32(TaskIDs)) ?? "",
+                            UserID = (_userRepository.GetUserByName(_setuptask.Operater) ?? new User()).UserID,
+                            UserName = _setuptask.Operater ?? "",
+                            TotalTime = _totalTime
+                        };
                         if (_typelists.Contains(_task.State))
-                            _tasks.Add(_task);
-                    }                       
-                    SetupTaskGridViewModel _viewmodel = new SetupTaskGridViewModel(_tasks);
+                            _setupTasks.Add(_setupTask);
+                    }
+                    #endregion
+                    SetupTaskGridViewModel _viewmodel = new SetupTaskGridViewModel(_setupTasks);
                     return Json(_viewmodel, JsonRequestBehavior.AllowGet);
                 }
             }
@@ -5739,6 +5784,7 @@ namespace MoldManager.WebUI.Controllers
             DateTime _iniTime = DateTime.Parse("1900/1/1");
             try
             {
+                string _operater= wsUserName == "" ? GetCurrentUser() ?? "" : wsUserName;
                 TaskHour _taskhour = new TaskHour();
                 _taskhour.TaskID = _task.TaskID;
                 _taskhour.Enabled = true;
@@ -5749,9 +5795,9 @@ namespace MoldManager.WebUI.Controllers
                 _taskhour.Time = 0;
                 _taskhour.RecordType = RecordType;
                 _taskhour.State = (int)TaskHourStatus.开始;
-                _taskhour.Operater = wsUserName==""?GetCurrentUser() ?? "": wsUserName;
+                _taskhour.Operater = _operater;
                 _taskhour.MachineCode = MachineCode ?? "";
-                _taskhour.Memo = "记录创建于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + GetCurrentUser() + "/r/n";
+                _taskhour.Memo = "记录创建于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + _operater + "/r/n";
                 _taskHourRepository.Save(_taskhour);
             }
             catch (Exception ex)
@@ -5771,14 +5817,16 @@ namespace MoldManager.WebUI.Controllers
             {
                 //当前活动的记录
                 TaskHour _taskhour = _taskHourRepository.GetCurTHByTaskID(TaskID);
+                string _operater = string.IsNullOrEmpty(_taskhour.Operater)? string.IsNullOrEmpty(djUserName)?GetCurrentUser(): djUserName : _taskhour.Operater;
                 if (_taskhour.TaskHourID > 0)
                 {
                     _taskhour.FinishTime = DateTime.Now;
                     _taskhour.Enabled = false;
                     _taskhour.State = (int)TaskHourStatus.完成;
+                    _taskhour.Operater = _operater;
                     if (Time > 0)
                         _taskhour.Time = Time;
-                    _taskhour.Memo=_taskhour.Memo+ " 记录结束于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + GetCurrentUser() + "/r/n";
+                    _taskhour.Memo=_taskhour.Memo+ " 记录结束于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + (string.IsNullOrEmpty(djUserName) ? GetCurrentUser() : djUserName) + "/r/n";
                     _taskHourRepository.Save(_taskhour);
                 }
             }

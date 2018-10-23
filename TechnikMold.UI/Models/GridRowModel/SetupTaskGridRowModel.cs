@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using TechnikMold.UI.Models.ViewModel;
 using TechnikSys.MoldManager.Domain.Entity;
 using TechnikSys.MoldManager.Domain.Status;
 
@@ -10,17 +11,17 @@ namespace TechnikMold.UI.Models.GridRowModel
     public class SetupTaskGridRowModel
     {
         public string[] cell;
-        public SetupTaskGridRowModel(Task _task)
+        public SetupTaskGridRowModel(SetupTaskStart _setupTask)
         {
             cell = new string[8];
-            cell[0] = _task.TaskID.ToString();
-            cell[1] = _task.TaskName.ToString();
-            cell[2] = Enum.GetName(typeof(CNCStatus), _task.State) ?? "-";
-            cell[3] = "";
-            cell[4] = "";
-            cell[5] = "";
-            cell[6] = "";
-            cell[7] = "";
+            cell[0] = _setupTask.TaskID.ToString();
+            cell[1] = _setupTask.TaskName.ToString();
+            cell[2] = _setupTask.State; //Enum.GetName(typeof(CNCStatus), _task.State) ?? "-";
+            cell[3] = _setupTask.MachinesCode;
+            cell[4] = _setupTask.MachinesName;
+            cell[5] = _setupTask.UserName;
+            cell[6] = _setupTask.UserID.ToString();
+            cell[7] = _setupTask.TotalTime.ToString();
         }
     }
 }

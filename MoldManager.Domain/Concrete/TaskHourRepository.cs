@@ -90,7 +90,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
         public TaskHour GetCurTHByTaskID(int TaskID)
         {
-            TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && h.Enabled == true && h.State==(int)TaskHourStatus.开始).FirstOrDefault() ?? new TaskHour();
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && h.Enabled == true && h.State==(int)TaskHourStatus.开始).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
             return _taskhour;
         }
         public decimal GetTotalHourByTaskID(int TaskID)
@@ -112,9 +112,12 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             List<TaskHour> _OpenTHs = _context.TaskHours.Where(h => h.State == (int)TaskHourStatus.开始 && h.TaskID == TaskID).ToList();
             if (_OpenTHs != null)
             {
+                TimeSpan _timespan;
                 foreach(var cth in _OpenTHs)
                 {
-                    OpenTime = OpenTime + cth.Time;
+                    _timespan = DateTime.Now - cth.StartTime;
+                    decimal _time = Convert.ToDecimal(_timespan.TotalMinutes);
+                    OpenTime = OpenTime + _time;
                 }
             }
             #endregion
@@ -129,7 +132,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
         public string GetMachineByTask(int TaskID)
         {
-            var _th = _context.TaskHours.Where(t => t.TaskID == TaskID).FirstOrDefault();
+            var _th = _context.TaskHours.Where(t => t.TaskID == TaskID).OrderByDescending(h=>h.TaskHourID).FirstOrDefault();
             if (_th != null)
             {
                 MachinesInfo _mInfo = _context.MachinesInfo.Where(m => m.MachineCode == _th.MachineCode).FirstOrDefault();

@@ -485,7 +485,7 @@
          $('#modal_btn_StartTask').on('click',function(){
                 
                 var itemData='';
-                itemData=compactTSObj('_setupTS');
+                itemData=compactTSObj(1,'_setupTS');
                 if(itemData==''){
                     return false;
                 }                
@@ -536,76 +536,94 @@
                 }
          })
          //设置加工结束
-         $("#FinishTask").on("click", function () {             
-             if (confirm("确认将选中任务设为结束？")) {
-                 var selr = $('#TaskGrid').jqGrid('getGridParam', 'selarrrow');
-                 var _ids = "";//正在加工 任务
-                 var _wfids='';//外发 任务
-                 var _ycids='';//其它状态 任务
-                 for (var i = 0; i < selr.length; i++) {
-                     var _state=$("#TaskGrid").getCell(selr[i], 'State');
-                     if(_state=='正在加工'){
-                         _ids=addColumnlists(_ids,'TaskGrid',selr[i],'ID');
-                     }
-                     else if(_state=='外发'){
-                         _wfids=addColumnlists(_wfids,'TaskGrid',selr[i],'ID');
-                     }
-                     else{
-                         _ycids=addColumnlists(_ycids,'TaskGrid',selr[i],'TaskName');
-                     }
-                 }
-                 if(_ycids==''){
-                     ////正常加工任务结束
-                     if(_ids!=''&& _wfids=='')
-                         FinishTask(_ids);                    
-                     ////外发任务结束                     
-                     if(_wfids!=''){
-                         //正常任务结束
-                         if(_ids!='')
-                             $.get("/Task/SetTaskFinish?TaskIDs=" + _ids);                         
-                         //外发任务列表
-                         //clear table data
-                         $('#tb_SetupWFTaskHour').jqGrid("clearGridData");
-                         $('#SetupWFTaskHourModal').modal('show');
-                         var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _wfids + '&type=' + 2;
-                         $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
-                     }                     
-                 }
-                 else
-                     alert('以下任务['+_ycids+']尚未开始加工，不允许结束！');
-             }     
-         })
-         //结束外发任务
-         $('#modal_btn_FinishTask').on('click',function(){
-             //获取第2行(除表头)第2个单元格(第一个默认隐藏)
-             var firsttdobj= $('#tb_SetupWFTaskHour td:eq(8)');
-             //模拟单元格点击事件
-             firsttdobj.trigger("click");
-
-             var _rows = $('#tb_SetupWFTaskHour').jqGrid('getRowData');
-             var msg='';
-             var _taskids=GetAllValues('tb_SetupWFTaskHour','ID');
-             for(var i=0;i<_rows.length;i++){
-                 var _taskid=_rows[i].ID;
-                 var _tasktime=_rows[i].TotalTime;
-                 if(_taskid>0){
-                     $.get('/Task/SetWFTaskFinish?TaskID='+_taskid+'&Time='+_tasktime,function(res){
-                         if (res != "") {
-                             msg=msg+res+';';
-                         }                      
-                     })
-                 }
-             }
-             if(msg==''){
-                 location.reload();
-                 $('#SetupWFTaskHourModal').modal('hide');
+         $("#FinishTask").on("click", function () { 
+             //var selr = $('#TaskGrid').jqGrid('getGridParam', 'selarrrow');
+             //var _ids = "";//正在加工 任务
+             //var _wfids='';//外发 任务
+             //var _ycids='';//其它状态 任务
+             //for (var i = 0; i < selr.length; i++) {
+             //    var _state=$("#TaskGrid").getCell(selr[i], 'State');
+             //    if(_state=='正在加工'){
+             //        _ids=addColumnlists(_ids,'TaskGrid',selr[i],'ID');
+             //    }
+             //    else if(_state=='外发'){
+             //        _wfids=addColumnlists(_wfids,'TaskGrid',selr[i],'ID');
+             //    }
+             //    else{
+             //        _ycids=addColumnlists(_ycids,'TaskGrid',selr[i],'TaskName');
+             //    }
+             //}
+             //if(_ycids==''){    
+             var _jgIDs=GetMultiSelectedIDs('TaskGrid');
+             if(_jgIDs==''){
+                 alert('请选择需要结束的任务！');
              }
              else{
-                 //重载表格
-                 var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _taskids + '&type=' + 2;
+                 $('#tb_SetupWFTaskHour').jqGrid("clearGridData");
+                 $('#SetupWFTaskHourModal').modal('show');
+                 var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _jgIDs + '&type=' + 2;
                  $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
-                 alert(msg+'——任务结束失败！');
-             }             
+             }                
+             ////正常加工任务结束
+             //if(_ids!=''&& _wfids=='')
+             //    FinishTask(_ids);                    
+             ////外发任务结束                     
+             //if(_wfids!=''){
+             //    //正常任务结束
+             //    if(_ids!='')
+             //        $.get("/Task/SetTaskFinish?TaskIDs=" + _ids);                         
+             //    //外发任务列表
+             //    //clear table data
+             //    $('#tb_SetupWFTaskHour').jqGrid("clearGridData");
+             //    $('#SetupWFTaskHourModal').modal('show');
+             //    var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _wfids + '&type=' + 2;
+             //    $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+             //}                     
+             //}
+             //else
+             //    alert('以下任务['+_ycids+']尚未开始加工，不允许结束！');                
+         })
+         //结束任务
+         $('#modal_btn_FinishTask').on('click',function(){
+             ////获取第2行(除表头)第2个单元格(第一个默认隐藏)
+             //var firsttdobj= $('#tb_SetupWFTaskHour td:eq(8)');
+             ////模拟单元格点击事件
+             //firsttdobj.trigger("click");
+
+             //var _rows = $('#tb_SetupWFTaskHour').jqGrid('getRowData');
+             //var msg='';
+             //var _taskids=GetAllValues('tb_SetupWFTaskHour','ID');
+             //for(var i=0;i<_rows.length;i++){
+             //    var _taskid=_rows[i].ID;
+             //    var _tasktime=_rows[i].TotalTime;
+             //    if(_taskid>0){
+             //        $.get('/Task/SetWFTaskFinish?TaskID='+_taskid+'&Time='+_tasktime,function(res){
+             //            if (res != "") {
+             //                msg=msg+res+';';
+             //            }                      
+             //        })
+             //    }
+             //}
+             //if(msg==''){
+             //    location.reload();
+             //    $('#SetupWFTaskHourModal').modal('hide');
+             //}
+             //else{
+             //    //重载表格
+             //    var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _taskids + '&type=' + 2;
+             //    $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+             //    alert(msg+'——任务结束失败！');
+             //} 
+             if (confirm("确认将选中任务设为结束？")) {
+                 var itemData=compactTSObj(2,'_viewmodel');
+                 $.get('/Task/SetWFTaskFinish',itemData,function(res){
+                     if(res=='')
+                         alert('结束成功！');
+                     else{
+                         alert('以下任务:'+res+'没有正常结束！');
+                     }
+                 }) 
+             }              
          })
 
          $("#SetTaskStartModal").on("shown.bs.modal", function () {
@@ -614,7 +632,7 @@
          //确认外发
          $('#modal_btn_wfTask').on('click',function(){
              var _itemData='';
-             _itemData=compactTSObj('_viewmodel');
+             _itemData=compactTSObj(1,'_viewmodel');
              if(_itemData=='')
                  return false;
              //_itemData=JSON.parse(_itemData);
@@ -726,23 +744,37 @@
          //return true;
      }
 
-     function compactTSObj(name){
+    //type 1 开始加工 2 结束加工
+     function compactTSObj(type,name){
          //获取第2行(除表头)第2个单元格(第一个默认隐藏)
          var firsttdobj= $('#tb_TaskStart td:eq(8)');
          //模拟单元格点击事件
          firsttdobj.trigger("click");
-         var data = $('#tb_TaskStart').jqGrid('getRowData');
+         var data;
          var itemData='';
-         //var name='_setupTS';
+         if(type==1){
+             data= $('#tb_TaskStart').jqGrid('getRowData');
+         }
+         else{
+             data= $('#tb_SetupWFTaskHour').jqGrid('getRowData');
+         }
          for(var i=0;i<data.length;i++){
              var rowData =data[i];
-             if(rowData.MachinesCode==''||rowData.MachinesCode==null){
-                 alert('请选择机器！');
-                 return '';
+             if(type==1){
+                 if(rowData.MachinesCode==''||rowData.MachinesCode==undefined){
+                     alert('请选择机器！');
+                     return '';
+                 }
+                 else if(rowData.UserName==''||rowData.UserName==undefined){
+                     alert('请选择人员！');
+                     return '';
+                 }
              }
-             else if(rowData.UserName==''||rowData.UserName==null){
-                 alert('请选择人员！');
-                 return '';
+             else if(type==2){
+                 if((rowData.TotalTime==0||rowData.TotalTime==undefined)&& rowData.State=='外发'){
+                     alert('外发任务请填写工时！');
+                     return '';
+                 }
              }
              itemData=itemData+name+'['+i+'].TaskID='+rowData.ID+'&'+
                                //name+'['+i+'].TaskName='+rowData.TaskName+'&'+
@@ -751,6 +783,7 @@
                                name+'['+i+'].MachinesName='+rowData.MachinesName+'&' +
                                name+'['+i+'].UserID='+rowData.UserID+'&' + 
                                name+'['+i+'].UserName='+rowData.UserName+'&' 
+             name+'['+i+'].TotalTime='+rowData.TotalTime+'&'
          }
          //去掉最后一个字符
          itemData=itemData.substring(0,itemData.length-1);
