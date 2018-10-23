@@ -5884,6 +5884,9 @@ namespace MoldManager.WebUI.Controllers
                         res = res + t.TaskID.ToString() + ";";
                     }
                 }
+                #region 清空 Session
+                Session["setupTask"] = null;
+                #endregion
             }
             else
             {

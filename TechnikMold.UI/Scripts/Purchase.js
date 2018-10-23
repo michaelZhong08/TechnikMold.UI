@@ -681,17 +681,28 @@ function CreatePR(Submit) {
     if (Submit) {
         $("#SubmitPR").attr("disabled", true);
     } else {
+        //添加外发任务工时记录创建逻辑 michael
+        var _wfFlag = true;
+        if ($('#TaskType').val() > 0) {
+            $.get('/Task/Service_Save_wfTaskHour', function (res) {
+                if (res != '') {
+                    _wfFlag = false;
+                    alert('任务 ' + res + '创建工时记录时失败！')
+                }
+            })
+        }
+
         $("#CreatePR").attr("disabled", true);
         if ($("#PurchaseType").val() == 0) {
             $("#CreatePR").removeAttr("disabled");
             alert("请选择采购类型")
             return false;
         }
-        else if ($("#ApprovalUserID").val().trim() == "0") {
-            $("#CreatePR").removeAttr("disabled");
-            alert("请选择申请人")
-            return false;
-        }
+        //if ($("#ApprovalUserID").val().trim() == "0") {
+        //    $("#CreatePR").removeAttr("disabled");
+        //    alert("请选择申请人")
+        //    return false;
+        //}
     }
     var itemData = "";
     var name = "PRContents";
@@ -704,22 +715,14 @@ function CreatePR(Submit) {
             m = false;
         }
     }
-    if (!m) {
-        alert("零件号[" + alertMsg + "]的品牌为空，请选择品牌后再提交单据！");
-        $("#CreatePR").removeAttr("disabled");
-        return false;
-    };
-    var _wfFlag = true;
-    //添加外发任务工时记录创建逻辑 michael
-    if ($('#TaskType').val() > 0) {
-        $.get('/Task/Service_Save_wfTaskHour', function (res) {
-            if (res != '') {
-                _wfFlag=false;
-                alert('任务 ' + res+'创建工时记录时失败！')
-            }
-        })
+    if ($('#TaskType').val() == 0) {
+        if (!m) {
+            alert("零件号[" + alertMsg + "]的品牌为空，请选择品牌后再提交单据！");
+            $("#CreatePR").removeAttr("disabled");
+            return false;
+        };
     }
-    
+  
     if (rowData.length > 0) {
         for (var i = 0; i < rowData.length; i++) {
             var _purchaseDrawing = false;
@@ -864,7 +867,7 @@ function showBrand(row) {
 
 function EditPrContent(id, row) {
     //外发采购不强制填写品牌 采购项taskid为0时 显示品牌
-    showBrand(row);
+    //showBrand(row);
     $("#row").val(row);
     $("#PRContentAddLabel").html("编辑零件");
     $("#State").val($("#PRContentGrid").getCell(row, "State"));
