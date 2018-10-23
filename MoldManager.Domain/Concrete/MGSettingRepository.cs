@@ -28,20 +28,25 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         /// </summary>
         /// <param name="entity"></param>
         /// <returns>return ID= 成功 -1--已发布 -2--失败 -3--已有更新版本 -4 上一版本没有发布</returns>
-        public int Save(MGSetting entity)
+        public int Save(MGSetting entity,bool ForUG=true)
         {
             bool IsNew = false;
             try
             {
-                MGSetting _dbentity = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev == entity.Rev).FirstOrDefault() ?? new MGSetting();
-                if (_dbentity.ReleaseFlag)
-                    return -1;
-                MGSetting _dbentity3 = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev > entity.Rev).Where(m => m.active == true).FirstOrDefault() ?? new MGSetting();
-                if (_dbentity3.ID > 0)
-                    return -3;
-                MGSetting _dbentity4 = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev < entity.Rev).Where(m => m.ReleaseFlag == false).Where(m => m.active == true).FirstOrDefault() ?? new MGSetting();
-                if (_dbentity4.ID > 0)
-                    return -4;
+                MGSetting _dbentity = new MGSetting();
+                _dbentity = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev == entity.Rev).FirstOrDefault() ?? new MGSetting();
+                if (ForUG)
+                {                    
+                    if (_dbentity.ReleaseFlag)
+                        return -1;
+                    MGSetting _dbentity2 = new MGSetting();
+                    _dbentity2 = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev > entity.Rev).Where(m => m.active == true).FirstOrDefault() ?? new MGSetting();
+                    if (_dbentity2.ID > 0)
+                        return -3;
+                    _dbentity2 = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev < entity.Rev).Where(m => m.ReleaseFlag == false).Where(m => m.active == true).FirstOrDefault() ?? new MGSetting();
+                    if (_dbentity2.ID > 0)
+                        return -4;
+                }               
                 #region Add 
                 if (_dbentity.ID == 0)
                 {
@@ -219,7 +224,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     }
                     #endregion
                     //关键 TaskType->6 铣磨任务; OldID字段用于记录旧表(MG_Task)Process信息-> 0:铣床任务 1:磨床任务
-                    Task mgtask = new Task { TaskName = TaskName,DrawingFile= DrawName, Version = dbentity.Rev, ProgramID = dbentity.ID, Creator = user.UserID, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)CNCStatus.未发布,PrevState= (int)CNCStatus.未发布, Memo = "Create by CAM", Quantity = dbentity.Qty, OldID = Convert.ToInt32(Process) == 0 ? 1 : 2, PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 6, MoldNumber = dbentity.MoldName, HRC = dbentity.HRC, ProcessName = Convert.ToInt32(Process)==0?"铣床":"磨床" , Time = Convert.ToDouble(dbentity.Time),Material=dbentity.Material,Raw=dbentity.RawSize };
+                    Task mgtask = new Task { TaskName = TaskName,DrawingFile= DrawName, Version = dbentity.Rev, ProgramID = dbentity.ID, Creator = user.UserID, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)CNCStatus.未发布,PrevState= (int)CNCStatus.未发布, Memo = "Create by CAM", Quantity = dbentity.Qty, OldID = Convert.ToInt32(Process) == 0 ? 1 : 2, PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 6, MoldNumber = dbentity.MoldName, HRC = dbentity.HRC, ProcessName = Convert.ToInt32(Process)==0?"铣床":"磨床" , Time = Convert.ToDouble(dbentity.Time),Material=dbentity.Material,Raw=dbentity.RawSize ,CAMUser=0};
                     if (Process != null)
                     {
                         _context.Tasks.Add(mgtask);

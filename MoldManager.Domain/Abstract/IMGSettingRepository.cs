@@ -13,7 +13,7 @@ namespace TechnikSys.MoldManager.Domain.Abstract
 
         MGSetting QueryByTaskID(int TaskID);
 
-        int Save(MGSetting entity);
+        int Save(MGSetting entity, bool ForUG = true);
         List<MGTypeName> GetMGTypeName();
         bool DeleteSettingByName(string partname, int rev);
         int ReleaseMGDrawing(int DrawIndex, string ReleaseBy,string TaskName);

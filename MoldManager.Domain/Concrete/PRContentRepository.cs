@@ -61,13 +61,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.PurchaseDrawing = PRContent.PurchaseDrawing;
                     _dbEntry.Memo = PRContent.Memo;
                     _dbEntry.EstimatePrice = PRContent.EstimatePrice;
-                    _dbEntry.Enabled = true ;
+                    //_dbEntry.Enabled = true ;
                     _dbEntry.SupplierName = PRContent.SupplierName;
                     _dbEntry.WarehouseStockID = PRContent.WarehouseStockID;
                     _dbEntry.MoldNumber = PRContent.MoldNumber==null?"其他采购":PRContent.MoldNumber;
                     _dbEntry.RequireTime = PRContent.RequireTime == new DateTime(1900, 1, 1) ? new DateTime(1900, 1, 1) : PRContent.RequireTime;
                     _dbEntry.CostCenterID = PRContent.CostCenterID;
                     _dbEntry.ERPPartID = PRContent.ERPPartID ?? "";
+                    _dbEntry.Enabled = PRContent.Enabled;
                 }
             }
             _context.SaveChanges();

@@ -56,7 +56,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.DueDate = PurchaseRequest.DueDate;
                     _dbEntry.PurchaseType = PurchaseRequest.PurchaseType;
                     _dbEntry.ApprovalERPUserID = PurchaseRequest.ApprovalERPUserID;
-                    _dbEntry.Enabled = true;
+                    _dbEntry.Enabled = PurchaseRequest.Enabled;
                 }
             }
             _context.SaveChanges();

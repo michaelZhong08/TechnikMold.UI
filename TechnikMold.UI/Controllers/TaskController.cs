@@ -994,20 +994,11 @@ namespace MoldManager.WebUI.Controllers
             int _result = 1;
             for (int i = 0; i < _taskIDs.Length; i++)
             {
-
-
                 try
                 {
                     int _userID = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
 
                     Task _task = _taskRepository.QueryByTaskID(Convert.ToInt32(_taskIDs[i]));
-                    //CAMUser is not current user
-                    //if (_userID != _task.CAMUser)
-                    //{
-                    //    return 10;
-                    //}
-
-                    //Task positon information is not filled
                     if ((_task.PositionFinish == false) && (_task.TaskType == 1))
                     {
                         return 11;
@@ -1028,13 +1019,13 @@ namespace MoldManager.WebUI.Controllers
                     }
                     #region Release Task
                     //铣铁任务 发布 更新MGsetting State
-                    if (_task.TaskType == 4)
+                    if (_task.TaskType == 6)
                     {
                         MGSetting _mgsetting = _mgSettingRepository.QueryByTaskID(_task.TaskID);
                         if (_mgsetting != null)
                         {
                             _mgsetting.State = (int)MGSettingStatus.任务发布;
-                            _mgSettingRepository.Save(_mgsetting);
+                            _mgSettingRepository.Save(_mgsetting,false);
                         }
                     }
                     _taskRepository.Release(Convert.ToInt32(_taskIDs[i]));
@@ -1478,41 +1469,7 @@ namespace MoldManager.WebUI.Controllers
                     Task _task = _taskRepository.QueryByTaskID(_taskID);
                     bool _canOutSource = false;
                     List<int> _types = new List<int> { (int)CNCStatus.等待, (int)CNCStatus.等待中, (int)CNCStatus.已接收 };
-                    //switch (_task.TaskType)
-                    //{
-                    //    case 1:
-                    //        if (_types.Contains(_task.State ))
-                    //        {
-                    //            _canOutSource = true;
-                    //        }
-                    //        break;
-                    //    case 2:
-                    //        if (_task.State == (int)CNCStatus.等待)
-                    //        {
-                    //            _canOutSource = true;
-                    //        }
-                    //        break;
-                    //    case 3:
-                    //        if ((_task.State == (int)WEDMStatus.已接收) || (_task.State == (int)WEDMStatus.等待))
-                    //        {
-                    //            _canOutSource = true;
-                    //        }
-                    //        break;
-                    //    case 4:
-                    //        if ((_task.State == (int)SteelStatus.等待)||(_task.State==(int)SteelStatus.已接收))
-                    //        {
-                    //            _canOutSource = true;
-                    //        }
-                    //        break;
-                    //    case 6:
-                    //        if (_task.State == (int)GrindStatus.等待)
-                    //        {
-                    //            _canOutSource = true;
-                    //        }
-                    //        break;
-                    //    default:
-                    //        break;
-                    //}
+
                     if (_types.Contains(_task.State))
                     {
                         _canOutSource = true;
@@ -1630,6 +1587,7 @@ namespace MoldManager.WebUI.Controllers
                 {
                     bool _cancelOutsource = false;
                     int _taskID = Convert.ToInt32(_id[i]);
+                    
                     Task _task = _taskRepository.QueryByTaskID(_taskID);
                     if (OutSourceState(_task.TaskID))
                     {
@@ -1674,6 +1632,16 @@ namespace MoldManager.WebUI.Controllers
                             default:
                                 break;
                         }
+                        #region 取消外发工时
+                        TaskHour _taskhour = _taskHourRepository.TaskHours.Where(t => t.TaskID == _taskID && t.RecordType == 2).FirstOrDefault();
+                        if (_taskhour != null)
+                        {
+                            _taskhour.State = (int)TaskHourStatus.取消;
+                            _taskhour.Enabled = false;
+                            _taskhour.FinishTime = DateTime.Now;
+                            _taskHourRepository.Save(_taskhour);
+                        }
+                        #endregion
                         #endregion
                         if (_cancelOutsource)
                         {
@@ -4125,11 +4093,11 @@ namespace MoldManager.WebUI.Controllers
                                 TaskID = _task.TaskID,
                                 TaskName = _task.TaskName,
                                 State = Enum.GetName(typeof(CNCStatus), _task.State),
-                                MachinesCode = _setuptask.MachineCode??"",
-                                MachinesName = _taskHourRepository.GetMachineByTask(Convert.ToInt32(_tid))??"",
-                                UserID = (_userRepository.GetUserByName(_setuptask.Operater)??new User()).UserID,
-                                UserName = _setuptask.Operater??"",
-                                TotalTime=_totalTime
+                                MachinesCode = _setuptask.MachineCode ?? "",
+                                MachinesName = _taskHourRepository.GetMachineByTask(Convert.ToInt32(_tid)) ?? "",
+                                UserID = (_userRepository.GetUserByName(_setuptask.Operater) ?? new User()).UserID,
+                                UserName = _setuptask.Operater ?? "",
+                                TotalTime = Convert.ToInt32(_totalTime),
                             };
                             if (_typelists.Contains(_task.State))
                                 _setupTasks.Add(_setupTask);
@@ -4153,7 +4121,7 @@ namespace MoldManager.WebUI.Controllers
                             MachinesName = _taskHourRepository.GetMachineByTask(Convert.ToInt32(TaskIDs)) ?? "",
                             UserID = (_userRepository.GetUserByName(_setuptask.Operater) ?? new User()).UserID,
                             UserName = _setuptask.Operater ?? "",
-                            TotalTime = _totalTime
+                            TotalTime = Convert.ToInt32(_totalTime),
                         };
                         if (_typelists.Contains(_task.State))
                             _setupTasks.Add(_setupTask);

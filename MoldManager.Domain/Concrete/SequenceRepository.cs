@@ -68,6 +68,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
 
             _result = _result.Substring(0, _result.Length - _nextNumber.ToString().Length) + _nextNumber;
             Increase(_sequence.SequenceID);
+            #region YYMM 替换
+            string _yymm = DateTime.Now.ToString("yyMM");
+            _result=_result.Replace("YYMM", _yymm);
+            #endregion
             return _result;
         }
 

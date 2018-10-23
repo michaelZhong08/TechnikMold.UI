@@ -293,7 +293,7 @@ function TaskStartGrid(_TaskIDs) {
             { label: '机器', name: 'MachinesName', width: 120 },
             { label: '人员', name: 'UserName', width: 120 },
             { label: 'wsUserID', name: 'UserID', width: 120, hidden: true },
-            { label: '加工时间(min)', name: 'TotalTime', width: 120, formatter: 'number', hidden: true }
+            { label: '加工时间(min)', name: 'TotalTime', width: 120, formatter: 'integer', hidden: true }
         ],
         autoScroll: true,
         multiselect: true,
@@ -318,7 +318,7 @@ function WFTaskFinishGrid(_TaskIDs) {
             { label: '机器', name: 'MachinesName', width: 120, hidden: true },
             { label: '人员', name: 'UserName', width: 60 },
             { label: 'wsUserID', name: 'UserID', width: 60, hidden: true },
-            { label: '加工时间(min)', name: 'TotalTime', width: 100, formatter: 'number', editable: true, }
+            { label: '加工时间(min)', name: 'TotalTime', width: 100, formatter: 'integer', editable: true, }
         ],
         cellEdit: true,
         autoScroll: true,
@@ -678,7 +678,7 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
             { label: 'HRC', name: 'HRC', width: 75, hidden: true },
             //----
             { label: '工艺', name: 'ProcessName', width: 100, hidden: true },
-            { label: '实际工时', name: 'ActualTime', width: 120, hidden: true, formatter: "number" },
+            { label: '实际工时', name: 'ActualTime', width: 120, hidden: true, formatter: "integer"},
             { label: '优先', name: 'Priority', width: 40, hidden: true },
             //日期
             { label: '创建日期', name: 'CreateTime', width: 75, hidden: true },

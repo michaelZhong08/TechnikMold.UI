@@ -142,7 +142,7 @@
                         <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="@status" readonly></td>
                     </tr>
                     <tr>
-                        <td class="col-sm-2">
+                        <td id="hr_ApprovalUser" class="col-sm-2">
                             <label>申请人</label>
                             @if (Model.State == 1)
                             {
@@ -224,7 +224,7 @@
                         <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="新建" readonly></td>
                     </tr>
                     <tr>
-                        <td class="col-sm-2">
+                        <td id="hr_ApprovalUser" class="col-sm-2">
                             <label>申请人</label>
                             <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
                                 <option value="0">-</option>
@@ -533,6 +533,8 @@
         LoadCostCenters();
         GetPurchaseType();
         PartSearchGrid();
+
+        _hrConfig();
         //LoadWSUser($('#TaskType').val());
         var _supplierID;
         @try{
@@ -995,7 +997,7 @@
     }
 
     function _wfViewConfig(type){
-        if(type){
+        if(type>0){
             //表格列头
             $("#PRContentGrid").setGridParam().showHideCol("Operater");
             $("#PRContentGrid").setGridParam().showHideCol("MachineName");
@@ -1012,5 +1014,10 @@
         else{
             $("#PRContentGrid").setGridParam().showHideCol("BrandName");
         }
+    }
+
+    function _hrConfig(){
+        $('#GetERPID').hide();
+        $('#hr_ApprovalUser').hide();
     }
 </script>

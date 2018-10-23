@@ -86,10 +86,11 @@
         $("#QueryPR").on("click", function(){
             QueryPurchaseOrders();
         })
-        if($("#PRState").val() =="3")
-        {
-            $("#ExportExcelForPurchase").show();
-        }
+        //////////暂时注释
+        //if($("#PRState").val() =="3")
+        //{
+        //    $("#ExportExcelForPurchase").show();
+        //}
     })
 
     function LoadQuerySuppliers(){
@@ -124,15 +125,16 @@
     function ChangeGridStatus(){
         var _url = "/Purchase/JsonPRList?State="+$("#PRState").val()+"&Department=@ViewBag.Department";
         $("#PRListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
-        if($("#PRState").val() =="3")
-        {
-            $("#ExportExcelForPurchase").show();
-        }
-        else
-        {
-            $("#ExportExcelForPurchase").hide();
+        //////////暂时注释
+        //if($("#PRState").val() =="3")
+        //{
+        //    $("#ExportExcelForPurchase").show();
+        //}
+        //else
+        //{
+        //    $("#ExportExcelForPurchase").hide();
 
-        }
+        //}
 
     }
 
@@ -245,3 +247,11 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function(){
+        _hrConfig();
+    })
+    function _hrConfig(){
+        $('#ExportExcelForPurchase').hide();
+    }
+</script>
