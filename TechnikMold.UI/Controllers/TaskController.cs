@@ -2567,37 +2567,47 @@ namespace MoldManager.WebUI.Controllers
 
         #region 铣铁加工程序传输
 
-        public string CreateSteelProgram(int TaskID, string ProgramIDs, int DeviceID, string PathName)
+        public string CreateSteelProgram(string TaskIDs, string ProgramIDs, int DeviceID, string PathName)
         {
-            Task _steelTask = _taskRepository.QueryByTaskID(TaskID);
-            _steelTask.State = (int)CNCStatus.正在加工;
-            _steelTask.StartTime = DateTime.Now;
-            _taskRepository.Save(_steelTask);
-            DateTime _iniTime = DateTime.Parse("1900/1/1");
-            Machine _machine = _machineRepository.QueryByID(DeviceID) ?? new Machine();
             string result = "";
-            Thread th1 = new Thread(delegate() { result = SteelProgramSend(TaskID, ProgramIDs, DeviceID, PathName); });
-            try
+            string[] _taskIDs = TaskIDs.Split(',');
+            List<int> _waittaskStates = new List<int> { (int)CNCStatus.等待, (int)CNCStatus.等待中, (int)CNCStatus.已接收 };
+            if (_taskIDs.Length > 0 && _taskIDs[0] != "undefined" && _taskIDs[0] != "")
             {
-                
-                
-                th1.SetApartmentState(ApartmentState.STA);
-                th1.IsBackground = true;
-                th1.Start();
-                th1.Join();
-                th1.Abort();
+                for(var i = 0; i < _taskIDs.Length; i++)
+                {
+                    int TaskID = Convert.ToInt32(_taskIDs[i]);
+                    Task _steelTask = _taskRepository.QueryByTaskID(TaskID);
+                    if (_waittaskStates.Contains(_steelTask.State))
+                    {                      
+                        //DateTime _iniTime = DateTime.Parse("1900/1/1");
+                        Machine _machine = _machineRepository.QueryByID(DeviceID) ?? new Machine();
+                        Thread th1 = new Thread(delegate () { result = SteelProgramSend(TaskID, ProgramIDs, DeviceID, PathName); });
+                        try
+                        {
+                            th1.SetApartmentState(ApartmentState.STA);
+                            th1.IsBackground = true;
+                            th1.Start();
+                            th1.Join();
+                            th1.Abort();
+                        }
+                        catch
+                        {
+                            th1.Abort();
+                            result = "Error";
+                        }
+                        #region 任务工时
+                        if (string.IsNullOrEmpty(result))
+                        {
+                            _steelTask.State = (int)CNCStatus.正在加工;
+                            _steelTask.StartTime = DateTime.Now;
+                            _taskRepository.Save(_steelTask);
+                            CreateTaskHour(_steelTask, 0, _machine.MachineCode);
+                        }
+                        #endregion
+                    }
+                }
             }
-            catch
-            {
-                th1.Abort();
-                result= "Error";
-            }
-            #region 任务工时
-            if (string.IsNullOrEmpty(result))
-            {
-                CreateTaskHour(_steelTask, 0, _machine.MachineCode);
-            }
-            #endregion
             return result;
         }
 
@@ -2624,18 +2634,28 @@ namespace MoldManager.WebUI.Controllers
         /// </summary>
         /// <param name="TaskIDs"></param>
         /// <returns></returns>
-        public ActionResult JsonSteelPrograms(int TaskID)
+        public ActionResult JsonSteelPrograms(string TaskIDs)
         {
-
-            int _programid = _taskRepository.QueryByTaskID(TaskID).ProgramID;
-            List<int> _programgroupIDs = _steelGroupProgramRepository.QueryByNCID(_programid).Select(s=>s.SteelGroupProgramID).ToList();
-            
+            string[] _taskIDs = TaskIDs.Split(',');
             List<SteelProgram> _programs = new List<SteelProgram>();
-
-            foreach (int _groupid in _programgroupIDs)
+            if (_taskIDs.Length > 0 && _taskIDs[0] != "undefined" && _taskIDs[0] != "")
             {
-                _programs.AddRange(_steelProgramRepository.QueryByGroupID(_groupid));
-            }
+                List<int> _waittaskStates = new List<int> { (int)CNCStatus.等待, (int)CNCStatus.等待中, (int)CNCStatus.已接收 };
+                for (int i = 0; i < _taskIDs.Length; i++)
+                {
+                    int taskid = Convert.ToInt32(_taskIDs[i]);
+                    Task _task = _taskRepository.QueryByTaskID(taskid);
+                    if (_waittaskStates.Contains(_task.State))
+                    {
+                        int _programid = _taskRepository.QueryByTaskID(taskid).ProgramID;
+                        List<int> _programgroupIDs = _steelGroupProgramRepository.QueryByNCID(_programid).Select(s => s.SteelGroupProgramID).ToList();
+                        foreach (int _groupid in _programgroupIDs)
+                        {
+                            _programs.AddRange(_steelProgramRepository.QueryByGroupID(_groupid));
+                        }
+                    }                   
+                }
+            }            
             return Json(_programs, JsonRequestBehavior.AllowGet);
         }
 

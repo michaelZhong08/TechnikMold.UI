@@ -1491,11 +1491,12 @@ function EletrodePositionSetup() {
 }
 
 function StartSteelTask() {
-    var _id = GetCurrentID("TaskGrid");
-    if ((_id == "") || (_id == undefined)) {
+    var _ids = GetCurrentID("TaskGrid");
+    //var _ids = GetMultiSelectedIDs('TaskGrid');
+    if ((_ids == "") || (_ids == undefined)) {
         alert("请选择至少一个任务");
     } else {
-        GetSteelTasks(_id);
+        GetSteelTasks(_ids);
     }
 }
 

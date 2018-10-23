@@ -11,7 +11,7 @@
                         <td class="col-sm-2">加工设备</td>
                         <td class="col-sm-3">
                             <select id="Machine" class="form-control" style="width:200px;"></select>
-                            <input type="hidden" id="SteelTaskID" />
+                            <input type="hidden" id="SteelTaskIDs" />
                         </td>
                         <td class="col-sm-2">
                             上传目录
@@ -58,7 +58,7 @@
                     _ids = _ids == "" ? n.value : _ids + "," + n.value;
                 })
 
-                SendPrograms($("#SteelTaskID").val(), _ids, $("#Machine").val(), $("#Directory").val());
+                SendPrograms($("#SteelTaskIDs").val(), _ids, $("#Machine").val(), $("#Directory").val());
             } else {
                 alert("请至少选择一个程序");
             }
@@ -77,10 +77,10 @@
     //        })
     //    })
     //}
-    function GetSteelTasks(TaskID) {
-        $("#SteelTaskID").val(TaskID);
+    function GetSteelTasks(TaskIDs) {
+        $("#SteelTaskIDs").val(TaskIDs);
         $(".ProgramList").remove();
-        $.getJSON("/Task/JsonSteelPrograms?taskid=" + TaskID, function (msg) {
+        $.getJSON("/Task/JsonSteelPrograms?TaskIDs=" + TaskIDs, function (msg) {
 
             $.each(msg, function (i, n) {
                 var _programRow = "<tr class='ProgramList'><td class='col-sm-1'><input type='checkbox' id='Program' value='" +
@@ -92,9 +92,9 @@
         $("#SteelProgramSelectDialog").modal("show");
     }
 
-    function SendPrograms(TaskID, ProgramIDs, DeviceID, PathName) {
+    function SendPrograms(TaskIDs, ProgramIDs, DeviceID, PathName) {
         $.ajax({
-            url: "/Task/CreateSteelProgram?ProgramIDs=" + ProgramIDs + "&DeviceID=" + DeviceID + "&PathName=" + PathName + "&TaskID=" + TaskID,
+            url: "/Task/CreateSteelProgram?ProgramIDs=" + ProgramIDs + "&DeviceID=" + DeviceID + "&PathName=" + PathName + "&TaskIDs=" + TaskIDs,
             dataType: "html",
             error: function(){},
             success: function(msg){

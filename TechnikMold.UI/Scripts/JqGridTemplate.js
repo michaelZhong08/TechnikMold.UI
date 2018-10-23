@@ -1384,7 +1384,7 @@ function SupplierGrid(Mode) {
         viewrecords: true,
         height: document.documentElement.clientHeight - 250,
         width: document.body.clientWidth * 0.875,
-        //multiselect: true,
+        multiselect: true,
         rowNum: 500,
         loadonce: true,
         ondblClickRow: function (iRow) {
