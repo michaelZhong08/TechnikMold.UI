@@ -116,9 +116,9 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[21] = "";
         }
         //编辑PR单
-        public PurchaseContentGridRowModel(PRContent PRContent, string State, string CostCenter, string ERPNo)
+        public PurchaseContentGridRowModel(PRContent PRContent, string State, string CostCenter, string ERPNo,SetupTaskStart _setupTask)
         {
-            cell = new string[22];
+            cell = new string[25];
             cell[0] = PRContent.PRContentID.ToString();
             cell[1] = PRContent.PartID.ToString();
             cell[2] = PRContent.TaskID.ToString();
@@ -147,6 +147,9 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[19] = CostCenter;
             cell[20] = ERPNo;
             cell[21] = PRContent.Memo;
+            cell[22] = _setupTask.UserName ?? "";
+            cell[23] = _setupTask.MachinesName ?? "";
+            cell[24] = _setupTask.MachinesCode ?? "";
         }        
     }
 }

@@ -1015,7 +1015,7 @@ namespace MoldManager.WebUI.Controllers
                 _contents = _prContentRepository.QueryByRequestID(PRID).ToList() ?? new List<PRContent>();
             }
             catch (Exception ex) { }
-            PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_contents, _purchaseItemRepository, _costCenterRepository, _partRepository);
+            PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_contents, _purchaseItemRepository, _costCenterRepository, _partRepository,_taskHourRepository);
             return Json(_model, JsonRequestBehavior.AllowGet);
         }
 

@@ -17,7 +17,11 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Page;
         public int Total;
         public int Records;
-
+        /// <summary>
+        /// 数据源：设计清单
+        /// </summary>
+        /// <param name="Parts"></param>
+        /// <param name="ProjectRepository"></param>
         public PurchaseContentGridViewModel(IEnumerable<Part> Parts, IProjectRepository ProjectRepository)
         {
             rows = new List<PurchaseContentGridRowModel>();
@@ -31,7 +35,14 @@ namespace MoldManager.WebUI.Models.GridViewModel
             Total = Parts.Count() ;
             Records = 500;
         }
-
+        /// <summary>
+        /// 数据源：外发
+        /// </summary>
+        /// <param name="Tasks"></param>
+        /// <param name="_viewmodel"></param>
+        /// <param name="ProjectPhaseRepository"></param>
+        /// <param name="SteelDrawingRepo"></param>
+        /// <param name="TaskRepository"></param>
         public PurchaseContentGridViewModel(IEnumerable<Task> Tasks,
             List<SetupTaskStart> _viewmodel,
             IProjectPhaseRepository ProjectPhaseRepository, 
@@ -49,7 +60,10 @@ namespace MoldManager.WebUI.Models.GridViewModel
             Total=Tasks.Count();
             Records=500;
         }
-
+        /// <summary>
+        /// 数据源：备库
+        /// </summary>
+        /// <param name="WarehouseStocks"></param>
         public PurchaseContentGridViewModel(IEnumerable<WarehouseStock> WarehouseStocks)
         {
             rows = new List<PurchaseContentGridRowModel>();
@@ -61,11 +75,18 @@ namespace MoldManager.WebUI.Models.GridViewModel
             Total = WarehouseStocks.Count();
             Records = 500;
         }
-
+        /// <summary>
+        /// 数据源：申请单
+        /// </summary>
+        /// <param name="PRContents"></param>
+        /// <param name="PurchaseItemRepository"></param>
+        /// <param name="CostCenterRepository"></param>
+        /// <param name="PartRepository"></param>
         public PurchaseContentGridViewModel(List<PRContent> PRContents,
            IPurchaseItemRepository PurchaseItemRepository,
            ICostCenterRepository CostCenterRepository,
-           IPartRepository PartRepository)
+           IPartRepository PartRepository,
+           ITaskHourRepository TaskHourRepository)
         {
             rows = new List<PurchaseContentGridRowModel>();
 
@@ -98,7 +119,23 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 //    ERPNo = _part.ERPPartID;
                 //}
                 ERPNo = _content.ERPPartID;
-                rows.Add(new PurchaseContentGridRowModel(_content, state, _costcenter, ERPNo));
+                SetupTaskStart _setupTask=new SetupTaskStart();
+                #region 外发内容
+                if (_content.TaskID > 0)
+                {
+                    TaskHour _taskhour = TaskHourRepository.TaskHours.Where(h => h.TaskID == _content.TaskID).OrderByDescending(h => h.TaskHourID).FirstOrDefault();
+                    if (_taskhour != null)
+                    {
+                        _setupTask.TaskID = _taskhour.TaskID;
+                        _setupTask.MachinesName = TaskHourRepository.GetMachineByTask(_taskhour.TaskID) ?? "";
+                        _setupTask.TotalTime = TaskHourRepository.GetTotalHourByTaskID(_taskhour.TaskID);
+                        _setupTask.UserName = _taskhour.Operater;
+                        _setupTask.MachinesCode = _taskhour.MachineCode;
+                    }
+
+                }               
+                #endregion
+                rows.Add(new PurchaseContentGridRowModel(_content, state, _costcenter, ERPNo, _setupTask));
             }
             Page = 1;
             Total = PRContents.Count();

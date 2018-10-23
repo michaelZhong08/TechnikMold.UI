@@ -5861,6 +5861,7 @@ namespace MoldManager.WebUI.Controllers
             }
         }
         #endregion
+        #region 提交 任务(外发、正常)结束 统计工时
         public string Service_Save_wfTaskHour()
         {
             string res = "";
@@ -5890,5 +5891,6 @@ namespace MoldManager.WebUI.Controllers
             }
             return res;
         }
+        #endregion
     }
 }

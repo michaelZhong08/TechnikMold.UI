@@ -116,6 +116,12 @@
                     string status = Enum.GetName(typeof(PurchaseRequestStatus), Model.State);
                     <tr>
                         <td class="col-sm-2">
+                            <label>采购类型</label>
+                            <input type="hidden" name="PurchaseType" id="PurchaseType" value="@ViewBag.PurchaseTypeID" />
+                            <input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" style="display:inline;float:right;width:80%" readonly />
+                        </td>
+
+                        <td class="col-sm-2">
                             @if (Model.State == 1)
                             {                               
                                 <label>推荐供应商</label>
@@ -131,60 +137,36 @@
                                 <input type="hidden" id="SupplierID" name="SupplierID" value="0" />
                             }
 
-                        </td>
-                        <td class="col-sm-2">
-                            <label>采购类型</label>
-                            <input type="hidden" name="PurchaseType" id="PurchaseType" value="@ViewBag.PurchaseTypeID" />
-                            <input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" style="display:inline;float:right;width:80%" readonly />
-                        </td>
+                        </td>                       
 
                         <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="@status" readonly></td>
                     </tr>
                     <tr>
-                        @*非外发任务时显示申请人*@
-                        @if (@ViewBag.TaskType==0)
-                        {
-                            <td class="col-sm-2">
-                                <label>申请人</label>
-                                @if (Model.State == 1)
-                                {
-                                    <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
-                                        <option value="0">-</option>
-                                        @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
+                        <td class="col-sm-2">
+                            <label>申请人</label>
+                            @if (Model.State == 1)
+                            {
+                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
+                                    <option value="0">-</option>
+                                    @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
+                                    {
+                                        if (@ViewBag.ApprovalUserName == @ApprovalUser.FullName)
                                         {
-                                            if (@ViewBag.ApprovalUserName == @ApprovalUser.FullName)
-                                            {
-                                                <option value="@ApprovalUser.UserCode" selected>@ViewBag.ApprovalUserName</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
-                                            }
+                                            <option value="@ApprovalUser.UserCode" selected>@ViewBag.ApprovalUserName</option>
                                         }
-                                    </select>
-                                }
-                                else
-                                {
-                                    <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" style="display:inline;float:right;width:70%" readonly />
-                                }
-                            </td>
-                        }
-                        @*外发任务时显示Workshop人员*@
-                        else
-                        {
-                            <td class="col-sm-2">
-                                <label>外发申请人</label>
-                                @if (Model.State == 1)
-                                {
-                                    <select id="wsUserID" class="form-control" name="wsUserID" style="display:inline;float:right;width:70%">
-                                    </select>
-                                }
-                                else
-                                {
-                                    <input id="wsUserID" name="wsUserID" class="form-control" value="@ViewBag.wsUserName" style="display:inline;float:right;width:70%" readonly />
-                                }
-                            </td>
-                        }
+                                        else
+                                        {
+                                            <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" style="display:inline;float:right;width:70%" readonly />
+                            }
+                        </td>
+
                         <td class="col-sm-2">
                             <label>创建人</label>
                             <input type="text" id="CreUser" class="form-control" value="@ViewBag.CreUserName" style="display:inline;float:right;width:80%" readonly />
@@ -230,42 +212,27 @@
                 {
                     <tr>
                         <td class="col-sm-2">
+                            <label>采购类型</label>
+                            <select id="PurchaseType" class="form-control" name="PurchaseType" style="display:inline;float:right;width:80%"></select>
+                        </td>
+                        <td class="col-sm-2">
                             <label style="float:left">推荐供应商</label>
                             <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:70%" />
                             <datalist id="SupplierIDD"></datalist>
                             <input id="SupplierID" hidden>
-                        </td>
-
-                        <td class="col-sm-2">
-                            <label>采购类型</label>
-                            <select id="PurchaseType" class="form-control" name="PurchaseType" style="display:inline;float:right;width:80%"></select>
-                        </td>
+                        </td>                        
                         <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="新建" readonly></td>
                     </tr>
                     <tr>
                         <td class="col-sm-2">
-                            @try
-                            {
-                                <label style="float:left">申请人</label>
-                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
-                                    <option value="0">-</option>
-                                    @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
-                                    {
-                                        <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
-                                    }
-                                </select>
-                            }
-                            catch
-                            {
-                                <label>申请人</label>
-                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
-                                    <option value="0">-</option>
-                                    @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
-                                    {
-                                        <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
-                                    }
-                                </select>
-                            }
+                            <label>申请人</label>
+                            <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
+                                <option value="0">-</option>
+                                @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
+                                {
+                                    <option value="@ApprovalUser.UserCode">@ApprovalUser.FullName</option>
+                                }
+                            </select>
                         </td>
 
                         <td class="col-sm-2">
@@ -566,7 +533,7 @@
         LoadCostCenters();
         GetPurchaseType();
         PartSearchGrid();
-        LoadWSUser($('#TaskType').val());
+        //LoadWSUser($('#TaskType').val());
         var _supplierID;
         @try{
             @:_supplierID=@Model.SupplierID
@@ -1029,8 +996,17 @@
 
     function _wfViewConfig(type){
         if(type){
+            //表格列头
             $("#PRContentGrid").setGridParam().showHideCol("Operater");
             $("#PRContentGrid").setGridParam().showHideCol("MachineName");
+            //关闭相应按钮
+            $('#AddContent').hide();
+            //$('#Brand').hide();
+            $('#Brand').val('委外');
+            //申请人
+            $('#ApprovalUserID').attr('disabled',true);
+            //供应商
+            $('#SupplierName').attr('readonly',true);
         }
         else{
             $("#PRContentGrid").setGridParam().showHideCol("BrandName");
