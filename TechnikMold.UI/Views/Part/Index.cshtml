@@ -304,6 +304,12 @@
                 }
             }
         })
+
+        if (sessionStorage['SpecKey'] != null) {
+            if (sessionStorage['SpecKey'] == 'hr') {
+                $("#PartGrid").setGridParam().showHideCol("ERPPartID");
+            }
+        }
     });
 
 </script>

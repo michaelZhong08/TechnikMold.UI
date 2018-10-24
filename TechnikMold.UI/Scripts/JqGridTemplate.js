@@ -373,7 +373,7 @@ function PartListGrid(MoldID, Height) {
             { label: '创建日期', name: 'Drawing', width: 80 },
             { label: 'UG', name: 'FromUG', formatter: "checkbox", width: 40, hidden: true },
             { label: '采购', name: 'InPurchase', formatter: "checkbox", width: 40 },
-            { label: 'ERP料号', name: 'ERPPartID', width: 97 }
+            { label: 'ERP料号', name: 'ERPPartID', width: 97,hidden:true }
         ],
         //索引
         viewrecords: true,

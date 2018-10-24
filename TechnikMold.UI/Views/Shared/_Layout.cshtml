@@ -76,7 +76,7 @@
                         @if (DeptID == 1)
                         {
                             <li><a href="/Project/CustomerManagement">客户管理</a></li>
-                                <li><a class="hrsys_a" href="/Project/CostSummary" >项目成本统计</a></li>
+                                <li><a class="sinno" style="display:none;" href="/Project/CostSummary" >项目成本统计</a></li>
                         }
 
                     </ul>
@@ -97,14 +97,14 @@
                        data-toggle="dropdown" role="button"
                        aria-haspopup="true" aria-expanded="false" >采购管理</a>
                     <ul class="dropdown-menu">
-                        <li><a class="hrsys_a" href="/Purchase/PurchaseItemList?State=30" >待处理采购项</a></li>
-                        <li><a class="hrsys_a" href="/Purchase/OutSourceItemList" >待处理外发项</a></li>
+                        <li><a class="sinno" style="display:none;" href="/Purchase/PurchaseItemList?State=30" >待处理采购项</a></li>
+                        <li><a class="sinno" style="display:none;" href="/Purchase/OutSourceItemList" >待处理外发项</a></li>
                         <li><a href="/Purchase">申请单维护</a></li>
-                        <li><a class="hrsys_a" href="/Purchase/QuotationRequestList" >询价单维护</a></li>
-                        <li><a class="hrsys_a" href="/Purchase/PurchaseOrderList" >订单维护</a></li>
-                        <li><a class="hrsys_a" href="/Purchase/PurchaseItemList?State=10" >在购零件清单</a></li>
-                        <li><a class="hrsys_a" href="/Purchase/PurchaseItemList?State=40" >零件采购清单</a></li>
-                        <li><a class="hrsys_a" href="/Purchase/PurchaseItemList" >采购项查询</a></li>
+                        <li><a class="sinno" style="display:none;" href="/Purchase/QuotationRequestList" >询价单维护</a></li>
+                        <li><a class="sinno" style="display:none;" href="/Purchase/PurchaseOrderList" >订单维护</a></li>
+                        <li><a class="sinno" style="display:none;" href="/Purchase/PurchaseItemList?State=10" >在购零件清单</a></li>
+                        <li><a class="sinno" style="display:none;" href="/Purchase/PurchaseItemList?State=40" >零件采购清单</a></li>
+                        <li><a class="sinno" style="display:none;" href="/Purchase/PurchaseItemList" >采购项查询</a></li>
                         @if (DeptID == 4)
                         {
                             <li><a href="/Purchase/Suppliers">供应商信息</a></li>
@@ -114,7 +114,7 @@
 
                         @if ((DeptID == 1) || (DeptID == 4))
                         {
-                            <li><a class="hrsys_a" href="/Purchase/POReport">订单记录查询</a></li>
+                            <li><a class="sinno" style="display:none;" href="/Purchase/POReport">订单记录查询</a></li>
                         }
 
                     </ul>
@@ -128,7 +128,7 @@
                     </ul>
                 </li>
                 <li class="dropdown dropdown-main">
-                    <a href="#" class="dropdown-toggle hrsys_a" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">仓库管理</a>
+                    <a href="#" class="dropdown-toggle sinno" style="display:none;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">仓库管理</a>
                     <ul class="dropdown-menu">
                         <li><a href="/Warehouse/WHPOList">订单收货</a></li>
                         <li><a href="/Warehouse/WarehouseRequestList">领料申请</a></li>
@@ -148,7 +148,7 @@
                     </ul>
                 </li>
                 <li class="dropdown dropdown-main">
-                    <a href="#" class="dropdown-toggle hrsys_a" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" >工时管理</a>
+                    <a href="#" class="dropdown-toggle sinno" style="display:none;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" >工时管理</a>
                     <ul class="dropdown-menu">
                         <li><a href="#">预估工时</a></li>
                         <li><a href="#">工时填报</a></li>

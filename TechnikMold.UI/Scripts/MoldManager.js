@@ -10,12 +10,6 @@
     SysSpecShow(sessionStorage['SpecKey']);
 })
 
-//function NoUser() {
-//    if (GetUserID() == "") {
-//        $("#Warning").modal("show");
-//    }
-//}
-
 function GetCookie(CookieName) {
     var value = document.cookie;
     var head = "User=";

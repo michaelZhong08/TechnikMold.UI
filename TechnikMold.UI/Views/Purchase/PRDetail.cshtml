@@ -685,6 +685,12 @@
         })
 
         _wfViewConfig($('#TaskType').val());
+
+        if (sessionStorage['SpecKey'] != null) {
+            if (sessionStorage['SpecKey'] == 'hr') {
+                $("#PRContentGrid").setGridParam().showHideCol("ERPPartID");
+            }
+        }
     });
 
 
