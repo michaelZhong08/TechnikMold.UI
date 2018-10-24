@@ -26,7 +26,7 @@
         int DeptID,PosID, UserID;
         try
         {
-             DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+            DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
 
             @:var dept = @DeptID;
                     }
@@ -174,8 +174,9 @@
     </div>
 
     </div>
-    <div class="container-fluid body-content" role="main">
+    <div class="container-fluid body-content" role="main">       
         @RenderBody()
+
     </div>
     <script src="~/Scripts/MoldManager.js"></script>
 
@@ -213,6 +214,7 @@
 
         $('li.dropdown-main').mouseover(function() {
             $(this).addClass('open');    }).mouseout(function() {        $(this).removeClass('open');    });
+
     })
 
     function LoadUserRoles(){

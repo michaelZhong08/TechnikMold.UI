@@ -4,6 +4,10 @@
     $("#exit").on("click", function () {
         Logout();
     })
+    //设置系统特征值
+    //hr / sinno
+    sessionStorage.setItem('SpecKey', 'sinno');
+    SysSpecShow(sessionStorage['SpecKey']);
 })
 
 //function NoUser() {
@@ -24,8 +28,6 @@ function GetCookie(CookieName) {
         }
     }
     return "";
-
-
 }
 
 function GetUserID() {
@@ -204,4 +206,12 @@ function Logout() {
             location.reload();
         }
     })
+}
+
+function SysSpecHide(spec) {
+    $('.' + spec).hide();
+}
+
+function SysSpecShow(spec) {
+    $('.' + spec).show();
 }

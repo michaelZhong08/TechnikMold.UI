@@ -41,7 +41,7 @@
                 <button class="btn btn-primary" id="BatchApprove">批量通过</button>
             }
 
-            <button class="btn btn-primary" id="ExportExcelForPurchase" style="background-color:#71C671;">导出采购申请</button>
+            <button class="btn btn-primary hr" id="ExportExcelForPurchase" style="background-color:#71C671;display:none;">导出采购申请</button>
 
             <div class="col-sm-2">
                 <select id="PRState" class="form-control">
@@ -75,7 +75,7 @@
 <script>
     $("document").ready(function(){
 
-        $("#ExportExcelForPurchase").hide();
+        //$("#ExportExcelForPurchase").hide();
         @*PRListGrid("@ViewBag.MoldNumber", "@ViewBag.PRKeyword", "@ViewBag.StartDate", "@ViewBag.FinishDate", @ViewBag.Supplier, @ViewBag.PurchaseType, @ViewBag.Department, @ViewBag.State);*@
         PRListGrid(@ViewBag.Department, @ViewBag.State);
 
@@ -87,10 +87,14 @@
             QueryPurchaseOrders();
         })
         //////////暂时注释
-        //if($("#PRState").val() =="3")
-        //{
-        //    $("#ExportExcelForPurchase").show();
-        //}
+        if (sessionStorage['SpecKey'] != null) {
+            if (sessionStorage['SpecKey'] == 'hr') {
+                if($("#PRState").val() =="3")
+                {
+                    $("#ExportExcelForPurchase").show();
+                }
+            }
+        }
     })
 
     function LoadQuerySuppliers(){
@@ -126,15 +130,20 @@
         var _url = "/Purchase/JsonPRList?State="+$("#PRState").val()+"&Department=@ViewBag.Department";
         $("#PRListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
         //////////暂时注释
-        //if($("#PRState").val() =="3")
-        //{
-        //    $("#ExportExcelForPurchase").show();
-        //}
-        //else
-        //{
-        //    $("#ExportExcelForPurchase").hide();
+        
+        if (sessionStorage['SpecKey'] != null) {
+            if (sessionStorage['SpecKey'] == 'hr') {
+                if($("#PRState").val() =="3")
+                {
+                    $("#ExportExcelForPurchase").show();
+                }
+                else
+                {
+                    $("#ExportExcelForPurchase").hide();
 
-        //}
+                }
+            }
+        }
 
     }
 
@@ -249,7 +258,7 @@
 </div>
 <script>
     $(document).ready(function(){
-        _hrConfig();
+        //_hrConfig();
     })
     function _hrConfig(){
         $('#ExportExcelForPurchase').hide();

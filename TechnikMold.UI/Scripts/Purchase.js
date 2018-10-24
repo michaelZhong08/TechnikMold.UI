@@ -680,6 +680,49 @@ function CreatePR(Submit) {
     //    alert("请先设置模具项目！");
     //    return false;
     //}
+    ////验证
+    $("#CreatePR").attr("disabled", true);
+    if ($("#PurchaseType").val() == 0) {
+        $("#CreatePR").removeAttr("disabled");
+        alert("请选择采购类型")
+        return false;
+    }
+    if (sessionStorage['SpecKey'] != null) {
+        if (sessionStorage['SpecKey'] == 'hr') {
+            if ($("#ApprovalUserID").val().trim() == "0") {
+                $("#CreatePR").removeAttr("disabled");
+                alert("请选择申请人")
+                return false;
+            }
+        }
+    }    
+    var m = true;
+    var s = true;
+    var alertMsg = "";
+    var rowData = $("#PRContentGrid").jqGrid("getRowData");
+    for (var i = 0; i < rowData.length; i++) {
+        if (rowData[i].BrandName == "") {
+            alertMsg = rowData[i].JobNo + ";" + alertMsg;
+            m = false;
+        }
+        if (rowData[i].Specification == "") {
+            alertMsg = rowData[i].JobNo + ";" + alertMsg;
+            s = false;
+        }
+    }
+    if ($('#TaskType').val() == 0) {
+        if (!m) {
+            alert("零件号[" + alertMsg + "]的品牌为空，请选择品牌后再提交单据！");
+            $("#CreatePR").removeAttr("disabled");
+            return false;
+        }
+    }
+    if (!s) {
+        alert("零件号[" + alertMsg + "]的规格为空，请填写规格后再提交单据！");
+        $("#CreatePR").removeAttr("disabled");
+        return false;
+    }
+
     if (Submit) {
         $("#SubmitPR").attr("disabled", true);
     } else {
@@ -692,39 +735,16 @@ function CreatePR(Submit) {
                     alert('任务 ' + res + '创建工时记录时失败！')
                 }
             })
-        }
-
-        $("#CreatePR").attr("disabled", true);
-        if ($("#PurchaseType").val() == 0) {
-            $("#CreatePR").removeAttr("disabled");
-            alert("请选择采购类型")
-            return false;
-        }
+        }        
         //if ($("#ApprovalUserID").val().trim() == "0") {
         //    $("#CreatePR").removeAttr("disabled");
         //    alert("请选择申请人")
         //    return false;
         //}
     }
+     
     var itemData = "";
-    var name = "PRContents";
-    var rowData = $("#PRContentGrid").jqGrid("getRowData");
-    var m = true;
-    var alertMsg = "";
-    for (var i = 0; i < rowData.length; i++) {
-        if (rowData[i].BrandName == "") {
-            alertMsg = rowData[i].JobNo + ";" + alertMsg;
-            m = false;
-        }
-    }
-    if ($('#TaskType').val() == 0) {
-        if (!m) {
-            alert("零件号[" + alertMsg + "]的品牌为空，请选择品牌后再提交单据！");
-            $("#CreatePR").removeAttr("disabled");
-            return false;
-        };
-    }
-  
+    var name = "PRContents";    
     if (rowData.length > 0) {
         for (var i = 0; i < rowData.length; i++) {
             var _purchaseDrawing = false;

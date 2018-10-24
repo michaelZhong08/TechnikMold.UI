@@ -95,7 +95,7 @@
                         {
                             <button class="btn btn-primary" id="RemoveCancel">移除订单取消项</button>
                         }
-                        <input type="button" class="btn btn-success" id="GetERPID" value="同步ERP料号">
+                        <input type="button" class="btn btn-success hr" id="GetERPID" value="同步ERP料号" style="display:none;">
                         break;
                     case (int)PurchaseRequestStatus.完成:
                         break;
@@ -142,7 +142,7 @@
                         <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="@status" readonly></td>
                     </tr>
                     <tr>
-                        <td id="hr_ApprovalUser" class="col-sm-2">
+                        <td id="hr_ApprovalUser" class="col-sm-2 hr" style="display:none;">
                             <label>申请人</label>
                             @if (Model.State == 1)
                             {
@@ -224,7 +224,7 @@
                         <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="新建" readonly></td>
                     </tr>
                     <tr>
-                        <td id="hr_ApprovalUser" class="col-sm-2">
+                        <td id="hr_ApprovalUser" class="col-sm-2 hr" style="display:none;">
                             <label>申请人</label>
                             <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
                                 <option value="0">-</option>
@@ -262,7 +262,7 @@
         </div>
     </div>
 </div>
-
+<input id="btntest" type="button" class="form-control" value="ceshianniu" />
 <input type="hidden" id="tempID" value="-1" />
 
 <input type="hidden" id="row" />
@@ -534,7 +534,12 @@
         GetPurchaseType();
         PartSearchGrid();
 
-        _hrConfig();
+        if(sessionStorage['SpecKey']!=null){
+            if(sessionStorage['SpecKey']=='hr'){
+                $('#btntest').hide();
+            }
+        }
+        //_hrConfig();
         //LoadWSUser($('#TaskType').val());
         var _supplierID;
         @try{
