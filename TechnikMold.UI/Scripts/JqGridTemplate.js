@@ -627,10 +627,10 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
     var _url;
     if (InPage == undefined) {
         _height = document.documentElement.clientHeight - 203;
-        _width = document.body.clientWidth * 0.875
+        //_width = document.body.clientWidth * 0.875
     } else {
         _height = (document.documentElement.clientHeight - 220) * 0.385;
-        _width = document.body.clientWidth * 0.6;
+        //_width = document.body.clientWidth * 0.6;
     }
     if (MoldNumber == "") {
         _url = "";
@@ -645,69 +645,72 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
         datatype: "json",
         colModel: [
             { label: "", name: "ID", hidden: true },
-            { label: '图纸', name: 'DrawingFile', width: 40 },
-            { label: '任务名', name: 'TaskName', width: 150, sorttype: 'string' },
-            { label: '版本', name: 'Version', width: 40 },
-            { label: 'CAD文档', name: 'CADPartName', width: 120, hidden: true },//WEDM图纸历史
+            { label: '图纸', name: 'DrawingFile', width: 60 },
+            { label: '任务名', name: 'TaskName', width: 200, sorttype: 'string' },
+            { label: '版本', name: 'Version', width: 60 },
+            { label: 'CAD文档', name: 'CADPartName', width: 80, hidden: true },//WEDM图纸历史
             { label: 'CAD', name: 'CAD', width: 60, hidden: true },
-            { label: '备注', name: 'Memo', width: 75 },            
+            { label: '备注', name: 'Memo', width: 120 },            
             //WEDM图纸历史
             { label: '加工精度', name: 'Preciston', width: 120, hidden: true },
             { label: '特征数量', name: 'FeatureCount', width: 120, hidden: true },
-            { label: '长度', name: 'Length', width: 75, hidden: true },
-            { label: '厚度', name: 'Thickness', width: 75, hidden: true },
+            { label: '长度', name: 'Length', width: 60, hidden: true },
+            { label: '厚度', name: 'Thickness', width: 60, hidden: true },
             //----
-            { label: '时间', name: 'Time', width: 40, hidden: true },
-            { label: '状态', name: 'State', width: 75, hidden: true },
-            { label: '状态备注', name: 'StateMemo', width: 75, hidden: true },
+            { label: '时间', name: 'Time', width: 60, hidden: true },
+            { label: '状态', name: 'State', width: 60, hidden: true },
+            { label: '状态备注', name: 'StateMemo', width: 120, hidden: true },
             //CNC
-            { label: '毛坯', name: 'Raw', width: 75, hidden: true },
-            { label: '型号', name: 'Model', width: 75, hidden: true },
+            { label: '毛坯', name: 'Raw', width: 60, hidden: true },
+            { label: '型号', name: 'Model', width: 60, hidden: true },
 
-            { label: "表面", name: "Surface", width: 75, hidden: true },
+            { label: "表面", name: "Surface", width: 60, hidden: true },
             { label: "平动", name: "Obit", width: 60, hidden: true },
-            { label: "电极位置", name: "ELEPos", width: 300, hidden: true },
+            { label: "电极位置", name: "ELEPos", width: 100, hidden: true },
 
-            { label: 'R', name: 'R', width: 30, hidden: true },
-            { label: 'F', name: 'F', width: 30, hidden: true },
+            { label: 'R', name: 'R', width: 40, hidden: true },
+            { label: 'F', name: 'F', width: 40, hidden: true },
             //----
-            { label: '数量', name: 'Quantity', width: 30, hidden: true },
+            { label: '数量', name: 'Quantity', width: 40, hidden: true },
             { label: '备料', name: 'Prepared', formatter: "checkbox", width: 40, hidden: true },
             //MG
-            { label: '材料', name: 'Material', width: 75, hidden: true },
-            { label: 'HRC', name: 'HRC', width: 75, hidden: true },
+            { label: '材料', name: 'Material', width: 100, hidden: true },
+            { label: 'HRC', name: 'HRC', width: 40, hidden: true },
             //----
-            { label: '工艺', name: 'ProcessName', width: 100, hidden: true },
-            { label: '实际工时', name: 'ActualTime', width: 120, hidden: true, formatter: "integer"},
+            { label: '工艺', name: 'ProcessName', width: 60, hidden: true },
+            { label: '实际工时', name: 'ActualTime', width: 80, hidden: true, formatter: "integer" },
             { label: '优先', name: 'Priority', width: 40, hidden: true },
             //日期
-            { label: '创建日期', name: 'CreateTime', width: 75, hidden: true },
-            { label: '计划日期', name: 'PlanTime', width: 75, hidden: true },
-            { label: '接收日期', name: 'AcceptTime', width: 75, hidden: true },
-            { label: '发布日期', name: 'ReleaseTime', width: 75, hidden: true },//图纸历史
-            { label: '开始日期', name: 'StartTime', width: 75, hidden: true },
-            { label: '结束日期', name: 'FinishTime', width: 120, hidden: true },
-            { label: '预计日期', name: 'ForecastTime', width: 75, hidden: true },
+            { label: '创建日期', name: 'CreateTime', width: 80, hidden: true },
+            { label: '计划日期', name: 'PlanTime', width: 80, hidden: true },
+            { label: '接收日期', name: 'AcceptTime', width: 80, hidden: true },
+            { label: '发布日期', name: 'ReleaseTime', width: 80, hidden: true },//图纸历史
+            { label: '开始日期', name: 'StartTime', width: 80, hidden: true },
+            { label: '结束日期', name: 'FinishTime', width: 80, hidden: true },
+            { label: '预计日期', name: 'ForecastTime', width: 80, hidden: true },
             //----
             //WEDM图纸历史
             { label: 'CAM', name: 'CAM', width: 60, hidden: true },
-            { label: "QC点", name: "QCPoints", width: 40, formatter: "checkbox", hidden: true },
-            { label: '跑位检查', name: "PosCheck", width: 40, formatter: "checkbox", hidden: true },
-            { label: 'QC', name: 'QC', width: 60, hidden: true },
+            { label: "QC点", name: "QCPoints", width: 60, formatter: "checkbox", hidden: true },
+            { label: '跑位检查', name: "PosCheck", width: 60, formatter: "checkbox", hidden: true },
+            { label: 'QC', name: 'QC', width: 80, hidden: true },
             //----                     
-            { label: '加工', name: 'Workshop', width: 60, hidden: true },                        
-            { label: '机器号', name: 'Machine', width: 75, hidden: true },
-            { label: '操作人员', name: 'Operater', width: 120, hidden: true },
+            { label: '加工', name: 'Workshop', width: 60, hidden: true },
+            { label: '机器号', name: 'Machine', width: 60, hidden: true },
+            { label: '操作人员', name: 'Operater', width: 80, hidden: true },
         ],
         viewrecords: true,
         height: _height, //document.documentElement.clientHeight - 220,
-        width: _width, //document.body.clientWidth * 0.875,
+        //width: _width, //document.body.clientWidth * 0.875,
         rowNum: 500,
+        autoScroll: true,
+        scroll: true,
         //sortname: 'Priority',
         //sortable:true, 
         multiselect: true,
         loadonce: true,
-        //shrinkToFit: false,
+        //当初始化列宽度时候的计算类型，如果为ture，则按比例初始化列宽度。如果为false，则列宽度使用 colModel指定的宽度。
+        shrinkToFit: false,
         loadComplete: function () {
             $(".jqgrow", this).contextMenu("MachineTaskContextMenu", {
                 bindings: {

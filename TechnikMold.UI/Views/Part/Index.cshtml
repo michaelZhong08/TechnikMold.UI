@@ -214,9 +214,6 @@
             $("#MoldSelect").attr("size", _listsize);
             $("#MoldSelect").css("height", document.documentElement.clientHeight - 165-39);
             $("#PartGridDiv").css('height', document.documentElement.clientHeight - 165)
-            //$('.ui-jqgrid-bdiv').css('width', document.body.clientWidth * 0.82);
-            //$('.ui-jqgrid-hdiv').css('width', document.body.clientWidth * 0.82);
-            //$('#PartGrid').css('width', document.body.clientWidth * 0.1);
         })
         //
         @if (DeptID == 2)
@@ -227,9 +224,6 @@
         {
             @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
                         }
-
-
-
 
         var _listsize = Math.round((document.documentElement.clientHeight - 165) / 18);
         $("#MoldSelect").attr("size", _listsize);

@@ -1468,7 +1468,11 @@ namespace MoldManager.WebUI.Controllers
                     int _taskID = Convert.ToInt32(_ids[i]);
                     Task _task = _taskRepository.QueryByTaskID(_taskID);
                     bool _canOutSource = false;
-                    List<int> _types = new List<int> { (int)CNCStatus.等待, (int)CNCStatus.等待中, (int)CNCStatus.已接收 };
+                    List<int> _types = new List<int> {
+                        (int)CNCStatus.等待,
+                        (int)CNCStatus.等待中,
+                        (int)CNCStatus.已接收
+                    };
 
                     if (_types.Contains(_task.State))
                     {
