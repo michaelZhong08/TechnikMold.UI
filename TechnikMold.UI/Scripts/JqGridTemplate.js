@@ -259,8 +259,8 @@ function MachinesInfoGrid() {
             { label: '设备品牌', name: 'EquipBrand', width: 120 },           
             { label: '部门', name: 'DepName', width: 120},
             { label: '工艺类型', name: 'TaskTypeName', width: 120},
-            { label: '产能(min)', name: 'Capacity', width: 120 },
-            { label: '计划停机时间(min)', name: 'Downtime', width: 120 },
+            { label: '产能(分)', name: 'Capacity', width: 120 },
+            { label: '计划停机时间(分)', name: 'Downtime', width: 120 },
             { label: '机器费率', name: 'Cost', width: 120 },
             { label: '可用', name: 'Status', width: 120, formatter: 'checkbox' },
             { label: '部门ID', name: 'DepID', width: 120,hidden:true },
@@ -293,7 +293,7 @@ function TaskStartGrid(_TaskIDs) {
             { label: '机器', name: 'MachinesName', width: 120 },
             { label: '人员', name: 'UserName', width: 120 },
             { label: 'wsUserID', name: 'UserID', width: 120, hidden: true },
-            { label: '加工时间(min)', name: 'TotalTime', width: 120, formatter: 'integer', hidden: true }
+            { label: '加工时间(分)', name: 'TotalTime', width: 120, formatter: 'integer', hidden: true }
         ],
         autoScroll: true,
         multiselect: true,
@@ -318,7 +318,7 @@ function WFTaskFinishGrid(_TaskIDs) {
             { label: '机器', name: 'MachinesName', width: 120, hidden: true },
             { label: '人员', name: 'UserName', width: 60 },
             { label: 'wsUserID', name: 'UserID', width: 60, hidden: true },
-            { label: '加工时间(min)', name: 'TotalTime', width: 100, formatter: 'integer', editable: true, }
+            { label: '加工时间(分)', name: 'TotalTime', width: 100, formatter: 'integer', editable: true, }
         ],
         cellEdit: true,
         autoScroll: true,
@@ -2306,7 +2306,37 @@ function ReturnItemGrid(ReturnRequestID, PurchaseItemIDs) {
         }
     })
 }
+function PurchaseOrderReport(startdate, enddate) {
 
+    var _url = '';
+    $("#POReport").jqGrid({
+        url: _url,
+        mtype: "Get",
+        styleUI: 'Bootstrap',
+        datatype: "json",
+        colModel: [
+                { label: "", name: "PurchaseItemID", hidden: true },
+                { label: "年月", name: "Date", width: 40 },
+                { label: "成本中心", name: "CostCenter", width: 40 },
+                { label: "制程分类", name: "Catalog", width: 60 },
+                { label: "一级分类", name: "MainType", width: 40 },
+                { label: "二级分类", name: "SubType", width: 40 },
+                { label: "供应商全称", name: "Supplier", width: 100 },
+                { label: "物料编号", name: "PartNo", width: 60 },
+                { label: "规格", name: "Specification", width: 100 },
+                { label: "数量", name: "Count", width: 30 },
+                { label: "含税单价", name: "UnitPrice", width: 40 },
+                { label: "含税总价", name: "TotalPrice", width: 40 },
+                { label: "税率", name: "TaxRate", width: 30 },
+                { label: "订单号", name: "PurchaseOrder", width: 50 },
+        ],
+        viewrecords: true,
+        height: document.documentElement.clientHeight - 200,
+        width: document.body.clientWidth * 0.9,
+        rowNum: 100,
+        loadonce: true,
+    })
+}
 
 
 

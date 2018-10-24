@@ -4386,5 +4386,30 @@ namespace MoldManager.WebUI.Controllers
                 return _supplier.SupplierID;
             return 0;
         }
+        #region PO report for finacial dept
+
+        public ActionResult POReport()
+        {
+            return View();
+        }
+
+
+        public ActionResult JsonPOReport(string StartDate, string EndDate = "")
+        {
+            DateTime _startDate = Convert.ToDateTime(StartDate + " 00:00");
+            DateTime _endDate;
+            if (EndDate == "")
+            {
+                EndDate = DateTime.Now.ToString("yyyy-MM-dd") + " 23:59";
+            }
+            _endDate = Convert.ToDateTime(EndDate);
+            List<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems.Where(p => p.DeliveryTime > _startDate)
+                .Where(p => p.DeliveryTime <= _endDate)//.Where(p => p.State == (int)PurchaseItemStatus.完成)
+                .ToList();
+            PurchaseOrderReportGridViewModel _viewModel = new PurchaseOrderReportGridViewModel(_items,
+                _purchaseTypeRepository, _supplierRepository, _purchaseOrderRepository, _costCenterRepository);
+            return Json(_viewModel, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
     }
 }

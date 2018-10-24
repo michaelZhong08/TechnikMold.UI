@@ -984,7 +984,7 @@ namespace MoldManager.WebUI.Controllers
 
 
         /// <summary>
-        /// Release machining task
+        /// TODO: Release machining task
         /// </summary>
         /// <param name="TaskID"></param>
         /// <returns></returns>
@@ -1012,11 +1012,12 @@ namespace MoldManager.WebUI.Controllers
                             return 12;
                         }
                     }
-
-                    if (_task.DrawingFile == "")
+                    #region 无图纸任务(MG除外)不允许发布
+                    if (_task.DrawingFile == "" && _task.TaskType!=6)
                     {
                         return 13;
                     }
+                    #endregion
                     #region Release Task
                     //铣铁任务 发布 更新MGsetting State
                     if (_task.TaskType == 6)
@@ -3457,7 +3458,7 @@ namespace MoldManager.WebUI.Controllers
         }
 
         /// <summary>
-        /// Save the 
+        /// TODO: 保存图纸
         /// </summary>
         /// <param name="DrawName"></param>
         /// <param name="MoldName"></param>

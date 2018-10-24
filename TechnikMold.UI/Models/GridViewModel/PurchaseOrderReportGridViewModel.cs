@@ -37,8 +37,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
                     _maintype = TypeRepo.QueryByID(_type.ParentTypeID).Name;
                     _subtype=_type.Name;
                 }
-                _supplier = SupplierRepo.QueryByID(_item.SupplierID).FullName;
-                _costcenter = CostCenterRepo.QueryByID(1).Name;
+                if(SupplierRepo.QueryByID(_item.SupplierID)!=null)
+                    _supplier = SupplierRepo.QueryByID(_item.SupplierID).FullName;
+                _supplier = "";
+                if (CostCenterRepo.QueryByID(1) != null)
+                    _costcenter = CostCenterRepo.QueryByID(1).Name;
+                _costcenter = "";
                 _purchaseOrder = PORepo.QueryByID(_item.PurchaseOrderID).PurchaseOrderNumber;
                 rows.Add(new PurchaseOrderReportGridRowModel(_item, _maintype, _subtype, _supplier, _costcenter, _purchaseOrder));
             }
