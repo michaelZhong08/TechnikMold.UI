@@ -293,8 +293,10 @@ function TaskStartGrid(_TaskIDs) {
             { label: '机器', name: 'MachinesName', width: 120 },
             { label: '人员', name: 'UserName', width: 120 },
             { label: 'wsUserID', name: 'UserID', width: 120, hidden: true },
-            { label: '加工时间(分)', name: 'TotalTime', width: 120, formatter: 'integer', hidden: true }
+            { label: '数量', name: 'Qty', width: 60, formatter: 'integer', editable: true },
+            { label: '加工时间(分)', name: 'TotalTime', width: 120,  hidden: true }
         ],
+        cellEdit: true,
         autoScroll: true,
         multiselect: true,
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
@@ -318,7 +320,8 @@ function WFTaskFinishGrid(_TaskIDs) {
             { label: '机器', name: 'MachinesName', width: 120, hidden: true },
             { label: '人员', name: 'UserName', width: 60 },
             { label: 'wsUserID', name: 'UserID', width: 60, hidden: true },
-            { label: '加工时间(分)', name: 'TotalTime', width: 100, formatter: 'integer', editable: true, }
+            { label: '数量', name: 'Qty', width: 60, formatter: 'integer', },
+            { label: '加工时间(分)', name: 'TotalTime', width: 100, editable: true, }
         ],
         cellEdit: true,
         autoScroll: true,
@@ -326,7 +329,7 @@ function WFTaskFinishGrid(_TaskIDs) {
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
         onCellSelect: function (rowid, iCol, cellcontent, event) {
             //列 TotalTime
-            if (iCol == 7) {
+            if (iCol == 8) {
                 var rowState = $("#tb_SetupWFTaskHour").getCell(rowid, "State");
                 if (rowState == '外发') {
                     $("#tb_SetupWFTaskHour").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
@@ -342,6 +345,32 @@ function WFTaskFinishGrid(_TaskIDs) {
                 }
             }           
         },
+        //loadComplete: function () {
+        //    $(".jqgrow", this).contextMenu("SetupTHFinishContextMenu", {
+        //        bindings: {
+        //            'LockTaskHour': function () {
+        //                //检查工时是否>0
+        //                var _totaltime=$("#tb_SetupWFTaskHour").getCell($("#tb_SetupWFTaskHour").getGridParam("selrow"), "TotalTime");
+        //                if (_totaltime > 0) {
+        //                    $('#SetupTaskPeriodHourModal').modal('show');
+        //                }
+        //                else
+        //                    alert('请先填写总工时!');
+        //            },
+        //        }
+        //    })
+        //},
+        ondblClickRow: function () {
+            //var row = GetDblClickRow('#tb_SetupWFTaskHour');
+            //检查工时是否>0
+            var _totaltime = $("#tb_SetupWFTaskHour").getCell($("#tb_SetupWFTaskHour").getGridParam("selrow"), "TotalTime");
+            if (_totaltime > 0) {
+                $('#SetupTaskPeriodHourModal').modal('show');
+            }
+            else
+                alert('请先填写总工时!');
+        }
+
     })
 }
 //零件列表
@@ -576,12 +605,12 @@ function CAMTaskList(MoldNumber, TaskType, State, CAM) {
                         }
 
                     },
-                    'PauseTask': function () {
-                        if (confirm("确认暂停任务？")) {
-                            var _id = GetCurrentID("TaskGrid");
-                            PauseTask(_id);
-                        }
-                    },
+                    //'PauseTask': function () {
+                    //    if (confirm("确认暂停任务？")) {
+                    //        var _id = GetCurrentID("TaskGrid");
+                    //        PauseTask(_id);
+                    //    }
+                    //},
                     'DeleteTask': function () {
                         if (confirm("确认取消任务？")) {
                             var _id = GetCurrentID("TaskGrid");
@@ -730,7 +759,13 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
                     'ELECompensation': function () {
                         var _id = GetCurrentID("TaskGrid");
                         EditEleCompensation(_id);
-                    }
+                    },
+                    'PauseTask': function () {
+                        if (confirm("确认暂停/继续任务？")) {
+                            var _id = GetCurrentID("TaskGrid");
+                            PauseTask(_id);
+                        }
+                    },
                 },
             });
         },

@@ -910,7 +910,12 @@ namespace MoldManager.WebUI.Controllers
                 List<string> Memo = new List<string>();
                 foreach (Task _task in _taskList)
                 {
-                    _task.Memo = GetOutSourceMemo(_task);
+                    if (_task.TaskType == 1)
+                    {
+                        _task.Memo = GetOutSourceMemo(_task);
+                    }
+                    else
+                        _task.Memo = "外发";
                 }
                 PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_taskList, _viewmodel, _projectPhaseRepository, _steelDrawingRepository,_taskRepository );
                return Json(_model, JsonRequestBehavior.AllowGet);

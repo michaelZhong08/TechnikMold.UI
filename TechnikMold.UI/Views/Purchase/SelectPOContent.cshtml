@@ -296,30 +296,13 @@
 
     }
     function UpdateTotal(id){
-        $("#" + id + "_TotalPrice").val(Number($("#POContentGrid").getCell(id, 'Quantity')) * Number($("#" + id + "_UnitPrice").val()));
-        //alert($("#POContentGrid").getCell(id, 'Quantity'));
+        $("#" + id + "_TotalPrice").val(Number($("#" + id + "_Quantity").val()) * Number($("#" + id + "_UnitPrice").val()));
     }
 
     function UpdateUnit(id){
-        $("#" + id + "_UnitPrice").val(Number($("#" + id + "_TotalPrice").val())/Number($("#POContentGrid").getCell(id, 'Quantity')));
+        $("#" + id + "_UnitPrice").val(Number($("#" + id + "_TotalPrice").val())/Number(Number($("#" + id + "_Quantity").val())));
     }
     function BindRowAction(id, iCol) {
-        //$("#" + id + "_Quantity").on("change", function () {
-        
-        //    UpdateTotal(id);
-        //})
-
-        //$("#" + id + "_UnitPrice").on("change", function () {
-        //    UpdateTotal(id);
-        //})
-
-        //$("#" + id + "_Quantity").on("blur", function() { 
-        //    UpdateTotal(id);
-        //})
-
-        //$("#" + id + "_UnitPrice").on("blur", function () {
-        //    UpdateTotal(id);
-        //})
 
         $("#" + id + "_Quantity").on("keyup", function () {
         

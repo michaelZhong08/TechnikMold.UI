@@ -48,5 +48,10 @@ namespace TechnikSys.MoldManager.Domain.Entity
         /// 开始加工 操作者
         /// </summary>
         public string Operater { get; set; }
+        /// <summary>
+        /// 加工零件数量
+        /// </summary>
+        public int Qty { get; set; }
+        public decimal Cost { get; set; }
     }
 }

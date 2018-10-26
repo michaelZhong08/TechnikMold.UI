@@ -20,10 +20,11 @@ using System.Text;
 using TechnikMold.UI.Models.GridViewModel;
 using TechnikMold.UI.Models.ViewModel;
 using TechnikMold.UI.Models;
+using TechnikMold.UI.Controllers;
 
 namespace MoldManager.WebUI.Controllers
 {
-    public class TaskController : Controller
+    public class TaskController:Controller
     {
         #region 参数定义
         private ITaskRepository _taskRepository;
@@ -60,6 +61,9 @@ namespace MoldManager.WebUI.Controllers
         private IWEDMSettingRepository _wedmSettingRepository;
         private ITaskHourRepository _taskHourRepository;
         private IMachinesInfoRepository _machinesinfoRepository;
+        private IWH_TaskPeriodTypeRepository _taskPeriodTypeRepository;
+        private IWH_WorkTypeRepository _workTypeRepository;
+        private IWH_TaskPeriodRecordRepository _taskPeriodRecordRepository;
         #endregion
         #region 构造
         public TaskController(ITaskRepository TaskRepository,
@@ -95,7 +99,10 @@ namespace MoldManager.WebUI.Controllers
             IMGSettingRepository MGSettingRepository,
             IWEDMSettingRepository WEDMSettingRepository,
             ITaskHourRepository TaskHourRepository,
-            IMachinesInfoRepository MachinesInfoRepository)
+            IMachinesInfoRepository MachinesInfoRepository,
+            IWH_WorkTypeRepository WorkTypeRepository,
+            IWH_TaskPeriodTypeRepository TaskPeriodTypeRepository,
+            IWH_TaskPeriodRecordRepository TaskPeriodRecordRepository)
         {
             _taskRepository = TaskRepository;
             _partRepository = PartRepository;
@@ -130,24 +137,15 @@ namespace MoldManager.WebUI.Controllers
             _wedmSettingRepository = WEDMSettingRepository;
             _taskHourRepository = TaskHourRepository;
             _machinesinfoRepository = MachinesInfoRepository;
+            _taskPeriodTypeRepository = TaskPeriodTypeRepository;
+            _workTypeRepository = WorkTypeRepository;
+            _taskPeriodRecordRepository = TaskPeriodRecordRepository;
         }
         #endregion
 
         // GET: Task
         public ActionResult Index(string MoldNumber = "", int TaskType = 1, int State = 0)
         {
-
-
-            //switch (TaskType)
-            //{
-            //    case 1:
-            //        return RedirectToAction("CAMTaskList", new { ProjectID = ProjectID, State = State });
-            //    case 7:
-            //        return RedirectToAction("QCTaskList", new { ProjectID = ProjectID, State = State });
-            //    default:
-            //        return RedirectToAction("MachineTaskList", new { ProjectID = ProjectID, TaskType = TaskType, State = State });
-            //}
-
             try
             {
                 int Department = Convert.ToInt32(Request.Cookies["User"]["Department"]);
@@ -1207,7 +1205,6 @@ namespace MoldManager.WebUI.Controllers
 
         public string PauseTask(int TaskID)
         {
-
             Task _task = _taskRepository.QueryByTaskID(TaskID);
             int _type = _task.TaskType;
             int _state = _task.State;
@@ -1223,29 +1220,34 @@ namespace MoldManager.WebUI.Controllers
                     _taskRepository.Pause(TaskID);
                     #endregion
                     #region 结束工时
-                    EndTaskHour(TaskID);
+                    EndTaskHour(TaskID,0,"", (int)TaskHourStatus.暂停);
                     #endregion
                     return "任务暂停成功";
                 }
                 else
                 {
+                    //任务处于暂停状态
                     if (_state == -1)
                     {
-                        #region 重启任务工时记录
+                        int _prevState = _task.PrevState;
+                        //#region 重启任务工时记录
                         //目前只有正在加工(10)是重启记录 
-                        if (_task.PrevState==10)
+                        if (_prevState == 10)
                         {
-                            CreateTaskHour(_task, 1,_taskHourRepository.GetMachineByTask(_task.TaskID));
+                            return "Restart";
+                            //CreateTaskHour(_task, 1,_taskHourRepository.GetMachineByTask(_task.TaskID));
                         }
-                        #endregion
-                        _taskRepository.UnPause(TaskID);
+                        else
+                        {
+                            _taskRepository.UnPause(TaskID);
+                        }
+                        //#endregion                        
                         return "任务开始成功";
                     }
                     else
                     {
-                        return "无法暂停已开始的任务";
+                        return "当前任务状态无法暂停";
                     }
-
                 }
             }         
         }
@@ -1559,7 +1561,7 @@ namespace MoldManager.WebUI.Controllers
                         _task.StartTime = DateTime.Now;
                         _taskRepository.Save(_task);
                         #region 任务工时
-                        CreateTaskHour(_task, 0, s.MachinesCode, s.UserName);
+                        CreateTaskHour(_task, 0, s.MachinesCode, s.UserName,s.Qty);
                         #endregion
                     }
                     return "";
@@ -2263,7 +2265,11 @@ namespace MoldManager.WebUI.Controllers
             }
             return msg;
         }
-
+        /// <summary>
+        /// TODO:任务结束
+        /// </summary>
+        /// <param name="TaskIDs"></param>
+        /// <returns></returns>
         public string SetTaskFinish(string TaskIDs)
         {
             string msg = "";
@@ -2301,9 +2307,9 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="TaskID">任务ID</param>
         /// <param name="Time">工时</param>
         /// <returns></returns>
-        public string SetWFTaskFinish(List<SetupTaskStart> _viewmodel)
+        public int SetWFTaskFinish(List<SetupTaskStart> _viewmodel)
         {
-            string msg = "";
+            int msg = 0;
             if (_viewmodel!=null && _viewmodel.Count > 0)
             {
                 foreach (var t in _viewmodel)
@@ -2314,15 +2320,18 @@ namespace MoldManager.WebUI.Controllers
                         if (t.State == "外发")
                             _time = t.TotalTime;
                         #region 工时结束
-                        EndTaskHour(t.TaskID, _time);
-                        #endregion
-                        //FinishBy 暂时记录当前系统用户
-                        _taskRepository.Finish(t.TaskID, GetCurrentUser());
+                        msg=  EndTaskHour(t.TaskID, _time);
+                        if (msg > 0)
+                        {
+                            //FinishBy 暂时记录当前系统用户
+                            _taskRepository.Finish(t.TaskID, GetCurrentUser());
+                        }
+                        #endregion                        
                     }
                     catch
                     {
-                        Task _task = _taskRepository.QueryByTaskID(t.TaskID);
-                        msg = _task.TaskName;
+                        //Task _task = _taskRepository.QueryByTaskID(t.TaskID);
+                        msg = -99;
                     }
                 }
             }
@@ -2465,13 +2474,20 @@ namespace MoldManager.WebUI.Controllers
                 _cncItem.CNCStartTime = DateTime.Now;
                 _cncItemRepository.Save(_cncItem);
 
-                Task _task = _taskRepository.QueryByTaskID(_cncItem.TaskID);
-                _task.StartTime = DateTime.Now;
-                _task.State = (int)CNCStatus.正在加工;
-                _taskRepository.Save(_task);
-                #region 任务工时
-                CreateTaskHour(_task,0, MachineCode);
-                #endregion
+                Task _task = _taskRepository.QueryByTaskID(_cncItem.TaskID);                
+                if ((int)CNCStatus.暂停<= _task.State &&  _task.State< (int)CNCStatus.正在加工)
+                {
+                    //避免重复赋值
+                    if (_task.StartTime < DateTime.Parse("2000/1/1"))
+                    {
+                        _task.StartTime = DateTime.Now;
+                    }
+                    _task.State = (int)CNCStatus.正在加工;
+                    _taskRepository.Save(_task);
+                    #region 任务工时
+                    CreateTaskHour(_task, 0, MachineCode);
+                    #endregion
+                }
             }
         }
 
@@ -4016,7 +4032,7 @@ namespace MoldManager.WebUI.Controllers
                     _existcodes.Add(m.MachineCode);
                 }
             }
-            List<MachinesInfo> _minfos = _machinesinfoRepository.GetMInfoByTaskType(Convert.ToInt32(TaskType)).Where(m=> !_existcodes.Contains(m.MachineCode)).ToList();
+            List<MachinesInfo> _minfos = _machinesinfoRepository.GetMInfoByTaskType(Convert.ToInt32(TaskType)).Where(m=> !_existcodes.Contains(m.MachineCode) && m.EquipBrand!="委外").ToList();
             return Json(_minfos, JsonRequestBehavior.AllowGet);
         }
         public JsonResult Service_Get_TaskMInfoByTaskType(string TaskType,bool isWF=false)
@@ -4055,7 +4071,7 @@ namespace MoldManager.WebUI.Controllers
         }
         #region michael
         /// <summary>
-        /// 
+        /// TODO: 开始/结束任务列表Json数据源
         /// </summary>
         /// <param name="TaskIDs"></param>
         /// <param name="type">1 等待 2 正在加工</param>
@@ -4090,9 +4106,11 @@ namespace MoldManager.WebUI.Controllers
                             var _task= _taskRepository.QueryByTaskID(Convert.ToInt32(_tid));
                             var _setuptask = _taskHourRepository.GetCurTHByTaskID(Convert.ToInt32(_tid)) ?? new TaskHour();
                             decimal _totalTime = 0;
+                            int _qty = _task.Quantity;
                             if (_task.State == (int)CNCStatus.正在加工)
                             {
                                 _totalTime = _taskHourRepository.GetTotalHourByTaskID(Convert.ToInt32(_tid));
+                                _qty = _setuptask.Qty;
                             }
                             SetupTaskStart _setupTask = new SetupTaskStart() {
                                 TaskID = _task.TaskID,
@@ -4103,6 +4121,7 @@ namespace MoldManager.WebUI.Controllers
                                 UserID = (_userRepository.GetUserByName(_setuptask.Operater) ?? new User()).UserID,
                                 UserName = _setuptask.Operater ?? "",
                                 TotalTime = Convert.ToInt32(_totalTime),
+                                Qty=Convert.ToInt32(_qty),
                             };
                             if (_typelists.Contains(_task.State))
                                 _setupTasks.Add(_setupTask);
@@ -4113,9 +4132,11 @@ namespace MoldManager.WebUI.Controllers
                         var _task = _taskRepository.QueryByTaskID(Convert.ToInt32(TaskIDs));
                         var _setuptask = _taskHourRepository.GetCurTHByTaskID(Convert.ToInt32(TaskIDs)) ?? new TaskHour();
                         decimal _totalTime = 0;
+                        int _qty = _task.Quantity;
                         if (_task.State == (int)CNCStatus.正在加工)
                         {
                             _totalTime = _taskHourRepository.GetTotalHourByTaskID(Convert.ToInt32(TaskIDs));
+                            _qty = _setuptask.Qty;
                         }
                         SetupTaskStart _setupTask = new SetupTaskStart()
                         {
@@ -4127,6 +4148,7 @@ namespace MoldManager.WebUI.Controllers
                             UserID = (_userRepository.GetUserByName(_setuptask.Operater) ?? new User()).UserID,
                             UserName = _setuptask.Operater ?? "",
                             TotalTime = Convert.ToInt32(_totalTime),
+                            Qty = Convert.ToInt32(_qty),
                         };
                         if (_typelists.Contains(_task.State))
                             _setupTasks.Add(_setupTask);
@@ -5784,7 +5806,7 @@ namespace MoldManager.WebUI.Controllers
         /// </summary>
         /// <param name="_task">任务对象</param>
         /// <param name="RecordType">0 正常开始 1 重启 2外发</param>
-        public void CreateTaskHour(Task _task,int RecordType,string MachineCode,string wsUserName="")
+        public void CreateTaskHour(Task _task,int RecordType,string MachineCode,string wsUserName="",int Qty=0)
         {
             DateTime _iniTime = DateTime.Parse("1900/1/1");
             try
@@ -5803,6 +5825,7 @@ namespace MoldManager.WebUI.Controllers
                 _taskhour.Operater = _operater;
                 _taskhour.MachineCode = MachineCode ?? "";
                 _taskhour.Memo = "记录创建于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + _operater + "/r/n";
+                _taskhour.Qty = Qty;
                 _taskHourRepository.Save(_taskhour);
             }
             catch (Exception ex)
@@ -5816,7 +5839,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="TaskID"></param>
         /// <param name="Time">外发工时</param>
         /// <param name="djUserName">点检人员</param>
-        public void EndTaskHour(int TaskID, decimal Time =0,string djUserName="")
+        public int EndTaskHour(int TaskID, decimal Time =0,string djUserName="",int state= (int)TaskHourStatus.完成)
         {
             try
             {
@@ -5827,18 +5850,32 @@ namespace MoldManager.WebUI.Controllers
                 {
                     _taskhour.FinishTime = DateTime.Now;
                     _taskhour.Enabled = false;
-                    _taskhour.State = (int)TaskHourStatus.完成;
+                    _taskhour.State = state;
                     _taskhour.Operater = _operater;
+                    #region 工时
+                    TimeSpan timeSpan;
+                    timeSpan = _taskhour.FinishTime - _taskhour.StartTime;
                     //外发
                     if (_taskhour.RecordType == 2)
                         _taskhour.Time = Time;
+                    else
+                        _taskhour.Time = Convert.ToDecimal(timeSpan.TotalMinutes);
+                    #endregion
+                    MachinesInfo _machinesinfo = _machinesinfoRepository.GetMInfoByCode(_taskhour.MachineCode);
+                    decimal _cost = 0;
+                    if (_machinesinfo != null)
+                        _cost = decimal.Round(_taskhour.Time/60,2) * _machinesinfo.Cost;
+                    _taskhour.Cost = _cost;
                     _taskhour.Memo=_taskhour.Memo+ " 记录结束于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + (string.IsNullOrEmpty(djUserName) ? GetCurrentUser() : djUserName) + "/r/n";
                     _taskHourRepository.Save(_taskhour);
+                    return _taskhour.TaskHourID;
                 }
+                return -1;
             }
             catch(Exception ex)
             {
                 LogRecord("任务工时结束错误日志", "异常任务:" + TaskID.ToString() + "/r/n程序异常原因——" + ex.Message);
+                return -99;
             }
         }
         /// <summary>
@@ -5883,7 +5920,7 @@ namespace MoldManager.WebUI.Controllers
                     try
                     {
                         Task _task = _taskRepository.QueryByTaskID(t.TaskID);
-                        CreateTaskHour(_task, 2, t.MachinesCode, t.UserName);
+                        CreateTaskHour(_task, 2, t.MachinesCode, t.UserName,t.Qty);
                     }
                     catch
                     {
@@ -5901,5 +5938,31 @@ namespace MoldManager.WebUI.Controllers
             return res;
         }
         #endregion
+
+        public JsonResult Service_Json_GetTaskPeriodType()
+        {
+            return Json(_taskPeriodTypeRepository.WH_TaskPeriodTypes.Where(t=>t.Enabled==true), JsonRequestBehavior.AllowGet);
+        }
+        /// <summary>
+        /// 保存任务阶段工时记录
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public int Service_Save_TPRecords(WH_TaskPeriodRecord model)
+        {
+            try
+            {
+                WH_TaskPeriodType _tpType = _taskPeriodTypeRepository.WH_TaskPeriodTypes.Where(h => h.Code == model.TypeCode).FirstOrDefault();
+                if (_tpType != null)
+                {
+                    //transfer hour
+                    model.Cost = _tpType.Cost * decimal.Round(model.Time/60,2);
+                    _taskPeriodRecordRepository.Save(model);
+                    return 0;
+                }
+                return -1;
+            }
+            catch(Exception ex) { return -99; }
+        }
     }
 }

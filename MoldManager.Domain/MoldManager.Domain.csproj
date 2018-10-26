@@ -97,6 +97,8 @@
     <Compile Include="Abstract\IMachinesInfoRepository.cs" />
     <Compile Include="Abstract\IMaterialRepository.cs" />
     <Compile Include="Abstract\IMGSettingRepository.cs" />
+    <Compile Include="Abstract\IWH_TaskPeriodRecordRepository.cs" />
+    <Compile Include="Abstract\IWH_WorkTypeRepository.cs" />
     <Compile Include="Abstract\IOutStockFormRepository.cs" />
     <Compile Include="Abstract\IOutStockItemRepository.cs" />
     <Compile Include="Abstract\IPartCodeRepository.cs" />
@@ -160,6 +162,7 @@
     <Compile Include="Abstract\IWarehouseRequestRepository.cs" />
     <Compile Include="Abstract\IWarehouseStockRepository.cs" />
     <Compile Include="Abstract\IWEDMSettingRepository.cs" />
+    <Compile Include="Abstract\IWH_TaskPeriodTypeRepository.cs" />
     <Compile Include="Concrete\BrandRepository.cs" />
     <Compile Include="Concrete\CAMDrawingRepository.cs" />
     <Compile Include="Concrete\CAMTaskRepository.cs" />
@@ -244,6 +247,9 @@
     <Compile Include="Concrete\WarehouseRequestRepository.cs" />
     <Compile Include="Concrete\WarehouseStockRepository.cs" />
     <Compile Include="Concrete\WEDMSettingRepository.cs" />
+    <Compile Include="Concrete\WH_TaskPeriodRecordRepository.cs" />
+    <Compile Include="Concrete\WH_TaskPeriodTypeRepository.cs" />
+    <Compile Include="Concrete\WH_WorkTypeRepository.cs" />
     <Compile Include="Entity\Base_DepPhase.cs" />
     <Compile Include="Entity\Brand.cs" />
     <Compile Include="Entity\CAMDrawing.cs" />
@@ -339,6 +345,9 @@
     <Compile Include="Entity\WEDMCutSpeed.cs" />
     <Compile Include="Entity\WEDMPrecision.cs" />
     <Compile Include="Entity\WEDMSetting.cs" />
+    <Compile Include="Entity\WH_TaskPeriodType.cs" />
+    <Compile Include="Entity\WH_TaskPeriodRecords.cs" />
+    <Compile Include="Entity\WH_WorkType.cs" />
     <Compile Include="Output\EleQCInformation.cs" />
     <Compile Include="Output\MaterialHardness.cs" />
     <Compile Include="Output\MoldVersionInfo.cs" />

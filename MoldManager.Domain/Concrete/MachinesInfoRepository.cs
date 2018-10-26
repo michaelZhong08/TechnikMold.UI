@@ -164,7 +164,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
         public List<MachinesInfo> GetMInfoByTaskType(int TaskType)
         {
-            var _mInfos = (_context.MachinesInfo).ToList().Where(m => m.TaskType.Split(',').Contains(TaskType.ToString())).ToList();
+            var _mInfos = (_context.MachinesInfo.Where(m=>m.IsActive==true && m.Status==1)).ToList().Where(m => m.TaskType.Split(',').Contains(TaskType.ToString())).ToList();
             return _mInfos;
         }
         public MachinesInfo GetMInfoByName(string MName)

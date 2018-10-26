@@ -269,10 +269,14 @@
          <ul style="width:200px">
              @if (_wsDep.Contains(DeptID))
              {
-                 <li id="SetAccept">
-                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
-                     <span style="font-size:12px; font-family:Verdana">设置收到标记</span>
-                 </li>
+                <li id="SetAccept">
+                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                    <span style="font-size:12px; font-family:Verdana">设置收到标记</span>
+                </li>
+                <li id="PauseTask">
+                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                    <span style="font-size:12px; font-family:Verdana">暂停/继续任务</span>
+                </li>
              }
              @if (ViewBag.TaskType == 1)
              {
@@ -311,7 +315,7 @@
                          <span style="font-size:12px; font-family:Verdana">CNC删除</span>
                      </li>
                  }
-             }
+             }             
          </ul>
      </div>
 }
@@ -342,15 +346,24 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                @*<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>*@
                 <h4 class="modal-title">设置任务结束</h4>
             </div>
             <div class="modal-body">
+                @*设置任务结束 右键菜单*@
+                <div class="contextMenu dropdown" id="SetupTHFinishContextMenu" style="display:inline;">
+                    <ul style="width:200px;">
+                        <li id="LockTaskHour">
+                            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                            <span style="font-size:12px; font-family:Verdana">锁定任务工时</span>
+                        </li>
+                    </ul>
+                </div>
                 <table id="tb_SetupWFTaskHour"></table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="modal_btn_FinishTask"><span class="glyphicon glyphicon glyphicon-off"></span> 结束任务</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="modal_btn_close_FinishTask">重载任务列表</button>
+                @*<button type="button" class="btn btn-primary" id="modal_btn_FinishTask"><span class="glyphicon glyphicon glyphicon-sign"></span> 结束任务</button>*@
             </div>
         </div>
     </div>
@@ -380,6 +393,34 @@
                 <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove-sign"></span> 关闭</button>
                 <button type="button" id="modal_btn_StartTask" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span> 提交</button>
                 <button type="button" id="modal_btn_wfTask" class="btn btn-primary" style="display:none;"><span class="glyphicon glyphicon-save"></span> 确认外发</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*设置任务阶段工时*@
+<div class="modal fade" id="SetupTaskPeriodHourModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">设置阶段工时</h4>
+            </div>
+            <div class="modal-body">
+                <table id="formTable_tph">
+                    <tr>
+                        <td><label>总工时：</label></td>
+                        <td><input id="modalinput_TotalTime" type="number" readonly/></td>
+                    </tr>
+                    <tr>
+                        <td><label>未分配工时：</label></td>
+                        <td><input id="modalinput_AssignedTime" type="number" readonly /></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon glyphicon-off"></span>关闭</button>
+                <button type="button" class="btn btn-primary" id="modal_btn_SubmitTPHour" disabled="disabled"><span class="glyphicon glyphicon glyphicon-save"></span>提交</button>
             </div>
         </div>
     </div>
@@ -643,6 +684,103 @@
              var _ids = GetAllValues("tb_TaskStart","ID");
              Outsource(_ids,_itemData);
          })
+
+         $("#SetupTaskPeriodHourModal").on("shown.bs.modal", function (){
+             var TotalTime = $("#tb_SetupWFTaskHour").getCell($("#tb_SetupWFTaskHour").getGridParam("selrow"), "TotalTime");
+             $('#modalinput_TotalTime').val(TotalTime);
+             $('#modalinput_AssignedTime').val(TotalTime);
+             $('.tr_TPHType').empty();
+             $.get('/Task/Service_Json_GetTaskPeriodType',function(res){
+                 for(var i=0;i<res.length;i++){
+                     var html='<tr class="tr_TPHType"><td><label>'+res[i].Name+'：</label></td><td><input id="'+res[i].Code+'" type="number" value="0" class="input_TPHType"/></td></tr>';
+                     $('#formTable_tph').append(html)
+                 }
+             })
+         })
+         //绑定blur事件 父级绑定
+         $('#formTable_tph').on('blur','input',function(){
+             var _totaltime=$('#modalinput_TotalTime').val();
+             var _curtime=0;
+             var _inputtime=0;
+             $(".input_TPHType").each(function(){
+                 _inputtime+=Number($(this).val());
+             });
+             _curtime=_totaltime-_inputtime;
+             if($(this).val()<0){
+                 alert("无效输入！");
+                 $(this).val(0);
+                 $(this).focus();
+                 return;
+             }
+             if(_curtime<0){
+                 alert('录入工时大于剩余可分配工时，请重新录入！');
+                 $(this).val(0);
+                 $(this).focus();
+                 return;
+             }
+             else if(_curtime>0){
+                 document.getElementById("modal_btn_SubmitTPHour").disabled=true;                    
+             }
+             else if(_curtime==0){
+                 document.getElementById("modal_btn_SubmitTPHour").disabled=false; 
+             }
+             $('#modalinput_AssignedTime').val(_curtime); 
+         })
+         //
+         //$('#formTable_tph').on('change','#modalinput_AssignedTime',function(){
+         //    var _time=$('#modalinput_AssignedTime').val();
+         //    alert(_time);
+         //    if(_time==0)
+         //        document.getElementById("modal_btn_SubmitTPHour").disabled=true; 
+         //    else
+         //        document.getElementById("modal_btn_SubmitTPHour").disabled=false; 
+         //})
+
+         //工时提交
+         $('#modal_btn_SubmitTPHour').on('click',function(){
+             var _time=$('#modalinput_AssignedTime').val();
+             if(_time>0){
+                 alert('存在未分配工时，禁止提交！');
+                 return;
+             }
+             else{
+                 //alert('success!');
+                 //提交总工时
+                 var row=$("#tb_SetupWFTaskHour").getGridParam("selrow");
+                 var rowData= $("#tb_SetupWFTaskHour").jqGrid('getRowData',row);
+                 var i=0;
+                 var name='_viewmodel';
+                 var itemData=name+'['+i+'].TaskID='+rowData.ID+'&'+
+                               //name+'['+i+'].TaskName='+rowData.TaskName+'&'+
+                               name+'['+i+'].State='+rowData.State+'&'+
+                               name+'['+i+'].MachinesCode='+rowData.MachinesCode+'&'+
+                               name+'['+i+'].MachinesName='+rowData.MachinesName+'&' +
+                               name+'['+i+'].UserID='+rowData.UserID+'&' + 
+                               name+'['+i+'].UserName='+rowData.UserName+'&' +
+                               name+'['+i+'].TotalTime='+rowData.TotalTime+'&' +
+                               name+'['+i+'].Qty='+rowData.Qty;
+                 //alert(itemData);
+                 $.get('/Task/SetWFTaskFinish',itemData,function(res){
+                     res=Number(res);
+                     if(res>0){
+                         //提交阶段工时
+                         $(".input_TPHType").each(function(){
+                             var code= this.id;
+                             var model={TaskHourID:res,TypeCode:code,Time:Number($(this).val())};
+                             $.get('/Task/Service_Save_TPRecords',model);
+                         });
+                         $('#SetupTaskPeriodHourModal').modal('hide');
+                     }                            
+                     else{
+                         alert('任务结束失败！');
+                     }
+                 });
+             }
+         });
+         //结束任务重载表格
+         $('#modal_btn_close_FinishTask').on('click',function(){
+             location.reload();
+         })
      })
 
     //加载workshop对应部门人员
@@ -758,7 +896,7 @@
              _tbname= 'tb_SetupWFTaskHour';
          }
          //获取第2行(除表头)第2个单元格(第一个默认隐藏)
-         var firsttdobj= $('#'+_tbname+' td:eq(8)');
+         var firsttdobj= $('#'+_tbname+' td:eq(13)');
          //模拟单元格点击事件
          firsttdobj.trigger("click");
          var data;
@@ -775,6 +913,10 @@
                      alert('请选择人员！');
                      return '';
                  }
+                 else if(rowData.Qty==''||rowData.Qty==0){
+                     alert('请填写加工零件数量！');
+                     return '';
+                 }
              }
              else if(type==2){
                  if((rowData.TotalTime==0||rowData.TotalTime==undefined)&& rowData.State=='外发'){
@@ -788,8 +930,9 @@
                                name+'['+i+'].MachinesCode='+rowData.MachinesCode+'&'+
                                name+'['+i+'].MachinesName='+rowData.MachinesName+'&' +
                                name+'['+i+'].UserID='+rowData.UserID+'&' + 
-                               name+'['+i+'].UserName='+rowData.UserName+'&' 
-             name+'['+i+'].TotalTime='+rowData.TotalTime+'&'
+                               name+'['+i+'].UserName='+rowData.UserName+'&' +
+             name+'['+i+'].TotalTime='+rowData.TotalTime+'&' +
+             name+'['+i+'].Qty='+rowData.Qty+'&'
          }
          //去掉最后一个字符
          itemData=itemData.substring(0,itemData.length-1);

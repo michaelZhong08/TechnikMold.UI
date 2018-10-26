@@ -57,7 +57,8 @@ namespace MoldManager.WebUI.Models.GridRowModel
             }
             else
             {
-                cell[5] = Task.Quantity.ToString();
+                //cell[5] = Task.Quantity.ToString();
+                cell[5] = _setuptaskStart.Qty.ToString();
             }
             //物料编号 模具号-taskid
             cell[6] = Task.MoldNumber+"-"+Task.TaskID.ToString();

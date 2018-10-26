@@ -49,6 +49,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 dbentry.MachineCode = model.MachineCode;
                 dbentry.State = model.State;
                 dbentry.Operater = model.Operater;
+                dbentry.Qty = model.Qty;
+                dbentry.Cost = model.Cost;
                 _context.TaskHours.Add(dbentry);
             }
             #endregion
@@ -66,21 +68,24 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     //    dbentry.FinishTime = model.FinishTime;
                     //    dbentry.MachineCode = model.MachineCode;
                     //}   
-                    TimeSpan timeSpan;
+                    //TimeSpan timeSpan;
                     dbentry.FinishTime = model.FinishTime;
-                    timeSpan = dbentry.FinishTime - dbentry.StartTime;
-                    //正常结束
-                    if (dbentry.RecordType==2)
-                    {
-                        dbentry.Time = model.Time;                        
-                    }
-                    //外发结束
-                    else
-                        dbentry.Time = Convert.ToDecimal(timeSpan.TotalMinutes);
+                    //timeSpan = dbentry.FinishTime - dbentry.StartTime;
+                    ////正常结束
+                    //if (dbentry.RecordType==2)
+                    //{
+                    //    dbentry.Time = model.Time;                        
+                    //}
+                    ////外发结束
+                    //else
+                    //    dbentry.Time = Convert.ToDecimal(timeSpan.TotalMinutes);
+                    dbentry.Time = model.Time;
                     dbentry.MachineCode = model.MachineCode;
                     dbentry.Enabled = model.Enabled;
                     dbentry.RecordType = model.RecordType;                   
                     dbentry.State = model.State;
+                    dbentry.Qty = model.Qty;
+                    dbentry.Cost = model.Cost;
                     dbentry.Memo = model.Memo + " 时间：" + dbentry.Time.ToString();
                 }               
             }
@@ -98,8 +103,13 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             decimal ClosedTime=0;
             decimal OpenTime=0;
             decimal TotalTiem = 0;
+            List<int> _FStatelist = new List<int>
+            {
+                (int)TaskHourStatus.完成,
+                (int)TaskHourStatus.暂停,
+            };
             #region 获取关闭工时
-            List<TaskHour> _ClosedTHs = _context.TaskHours.Where(h => h.State == (int)TaskHourStatus.完成 && h.TaskID == TaskID).ToList();
+            List<TaskHour> _ClosedTHs = _context.TaskHours.Where(h => _FStatelist.Contains(h.State) && h.TaskID == TaskID).ToList();
             if (_ClosedTHs != null)
             {
                 foreach(var cth in _ClosedTHs)
@@ -126,20 +136,30 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
         public string GetOperaterByTaskID(int TaskID)
         {
-            TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && h.State == (int)TaskHourStatus.完成).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            List<int> _FStatelist = new List<int>
+            {
+                (int)TaskHourStatus.完成,
+                (int)TaskHourStatus.暂停,
+            };
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && _FStatelist.Contains(h.State)).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
             string _operater = _taskhour.TaskHourID > 0 ? _taskhour.Operater != null ? _taskhour.Operater : "" : "";
             return _operater;
         }
         public string GetMachineByTask(int TaskID)
         {
-            var _th = _context.TaskHours.Where(t => t.TaskID == TaskID).OrderByDescending(h=>h.TaskHourID).FirstOrDefault();
+            List<int> _FStatelist = new List<int>
+            {
+                (int)TaskHourStatus.完成,
+                (int)TaskHourStatus.暂停,
+            };
+            var _th = _context.TaskHours.Where(t => t.TaskID == TaskID && _FStatelist.Contains(t.State)).OrderByDescending(h=>h.TaskHourID).FirstOrDefault();
             if (_th != null)
             {
                 MachinesInfo _mInfo = _context.MachinesInfo.Where(m => m.MachineCode == _th.MachineCode).FirstOrDefault();
                 if (_mInfo != null)
                     return _mInfo.MachineName + "_" + _mInfo.MachineCode;
             }
-            return null;
+            return "";
         }
     }
 }

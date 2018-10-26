@@ -117,6 +117,9 @@ namespace TechnikSys.WebUI.Infrastructure
             ninjectKernel.Bind<IMGSettingRepository>().To<MGSettingRepository>();
             ninjectKernel.Bind<IWEDMSettingRepository>().To<WEDMSettingRepository>();
             ninjectKernel.Bind<IMachinesInfoRepository>().To<MachinesInfoRepository>();
+            ninjectKernel.Bind<IWH_TaskPeriodTypeRepository>().To<WH_TaskPeriodTypeRepository>();
+            ninjectKernel.Bind<IWH_WorkTypeRepository>().To<WH_WorkTypeRepository>();
+            ninjectKernel.Bind<IWH_TaskPeriodRecordRepository>().To<WH_TaskPeriodRecordRepository>();
         }
     }
 }

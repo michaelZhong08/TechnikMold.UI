@@ -67,23 +67,7 @@
 
     //WEDM、CNC、MG调用
     $("#AddToQueue").on("click", function () {
-        var _tasktype = $("#CurrentTaskType").val();
-        if (confirm) {
-            switch (_tasktype) {
-                //ELE
-                case "1":
-                    ScanBarcode();
-                    break;
-                //CNC
-                case "4":
-                    StartSteelTask();
-                    break;
-                default:
-                    SetupTaskStart('false');
-                    //StartTask();
-                    break;
-            }
-        }       
+        AddToQueue();
     });
     //Define priority level of selected tasks
     $(".priority").on("click", function () {
@@ -869,8 +853,14 @@ function PauseTask(TaskID) {
         url: "/Task/PauseTask?TaskID=" + TaskID,
         error: function () { },
         success: function (msg) {
-            alert(msg);
-            location.reload();
+            //重启加工状态任务
+            if (msg == "Restart") {
+                AddToQueue();
+            }
+            else {
+                alert(msg);
+                location.reload();
+            }            
         }
     })
 }
@@ -2152,4 +2142,24 @@ function LoadTaskMInfoList(tasktype, isWF) {
             $('#MInfoCodeDL').append($ohtml);
         });
     })
+}
+
+function AddToQueue() {
+    var _tasktype = $("#CurrentTaskType").val();
+    if (confirm) {
+        switch (_tasktype) {
+            //ELE
+            case "1":
+                ScanBarcode();
+                break;
+                //CNC
+            case "4":
+                StartSteelTask();
+                break;
+            default:
+                SetupTaskStart('false');
+                //StartTask();
+                break;
+        }
+    }
 }

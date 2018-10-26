@@ -116,5 +116,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public DbSet<WEDMCutSpeed> WEDMCutSpeeds { get; set; }
         public DbSet<WEDMPrecision> WEDMPrecisions { get; set; }
         public DbSet<MachinesInfo> MachinesInfo { get; set; }
+        public DbSet<WH_TaskPeriodType> WH_TaskPeriodType { get; set; }
+        public DbSet<WH_WorkType> WH_WorkType { get; set; }
+        public DbSet<WH_TaskPeriodRecord> WH_TaskPeriodRecords { get; set; }
     }
 }

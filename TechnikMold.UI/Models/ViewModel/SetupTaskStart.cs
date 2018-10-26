@@ -15,5 +15,6 @@ namespace TechnikMold.UI.Models.ViewModel
         public int UserID  { get; set; }
         public string UserName  { get; set; }
         public decimal TotalTime { get; set; }
+        public int Qty { get; set; }
     }
 }
