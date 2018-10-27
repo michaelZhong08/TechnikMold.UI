@@ -89,8 +89,8 @@
                                     <td><input type="checkbox" id="TaskType_CHE" /> &nbsp;<label>车</label></td>
                                 </tr>
                                 <tr>
+                                    <td><input type="checkbox" id="TaskType_QJG" /> &nbsp;<label>全加工</label></td>
                                     <td><input type="checkbox" id="TaskType_QC" /> &nbsp;<label>QC</label></td>
-                                    <td></td>
                                     <td></td>
                                     <td></td>
                                 </tr>
@@ -180,6 +180,10 @@
                 }
                 if (document.getElementById('TaskType_CHE').checked == true) {
                     _stype =_stype+ '3,';
+                    _tasktype = _tasktype + '6,';
+                }
+                if (document.getElementById('TaskType_QJG').checked == true) {
+                    _stype = _stype + '4,';
                     _tasktype = _tasktype + '6,';
                 }
                 if (document.getElementById('TaskType_QC').checked == true)
@@ -319,6 +323,7 @@
         document.getElementById('TaskType_M').checked = false;
         document.getElementById('TaskType_G').checked = false;
         document.getElementById('TaskType_QC').checked = false;
+        document.getElementById('TaskType_QJG').checked = false;
         $("#Capacity").val(0);
         $("#Downtime").val(0);
         $("#Cost").val(0);
@@ -366,6 +371,7 @@
         document.getElementById('TaskType_M').checked = false;
         document.getElementById('TaskType_G').checked = false;
         document.getElementById('TaskType_QC').checked = false;
+        document.getElementById('TaskType_QJG').checked = false;
         var _tasktypeName = $("#tb_MachinesInfo").getCell(row, "TaskTypeName");
         _tasktypeName = _tasktypeName.split(';');
         if (_tasktypeName.length > 0) {
@@ -388,6 +394,8 @@
                     document.getElementById('TaskType_CHE').checked = true;
                 if (_tasktypeName[i] == "QC")
                     document.getElementById('TaskType_QC').checked = true;
+                if (_tasktypeName[i] == "全加工")
+                    document.getElementById('TaskType_QJG').checked = true;
             }
         }
         ////

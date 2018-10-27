@@ -119,5 +119,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public DbSet<WH_TaskPeriodType> WH_TaskPeriodType { get; set; }
         public DbSet<WH_WorkType> WH_WorkType { get; set; }
         public DbSet<WH_TaskPeriodRecord> WH_TaskPeriodRecords { get; set; }
+        public DbSet<SupplierGroup> SupplierGroups { get; set; }
     }
 }

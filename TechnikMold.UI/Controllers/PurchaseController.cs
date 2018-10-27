@@ -22,6 +22,7 @@ using System.Configuration;
 using TechnikSys.MoldManager.UI.Models.ViewModel;
 using TechnikMold.UI.Models;
 using TechnikMold.UI.Models.ViewModel;
+using TechnikMold.UI.Models;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -59,6 +60,7 @@ namespace MoldManager.WebUI.Controllers
         private IPartListRepository _partListRepository;
         private ITaskHourRepository _taskHourRepository;
         private IMachinesInfoRepository _machinesinfoRepository;
+        private ISupplierGroupRepository _supplierGroupRepository;
         #endregion
         #region 构造
         public PurchaseController(IPartRepository PartRepository,
@@ -90,7 +92,8 @@ namespace MoldManager.WebUI.Controllers
             ICostCenterRepository CostCenterRepository,
             IPartListRepository partListRepository,
             ITaskHourRepository taskHourRepository,
-            IMachinesInfoRepository MachinesInfoRepository)
+            IMachinesInfoRepository MachinesInfoRepository,
+            ISupplierGroupRepository SupplierGroupRepository)
         {
             _partRepository = PartRepository;
             _prContentRepository = PRContentRepository;
@@ -123,6 +126,7 @@ namespace MoldManager.WebUI.Controllers
             _status = new PurchaseRequestStatus();
             _taskHourRepository = taskHourRepository;
             _machinesinfoRepository = MachinesInfoRepository;
+            _supplierGroupRepository = SupplierGroupRepository;
         }
         #endregion
 
@@ -723,7 +727,7 @@ namespace MoldManager.WebUI.Controllers
         }
 
         /// <summary>
-        /// Supplier create/save
+        /// TODO: Supplier create/save
         /// </summary>
         /// <param name="Supplier"></param>
         /// <returns></returns>
@@ -735,11 +739,14 @@ namespace MoldManager.WebUI.Controllers
             {
                 //未更新的设备名
                 string _name = _supplierRepository.QueryByID(Supplier.SupplierID).Name;
-                MachinesInfo _machinesinfo = _machinesinfoRepository.GetMInfoByName(_name);
-                if (!string.IsNullOrEmpty(_machinesinfo.MachineCode))
+                List<MachinesInfo> _machinesinfos = _machinesinfoRepository.GetMInfoByName(_name);
+                if (_machinesinfos!=null)
                 {
-                    _machinesinfo.MachineName = Supplier.Name;
-                    _machinesinfoRepository.Save(_machinesinfo);
+                    foreach(var m in _machinesinfos)
+                    {
+                        m.MachineName = Supplier.Name;
+                        _machinesinfoRepository.Save(m);
+                    }                    
                 }
             }            
             #endregion
@@ -881,6 +888,7 @@ namespace MoldManager.WebUI.Controllers
 
                 }
                 PurchaseContentGridViewModel _model;
+                //string mrPurDate = Service_GetPRMRDate();
                 _model = new PurchaseContentGridViewModel(_parts, _projectRepository);
 
                 return Json(_model, JsonRequestBehavior.AllowGet);
@@ -1725,6 +1733,7 @@ namespace MoldManager.WebUI.Controllers
 
                     _item.PurchaseUserID = _request == null ? 0 : _request.PurchaseUserID;
                     _item.QuotationRequestID = _requestID;
+                    _item.State = (int)PurchaseItemStatus.询价中;
                     _purchaseItemID = _content.PurchaseItemID;
 
                     _purchaseItemRepository.Save(_item);
@@ -2518,23 +2527,19 @@ namespace MoldManager.WebUI.Controllers
             }
             else
             {
+                PurchaseType _purchaseType = _purchaseTypeRepository.QueryByName("模具委外加工");
                 if (ContainParent)
                 {
-                    _types = _purchaseTypeRepository.PurchaseTypes.ToList();
+                    _types = _purchaseTypeRepository.PurchaseTypeTree().Where(p=> p.ParentTypeID != _purchaseType.PurchaseTypeID && p.PurchaseTypeID!= _purchaseType.PurchaseTypeID).ToList();
                 }
                 else
                 {
                     //默认类型 去掉委外加工
-                    _types = _purchaseTypeRepository.PurchaseTypes.Where(p => p.ParentTypeID > 0 && p.ParentTypeID!= 3).ToList();
+                    _types = _purchaseTypeRepository.PurchaseTypes.Where(p => p.ParentTypeID > 0 && p.ParentTypeID!= _purchaseType.PurchaseTypeID).ToList();
                 }
-
             }
-
-
-
             return Json(_types, JsonRequestBehavior.AllowGet);
         }
-
 
         #endregion
 
@@ -2552,7 +2557,6 @@ namespace MoldManager.WebUI.Controllers
                 _purchaseTypeIDs = _purchaseTypeRepository.QueryByParentID(ParentID).Select(t => t.PurchaseTypeID).ToList();
                 _purchaseTypeIDs.Add(ParentID);
             }
-
             return _purchaseTypeIDs;
         }
 
@@ -4414,6 +4418,125 @@ namespace MoldManager.WebUI.Controllers
             PurchaseOrderReportGridViewModel _viewModel = new PurchaseOrderReportGridViewModel(_items,
                 _purchaseTypeRepository, _supplierRepository, _purchaseOrderRepository, _costCenterRepository);
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
+        /// <summary>
+        /// 获取PR默认采购日期
+        /// </summary>
+        /// <param name="_purchaseTypeID"></param>
+        /// <returns></returns>
+        public string Service_GetPRMRDate(int _purchaseTypeID)
+        {
+            PurchaseType _purchaseType = _purchaseTypeRepository.QueryByID(_purchaseTypeID);
+            if (_purchaseType != null)
+            {
+                var mrPurCycle = _purchaseType.DefaultPeriod;
+                string mrPurDate = DateTime.Now.AddDays(mrPurCycle).ToString("yyyy-MM-dd");
+                return mrPurDate;
+            }
+            return DateTime.Now.ToString("yyyy-MM-dd");
+        }
+        #region 报价组
+        /// <summary>
+        /// 获取报价组列表
+        /// </summary>
+        /// <returns></returns>
+        public JsonResult Service_Json_SupplierGroups()
+        {
+            return Json(_supplierGroupRepository.QuerySGList(),JsonRequestBehavior.AllowGet);
+        }
+        /// <summary>
+        /// 根据ID获取报价组
+        /// </summary>
+        /// <param name="_sgID"></param>
+        /// <returns></returns>
+        public JsonResult Service_Json_SupplierGroupByID(int _sgID)
+        {
+            return Json(_supplierGroupRepository.QueryByID(_sgID), JsonRequestBehavior.AllowGet);
+        }
+        /// <summary>
+        /// 保存报价组信息
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public int Service_Save_SupplierGroup(SupplierGroup model)
+        {
+            int res = _supplierGroupRepository.Save(model);
+            return res;
+        }
+        /// <summary>
+        /// TODO:QR表格拼接成 URL CODE 字符串
+        /// </summary>
+        /// <param name="models"></param>
+        /// <returns></returns>
+        public string Service_GetPJStr(List<QRMailTable> models)
+        {
+            //model = new QRMailTable { PartName = "零件名", PartNum = "零件号", Spec = "规格", Qty = "数量", Material = "材料", Brand = "品牌", DrawRequired = "图纸", RequiredDate = "需求日期", Memo = "备注" };
+            int _intialLength = 20;
+            int judgeLength = 0;
+            string konggeStr = "%20";//空格
+            string huanghangStr = "%0A";//换行
+            string resStr = "";
+            //int[] colLength = new int[9];
+            int[] colLength =new int[] { 50, 30, 30, 10, 30, 15, 10, 20, 40};
+            if (models != null)
+            {
+                //foreach(var model in models)
+                //{
+                //    foreach (var p in model.GetType().GetProperties())
+                //    {
+                //        string name = p.Name;
+                //        var value = (p.GetValue(model, null) ?? "").ToString();
+
+                //        judgeLength = (_intialLength - value.Length);
+                //        if (judgeLength < 0)
+                //            _intialLength = _intialLength - judgeLength + 1;
+                //    }
+                //}
+                foreach (var model in models)
+                {
+                    var z = 0;
+                    foreach (var p in model.GetType().GetProperties())
+                    {                        
+                        _intialLength = colLength[z];
+                        z = z + 1;
+                        string name = p.Name;
+                        var value = (p.GetValue(model, null)??"").ToString();
+
+                        //judgeLength = _intialLength - value.Length;
+                        //if (judgeLength < 0)
+                        //    _intialLength = _intialLength - judgeLength + 1;
+
+                        //获取当前字符串宽度
+                        int pjLength = (_intialLength - GetStrLen(value));
+                        resStr = resStr + value;
+                        for (var i = 0; i < pjLength; i++)
+                        {
+                            resStr = resStr + konggeStr;
+                        }
+                    }
+                    resStr = resStr + huanghangStr;
+                }                
+            }           
+            return resStr;
+        }
+        /// <summary>
+        /// 获取当前字符串宽度
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public int GetStrLen(string val)
+        {
+            double len = 0;
+            foreach (char c in val)
+            { 
+                if (Toolkits.CheckStringChinese(c) > 0)
+                    len = len + Toolkits.CheckStringChinese(c);
+                else
+                    len = len + Toolkits.CheckStringASC(c);
+            }
+            return Convert.ToInt32(len);
         }
         #endregion
     }

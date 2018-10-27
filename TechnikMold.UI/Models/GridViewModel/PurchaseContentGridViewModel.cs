@@ -22,14 +22,14 @@ namespace MoldManager.WebUI.Models.GridViewModel
         /// </summary>
         /// <param name="Parts"></param>
         /// <param name="ProjectRepository"></param>
-        public PurchaseContentGridViewModel(IEnumerable<Part> Parts, IProjectRepository ProjectRepository)
+        public PurchaseContentGridViewModel(IEnumerable<Part> Parts, IProjectRepository ProjectRepository, string mrPurDate = "")
         {
             rows = new List<PurchaseContentGridRowModel>();
             string MoldNumber;
             foreach (Part _part in Parts)
             {
                 MoldNumber= _part.Name.Split(new char[] { '_' })[0]??"";
-                rows.Add(new PurchaseContentGridRowModel(_part, MoldNumber));
+                rows.Add(new PurchaseContentGridRowModel(_part, mrPurDate, MoldNumber));
             }
             Page = 1;
             Total = Parts.Count() ;
@@ -44,17 +44,18 @@ namespace MoldManager.WebUI.Models.GridViewModel
         /// <param name="SteelDrawingRepo"></param>
         /// <param name="TaskRepository"></param>
         public PurchaseContentGridViewModel(IEnumerable<Task> Tasks,
-            List<SetupTaskStart> _viewmodel,
+            List<SetupTaskStart> _viewmodel,            
             IProjectPhaseRepository ProjectPhaseRepository, 
             ISteelCAMDrawingRepository SteelDrawingRepo,
-            ITaskRepository TaskRepository
+            ITaskRepository TaskRepository,
+            string mrPurDate = ""
             )
         {
             rows = new List<PurchaseContentGridRowModel>();
             foreach (var m in _viewmodel)
             {
                 Task _task = TaskRepository.QueryByTaskID(m.TaskID) ?? new Task();
-                rows.Add(new PurchaseContentGridRowModel(_task, m, ProjectPhaseRepository, SteelDrawingRepo));
+                rows.Add(new PurchaseContentGridRowModel(_task, m, mrPurDate, ProjectPhaseRepository, SteelDrawingRepo));
             }
             Page=1;
             Total=Tasks.Count();
@@ -64,12 +65,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
         /// 数据源：备库
         /// </summary>
         /// <param name="WarehouseStocks"></param>
-        public PurchaseContentGridViewModel(IEnumerable<WarehouseStock> WarehouseStocks)
+        public PurchaseContentGridViewModel(IEnumerable<WarehouseStock> WarehouseStocks, string mrPurDate = "")
         {
             rows = new List<PurchaseContentGridRowModel>();
             foreach (WarehouseStock _stock in WarehouseStocks)
             {
-                rows.Add(new PurchaseContentGridRowModel(_stock));
+                rows.Add(new PurchaseContentGridRowModel(mrPurDate,_stock));
             }
             Page = 1;
             Total = WarehouseStocks.Count();

@@ -167,10 +167,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             var _mInfos = (_context.MachinesInfo.Where(m=>m.IsActive==true && m.Status==1)).ToList().Where(m => m.TaskType.Split(',').Contains(TaskType.ToString())).ToList();
             return _mInfos;
         }
-        public MachinesInfo GetMInfoByName(string MName)
+        public List<MachinesInfo> GetMInfoByName(string MName)
         {
-            MachinesInfo _machinesinfo = _context.MachinesInfo.Where(m => m.IsActive == true && m.MachineName == MName).FirstOrDefault() ?? new MachinesInfo();
-            return _machinesinfo;
+            List<MachinesInfo> _machinesinfos = _context.MachinesInfo.Where(m => m.IsActive == true && m.MachineName == MName).ToList();
+            return _machinesinfos;
         }
     }
 }

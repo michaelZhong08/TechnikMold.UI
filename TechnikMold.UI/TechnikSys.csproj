@@ -328,6 +328,7 @@
     <Compile Include="Models\ViewModel\Purchase2ViewForExport.cs" />
     <Compile Include="Models\ViewModel\PurchaseTypePOViewModel.cs" />
     <Compile Include="Models\ViewModel\PurchaseViewForExport.cs" />
+    <Compile Include="Models\ViewModel\QRMailTable.cs" />
     <Compile Include="Models\ViewModel\QRQuotationSummaryViewModel.cs" />
     <Compile Include="Models\ViewModel\QRViewModel.cs" />
     <Compile Include="Models\ViewModel\QuotationFileViewModel.cs" />

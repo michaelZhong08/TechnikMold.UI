@@ -60,8 +60,8 @@
             }
             else
             {
-               if (DeptID==4)
-               {
+                if (DeptID == 4)
+                {
                     switch (Model.State)
                     {
                         case (int)QuotationRequestStatus.新建:
@@ -70,11 +70,13 @@
                             <button class="btn btn-primary" id="SaveQR">保存询价单</button>
                             <button class="btn btn-warning" id="CancelQR">取消</button>
                             <button class="btn btn-primary" id="SelectQRSupplier">选择供应商</button>
-                            <button class="btn btn-primary" id="SendQR">生成询价文件</button>
+                            <button class="btn btn-primary" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span> 询价文件</button>
+                            <button class="btn btn-primary" id="GenerateLink"><span class="glyphicon glyphicon-link"></span> 发送邮件</button>
                             <button class="btn btn-primary" id="ExportStdData">标准件信息输出</button>
                             break;
                         case (int)QuotationRequestStatus.发出:
-                            <button class="btn btn-primary" id="SendQR">发送询价单</button>
+                            <button class="btn btn-primary" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span> 询价文件</button>
+                            <button class="btn btn-primary" id="GenerateLink"><span class="glyphicon glyphicon-link"></span> 发送邮件</button>
                             <button class="btn btn-primary" id="SelectQRSupplier">选择供应商</button>
                             <button class="btn btn-primary" id="QuotationInput">输入供应商报价</button>
                             <button class="btn btn-primary" id="CompareQuotation">报价对比&供应商指定</button>
@@ -86,7 +88,8 @@
                             <button class="btn btn-primary" id="CompareQuotation">报价对比&生成订单</button>
                             break;
                     }
-               }
+                    
+                }
             }
         </div>
         <div id="Basic" class="col-sm-10 PRInfo">
@@ -417,6 +420,15 @@
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script type="text/javascript">
     $(document).ready(function () {
+        $('#GenerateLink').on('click',function(){
+            var tableContent=PJTable();
+            $.get('/Purchase/Service_GetPJStr',tableContent, function (res) {
+                var aStr = PJHref('QWERYRO', 'micheal_zhong@outlook.com', 'subject', res);
+                $('#Toolbar').append(aStr);
+                document.getElementById("qrMail").click();
+            });
+        })
+
         LoadMaterials();
         @if (ViewBag.QuotationRequestID != 0)
         {
@@ -520,5 +532,46 @@
                 }
             }
         })
+    }
+    //发送邮件链接
+    function PJHref(aName,shoujian,subject,body) {
+        var hrefstr = '<a id="qrMail" href="mailto:' + shoujian + '?subject=' + subject + '&amp;body=' + body + '"hidden >'+aName+'</a>';
+        return hrefstr;
+    }
+
+    function PJTable(){
+        var rowData = $("#QRContentGrid").jqGrid("getRowData");
+        var itemData = "";
+        var name = "models";
+        var _iniStr=['零件名','零件号','规格','数量','材料','品牌','图纸','需求日期','备注'];
+        if (rowData.length > 0) {
+            itemData = itemData + name + "[" + 0 + "].PartName=" + _iniStr[0] + "&" +
+                           name + "[" + 0 + "].PartNum=" + _iniStr[1] + "&" +
+                           name + "[" + 0 + "].Spec=" + _iniStr[2] + "&" +
+                           name + "[" + 0 + "].Qty=" + _iniStr[3] + "&" +
+                           name + "[" + 0 + "].Material=" + _iniStr[4] + "&" +
+                           name + "[" + 0 + "].Brand=" + _iniStr[5] + "&" +
+                           name + "[" + 0 + "].DrawRequired=" + _iniStr[6] + "&" +
+                           name + "[" + 0 + "].RequiredDate=" + _iniStr[7] + "&" +
+                           name + "[" + 0 + "].Memo=" + _iniStr[8] + "&";
+            for (var i = 0; i < rowData.length; i++) {
+                j=i+1;
+                itemData = itemData + name + "[" + j + "].PartName=" + rowData[i].PartName + "&" +
+                           name + "[" + j + "].PartNum=" + rowData[i].PartNumber + "&" +
+                           name + "[" + j + "].Spec=" + rowData[i].PartSpecification + "&" +
+                           name + "[" + j + "].Qty=" + rowData[i].Quantity + "&" +
+                           name + "[" + j + "].Material=" + rowData[i].MaterialName + "&" +
+                           name + "[" + j + "].Brand=" + rowData[i].BrandName + "&" +
+                           name + "[" + j + "].DrawRequired=" + rowData[i].PurchaseDrawing + "&" +
+                           name + "[" + j + "].RequiredDate=" + rowData[i].RequireDate + "&" +
+                           name + "[" + j + "].Memo=" +" " + "&"
+            }
+            itemData=itemData.substring(0,itemData.length-1);
+            return itemData;
+        }
+        else{
+            alert('当前页面不存在数据行！');
+            return false;
+        }
     }
 </script>

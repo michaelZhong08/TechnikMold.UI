@@ -1046,7 +1046,7 @@ function PRListGrid(Department, State) {
             { label: '状态', name: 'Status', width: 75 },
             { label: "备注", name: "Memo", width: 100 },
             { label: '申请人', name: 'ApprovalUser', width: 75 },
-            {label: 'ERP料号同步', name: 'ERPPartStatus', width: 75, 
+            {label: 'ERP料号同步', name: 'ERPPartStatus', width: 75, hidden:true,
             formatter: function (cellvalue, options, rowObject) {
                 var status;
                 if (cellvalue == 'True')

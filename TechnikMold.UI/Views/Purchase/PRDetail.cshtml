@@ -325,7 +325,7 @@
                             </select>
                         </td>
                     </tr>
-                    <tr id="brandtr" style="display:none;">
+                    <tr id="brandtr" >
                         <td class="col-sm-4">品牌</td>
                         <td class="col-sm-8">
                             <select class="form-control required" id="Brand" name="BrandID"></select>
@@ -334,7 +334,10 @@
                     <tr>
                         <td class="col-sm-4">供应商</td>
                         <td class="col-sm-8">
-                            <select class="form-control" id="AvailableSuppliers" name="SupplierID"></select>
+                            @*<select class="form-control" id="AvailableSuppliers" name="SupplierID"></select>*@
+                            <input id="AvailableSuppliers" list="modal_SupplierIDD" type="text" name="AvailableSuppliers" class="form-control" />
+                            <datalist id="modal_SupplierIDD"></datalist>
+                            @*<input id="AvailableSuppliers" name="SupplierID" hidden>*@
                         </td>
                     </tr>
                     <tr>
@@ -613,7 +616,14 @@
         })
 
         $("#PurchaseType").on("change", function(){
-            SetDefaultDate();
+            $.get('/Purchase/GetPurchaseTypeInfo?PurchaseTypeID='+$('#PurchaseType').val(),function(res){
+                if(res.ParentTypeID==0){
+                    $("#PurchaseType").val('');
+                }
+                else{
+                    SetDefaultDate();
+                }
+            })            
         })
 
         $("#PartSearchBtn").on("click", function(){           
@@ -646,7 +656,9 @@
                 }
             })
         }
-        SupplierListImport();
+
+        SupplierListImport('SupplierIDD');
+        SupplierListImport('modal_SupplierIDD');
 
         $("#SupplierName").on('change', function(){
             SetSupplier();
@@ -718,16 +730,27 @@
                                                                 }
         else
         {
-            @:_url = "/Purchase/JsonPurchaseTypes?ContainParent=false";
+            @:_url = "/Purchase/JsonPurchaseTypes?ContainParent=true";
                                                         }
         if (_url!=""){
             $.getJSON(_url, function(msg){
                 $("#PurchaseType").append($("<option/>", {value:0,text:"-"}))
                 $.each(msg, function(i,n){
-                    if (@ViewBag.TaskType==n.TaskType){
+                    if (@ViewBag.TaskType==n.TaskType && @ViewBag.TaskType!=0){
                         $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID,text:n.Name, selected:true}))
                     }else{
-                    $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID,text:n.Name}))
+                        if(n.ParentTypeID==0){
+                            $("#PurchaseType").append(
+                                $("<option/>", {
+                                    value:n.PurchaseTypeID,text:'----'+n.Name+'----'
+                                }));
+                        }
+                        else{
+                            $("#PurchaseType").append(
+                                $("<option/>", {
+                                    value:n.PurchaseTypeID,text:n.Name
+                                }));
+                        }
                     }
                 })
             })
@@ -787,18 +810,23 @@
     function SetDefaultDate(){
         var _typeID=Number($("#PurchaseType").val());
         if (_typeID!=0){
-            var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+_typeID;
-            $.ajax({
-                url:_url,
-                type:"Get",
-                success:function(msg){
-                    var _defaultPeriod = Number(msg.DefaultPeriod);
-                    var _curDate = new Date();
-                    _curDate.setDate(_curDate.getDate()+_defaultPeriod);
-                    var _defaultDate = _curDate.getFullYear()+"-0"+(_curDate.getMonth()+1)+"-"+_curDate.getDate();
+            //var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+_typeID;
+            //$.ajax({
+            //    url:_url,
+            //    type:"Get",
+            //    success:function(msg){
+            //        var _defaultPeriod = Number(msg.DefaultPeriod);
+            //        var _curDate = new Date();
+            //        _curDate.setDate(_curDate.getDate()+_defaultPeriod);
+            //        var _defaultDate = _curDate.getFullYear()+"-0"+(_curDate.getMonth()+1)+"-"+_curDate.getDate();
 
-                    SaveRequireDate(_defaultDate);
-                }
+            //        SaveRequireDate(_defaultDate);
+            //    }
+            //})
+            $.get('/Purchase/Service_GetPRMRDate?_purchaseTypeID='+_typeID,function(res){
+                //SaveRequireDate(_defaultDate);
+                $('#RequireDateVal').val(res);
+                SaveRequireDate( res);
             })
         }
     }
@@ -957,9 +985,9 @@
         }
     }
 
-    function SupplierListImport(){
+    function SupplierListImport(_suplistID){
         var js='';
-        $('#SupplierIDD').html('');
+        $('#'+_suplistID).html('');
         $.get('/Purchase/JsonSuppliersByJS?js='+js,function(res){
             console.log(typeof(res));
             var fo=res.toString();
@@ -971,7 +999,7 @@
                 var v2=fo[i].split('-')[1];
                 var ohtml = "<option value='"+v1+"'>"+v2+"</option>";
                 var $ohtml = $(ohtml);
-                $('#SupplierIDD').append($ohtml);
+                $('#'+_suplistID).append($ohtml);
             }
         });
     }
@@ -1024,6 +1052,7 @@
         }
         else{
             $("#PRContentGrid").setGridParam().showHideCol("BrandName");
+            //$('#brandtr').show();
         }
     }
 

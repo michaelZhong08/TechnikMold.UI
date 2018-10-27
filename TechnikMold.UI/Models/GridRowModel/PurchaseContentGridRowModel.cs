@@ -12,7 +12,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
     {
         public string[] cell;
         //新建PR单
-        public PurchaseContentGridRowModel(Part Part, string MoldNumber)
+        public PurchaseContentGridRowModel(Part Part,string mrPurDate, string MoldNumber)
         {
             cell = new string[22];
             cell[0] = "";
@@ -32,7 +32,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             
             cell[14] = "新建";
             cell[15] = "0";
-            cell[16] = "";
+            cell[16] = mrPurDate;
             cell[17] = MoldNumber;
             cell[18] = "";
             cell[19] = "";
@@ -40,7 +40,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[21] = Part.Memo;
         }
         //外发任务
-        public PurchaseContentGridRowModel(Task Task, SetupTaskStart _setuptaskStart, IProjectPhaseRepository ProjectPhaseRepository, ISteelCAMDrawingRepository SteelDrawingRepo)
+        public PurchaseContentGridRowModel(Task Task, SetupTaskStart _setuptaskStart,string mrPurDate, IProjectPhaseRepository ProjectPhaseRepository, ISteelCAMDrawingRepository SteelDrawingRepo)
         {
             int _phaseID = 0;
             cell = new string[25];
@@ -76,7 +76,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             
             cell[14] = "新建";
             cell[15] = "0";
-            cell[16] = Task.PlanTime.ToString("yyyy-MM-dd");
+            cell[16] = mrPurDate??Task.PlanTime.ToString("yyyy-MM-dd");
             cell[17] = Task.MoldNumber;
             cell[18] = "";
             cell[19] = "";
@@ -87,7 +87,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[24] = _setuptaskStart.MachinesCode ?? "";
         }
         //库存新增
-        public PurchaseContentGridRowModel(WarehouseStock StockItem)
+        public PurchaseContentGridRowModel(string mrPurDate, WarehouseStock StockItem)
         {
             cell = new string[22];
             cell[0] = "";
@@ -109,7 +109,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             
             cell[14] = "新建";
             cell[15] = "0";
-            cell[16] = "";
+            cell[16] = mrPurDate;
             cell[17] = "XX";
             cell[18] = "";
             cell[19] = "";

@@ -48,6 +48,8 @@ namespace TechnikMold.UI.Models.GridViewModel
                         _typeName = _typeName + "磨床;";
                     if (m.Stype.Contains("3"))
                         _typeName = _typeName + "车;";
+                    if (m.Stype.Contains("4"))
+                        _typeName = _typeName + "全加工;";
                 }
                 if (m.TaskType.Contains("100"))
                 {

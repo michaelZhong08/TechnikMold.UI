@@ -18,6 +18,6 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         int IsNullMachinesInfo(MachinesInfo model);
         string GenerateCode(string TaskType, string _FirstLetter = "");
         List<MachinesInfo> GetMInfoByTaskType(int TaskType);
-        MachinesInfo GetMInfoByName(string MName);
+        List<MachinesInfo> GetMInfoByName(string MName);
     }
 }

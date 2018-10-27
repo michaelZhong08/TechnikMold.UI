@@ -97,6 +97,7 @@
     <Compile Include="Abstract\IMachinesInfoRepository.cs" />
     <Compile Include="Abstract\IMaterialRepository.cs" />
     <Compile Include="Abstract\IMGSettingRepository.cs" />
+    <Compile Include="Abstract\ISupplierGroupRepository.cs" />
     <Compile Include="Abstract\IWH_TaskPeriodRecordRepository.cs" />
     <Compile Include="Abstract\IWH_WorkTypeRepository.cs" />
     <Compile Include="Abstract\IOutStockFormRepository.cs" />
@@ -233,6 +234,7 @@
     <Compile Include="Concrete\StockTypeRepository.cs" />
     <Compile Include="Concrete\SupplierBrandRepository.cs" />
     <Compile Include="Concrete\SupplierCategoryRepository.cs" />
+    <Compile Include="Concrete\SupplierGroupRepository.cs" />
     <Compile Include="Concrete\SupplierRepository.cs" />
     <Compile Include="Concrete\SystemConfigRepository.cs" />
     <Compile Include="Concrete\TaskHourCostRepository.cs" />
@@ -330,6 +332,7 @@
     <Compile Include="Entity\Supplier.cs" />
     <Compile Include="Entity\SupplierBrand.cs" />
     <Compile Include="Entity\SupplierCategory.cs" />
+    <Compile Include="Entity\SupplierGroup.cs" />
     <Compile Include="Entity\SystemConfig.cs" />
     <Compile Include="Entity\Task.cs" />
     <Compile Include="Entity\TaskHour.cs" />

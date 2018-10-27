@@ -845,7 +845,8 @@ function AddPRContent(row) {
             Hardness: $("#HardnessID option:selected").text(),
             Specification: $("#Specification").val(),
             BrandName: $("#Brand option:selected").text() == "-" ? "" : $("#Brand option:selected").text(),
-            SupplierName: $("#AvailableSuppliers option:selected").text() == "-" ? "" : $("#AvailableSuppliers option:selected").text(),
+            //SupplierName: $("#AvailableSuppliers option:selected").text() == "-" ? "" : $("#AvailableSuppliers option:selected").text(),
+            SupplierName: $('#AvailableSuppliers').val(),
             Memo: $("#Memo").val(),
             State: $("#State").val(),
             RequireTime: $("#RequireDate").val(),
@@ -859,7 +860,7 @@ function AddPRContent(row) {
         var Material=$("#MaterialID option:selected").text() == "-" ? " " : $("#MaterialID option:selected").text();
         var Hardness=$("#HardnessID option:selected").text() == "-" ? " " : $("#HardnessID option:selected").text();
         var BrandName = $("#Brand option:selected").text() == "-" ? " " : $("#Brand option:selected").text();
-        var SupplierName = $("#AvailableSuppliers option:selected").text() == "-" ? " " : $("#AvailableSuppliers option:selected").text();
+        var SupplierName = $('#AvailableSuppliers').val();
         $("#PRContentGrid").jqGrid('setCell', _rowno, 'Name', $("#Name").val());
         $("#PRContentGrid").jqGrid('setCell', _rowno, 'Quantity', $("#Quantity").val());
         $("#PRContentGrid").jqGrid('setCell', _rowno, 'Specification', $("#Specification").val());
@@ -928,15 +929,16 @@ function EditPrContent(id, row) {
         var brName = $("#PRContentGrid").getCell(row, "BrandName");
         LoadBrands(brName);
 
-        $("#AvailableSuppliers option").each(function () {
-            var supp = $("#PRContentGrid").getCell(row, "SupplierName")
-            if ($(this).text() == $("#PRContentGrid").getCell(row, "SupplierName")) {
-                //$(this).attr("selected", "true");
-                var $v = $(this);
-                var v = $v[0];
-                v.selected = 'selected';
-            }
-        })
+        //$("#AvailableSuppliers option").each(function () {
+        //    var supp = $("#PRContentGrid").getCell(row, "SupplierName")
+        //    if ($(this).text() == $("#PRContentGrid").getCell(row, "SupplierName")) {
+        //        //$(this).attr("selected", "true");
+        //        var $v = $(this);
+        //        var v = $v[0];
+        //        v.selected = 'selected';
+        //    }
+        //})
+        $('#AvailableSuppliers').val($("#PRContentGrid").getCell(row, "SupplierName"));
         //var _requireDate = renderDate($("#PRContentGrid").getCell(row, "RequireTime"));
         var _requireDate = $("#PRContentGrid").getCell(row, "RequireTime");
         _requireDate = _requireDate == "1970-01-01" || _requireDate == "1900-01-01" ? getNowFormatDate() : _requireDate;
@@ -989,6 +991,7 @@ function LoadSupplier(SupplierID) {
         $("#TaxRate").val(msg.TaxRate);
         $("#Settlement").val(msg.Settlement);
         $("#Enabled").val(msg.Enabled);
+        $('#JianSuo').val(msg.JianSuo);
     });
 
     $("#SupplierEdit").modal("show");
