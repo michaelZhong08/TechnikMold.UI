@@ -26,7 +26,33 @@
 }
 <style>
     tr:nth-child(even){background-color:#ffffff;}
-    
+    #ProjectGrid p{
+        width:100%;
+        line-height:30px;
+        text-align:center;
+        margin:0px;
+        padding:0px;
+        float:left;
+        font-size:12px;
+        /*font-weight:bold;*/
+        color:rgba(0,0,0,1);
+    }
+    #ProjectGrid td{
+        margin:0px!important;
+        padding:0px!important;
+        height:30px;
+        text-align:center;
+        vertical-align:middle;
+        font-size:12px;
+    }
+    #ProjectGrid input{
+        height:24px;
+        border-style:none;
+        outline:none;
+        font-size:12px;
+        margin:0px;
+        padding:0px;
+    }
 </style>
 <div style="margin-top:60px">
     <div class="col-sm-12">        
@@ -90,15 +116,11 @@
             </li>
         }
         
-        
-
         <li id="FinishPhase">
             <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
             <span style="font-size:12px; font-family:Verdana">阶段结束</span>
         </li>
-        
-        
-        
+               
         <li id="AddMemo">
             <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/memo.png" /></span>
             <span style="font-size:12px; font-family:Verdana">修改备注</span>
@@ -412,22 +434,6 @@
 <script src="~/Scripts/Project.js"></script>
 <script type="text/javascript">
     $(document).ready(function(){
-        //$('#ProjectGrid').mousedown(function(e){ 
-        //    if(3 == e.which){ 
-        //        var pjID=GetCurrentID1("ProjectGrid");
-        //        $.ajax({
-        //            url: "/Project/IsMainPJ?pjID=" + pjID,
-        //            type: 'get',
-        //            success: function (res) {
-        //                $('#AddProject').css('display', 'none');
-        //                //if (res!='True')
-        //                //    $('#AddProject').css('display', 'none');
-        //                //else
-        //                //    $('#AddProject').css('display', 'inline');
-        //            }
-        //        })
-        //    }
-        //})
 
         GetPhases("PhaseID", @ViewBag.Type);
         GetPhases("FinishPhaseID", @ViewBag.Type);

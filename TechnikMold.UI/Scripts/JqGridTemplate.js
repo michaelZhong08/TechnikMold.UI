@@ -60,78 +60,80 @@ function ProjectGrid(keyword, state, type, depID) {
         colModel: [
             { label: '', name: 'ID', width: 75, hidden: true },
             {
-                label: '项目号', name: 'ProjectNo', key: true, width: 75, align: "center",
+                label: '项目号', name: 'ProjectNo', key: true, width: 85, align: "center",
                 cellattr: function (rowID, tv, rawobject, cm, rdata) {
                     return 'id=\'ProjectNo' + rowID + "\'";
                 }, hidden: true, sorttable: false
             },
             {
-                label: '模具号', name: 'MoldNo', width: 75,
+                label: '模具号', name: 'MoldNo', width: 80,
                 cellattr: function (rowID, tv, rawobject, cm, rdata) {
                     return 'id=\'MoldNo' + rowID + "\'";
                 }, sorttable: false
             },
             {
-                label: "类型", name: 'Type', width: 60, sorttable: false
+                label: "类型", name: 'Type', width: 70, sorttable: false
             },
             {
-                label: 'CAD', name: 'CAD', width: 75, sorttable: false,
+                label: 'CAD', name: 'CAD', width: 60, sorttable: false, editable: true,  
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
+                sorttype : "date",
                 cellattr: function () { return 'id=1'; }
             },
             {
-                label: 'CAM', name: 'CAM', width: 75, sorttable: false,
+                label: 'CAM', name: 'CAM', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=2'; }
             },
             {
-                label: '采购', name: 'Purchase', width: 75, sorttable: false,
+                label: '采购', name: 'Purchase', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=3'; }
             },
             {
-                label: '开粗', name: 'Prototype', width: 75, sorttable: false,
+                label: '开粗', name: 'Prototype', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=4'; }
             },
             {
-                label: 'CNC开粗', name: 'CNCPrototype', width: 75, sorttable: false,
+                label: 'CNC开粗', name: 'CNCPrototype', width: 75, sorttable: false, editable: true,
                 cellattr: function () { return 'id=5'; }
             },
             {
-                label: '热处理', name: 'HeatProcess', width: 75, sorttable: false,
+                label: '热处理', name: 'HeatProcess', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=6'; }
             },
             {
-                label: '磨床', name: 'Grinding', width: 75, sorttable: false,
+                label: '磨床', name: 'Grinding', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=7'; }
             },
             {
-                label: 'CNC', name: 'CNC', width: 75, sorttable: false,
+                label: 'CNC', name: 'CNC', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=8'; }
             },
             {
-                label: 'EDM', name: 'EDM', width: 75, sorttable: false,
+                label: 'EDM', name: 'EDM', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=9'; }
             },
             {
-                label: 'WEDM', name: 'WEDM', width: 75, sorttable: false,
+                label: 'WEDM', name: 'WEDM', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=10'; }
             },
             {
-                label: '装配', name: 'Assembly', width: 75, sorttable: false,
+                label: '装配', name: 'Assembly', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=11'; }
             },
             {
-                label: '试模', name: 'FOT', width: 75, sorttable: false,
+                label: '试模', name: 'FOT', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=12'; }
             },
             {
-                label: 'OTS', name: 'OTS', width: 75, sorttable: false,
+                label: 'OTS', name: 'OTS', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=13'; }
             },
             {
-                label: 'PPAP', name: 'PPAP', width: 75, sorttable: false,
+                label: 'PPAP', name: 'PPAP', width: 60, sorttable: false, editable: true,
                 cellattr: function () { return 'id=14'; }
             },
             {
-                label: '备注', name: 'Memo', width: 100, sorttable: false,
+                label: '备注', name: 'Memo', width: 110, sorttable: false,
                 cellattr: function (rowID, tv, rawobject, cm, rdata) {
                     return 'id=\'Memo' + rowID + "\'";
                 }
@@ -145,7 +147,8 @@ function ProjectGrid(keyword, state, type, depID) {
         rowNum: 60,
         pager: "#jqGridPager",
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
-
+        cellEdit: true,
+        shrinkToFit: false,
         gridComplete: function () {
             var gridName = "ProjectGrid";
             Merger(gridName, 'ProjectNo');
@@ -161,7 +164,67 @@ function ProjectGrid(keyword, state, type, depID) {
                 location.href = "/Project/Edit?ProjectID=" + id;
             }
         },
+        //点击单元格事件
+        onCellSelect: function (rowid, iCol, cellcontent, event) {
+            
+            //列 TotalTime
+            var rowType = $("#ProjectGrid").getCell(rowid, "Type");
+            if (rowType == '调整计划') {
+                $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                var item = $(event.target).closest("td");
+                $("#selPhase").val(item[0].id);
+            }
+            else {
+                $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+            }
+        },
+        formatCell: function (rowid, cellname, value, iRow, iCol) {
+            var _inptID = rowid + '_' + cellname;
+            var _index1 = value.indexOf('>');
+            var _index2 = value.lastIndexOf('<');
+            if (_index1 > 0)
+                value = value.substring(_index1 + 1, _index2);
+            return value;
+        },
+        beforeSaveCell: function (rowid, cellname, value, iRow, iCol) {
+            //value yyyy-MM-dd
+            var _phaseID = $("#selPhase").val();;
+            var _projID = GetCurrentID("ProjectGrid");
 
+        },
+        afterSaveCell: function (rowid, cellname, value, iRow, iCol) {
+            //判断 调整日期 当前日期 
+            //value='2018-10-28' value='18/10/28'
+            if (value.length == 8) {
+                value.replace(new RegExp('/', 'g'), '-');
+                value = '20' + value;
+            }
+                
+            var tzDate = value
+            var nowDate = new Date();
+            nowDate = getNowFormatDate();
+
+            //alert(tzDate + '_' + nowDate);
+            //时间格式 yyyy-MM-dd
+            var tzDate = new Date(tzDate);
+            var nowDate = new Date(nowDate);
+            var dayiff = ((tzDate - nowDate) / (1000 * 60 * 60 * 24));
+            var pValue;
+
+            if (value.length ==10)
+                value = value.substring(2, value.length);
+            value = value.replace(/-/g, '/');
+           
+            if (dayiff < 0)
+                pValue = '<p style="background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );">' + value + '</p>';
+            else if (dayiff >= 0 && dayiff <= 3)
+                pValue = '<p style="background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );">' + value + '</p>';
+            else
+                pValue = value;//value.substring(2, value.length)
+
+            //更新单元格标签
+            $("#ProjectGrid").jqGrid('setCell', rowid, cellname, pValue);
+        },
         loadComplete: function () {
             $(".jqgrow", this).contextMenu("ProjectContextMenu", {
                 bindings: {
@@ -2483,4 +2546,21 @@ function GetAllValues(GridTableName, ColName) {
         _value = _value == "" ? $("#" + GridTableName).getCell(_rows[i], ColName) : _value + "," + $("#" + GridTableName).getCell(_rows[i], ColName);
     }
     return _value;
+}
+
+//获取当前时间，格式YYYY-MM-DD
+function getNowFormatDate() {
+    var date = new Date();
+    var seperator1 = "-";
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = year + seperator1 + month + seperator1 + strDate;
+    return currentdate;
 }

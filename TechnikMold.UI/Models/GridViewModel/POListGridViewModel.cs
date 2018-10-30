@@ -30,8 +30,9 @@ namespace MoldManager.WebUI.Models.GridViewModel
             {
                 foreach (PurchaseOrder _order in Orders)
                 {
-
-                    string Supplier = SupplierRepository.QueryByID(_order.SupplierID).Name;
+                    string Supplier = "";
+                    if (SupplierRepository.QueryByID(_order.SupplierID)!=null)
+                        Supplier = SupplierRepository.QueryByID(_order.SupplierID).Name;
                     string PurchaseType;
                     try
                     {

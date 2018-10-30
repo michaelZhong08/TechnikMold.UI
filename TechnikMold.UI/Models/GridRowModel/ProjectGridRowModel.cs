@@ -143,17 +143,17 @@ namespace MoldManager.WebUI.Models.GridRowModel
                     switch (PhaseType)
                     {
                         case 1:
-                            _date = _projectPhase.PlanFinish.ToString("yy-MM-dd");
+                            _date = _projectPhase.PlanFinish.ToString("yyyy-MM-dd");
                             cell[3] = "原计划";
                             cell[_phaseSeq + 4] = _date == "01-01-01" ? "" : _date;
                             break;
                         case 2:
-                            _date = _projectPhase.PlanCFinish.ToString("yy-MM-dd");
+                            _date = _projectPhase.PlanCFinish.ToString("yyyy-MM-dd");
                             cell[3] = "调整计划";
                             cell[_phaseSeq + 4] = _date == "01-01-01" ? "" : _date;
                             break;
                         case 3:
-                            _date = _projectPhase.ActualFinish.ToString("yy-MM-dd");
+                            _date = _projectPhase.ActualFinish.ToString("yyyy-MM-dd");
                             cell[3] = "实际完成";
                             cell[_phaseSeq + 4] = _date == "01-01-01" ? "" : _date;
                             break;

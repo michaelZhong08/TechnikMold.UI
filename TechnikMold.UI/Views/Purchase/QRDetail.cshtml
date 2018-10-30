@@ -421,12 +421,22 @@
 <script type="text/javascript">
     $(document).ready(function () {
         $('#GenerateLink').on('click',function(){
-            var tableContent=PJTable();
-            $.get('/Purchase/Service_GetPJStr',tableContent, function (res) {
-                var aStr = PJHref('QWERYRO', 'micheal_zhong@outlook.com', 'subject', res);
-                $('#Toolbar').append(aStr);
-                document.getElementById("qrMail").click();
-            });
+            //var tableContent=PJTable();
+            //$.get('/Purchase/Service_GetPJStr',tableContent, function (res) {
+            //    var aStr = PJHref('QWERYRO', 'micheal_zhong@outlook.com', 'subject', res);
+            //    $('#Toolbar').append(aStr);
+            //    document.getElementById("qrMail").click();
+            //});
+            var qrID=Number($('#QuotationRequestID').val());
+            $.get('/Purchase/Service_Add_MailListenRecord?RecordID='+qrID+'&RecordType=QR',function(res){
+                res=JSON.parse(res);
+                if(res.Code==0){
+                    alert(res.Message);
+                }
+                else{
+                    alert(res.Message);
+                }
+            })
         })
 
         LoadMaterials();

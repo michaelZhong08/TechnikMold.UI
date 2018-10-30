@@ -1233,6 +1233,72 @@ namespace MoldManager.WebUI.Controllers
             QRViewModel _model = new QRViewModel(_qrContents, _user, _qr);
             return View(_model);
         }
+        public ActionResult Service_Add_MailListenRecord(int RecordID,string RecordType)
+        {
+            try
+            {
+                string _user = (_userRepository.GetUserByID(GetCurrentUser()) ?? new User()).FullName;
+                string sql = "exec Proc_Add_MailListenRecord " + RecordID + ",'" + RecordType + "','" + _user + "'";
+                SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
+                if (conn.State == System.Data.ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+                SqlCommand comm = new SqlCommand(sql, conn);
+                comm.ExecuteNonQuery();
+                return Json(new { Code = 0, Message = "请耐心等待Outlook程序打开！" });
+            }
+            catch(Exception ex)
+            {
+                return Json(new { Code = -1, Message = "程序异常！" });
+            }
+        }
+        /// <summary>
+        /// 邮件数据流
+        /// </summary>
+        /// <returns></returns>
+        public JsonResult Service_Json_GetMailListenQRContents()
+        {
+            List<QRContent> _qrcontents=new List<QRContent>();
+            try
+            {
+                #region 获取目标索引
+                int QuotationRequestID = 0;
+                string sql = "exec Proc_Get_MailListenRecord 'QR'";
+                SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
+                if (conn.State == System.Data.ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+                SqlCommand comm = new SqlCommand(sql, conn);
+                comm.ExecuteNonQuery();
+                DataSet ds = new DataSet();
+                SqlDataAdapter da = new SqlDataAdapter(comm);
+                da.Fill(ds, "qr");
+                //conn.Close();
+                QuotationRequestID = Convert.ToInt32(ds.Tables[0].Rows[0]["RecordID"]);
+                #endregion
+                #region 获取目标单据内容并转成List
+                QuotationRequest _qr = _quotationRequestRepository.GetByID(QuotationRequestID);
+
+                if (_qr.State == (int)QuotationRequestStatus.新建)
+                {
+                    _quotationRequestRepository.ChangeStatus(QuotationRequestID, (int)QuotationRequestStatus.发出);
+                }
+                _qrcontents = _qrContentRepository.QueryByQRID(QuotationRequestID).ToList();
+                #endregion
+                #region 更新数据状态
+                string sqlupt = "exec Proc_Upt_MailListenRecord 'QR'";
+                SqlCommand commupt = new SqlCommand(sqlupt, conn);
+                commupt.ExecuteNonQuery();
+                #endregion
+            }
+            catch
+            {
+
+            }
+            return Json(_qrcontents, JsonRequestBehavior.AllowGet);
+        }
 
         public FileResult QRFormPDF(int PurchaseRequestID)
         {
@@ -2011,7 +2077,7 @@ namespace MoldManager.WebUI.Controllers
             IEnumerable<PurchaseOrder> _poList;
             if ((MoldNumber == "") && (Keyword == "") && (StartDate == "") && (EndDate == "") && (Supplier == 0) && (PurchaseType == 0))
             {
-                _poList = _purchaseOrderRepository.PurchaseOrders;
+                _poList = _purchaseOrderRepository.PurchaseOrders.Where(p=>p.State != (int)PurchaseOrderStatus.取消);
 
                 if (State > 0)
                 {
@@ -2022,7 +2088,12 @@ namespace MoldManager.WebUI.Controllers
             }
             else
             {
-                IEnumerable<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems;
+                List<int> _purchaseItemStates = new List<int>
+                {
+                    (int)PurchaseItemStatus.取消,
+                    (int)PurchaseItemStatus.订单取消,
+                };
+                IEnumerable<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems.Where(p=>!_purchaseItemStates.Contains(p.State));
                 if (MoldNumber != "")
                 {
                     _items = _items.Where(p => p.Name.Contains(MoldNumber));
@@ -2050,9 +2121,8 @@ namespace MoldManager.WebUI.Controllers
 
                 IEnumerable<int> _poIds = _items.Select(p => p.PurchaseOrderID);
 
-                _poList = _purchaseOrderRepository.PurchaseOrders.Where(p => (_poIds.Contains(p.PurchaseOrderID)));
+                _poList = _purchaseOrderRepository.PurchaseOrders.Where(p => (_poIds.Contains(p.PurchaseOrderID)) && p.State !=(int)PurchaseOrderStatus.取消);
             }
-
 
             POListGridViewModel _viewModel = new POListGridViewModel(_poList, _projectRepository, _supplierRepository, _purchaseTypeRepository,
                 _userRepository);

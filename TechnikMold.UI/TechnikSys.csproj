@@ -367,6 +367,7 @@
     <Content Include="Content\bootstrap-treeview.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\jquery-ui.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\ui.jqgrid-bootstrap-ui.css" />
     <Content Include="Content\ui.jqgrid-bootstrap.css" />
@@ -431,6 +432,7 @@
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery-ui.js" />
     <Content Include="Scripts\jquery.ba-throttle-debounce.js" />
     <Content Include="Scripts\jquery.contextmenu.r2.packed.js" />
     <Content Include="Scripts\jquery.jqGrid.min.js" />
