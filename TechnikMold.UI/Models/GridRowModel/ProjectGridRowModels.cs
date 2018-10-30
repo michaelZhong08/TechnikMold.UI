@@ -54,14 +54,14 @@ namespace MoldManager.WebUI.Models.GridRowModel
                             //"<p style='background-color:#00ff00;'>" + cell[_phaseSeq + 4] + "</p>";
                             ProjectRows[0].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[0].cell[_phaseSeq + 4] + "</p>";
                             ProjectRows[1].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
-                            ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
+                            //ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
                         }
                         else if (_datediff < 0)
                         {
                             //"<p style='background-color:#ff0000'>" + cell[_phaseSeq + 4] + "</p>";
                             ProjectRows[0].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[0].cell[_phaseSeq + 4] + "</p>";
                             ProjectRows[1].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
-                            ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
+                            //ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
                         }
                     }
                 }
@@ -86,6 +86,10 @@ namespace MoldManager.WebUI.Models.GridRowModel
         private bool CheckZero(DateTime _date)
         {
             DateTime _datezero = new DateTime(1, 1, 1);
+            if (_date < DateTime.Parse ("2000/01/01"))
+            {
+                return true;
+            }
             if (_date == _datezero)
             {
                 return true;

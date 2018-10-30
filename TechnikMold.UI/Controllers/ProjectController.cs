@@ -14,6 +14,7 @@ using MoldManager.WebUI.Tools;
 using System.Linq.Expressions;
 using TechnikSys.MoldManager.UI.Models.ViewModel;
 using TechnikSys.MoldManager.Domain.Output;
+using TechnikMold.UI.Models;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -395,6 +396,88 @@ namespace MoldManager.WebUI.Controllers
 
 
         #region MilestoneModification
+
+        #region 调整计划单元格编辑保存函数
+        public JsonResult Service_Save_ProJPhaseCFDate(int ProJID,int PhaseID,DateTime CFDate)
+        {
+            ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
+            #region 获取当前项目主项目计划完成日期
+            Project _modifyProJ = _projectRepository.GetByID(ProJID);
+            Project _mainProJ;
+            if (_modifyProJ.ParentID > 0)
+            {
+                _mainProJ = _projectRepository.GetByID(_modifyProJ.ParentID);
+                ProjectPhase _mainPhase = _projectPhaseRepository.GetProjectPhase(_mainProJ.ProjectID, PhaseID);
+                DateTime _mainPhaseDate = Toolkits.CheckZero(_mainPhase.PlanCFinish) ? _mainPhase.PlanFinish : _mainPhase.PlanCFinish;
+                //子项目完成日期不能晚于主项目完成日期
+                if (_mainPhaseDate< CFDate)
+                {
+                    return Json(new { Code = -1 }, JsonRequestBehavior.AllowGet);
+                }
+                else if (!Toolkits.CheckZero(_mainPhase.ActualFinish))
+                {
+                    return Json(new { Code = -2 }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            #endregion
+            int _prjPhaseID = 0;
+            if (_projectPhase != null)
+            {
+                try
+                {
+                    _prjPhaseID = _projectPhaseRepository.Save(_projectPhase.ProjectPhaseID, CFDate);
+                    if (_prjPhaseID > 0)
+                        return Json(new { Code = 0 },JsonRequestBehavior.AllowGet);
+                }
+                catch(Exception ex)
+                {
+                    _prjPhaseID = _projectPhaseRepository.Save(0, CFDate, ProJID, PhaseID);
+                }
+            }
+            return Json(new { Code = -99 }, JsonRequestBehavior.AllowGet);
+        }
+
+        public string Service_Get_ProJPhaseAcDare(int ProJID, int PhaseID)
+        {
+            ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
+            #region 获取当前项目主项目并判断
+            Project _modifyProJ = _projectRepository.GetByID(ProJID);
+            Project _mainProJ;
+            if (_modifyProJ.Type == 1)
+            {
+                if (_modifyProJ.ParentID > 0)
+                {
+                    _mainProJ = _projectRepository.GetByID(_modifyProJ.ParentID);
+                    ProjectPhase _mainPhase = _projectPhaseRepository.GetProjectPhase(_mainProJ.ProjectID, PhaseID);
+                    if(_mainPhase==null)
+                        return "主项目数据异常！";
+                    DateTime _mainPhaseDate = Toolkits.CheckZero(_mainPhase.PlanCFinish) ? _mainPhase.PlanFinish : _mainPhase.PlanCFinish;
+                    if (!Toolkits.CheckZero(_mainPhase.ActualFinish))
+                    {
+                        return "主项目阶段已结束";
+                    }
+                    if (Toolkits.CheckZero(_mainPhase.PlanFinish))
+                    {
+                        return "主项目未设置原计划";
+                    }
+                }
+                else
+                {
+                    return "该项目无对应主项目";
+                }
+            }
+            else
+            {
+                return "不允许在此更新主项目计划";
+            }
+            #endregion
+            if (_projectPhase!=null)
+                return Toolkits.CheckZero(_projectPhase.ActualFinish) ? "" : _projectPhase.ActualFinish.ToString("yy/MM/dd");
+            return "不存在项目阶段";
+        }
+        #endregion
+
+
         /// <summary>
         /// Response for the project phase modification
         /// </summary>
@@ -417,9 +500,9 @@ namespace MoldManager.WebUI.Controllers
             {
                 _prjPhaseID = _projectPhaseRepository.Save(0, PhaseChange.PlanCFinish, PhaseChange.ProjectID, PhaseChange.PhaseID);
             }
-            
 
             //Record the phase date moidifcation
+            #region Add phaseModification 阶段调整记录
             try
             {
                 _projectPhase = _projectPhaseRepository.GetProjectPhase(_prjPhaseID);
@@ -450,8 +533,7 @@ namespace MoldManager.WebUI.Controllers
             {
 
             }
-            
-
+            #endregion
 
             Project _project = _projectRepository.Projects.Where(p => p.ProjectID == PhaseChange.ProjectID).FirstOrDefault();
             _project.Memo = PhaseChange.Description;

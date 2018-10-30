@@ -10,8 +10,7 @@ using TechnikSys.MoldManager.Domain.Abstract;
 namespace MoldManager.WebUI.Models.GridViewModel
 {
     public class ProjectGridViewModel
-    {   
-       
+    {         
         public int page;
         public int total;
         public int records;
@@ -42,15 +41,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 {
                     _flitter = _role.UserName;
                 }
-                //for (int _phaseType = 1; _phaseType < 4; _phaseType++)
-                //{
-                //    //ProjectGridRowModel _rowModel = new ProjectGridRowModel(_project, ProjectPhaseRepository.GetProjectPhase(_project.ProjectID), _phaseType, _flitter, Phases);
-                //    //rows.Add(_rowModel);
-
-                //}
                 rows.AddRange(new ProjectGridRowModels(_project, ProjectPhaseRepository.GetProjectPhases(_project.ProjectID), _flitter, Phases).ProjectRows);
-            }
-           
+            }         
         }       
     }
 }

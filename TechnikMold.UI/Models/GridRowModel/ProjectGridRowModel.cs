@@ -120,7 +120,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
                 ProjectPhase _projectPhase = ProjectPhase.Where(p => p.PhaseID == _phase.PhaseID).FirstOrDefault();
                 if (_projectPhase == null)
                 {
-                    cell[_phaseSeq + 4] = "";
+                    cell[_phaseSeq + 4] = "-";
                 }
                 else
                 {

@@ -780,3 +780,13 @@ function PhaseTask(ProjectID) {
     
     
 }
+
+function CellEdit_ModifyProJPhase(ProjectID, PhaseID, PlanCFinish) {
+    var result;
+    $.ajaxSettings.async = false;//同步请求
+    $.get('/Project/Service_Save_ProJPhaseCFDate?ProJID=' + ProjectID + '&PhaseID=' + PhaseID + '&CFDate=' + PlanCFinish, function (res) {
+        //res = JSON.parse(res);
+        result = res.Code;
+    });
+    return result;
+}

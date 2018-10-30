@@ -61,5 +61,21 @@ namespace TechnikMold.UI.Models
                 return 2.5;
             return 0;
         }
-    }
+        public static bool CheckZero(DateTime _date)
+        {
+            DateTime _datezero = new DateTime(1, 1, 1);
+            if (_date < DateTime.Parse("2000/01/01"))
+            {
+                return true;
+            }
+            if (_date == _datezero)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }   
 }

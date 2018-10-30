@@ -75,61 +75,74 @@ function ProjectGrid(keyword, state, type, depID) {
                 label: "类型", name: 'Type', width: 70, sorttable: false
             },
             {
-                label: 'CAD', name: 'CAD', width: 60, sorttable: false, editable: true,  
+                label: 'CAD', name: 'CAD', width: 60, sorttable: false, editable: true,
                 editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
-                sorttype : "date",
+                sorttype: "date",
                 cellattr: function () { return 'id=1'; }
             },
             {
                 label: 'CAM', name: 'CAM', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=2'; }
             },
             {
                 label: '采购', name: 'Purchase', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=3'; }
             },
             {
                 label: '开粗', name: 'Prototype', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=4'; }
             },
             {
                 label: 'CNC开粗', name: 'CNCPrototype', width: 75, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=5'; }
             },
             {
                 label: '热处理', name: 'HeatProcess', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=6'; }
             },
             {
                 label: '磨床', name: 'Grinding', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=7'; }
             },
             {
                 label: 'CNC', name: 'CNC', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=8'; }
             },
             {
                 label: 'EDM', name: 'EDM', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=9'; }
             },
             {
                 label: 'WEDM', name: 'WEDM', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=10'; }
             },
             {
                 label: '装配', name: 'Assembly', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=11'; }
             },
             {
                 label: '试模', name: 'FOT', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=12'; }
             },
             {
                 label: 'OTS', name: 'OTS', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=13'; }
             },
             {
                 label: 'PPAP', name: 'PPAP', width: 60, sorttable: false, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 cellattr: function () { return 'id=14'; }
             },
             {
@@ -166,13 +179,39 @@ function ProjectGrid(keyword, state, type, depID) {
         },
         //点击单元格事件
         onCellSelect: function (rowid, iCol, cellcontent, event) {
-            
+            //var colModel = $("#ProjectGrid").jqGrid('getGridParam', 'colModel');//列名
+            //if (1) {
+            //    console.log(GetCurrentID("ProjectGrid"));
+            //    console.log($("#ProjectGrid").getCell(rowid, 'ID'));
+            //    return;
+            //}
+
             //列 TotalTime
             var rowType = $("#ProjectGrid").getCell(rowid, "Type");
-            if (rowType == '调整计划') {
-                $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+            if (rowType == '调整计划') {               
                 var item = $(event.target).closest("td");
                 $("#selPhase").val(item[0].id);
+                var _phaseID = item[0].id;
+                var _projID = $("#ProjectGrid").getCell(rowid, 'ID');
+
+                //var _r1 = Number(rowid) + 1;
+                //var _c1 = colModel[iCol].name
+                //var _acDate = $("#ProjectGrid").getCell(_r1, _c1);
+                //if (_acDate.length == 8 || _acDate.length == 10)
+                //    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                //else
+                //    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+
+                $.ajaxSettings.async = false;//同步请求
+                $.get('/Project/Service_Get_ProJPhaseAcDare?ProJID=' + _projID + '&PhaseID=' + _phaseID, function (res) {
+                    if (res == '') {
+                        $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                    }
+                    else {
+                        console.log(res);
+                        $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+                    }
+                })
             }
             else {
                 $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
@@ -186,44 +225,72 @@ function ProjectGrid(keyword, state, type, depID) {
                 value = value.substring(_index1 + 1, _index2);
             return value;
         },
-        beforeSaveCell: function (rowid, cellname, value, iRow, iCol) {
-            //value yyyy-MM-dd
-            var _phaseID = $("#selPhase").val();;
-            var _projID = GetCurrentID("ProjectGrid");
-
+        //保存旧的单元格值
+        beforeEditCell: function (rowid, cellname, value, iRow, iCol){
+            $('#_oldPhaseCFDate').val(value);
         },
+        //保存单元格内容至服务器
+        beforeSaveCell: function (rowid, cellname, value, iRow, iCol) {
+            var _phaseID = $("#selPhase").val();
+            var _projID = $("#ProjectGrid").getCell(rowid, 'ID');
+            //if (1) {
+            //    alert(GetCurrentID("ProjectGrid"));
+            //    return;
+            //}
+            if (value.length != 8 && value.length!=10) {
+                value = '1900-01-01';
+            }
+            var _result = CellEdit_ModifyProJPhase(_projID, _phaseID, value);
+            if (_result == 0) {//成功
+                console.log(_projID + '__' + _phaseID + '__' + value);
+                console.log($('#_oldPhaseCFDate').val());
+                return value;
+            }
+            else {//失败
+                console.log($('#_oldPhaseCFDate').val());
+                return $('#_oldPhaseCFDate').val() == '' ? ' ' : $('#_oldPhaseCFDate').val();//还原旧值
+            }
+        },
+        //格式化单元格内容 设置背景色
         afterSaveCell: function (rowid, cellname, value, iRow, iCol) {
             //判断 调整日期 当前日期 
             //value='2018-10-28' value='18/10/28'
-            if (value.length == 8) {
-                value.replace(new RegExp('/', 'g'), '-');
-                value = '20' + value;
+            if ((value.length == 8 || value.length == 10) && value != '1900-01-01') {
+                if (value.length == 8) {
+                    value.replace(new RegExp('/', 'g'), '-');
+                    value = '20' + value;
+                }
+
+                var tzDate = value
+                var nowDate = new Date();
+                nowDate = getNowFormatDate();
+
+                //alert(tzDate + '_' + nowDate);
+                //时间格式 yyyy-MM-dd
+                var tzDate = new Date(tzDate);
+                var nowDate = new Date(nowDate);
+                var dayiff = ((tzDate - nowDate) / (1000 * 60 * 60 * 24));
+                var pValue;
+
+                if (value.length == 10)
+                    value = value.substring(2, value.length);
+                value = value.replace(/-/g, '/');
+
+                if (dayiff < 0)
+                    //红
+                    pValue = '<p style="background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );">' + value + '</p>';
+                else if (dayiff >= 0 && dayiff <= 3)
+                    //绿
+                    pValue = '<p style="background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );">' + value + '</p>';
+                else
+                    pValue = value;//value.substring(2, value.length)
+
+                //更新单元格标签
+                $("#ProjectGrid").jqGrid('setCell', rowid, cellname, pValue);
             }
-                
-            var tzDate = value
-            var nowDate = new Date();
-            nowDate = getNowFormatDate();
-
-            //alert(tzDate + '_' + nowDate);
-            //时间格式 yyyy-MM-dd
-            var tzDate = new Date(tzDate);
-            var nowDate = new Date(nowDate);
-            var dayiff = ((tzDate - nowDate) / (1000 * 60 * 60 * 24));
-            var pValue;
-
-            if (value.length ==10)
-                value = value.substring(2, value.length);
-            value = value.replace(/-/g, '/');
-           
-            if (dayiff < 0)
-                pValue = '<p style="background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );">' + value + '</p>';
-            else if (dayiff >= 0 && dayiff <= 3)
-                pValue = '<p style="background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );">' + value + '</p>';
-            else
-                pValue = value;//value.substring(2, value.length)
-
-            //更新单元格标签
-            $("#ProjectGrid").jqGrid('setCell', rowid, cellname, pValue);
+            else {
+                $("#ProjectGrid").jqGrid('setCell', rowid, cellname, '-');
+            }
         },
         loadComplete: function () {
             $(".jqgrow", this).contextMenu("ProjectContextMenu", {
