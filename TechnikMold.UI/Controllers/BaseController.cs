@@ -54,5 +54,12 @@ namespace TechnikMold.UI.Controllers
             Toolkits.WriteLog(logPath, content);
         }
         #endregion
+
+        #region
+        public void test()
+        {
+
+        }
+        #endregion
     }
 }
