@@ -55,11 +55,5 @@ namespace TechnikMold.UI.Controllers
         }
         #endregion
 
-        #region test
-        public void test()
-        {
-
-        }
-        #endregion
     }
 }
