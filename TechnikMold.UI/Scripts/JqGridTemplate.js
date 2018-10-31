@@ -153,7 +153,7 @@ function ProjectGrid(keyword, state, type, depID) {
             }
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight - 190,
+        height: document.documentElement.clientHeight - 175,
         width: document.body.clientWidth * 0.98,
         rownumbers: true, // show row numbers
         rownumWidth: 25, // the width of the row numbers columns
@@ -161,7 +161,7 @@ function ProjectGrid(keyword, state, type, depID) {
         pager: "#jqGridPager",
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
         cellEdit: true,
-        shrinkToFit: false,
+        //shrinkToFit: false,
         gridComplete: function () {
             var gridName = "ProjectGrid";
             Merger(gridName, 'ProjectNo');
@@ -171,11 +171,12 @@ function ProjectGrid(keyword, state, type, depID) {
             //    $("#ProjectGrid").getcell()
             //}
         },
+        //双击行事件改为显示加工历史模态框
         ondblClickRow: function () {
-            if (dept == 1) {
-                var id = $("#ProjectGrid").getCell($("#ProjectGrid").getGridParam("selrow"), "ID");
-                location.href = "/Project/Edit?ProjectID=" + id;
-            }
+            //if (dept == 1) {
+            //    var id = $("#ProjectGrid").getCell($("#ProjectGrid").getGridParam("selrow"), "ID");
+            //    location.href = "/Project/Edit?ProjectID=" + id;
+            //}
         },
         //点击单元格事件
         onCellSelect: function (rowid, iCol, cellcontent, event) {
@@ -186,36 +187,50 @@ function ProjectGrid(keyword, state, type, depID) {
             //    return;
             //}
 
-            //列 TotalTime
-            var rowType = $("#ProjectGrid").getCell(rowid, "Type");
-            if (rowType == '调整计划') {               
+            //列 TotalTime            
+            if (iCol >= 5 && iCol <= 19) {
+                var rowType = $("#ProjectGrid").getCell(rowid, "Type");
                 var item = $(event.target).closest("td");
-                $("#selPhase").val(item[0].id);
                 var _phaseID = item[0].id;
                 var _projID = $("#ProjectGrid").getCell(rowid, 'ID');
+                $("#selPhase").val(item[0].id);
+                if (rowType == '调整计划') {
+                    //var _r1 = Number(rowid) + 1;
+                    //var _c1 = colModel[iCol].name
+                    //var _acDate = $("#ProjectGrid").getCell(_r1, _c1);
+                    //if (_acDate.length == 8 || _acDate.length == 10)
+                    //    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                    //else
+                    //    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
 
-                //var _r1 = Number(rowid) + 1;
-                //var _c1 = colModel[iCol].name
-                //var _acDate = $("#ProjectGrid").getCell(_r1, _c1);
-                //if (_acDate.length == 8 || _acDate.length == 10)
-                //    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
-                //else
-                //    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
-
-                $.ajaxSettings.async = false;//同步请求
-                $.get('/Project/Service_Get_ProJPhaseAcDare?ProJID=' + _projID + '&PhaseID=' + _phaseID, function (res) {
-                    if (res == '') {
-                        $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
-                    }
-                    else {
-                        console.log(res);
-                        $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
-                    }
-                })
+                    $.ajaxSettings.async = false;//同步请求
+                    $.get('/Project/Service_Get_ProJPhaseAcDate?ProJID=' + _projID + '&PhaseID=' + _phaseID, function (res) {
+                        if (res == '') {
+                            $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                        }
+                        else {
+                            console.log(res);
+                            $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+                        }
+                    })
+                }
+                else if (rowType == '原计划') {
+                    $.ajaxSettings.async = false;//同步请求
+                    $.get('/Project/Service_Get_ProJPhaseYDate?ProJID=' + _projID + '&PhaseID=' + _phaseID, function (res) {
+                        if (res == '') {
+                            $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                        }
+                        else {
+                            console.log(res);
+                            $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+                        }
+                    })
+                }
+                else
+                    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');  
             }
-            else {
+            else
                 $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
-            }
         },
         formatCell: function (rowid, cellname, value, iRow, iCol) {
             var _inptID = rowid + '_' + cellname;
@@ -228,10 +243,14 @@ function ProjectGrid(keyword, state, type, depID) {
         //保存旧的单元格值
         beforeEditCell: function (rowid, cellname, value, iRow, iCol){
             $('#_oldPhaseCFDate').val(value);
+            //由于Oncellselect事件总是先触发 所以用_oldPhaseID保存上当前phase
+            $('#_oldPhaseID').val($("#selPhase").val());
         },
         //保存单元格内容至服务器
         beforeSaveCell: function (rowid, cellname, value, iRow, iCol) {
-            var _phaseID = $("#selPhase").val();
+            //var columnArray = $("#ProjectGrid").jqGrid('getGridParam', 'colModel');
+            //var _nowcolid = columnArray[iCol];
+            var _phaseID = $("#_oldPhaseID").val();
             var _projID = $("#ProjectGrid").getCell(rowid, 'ID');
             //if (1) {
             //    alert(GetCurrentID("ProjectGrid"));

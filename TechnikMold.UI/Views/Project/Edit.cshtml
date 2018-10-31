@@ -58,6 +58,9 @@ else
             break;
     }
 }   
+@{ 
+    List<int> _camPhases = new List<int> { 2,3,4,5,6,7,8,9,10,11};
+}
 
 @using TechnikSys.MoldManager.Domain.Entity
 
@@ -103,7 +106,7 @@ else
                                        maxlength="20" 
                                        @if ((Model.Project.ProjectID>0)||(Model.Project.Type==2))
                                        {
-                                           @:readonly
+                                           @:disabled
                                        }
                                        value="@(Model.Project.MoldNumber == "---" ? "" : @Model.Project.MoldNumber)" />
                             </td>
@@ -304,11 +307,22 @@ else
                                 }
 
                             }
+                            // 新模/主项目 计划设置
                             else
                             {
                                 ///Mold projects inherit all milestone from main project
-                                <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
-                                       name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish" />
+                                if (_camPhases.Contains(_phase.PhaseID))
+                                {
+                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value=""
+                                           disabled />
+                                }
+                                else
+                                {
+                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish"
+                                           />
+                                }
                             }
 
                             @*if the project is a mold project, put the main project phase date in background*@

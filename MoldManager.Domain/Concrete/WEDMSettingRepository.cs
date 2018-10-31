@@ -36,7 +36,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             {
                 #region 返回错误代码
                 WEDMSetting ws = _context.WEDMSettings.Where(w => w.DrawName == entity.DrawName && w.Rev == entity.Rev).FirstOrDefault() ?? new WEDMSetting();
-                if (ws.ReleaseFlag)
+                Task _task = _context.Tasks.Where(t => t.TaskType == 3 && t.ProgramID == ws.ID && t.ProgramID>0).FirstOrDefault() ?? new Task();
+                if (_task.TaskID>0 && _task.State!=(int)CNCStatus.未发布)
                     return -1;
                 WEDMSetting ws3 = _context.WEDMSettings.Where(w => w.DrawName == entity.DrawName && w.Rev == entity.Rev && w.Rev > entity.Rev && w.active == true).FirstOrDefault() ?? new WEDMSetting();
                 if (ws3.ID > 0)
@@ -72,6 +73,9 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     ws.CADPartName = entity.CADPartName;
                     ws.Time = entity.Time;
                     ws.ThreeDPartName = entity.ThreeDPartName;
+
+                    _task.Time= Convert.ToDouble(entity.Time);
+                    _task.ProcessName = entity.Precision;
                 }
                 #endregion
                 _context.SaveChanges();
@@ -181,7 +185,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 ws.ReleaseDate = DateTime.Now;
                 #endregion
                 User user = _context.Users.Where(u => u.FullName == ReleaseBy && u.Enabled == true).FirstOrDefault() ?? new User();
-                Task WEDMtask = new Task { TaskName = ws.DrawName,Version = ws.Rev, ProgramID = ws.ID, Creator = user.UserID, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)CNCStatus.未发布,PrevState= (int)CNCStatus.未发布, Memo = "Create by CAM", Quantity = Qty, PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 3, MoldNumber = ws.MoldName, ProcessName = ws.DrawName.Substring(ws.DrawName.IndexOf('(') + 1, ws.DrawName.Length - ws.DrawName.IndexOf('(') - 2), Time = Convert.ToDouble(ws.Time),CAMUser=0,Raw=""};
+                Task WEDMtask = new Task { TaskName = ws.DrawName,Version = ws.Rev, ProgramID = ws.ID, Creator = user.UserID, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)CNCStatus.未发布,PrevState= (int)CNCStatus.未发布, Memo = "Create by CAM", Quantity = Qty, PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 3, MoldNumber = ws.MoldName, ProcessName = ws.Precision, Time = Convert.ToDouble(ws.Time),CAMUser=0,Raw=""};//ws.DrawName.Substring(ws.DrawName.IndexOf('(') + 1, ws.DrawName.Length - ws.DrawName.IndexOf('(') - 2)
                 _context.Tasks.Add(WEDMtask);
                 #endregion
                 _context.SaveChanges();
@@ -252,7 +256,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             SystemConfig sys = _context.SystemConfigs.Where(s => s.SettingName == "WEDM3DPATH").FirstOrDefault() ?? new SystemConfig();
             string path = sys.Value.Substring(2, sys.Value.Length - 2).Replace("\\", "/") + "/";
-            return path;
+            return sys.Value;
         }
         public List<WEDMTaskInfo> GetWEDMTaskInfoByMoldAndStatus(string MoldNo, int Status = -2, int PlanID = 0)
         {

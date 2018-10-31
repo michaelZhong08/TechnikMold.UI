@@ -279,5 +279,19 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             }
             return _project;
         }
+
+        public IQueryable<Project> GetProjectsByDep(int Department)
+        {
+            DateTime iniDate = new DateTime(1, 1, 1);
+            var _projects = from pj in _context.Projects
+                             join ph in _context.ProjectPhases on pj.ProjectID equals ph.ProjectID into _p1
+                             from _p2 in _p1.DefaultIfEmpty()
+                             join dp in _context.Base_DepPhases on _p2.PhaseID equals dp.PhaseId into _p3
+                             from _p4 in _p3.DefaultIfEmpty()
+                             where pj.ProjectNumber != "Sinnotech" && pj.ProjectStatus >= 0 && ((_p4.DepId == Department && iniDate.Equals( _p2.ActualFinish)) || Department == 1) && pj.Enabled==true
+                             select pj;
+
+            return _projects.Distinct();
+        }
     }
 }

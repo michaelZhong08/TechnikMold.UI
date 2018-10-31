@@ -88,7 +88,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 _dbEntry.ProjectID = ProjectID;
                 _dbEntry.PhaseID = PhaseID;
                 _dbEntry.PlanFinish = PhaseTime;
-                _dbEntry.PlanCFinish = PhaseTime;
+                _dbEntry.PlanCFinish = new DateTime(1, 1, 1);
                 _dbEntry.ActualFinish = new DateTime(1, 1, 1);
                 _context.ProjectPhases.Add(_dbEntry);
             }
@@ -97,7 +97,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
 
 
-        public IEnumerable<ProjectPhase> GetProjectPhases(int ProjectID)
+        public IQueryable<ProjectPhase> GetProjectPhases(int ProjectID)
         {
             return _context.ProjectPhases.Where(p => p.ProjectID == ProjectID);
         }

@@ -57,7 +57,7 @@
 <div style="margin-top:60px">
     <div class="col-sm-12">        
         <ul class="nav nav-pills">
-            @if (DeptID == 1)
+            @if (DeptID == 2)
             {
                 <li><button class="btn btn-primary" id="CreateProject">创建项目</button></li>
             }            
@@ -72,9 +72,10 @@
             <li><button class="btn btn-primary" id="MoldProject">新模项目 </button></li>
            }           
         </ul>
-        <br />
+        @*<br />*@
             <table id="ProjectGrid"></table>
             <div id="jqGridPager"></div>
+            <input id="_oldPhaseID" hidden />
             <input id="_oldPhaseCFDate" hidden/>
     </div>
 </div>

@@ -11,7 +11,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
     {
         public ProjectGridRowModel[] ProjectRows;
 
-        public ProjectGridRowModels(Project Project, IEnumerable<ProjectPhase> ProjectPhase, string Flitter, List<Phase> Phases)
+        public ProjectGridRowModels(Project Project, IQueryable<ProjectPhase> ProjectPhase, string Flitter, List<Phase> Phases)
         {
             ProjectRows = new ProjectGridRowModel[3];
             string _cell2 = BuildCell2(Project, Flitter);
@@ -21,15 +21,10 @@ namespace MoldManager.WebUI.Models.GridRowModel
                 ProjectRows[i].cell[0] = Project.ProjectID.ToString();
                 ProjectRows[i].cell[1] = Project.ProjectNumber + "<br>" + Project.CustomerName;
                 if ((Project.ProjectStatus < 0)&&(Project.ParentID==0))
-                {
-                
+                {               
                     ProjectRows[i].cell[1] = "<p style='background-color:#ff0000'>" + ProjectRows[i].cell[1] + "</p>";
                 }
-
-
                 ProjectRows[i].cell[2] = _cell2;
-
-
             }
 
             int _phaseSeq = 0;
@@ -38,29 +33,29 @@ namespace MoldManager.WebUI.Models.GridRowModel
                 DateTime _dateval;
                 int _datediff = 0;
                 ProjectPhase _prjPhase = ProjectPhase.Where(p=>p.PhaseID==_phase.PhaseID).FirstOrDefault();
-                if (_prjPhase != null)
-                {
-                    
+                if (_prjPhase != null && !CheckZero(_prjPhase.PlanFinish))
+                {                    
                     _dateval = CheckZero(_prjPhase.PlanCFinish)?_prjPhase.PlanFinish:_prjPhase.PlanCFinish;
                     _datediff = (_dateval - DateTime.Now).Days;
                     ProjectRows[0].cell[_phaseSeq + 4] = CheckZero(_prjPhase.PlanFinish )?"":_prjPhase.PlanFinish.ToString("yy/MM/dd");
                     ProjectRows[1].cell[_phaseSeq + 4] = CheckZero(_prjPhase.PlanCFinish)?"":_prjPhase.PlanCFinish.ToString("yy/MM/dd");
                     ProjectRows[2].cell[_phaseSeq + 4] = CheckZero(_prjPhase.ActualFinish)? "" : _prjPhase.ActualFinish.ToString("yy/MM/dd");
-
                     if (CheckZero(_prjPhase.ActualFinish))
                     {
                         if ((_datediff >= 0) && (_datediff < 3))
                         {
                             //"<p style='background-color:#00ff00;'>" + cell[_phaseSeq + 4] + "</p>";
                             ProjectRows[0].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[0].cell[_phaseSeq + 4] + "</p>";
-                            ProjectRows[1].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
+                            if(!CheckZero(_prjPhase.PlanCFinish))
+                                ProjectRows[1].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
                             //ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
                         }
                         else if (_datediff < 0)
                         {
                             //"<p style='background-color:#ff0000'>" + cell[_phaseSeq + 4] + "</p>";
                             ProjectRows[0].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[0].cell[_phaseSeq + 4] + "</p>";
-                            ProjectRows[1].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
+                            if (!CheckZero(_prjPhase.PlanCFinish))
+                                ProjectRows[1].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
                             //ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
                         }
                     }

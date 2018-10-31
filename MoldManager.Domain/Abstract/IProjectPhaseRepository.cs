@@ -23,7 +23,7 @@ namespace TechnikSys.MoldManager.Domain.Abstract
 
         int Save(int ProjectPhaseID, DateTime PhaseTime, int ProjectID = 0, int PhaseID = 0);
 
-        IEnumerable<ProjectPhase> GetProjectPhases(int ProjectID);
+        IQueryable<ProjectPhase> GetProjectPhases(int ProjectID);
 
         ProjectPhase GetProjectPhase(int ProjectID, int PhaseID);
 
