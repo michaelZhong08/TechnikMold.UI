@@ -2892,9 +2892,16 @@ namespace MoldManager.WebUI.Controllers
         public string GetTaskDrawingPath(string type="CAM")
         {
             string _pathSetting = type == "CAM" ? "CAMDrawingPath" : type == "CAD" ? "CADDrawingPath" : "CAMDrawingPath";
-            string _path = GetSetting(_pathSetting);
-            _path = _path.Substring(2, _path.Length - 2).Replace("\\", "/") + "/";
-            return _path;
+            string _path="";
+            SystemConfig _sysconfig= _systemConfigRepository.SystemConfigs.Where(p => p.SettingName == _pathSetting).FirstOrDefault();//GetSetting(_pathSetting);
+            if (_sysconfig != null)
+            {
+                _path = _sysconfig.Value;
+                _path = _path.Substring(2, _path.Length - 2).Replace("\\", "/") + "/";
+                return _path;
+            }
+            else
+                return null;
         }
 
         /// <summary>
@@ -5682,9 +5689,9 @@ namespace MoldManager.WebUI.Controllers
         {
             return Json(_wedmSettingRepository.GetWEDMPrecision(), JsonRequestBehavior.AllowGet);
         }
-        public ActionResult GetService_3DDrawingServerPath()//string
+        public string GetService_3DDrawingServerPath()//string
         {
-            return Json(_wedmSettingRepository.Get3DDrawingServerPath(), JsonRequestBehavior.AllowGet);
+            return _systemConfigRepository.GetConfigValue("WEDM3DPATH");
         }
 
         #endregion

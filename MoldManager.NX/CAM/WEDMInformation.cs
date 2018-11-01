@@ -106,7 +106,7 @@ namespace TechnikSys.MoldManager.NX.CAM
             try
             {
                 string _url = "/Task/GetService_3DDrawingServerPath";
-                string path = JsonConvert.DeserializeObject<string>(_server.ReceiveStream(_url));
+                string path = _server.ReceiveStream(_url);
                 return path;
             }
             catch

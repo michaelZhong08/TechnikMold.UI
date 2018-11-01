@@ -97,7 +97,9 @@
     <Compile Include="Abstract\IMachinesInfoRepository.cs" />
     <Compile Include="Abstract\IMaterialRepository.cs" />
     <Compile Include="Abstract\IMGSettingRepository.cs" />
+    <Compile Include="Abstract\IPhaseTaskTypeRepository.cs" />
     <Compile Include="Abstract\ISupplierGroupRepository.cs" />
+    <Compile Include="Abstract\ITaskTypeRepository.cs" />
     <Compile Include="Abstract\IWH_TaskPeriodRecordRepository.cs" />
     <Compile Include="Abstract\IWH_WorkTypeRepository.cs" />
     <Compile Include="Abstract\IOutStockFormRepository.cs" />
@@ -197,6 +199,7 @@
     <Compile Include="Concrete\PartTypeRepository.cs" />
     <Compile Include="Concrete\PhaseModificationRepository.cs" />
     <Compile Include="Concrete\PhaseRepository.cs" />
+    <Compile Include="Concrete\PhaseTaskTypeRepository.cs" />
     <Compile Include="Concrete\POContentRepository.cs" />
     <Compile Include="Concrete\PositionRepository.cs" />
     <Compile Include="Concrete\PRContentRepository.cs" />
@@ -240,6 +243,7 @@
     <Compile Include="Concrete\TaskHourCostRepository.cs" />
     <Compile Include="Concrete\TaskHourRepository.cs" />
     <Compile Include="Concrete\TaskRepository.cs" />
+    <Compile Include="Concrete\TaskTypeRepository.cs" />
     <Compile Include="Concrete\UserRoleRepository.cs" />
     <Compile Include="Concrete\UserRepository.cs" />
     <Compile Include="Concrete\WarehousePositionRepository.cs" />
@@ -289,6 +293,7 @@
     <Compile Include="Entity\PartType.cs" />
     <Compile Include="Entity\Phase.cs" />
     <Compile Include="Entity\PhaseModification.cs" />
+    <Compile Include="Entity\PhaseTaskType.cs" />
     <Compile Include="Entity\POContent.cs" />
     <Compile Include="Entity\Position.cs" />
     <Compile Include="Entity\PRContent.cs" />
@@ -337,6 +342,7 @@
     <Compile Include="Entity\Task.cs" />
     <Compile Include="Entity\TaskHour.cs" />
     <Compile Include="Entity\TaskHourCost.cs" />
+    <Compile Include="Entity\TaskType.cs" />
     <Compile Include="Entity\User.cs" />
     <Compile Include="Entity\UserRole.cs" />
     <Compile Include="Entity\Warehouse.cs" />

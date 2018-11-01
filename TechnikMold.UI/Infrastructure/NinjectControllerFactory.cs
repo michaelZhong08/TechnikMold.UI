@@ -121,6 +121,9 @@ namespace TechnikSys.WebUI.Infrastructure
             ninjectKernel.Bind<IWH_WorkTypeRepository>().To<WH_WorkTypeRepository>();
             ninjectKernel.Bind<IWH_TaskPeriodRecordRepository>().To<WH_TaskPeriodRecordRepository>();
             ninjectKernel.Bind<ISupplierGroupRepository>().To<SupplierGroupRepository>();
+
+            ninjectKernel.Bind<IPhaseTaskTypeRepository>().To<PhaseTaskTypeRepository>();
+            ninjectKernel.Bind<ITaskTypeRepository>().To<TaskTypeRepository>();
         }
     }
 }

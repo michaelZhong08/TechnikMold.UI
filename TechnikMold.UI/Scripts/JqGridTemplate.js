@@ -172,11 +172,16 @@ function ProjectGrid(keyword, state, type, depID) {
             //}
         },
         //双击行事件改为显示加工历史模态框
-        ondblClickRow: function () {
+        ondblClickRow: function (rowid, iRow, iCol, e) {
             //if (dept == 1) {
             //    var id = $("#ProjectGrid").getCell($("#ProjectGrid").getGridParam("selrow"), "ID");
             //    location.href = "/Project/Edit?ProjectID=" + id;
             //}
+            var item = $(e.target).closest("td");
+            var _phaseID = item[0].id;
+            //alert(rowid + '_' + iRow + '_' + iCol + '_' + _phaseID)
+            var projectid = $("#ProjectGrid").getCell(rowid, "ID");
+            ShowTaskPhase(projectid, _phaseID);
         },
         //点击单元格事件
         onCellSelect: function (rowid, iCol, cellcontent, event) {

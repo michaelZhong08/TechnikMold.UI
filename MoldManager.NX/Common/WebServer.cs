@@ -19,6 +19,7 @@ using Newtonsoft.Json.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using System.Web;
+using System.Net.NetworkInformation;
 
 namespace TechnikSys.MoldManager.NX.Common
 {
@@ -28,7 +29,7 @@ namespace TechnikSys.MoldManager.NX.Common
         private string _port { get; set; }
         private NetworkCredential Credential { get; set; }
 
-        public WebServer(string ServerName, string Port, string UserName , string Password)
+        public WebServer(string ServerName, string Port, string UserName, string Password)
         {
             _serverName = ServerName;
             _port = Port;
@@ -42,7 +43,7 @@ namespace TechnikSys.MoldManager.NX.Common
                 return "http://" + _serverName + ":" + _port;
             }
         }
-       
+
 
         public string ReceiveStream(string Url)
         {
@@ -52,7 +53,7 @@ namespace TechnikSys.MoldManager.NX.Common
             //NetworkCredential _credential = new NetworkCredential("Administrator", "catia_4");
             _request.Credentials = Credential;
             HttpWebResponse _response = (HttpWebResponse)_request.GetResponse();
-           
+
             Stream _stream = _response.GetResponseStream();
             UTF8Encoding _encoding = new UTF8Encoding();
             StreamReader _result = new StreamReader(_stream, _encoding);
@@ -80,17 +81,6 @@ namespace TechnikSys.MoldManager.NX.Common
             }
 
             string _result = string.Empty;
-
-            //using (HttpWebResponse response = (HttpWebResponse)_request.GetResponse())
-            //{
-            //    using (Stream responseStream = response.GetResponseStream())
-            //    {
-            //        using (StreamReader readStream = new StreamReader(responseStream, Encoding.UTF8))
-            //        {
-            //            _result = readStream.ReadToEnd();
-            //        }
-            //    }
-            //}
 
             HttpWebResponse response;
             try
@@ -123,11 +113,81 @@ namespace TechnikSys.MoldManager.NX.Common
         public string SendObject(string Url, String Name, Object Data)
         {
             //HttpUtility.UrlEncode 对post数据编码 解决特殊符号(+ %) 无法正常传递到服务器端问题
-            return SendStream(Url, Name+"=" + HttpUtility.UrlEncode(JsonConvert.SerializeObject(Data)));
+            return SendStream(Url, Name + "=" + HttpUtility.UrlEncode(JsonConvert.SerializeObject(Data)));
         }
         public bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
-        { // 总是接受 
+        { // 总是接受
             return true;
+        }
+        public string ChkNetConntect()
+        {
+            bool online = false;
+            bool ChkAcc = false;
+            string res = string.Empty;
+            #region Ping IP地址
+            try
+            {
+
+                Ping ping = new Ping();
+                PingReply pingReply = ping.Send(_serverName);
+                if (pingReply.Status == IPStatus.Success)
+                {
+                    online = true;
+                }
+                else
+                    res = "IP地址无法ping通，请检查网络连接！";
+
+            }
+            catch (Exception ex)
+            {
+                res = ex.Message;
+            }
+            #endregion 
+            if (string.IsNullOrEmpty(res))
+            {
+                #region 验证用户名密码
+                HttpWebResponse response;
+                try
+                {
+                    string arg = "testData";
+                    string str = "url test data";
+                    string Data = arg + "=" + HttpUtility.UrlEncode(JsonConvert.SerializeObject(str));
+                    string _cURL = ServerURL + "/Administrator/AcceptClientData";
+                    Uri _uri = new Uri(_cURL);
+                    HttpWebRequest _request = (HttpWebRequest)WebRequest.Create(_uri);
+                    _request.Credentials = Credential;
+                    _request.Method = "Post";
+                    _request.ContentType = "application/x-www-form-urlencoded";
+                    _request.Timeout = 10000;
+                    using (Stream writeStream = _request.GetRequestStream())
+                    {
+                        UTF8Encoding encoding = new UTF8Encoding();
+                        byte[] bytes = encoding.GetBytes(Data);
+                        writeStream.Write(bytes, 0, bytes.Length);
+                        writeStream.Close();
+                    }
+                    string _result = string.Empty;
+                    response = (HttpWebResponse)_request.GetResponse();
+                }
+                catch (WebException ex)
+                {
+                    response = (HttpWebResponse)ex.Response;
+                    res = ex.Message;
+                }
+                //StreamReader readStream = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
+                //_result = readStream.ReadToEnd();
+                //_result = JsonConvert.DeserializeObject<string>(_result);
+                //if (_result == str)
+                //{
+                //    ChkAcc = true;
+                //}
+
+                //if (online && ChkAcc)
+                //    return true;
+                //return false;
+                #endregion
+            }
+            return res;
         }
     }
 }

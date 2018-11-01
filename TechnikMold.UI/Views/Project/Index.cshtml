@@ -518,6 +518,9 @@
         $("#TaskGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
     }
 
+    function ShowTaskPhase(projectid,phaseid){
+        $('#PhaseTaskDialog').modal('show');
+    }
 </script>
 
 

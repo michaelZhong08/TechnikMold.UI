@@ -373,7 +373,7 @@
     <Content Include="Content\ui.jqgrid-bootstrap.css" />
     <Content Include="Content\ui.jqgrid.css" />
     <Content Include="favicon.ico" />
-    <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Images\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Images\arrow-left.png" />
     <Content Include="Images\arrow-right.png" />
@@ -562,9 +562,9 @@
     <Folder Include="Views\WorkHour\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
-    <Content Include="fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="Images\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="Images\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="Images\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />

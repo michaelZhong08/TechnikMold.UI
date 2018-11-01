@@ -435,5 +435,10 @@ namespace MoldManager.WebUI.Controllers
             Toolkits.WriteLog(logPath, content);
         }
         #endregion
+
+        public string AcceptClientData(string testData="")
+        {
+            return testData;
+        }
     }
 }
