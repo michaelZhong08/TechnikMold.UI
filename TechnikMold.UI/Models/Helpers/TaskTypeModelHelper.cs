@@ -5,11 +5,11 @@ using System.Web;
 
 namespace MoldManager.WebUI.Models.Helpers
 {
-    public class TaskType
+    public class TaskTypeModelHelper
     {
         private Dictionary<int, string> Types;
 
-        public TaskType()
+        public TaskTypeModelHelper()
         {
             Types = new Dictionary<int, string>();
             Types.Add(1, "电极任务");           

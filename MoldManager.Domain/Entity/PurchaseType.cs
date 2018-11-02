@@ -12,8 +12,9 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public string Name { get; set; }
         public int ParentTypeID { get; set; }
         public string ShortName { get; set; }
-        public int TaskType { get; set; }
+        public string TaskType { get; set; }
         public int DefaultPeriod { get; set; }
         public bool Enabled { get; set; }
+        public string DepID { get; set; }
     }
 }

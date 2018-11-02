@@ -39,6 +39,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.TaskType = PurchaseType.TaskType;
                     _dbEntry.DefaultPeriod = PurchaseType.DefaultPeriod;
                     _dbEntry.Enabled = PurchaseType.Enabled;
+                    _dbEntry.DepID = PurchaseType.DepID;
                 }
             }
             _context.SaveChanges();

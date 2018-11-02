@@ -316,7 +316,7 @@
     <Compile Include="Models\Helpers\QuotationRequestStatus.cs" />
     <Compile Include="Models\Helpers\TaskResponsibleType.cs" />
     <Compile Include="Models\Helpers\TaskStatus.cs" />
-    <Compile Include="Models\Helpers\TaskType.cs" />
+    <Compile Include="Models\Helpers\TaskTypeModelHelper.cs" />
     <Compile Include="Models\Toolkits.cs" />
     <Compile Include="Models\ViewModel\EDMItemViewModel.cs" />
     <Compile Include="Models\ViewModel\MGTaskUptVerViewModel.cs" />

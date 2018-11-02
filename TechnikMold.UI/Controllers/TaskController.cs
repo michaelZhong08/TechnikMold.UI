@@ -64,6 +64,8 @@ namespace MoldManager.WebUI.Controllers
         private IWH_TaskPeriodTypeRepository _taskPeriodTypeRepository;
         private IWH_WorkTypeRepository _workTypeRepository;
         private IWH_TaskPeriodRecordRepository _taskPeriodRecordRepository;
+        private ITaskTypeRepository _taskTypeRepository;
+        private IPhaseTaskTypeRepository _phaseTasktypeRepository;
         #endregion
         #region 构造
         public TaskController(ITaskRepository TaskRepository,
@@ -102,7 +104,9 @@ namespace MoldManager.WebUI.Controllers
             IMachinesInfoRepository MachinesInfoRepository,
             IWH_WorkTypeRepository WorkTypeRepository,
             IWH_TaskPeriodTypeRepository TaskPeriodTypeRepository,
-            IWH_TaskPeriodRecordRepository TaskPeriodRecordRepository)
+            IWH_TaskPeriodRecordRepository TaskPeriodRecordRepository,
+            ITaskTypeRepository TaskTypeRepository,
+            IPhaseTaskTypeRepository PhaseTaskTypeRepository)
         {
             _taskRepository = TaskRepository;
             _partRepository = PartRepository;
@@ -140,6 +144,8 @@ namespace MoldManager.WebUI.Controllers
             _taskPeriodTypeRepository = TaskPeriodTypeRepository;
             _workTypeRepository = WorkTypeRepository;
             _taskPeriodRecordRepository = TaskPeriodRecordRepository;
+            _taskTypeRepository = TaskTypeRepository;
+            _phaseTasktypeRepository = PhaseTaskTypeRepository;
         }
         #endregion
 
@@ -181,8 +187,10 @@ namespace MoldManager.WebUI.Controllers
             {
                 ViewBag.Department = 0;
             }
-            TaskType _type = new TaskType();
-            string _title = new TaskType().GetTypeName(TaskType);
+            TaskType _type = _taskTypeRepository.TaskTypes.Where(t=>t.TaskID== TaskType).FirstOrDefault();
+            string _title="";
+            if (_type!=null)
+                _title = _type.Name;
             ViewBag.TaskTypeName = _title;
             if (CAM == 1)
             {
@@ -252,8 +260,12 @@ namespace MoldManager.WebUI.Controllers
             ViewBag.MoldNumber = MoldNumber;
             ViewBag.TaskType = TaskType;
             ViewBag.State = State;
-            TaskType _type = new TaskType();
-            ViewBag.Title = _type.GetTypeName(TaskType);
+            //TaskType _type = new TaskType();
+            TaskType _type = _taskTypeRepository.TaskTypes.Where(t => t.TaskID == TaskType).FirstOrDefault();
+            string _title = "";
+            if (_type != null)
+                _title = _type.Name;
+            ViewBag.Title = _title;
             return View();
         }
 

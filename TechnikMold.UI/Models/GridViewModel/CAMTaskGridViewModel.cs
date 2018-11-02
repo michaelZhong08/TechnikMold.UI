@@ -20,7 +20,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             string _user;
             string _cadUser;
             string _releaseUser;
-            TaskType _type = new TaskType();
+            //TaskType _type = new TaskType();
             foreach (CAMTask _task in CAMTasks)
             {
                 try

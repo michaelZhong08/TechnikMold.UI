@@ -1,7 +1,7 @@
 ﻿@model MoldManager.WebUI.Models.ViewModel.ProjectViewModel
 @{
     int EditStatus = 10;
-    string _inputState="readonly";
+    string _inputState="disabled";
 }
 <script src="~/Scripts/Project.js"></script>
 
@@ -59,7 +59,10 @@ else
     }
 }   
 @{ 
+    //phase CAM来填写原计划
     List<int> _camPhases = new List<int> { 2,3,4,5,6,7,8,9,10,11};
+    //
+    List<int> _camPhasesFixMold = new List<int> { 13,14 };
 }
 
 @using TechnikSys.MoldManager.Domain.Entity
@@ -75,10 +78,11 @@ else
             <button class="btn btn-primary" id="SaveProject">保存项目</button>
         </p>
         <div id="ErrorMessage" class="alert alert-danger HiddenMessage"></div>
+
+        @* 项目基本信息 *@
         <div class="panel panel-info">
             <div class="panel-heading"><h4>项目基本信息</h4></div>
             <div class="panel-body">
-                @*项目基本信息*@
                 <input type="hidden" id="Project.ProjectID" name="Project.Project.ProjectID" value="@Model.Project.ProjectID" />
                 <input type="hidden" id="Project.Project.Type" name="Project.Project.Type" value="@Model.Project.Type" />
                 <input type="hidden" id="Project.Project.ParentID" name="Project.Project.ParentID" value="@Model.Project.ParentID" />
@@ -121,8 +125,9 @@ else
                     </tr>
                     <tr>
                         <td class="col-sm-2">
-                            @if (Model.Project.ParentID>0) { 
-                        <label>模具名称</label>
+                            @if (Model.Project.ParentID > 0)
+                            {
+                                <label>模具名称</label>
                             }
                             else
                             {
@@ -131,7 +136,7 @@ else
                         </td>
                         <td class="col-sm-4">
                             <input type="text" class="form-control required" id="Project.Project.Name" maxlength="50"
-                                   name="Project.Project.Name" value="@Model.Project.Name" />
+                                   name="Project.Project.Name" value="@Model.Project.Name" @_inputState/>
                         </td>
 
                         <td class="col-sm-2"><label>客户</label></td>
@@ -141,12 +146,12 @@ else
                             <select id="Project.Project.CustomerID" 
                                     name="Project.Project.CustomerID" 
                                     class="form-control required" 
-                                    value="@Model.Project.CustomerID"></select>
+                                    value="@Model.Project.CustomerID" @_inputState></select>
                             <input type="hidden" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName" />
                         }
                         else
                         {
-                            <input type="text" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName"  class="form-control" readonly/>
+                            <input type="text" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName"  class="form-control" disabled/>
                             <input type="hidden" id="Project.Project.CustomerID" 
                                     name="Project.Project.CustomerID" value="@Model.Project.CustomerID"/>
                         }
@@ -178,7 +183,7 @@ else
             </div>
         </div>
 
-        
+        @* 项目人员信息 *@
         <div class="panel panel-info">
             <div class="panel-heading"><h4>项目人员信息</h4></div>
             <div class="panel-body">
@@ -238,7 +243,7 @@ else
             </div>
         </div>
 
-
+        @* 项目计划信息 *@
         <div class="panel panel-info">
             <div class="panel-heading"><h4>项目计划信息</h4></div>
             <div class="panel-body">
@@ -295,7 +300,17 @@ else
                             @if (Model.Project.Type == 2)
                             {
                                 ///Fixmold projects only inherit OTS & PPAP milestone date
-                                if (_phase.PhaseID > 12)
+                                if (_camPhasesFixMold.Contains(_phase.PhaseID))
+                                {
+                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish" @_inputState/>
+                                }
+                                else
+                                {
+                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="" />
+                                }
+                                @*if (_phase.PhaseID > 12)
                                 {
                                     <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
                                            name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish" />
@@ -304,7 +319,7 @@ else
                                 {
                                     <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
                                            name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="" />
-                                }
+                                }*@
 
                             }
                             // 新模/主项目 计划设置
@@ -354,7 +369,6 @@ else
         </p>
 
 </div>
-
 }
 
 <script>

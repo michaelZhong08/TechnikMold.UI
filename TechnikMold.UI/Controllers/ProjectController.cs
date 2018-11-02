@@ -33,6 +33,8 @@ namespace MoldManager.WebUI.Controllers
 
         private IProjectRecordRepository _projectRecordRepository;
         private IDepPhaseRepository _depphaseRepository;
+        private ITaskTypeRepository _taskTypeRepository;
+        private IPhaseTaskTypeRepository _phaseTasktypeRepository;
 
         public ProjectController(IProjectRepository ProjectRepository,
             IProjectPhaseRepository ProjectPhaseRepository, 
@@ -45,7 +47,10 @@ namespace MoldManager.WebUI.Controllers
             IDepartmentRepository DepartmentRepository,
             IPartListRepository PartListRepository,
             IProjectRecordRepository ProjectRecordRepository,
-            IDepPhaseRepository DepPhaseRepository){
+            IDepPhaseRepository DepPhaseRepository,
+            ITaskTypeRepository TaskTypeRepository,
+            IPhaseTaskTypeRepository PhaseTaskTypeRepository)
+        {
 
             _projectRepository = ProjectRepository;
             _projectPhaseRepository = ProjectPhaseRepository;
@@ -59,6 +64,8 @@ namespace MoldManager.WebUI.Controllers
             _partListRepository = PartListRepository;
             _projectRecordRepository = ProjectRecordRepository;
             _depphaseRepository = DepPhaseRepository;
+            _taskTypeRepository = TaskTypeRepository;
+            _phaseTasktypeRepository = PhaseTaskTypeRepository;
         }
         // GET: Project
         public ActionResult Index(string Keyword = "", int State = 1, int Type=1,bool IsDepFinish=true)
@@ -395,7 +402,6 @@ namespace MoldManager.WebUI.Controllers
 
         #endregion
 
-
         #region MilestoneModification
 
         #region 调整计划单元格编辑保存函数
@@ -714,7 +720,7 @@ namespace MoldManager.WebUI.Controllers
             return Json(_gridViewModel, JsonRequestBehavior.AllowGet);
         }
         /// <summary>
-        /// 
+        /// TODO:Projects Json
         /// </summary>
         /// <param name="Keyword"></param>
         /// <param name="State"></param>
@@ -1458,6 +1464,30 @@ namespace MoldManager.WebUI.Controllers
                 }
             }
             return false;
+        }
+        #endregion
+
+        #region 项目-任务历史
+        public string Service_GetMoldNoByProID(int projectid)
+        {
+            string _moldno = _projectRepository.GetByID(projectid).MoldNumber;
+            return _moldno == "---" ? "" : _moldno;
+        }
+        public JsonResult Service_GetTaskTypeByPhaseID(int phaseid)
+        {
+            List<PhaseTaskType> _phaseTasktypes = _phaseTasktypeRepository.PhaseTaskTypes.Where(p => p.PhaseID == phaseid).ToList();
+            List<TaskType> _tasktypes = new List<TaskType>();
+            if (_phaseTasktypes != null)
+            {
+                foreach(var p in _phaseTasktypes)
+                {
+                    TaskType _type = _taskTypeRepository.TaskTypes.Where(t => t.TaskID == p.TaskID && t.Enable==true).FirstOrDefault();
+                    if (_type != null)
+                        _tasktypes.Add(_type);
+                }
+                return Json(_tasktypes, JsonRequestBehavior.AllowGet);
+            }
+            return null;
         }
         #endregion
     }
