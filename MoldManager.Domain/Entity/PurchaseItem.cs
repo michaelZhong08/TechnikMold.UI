@@ -42,6 +42,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public double TaxRate { get; set; }
         public int CostCenterID { get; set; }
         public int ProcedureType { get; set; }
+        public string AttachObjID { get; set; }
 
 
         public PurchaseItem()

@@ -5,8 +5,6 @@
  * 
  */
 
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -125,23 +123,23 @@ namespace TechnikSys.MoldManager.NX.Common
             bool ChkAcc = false;
             string res = string.Empty;
             #region Ping IP地址
-            try
-            {
+            //try
+            //{
 
-                Ping ping = new Ping();
-                PingReply pingReply = ping.Send(_serverName);
-                if (pingReply.Status == IPStatus.Success)
-                {
-                    online = true;
-                }
-                else
-                    res = "IP地址无法ping通，请检查网络连接！";
+            //    Ping ping = new Ping();
+            //    PingReply pingReply = ping.Send(_serverName);
+            //    if (pingReply.Status == IPStatus.Success)
+            //    {
+            //        online = true;
+            //    }
+            //    else
+            //        res = "IP地址无法ping通，请检查网络连接！";
 
-            }
-            catch (Exception ex)
-            {
-                res = ex.Message;
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    res = ex.Message;
+            //}
             #endregion 
             if (string.IsNullOrEmpty(res))
             {
@@ -174,17 +172,6 @@ namespace TechnikSys.MoldManager.NX.Common
                     response = (HttpWebResponse)ex.Response;
                     res = ex.Message;
                 }
-                //StreamReader readStream = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
-                //_result = readStream.ReadToEnd();
-                //_result = JsonConvert.DeserializeObject<string>(_result);
-                //if (_result == str)
-                //{
-                //    ChkAcc = true;
-                //}
-
-                //if (online && ChkAcc)
-                //    return true;
-                //return false;
                 #endregion
             }
             return res;

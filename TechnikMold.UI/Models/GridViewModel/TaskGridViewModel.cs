@@ -87,7 +87,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 {
                     TaskID = _task.TaskID,
                     TaskName = _task.TaskName,
-                    State = Enum.GetName(typeof(CNCStatus), _task.State),
+                    State = Enum.GetName(typeof(TaskStatus), _task.State),
                     MachinesCode = "",
                     MachinesName = _machineCode,
                     TotalTime = Convert.ToInt32(TaskHour),

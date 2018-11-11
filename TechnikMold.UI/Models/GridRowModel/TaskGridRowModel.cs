@@ -15,7 +15,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
         string _dateVal = "";
         public TaskGridRowModel(Task Task, string CAD, string CAM, string Workshop, string QC, string FilePath, string PlanDate, SetupTaskStart _setupTask, CNCMachInfo Machinfo,WEDMSetting wedmsetting,MGSetting mgsetting)
         {
-            TaskStatus _status = new TaskStatus();
+            Helpers.TaskStatus _status = new Helpers.TaskStatus();
             cell = new string[42];
             //TaskID
             cell[0] = Task.TaskID.ToString();
@@ -80,7 +80,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             switch (Task.TaskType)
             {
                 case 1:
-                    stateName = Enum.GetName(typeof(CNCStatus), Task.State);
+                    stateName = Enum.GetName(typeof(TechnikSys.MoldManager.Domain.Status.TaskStatus), Task.State);
                     break;
                 case 2:
                     stateName = Enum.GetName(typeof(EDMStatus), Task.State);

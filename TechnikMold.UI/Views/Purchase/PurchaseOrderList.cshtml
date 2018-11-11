@@ -19,11 +19,38 @@
 
 <div style="margin-top:60px">
     <div class="col-sm-11">
-
         <h3>订单列表</h3>
         <div>
-
-            <ul class="nav nav-pills">
+            <table>
+                <tr>
+                    <td>
+                        <select id="POState" class="form-control">
+                            <option value="0">所有状态</option>
+                            @foreach (int _val in @Enum.GetValues(typeof(PurchaseOrderStatus)))
+                            {
+                                if (_val == ViewBag.State)
+                                {
+                                    <option value="@_val" selected>@Enum.GetName(typeof(PurchaseOrderStatus), _val)</option>
+                                }
+                                else
+                                {
+                                    <option value="@_val">@Enum.GetName(typeof(PurchaseOrderStatus), _val)</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" id="SearchPO">查询订单</button>
+                    </td>
+                    <td>
+                        @if (_dept == 4)
+                        {
+                            <button class="btn btn-primary" id="CreatePO">创建订单</button>
+                        }
+                    </td>
+                </tr>
+            </table>
+            @*<ul class="nav nav-pills">
                 <li class="col-sm-2">
                     <select id="POState" class="form-control">
                         <option value="0">所有状态</option>
@@ -47,10 +74,9 @@
                     <li><button class="btn btn-primary" id="CreatePO">创建订单</button></li>
                 }
                 
-            </ul>
-
+            </ul>*@
         </div>
-        <div style="margin-top:60px">
+        <div >
             <table id="POListGrid"></table>
             <div id="jqGridPager"></div>
         </div>

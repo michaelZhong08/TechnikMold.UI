@@ -22,7 +22,6 @@ using System.Configuration;
 using TechnikSys.MoldManager.UI.Models.ViewModel;
 using TechnikMold.UI.Models;
 using TechnikMold.UI.Models.ViewModel;
-using TechnikMold.UI.Models;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -1378,7 +1377,7 @@ namespace MoldManager.WebUI.Controllers
                     if (_taskid > 0)
                     {
                         Task _task = _taskRepository.QueryByTaskID(_taskid);
-                        _task.State = (int)CNCStatus.等待;
+                        _task.State = (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.等待;
                         _taskRepository.Save(_task);
                     }
                     #endregion
@@ -1552,7 +1551,7 @@ namespace MoldManager.WebUI.Controllers
                 if (r.TaskID > 0)
                 {
                     Task _task = _taskRepository.QueryByTaskID(r.TaskID);
-                    _task.State = (int)CNCStatus.等待;
+                    _task.State = (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.等待;
                     _taskRepository.Save(_task);
                 }
             }
@@ -2336,8 +2335,6 @@ namespace MoldManager.WebUI.Controllers
             Expression<Func<PurchaseItem, bool>> _exp1 = null;
             Expression<Func<PurchaseItem, bool>> _exp2 = null;
 
-
-
             switch (State)
             {
                 case 0:
@@ -2392,7 +2389,6 @@ namespace MoldManager.WebUI.Controllers
             }
             _exp1 = PredicateBuilder.And(_exp1, _exp2);
 
-
             if (MoldNumber != "")
             {
                 _exp1 = PredicateBuilder.And(_exp1, i => i.MoldNumber == MoldNumber);
@@ -2424,19 +2420,47 @@ namespace MoldManager.WebUI.Controllers
                 _purchaseTypeRepository);
 
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
+        }   
+        /// <summary>
+        /// TODO:项目计划 采购阶段明细
+        /// </summary>
+        /// <param name="MoldNumber"></param>
+        /// <param name="State">0 当前 1 历史 -99 未采购PR</param>
+        /// <returns></returns>
+        public JsonResult JsonPurchaseItemsGrids(string MoldNumber = "", int State = 0)
+        {
+            IQueryable<PurchaseItem> _items;
+            Expression<Func<PurchaseItem, bool>> _exp1 = null;
+            Expression<Func<PurchaseItem, bool>> _exp2 = null;
+
+            switch (State)
+            {
+                case 0:
+                    _exp1 = p => p.State >= (int)PurchaseItemStatus.订单新建;
+                    _exp2 = p => p.State <= (int)PurchaseItemStatus.部分收货;
+                    break;
+                case 1:
+                    _exp1 = p => p.State >= (int)PurchaseItemStatus.完成;
+                    break;
+                case -99:
+                    _exp1 = p => p.State >= (int)PurchaseItemStatus.需求待审批;
+                    _exp2 = p => p.State <= (int)PurchaseItemStatus.待采购;                    
+                    break;
+            }
+            if (_exp2!=null){
+                _exp1 = PredicateBuilder.And(_exp1, _exp2);
+            }
+            _items = _purchaseItemRepository.PurchaseItems.Where(p => p.MoldNumber.ToUpper() == MoldNumber.ToUpper()).Where(_exp1);
+
+            PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_items,
+                _purchaseRequestRepository,
+                _quotationRequestRepository,
+                _purchaseOrderRepository,
+                _userRepository,
+                _purchaseTypeRepository);
+
+            return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
-
-        //public ActionResult POForm(int PurchaseOrderID)
-        //{
-
-
-        //    PurchaseOrder _pr = _purchaseOrderRepository.QueryByID(PurchaseOrderID);
-        //    User _user =_userRepository.GetUserByID( _pr.Responsible
-        //    IEnumerable<POContent> _poContents = _poContentRepository.QueryByPOID(PurchaseOrderID);
-        //    POViewModel _model = new POViewModel(_poContents, _pr, );
-        //    return View(_model);
-        //}      
-
 
         public ActionResult SelectPOContent(string Keyword = "", int PurchaseType = 1, string PurchaseItemIDs = "")
         {
@@ -2510,13 +2534,14 @@ namespace MoldManager.WebUI.Controllers
 
         [HttpPost]
         public string CreatePurchaseOrder(IEnumerable<PurchaseOrderItemEditModel> POContents,
-            int Supplier, string Currency, string TaxRate, int PurchaseType, string SupplierName)
+            string Supplier, string Currency, string TaxRate, int PurchaseType, string SupplierName)
         {
             int _purchaseUserID;
             int _purchaseOrderID = 0;
             int _purchaseItemID;
             List<PurchaseItem> _purchaseItems = new List<PurchaseItem>();
             List<POContent> _poContents = new List<POContent>();
+            Supplier _supplier = _supplierRepository.Suppliers.Where(s => s.Name == Supplier).FirstOrDefault() ?? new Supplier();
             string _error = "";
             try
             {
@@ -2531,7 +2556,7 @@ namespace MoldManager.WebUI.Controllers
             {
                 PurchaseOrder _po = new PurchaseOrder();
 
-                _po.SupplierID = Supplier;
+                _po.SupplierID = _supplier.SupplierID;
                 _po.SupplierName = SupplierName;
                 _po.Responsible = _purchaseUserID;
                 _po.State = (int)PurchaseOrderStatus.新建;
@@ -2555,7 +2580,7 @@ namespace MoldManager.WebUI.Controllers
                     _item.PurchaseOrderID = _purchaseOrderID;
                     _item.PurchaseUserID = _purchaseUserID;
                     _item.State = (int)PurchaseItemStatus.订单新建;
-                    _item.SupplierID = Supplier;
+                    _item.SupplierID = _supplier.SupplierID;
                     _item.SupplierName = SupplierName;
 
                     _purchaseItems.Add(_item);

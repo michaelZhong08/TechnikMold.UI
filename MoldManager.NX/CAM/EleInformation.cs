@@ -24,6 +24,7 @@ namespace TechnikSys.MoldManager.NX.CAM
         {
             _server = new WebServer(ServerName, Port, "Le Chunming", "1qaz@WSX");
         }
+
         #region 电极图纸
         /// <summary>
         /// PR_CAMInsertOrUpdateEleInformation_R02  
@@ -61,7 +62,7 @@ namespace TechnikSys.MoldManager.NX.CAM
             //181016 MoldNumber由NX端传值
             //Task.MoldNumber = Task.TaskName.Substring(0, Task.TaskName.IndexOf('_'));
             Task.TaskType = 1;
-            Task.State = (int)CNCStatus.未发布;
+            Task.State = (int)TaskStatus.未发布;
             Task.Enabled = true;
             UserInfo _userInfo = new UserInfo(_server);
             Task.CADUser = _userInfo.GetUserID(CADUser);
@@ -86,9 +87,7 @@ namespace TechnikSys.MoldManager.NX.CAM
             string data = _server.SendObject(_url, "MachInfo", MachInfo);
             CNCMachInfo _machInfo = JsonConvert.DeserializeObject<CNCMachInfo>(data);
             Position = _machInfo.Position;
-            Ele_index = _machInfo.DrawIndex;
-
-            
+            Ele_index = _machInfo.DrawIndex;            
             
             if ((_machInfo.RoughName == "") && (_machInfo.FinishName == ""))
             {

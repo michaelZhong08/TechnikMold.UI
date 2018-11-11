@@ -49,16 +49,18 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.ProjectID = ProjectPhase.ProjectID;
                     _dbEntry.PhaseID = ProjectPhase.PhaseID;
 
-                    DateTime _value = ProjectPhase.PlanCFinish == new DateTime(1, 1, 1) ? ProjectPhase.PlanFinish : ProjectPhase.PlanCFinish;
+                    //DateTime _value = ProjectPhase.PlanCFinish == new DateTime(1, 1, 1) ? ProjectPhase.PlanFinish : ProjectPhase.PlanCFinish;
 
-                    if (_dbEntry.PlanFinish == new DateTime(1, 1, 1))
-                    {
-                        _dbEntry.PlanFinish = _value;//ProjectPhase.PlanCFinish;
-                    }
-                    else
-                    {
-                        _dbEntry.PlanCFinish = _value;//ProjectPhase.PlanCFinish;
-                    }
+                    //if (_dbEntry.PlanFinish == new DateTime(1, 1, 1))
+                    //{
+                    //    _dbEntry.PlanFinish = _value;//ProjectPhase.PlanCFinish;
+                    //}
+                    //else
+                    //{
+                    //    _dbEntry.PlanCFinish = _value;//ProjectPhase.PlanCFinish;
+                    //}
+                    _dbEntry.PlanFinish = ProjectPhase.PlanFinish;
+                    _dbEntry.PlanCFinish = ProjectPhase.PlanCFinish;
                     _dbEntry.ActualFinish = ProjectPhase.ActualFinish;
                     _dbEntry.MainChange = ProjectPhase.MainChange;
                 }
@@ -72,7 +74,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             ProjectPhase _dbEntry = _context.ProjectPhases.Find(ProjectPhaseID);
             if (_dbEntry != null)
             {
-                if (_dbEntry.PlanFinish == new DateTime(1, 1, 1))
+                if (_dbEntry.PlanFinish == new DateTime(1, 1, 1) || _dbEntry.PlanFinish==new DateTime(1900,1,1))
                 {
                     _dbEntry.PlanFinish = PhaseTime;//ProjectPhase.PlanCFinish;
                 }

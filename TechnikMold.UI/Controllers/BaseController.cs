@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using TechnikMold.UI.Models;
 using TechnikSys.MoldManager.Domain.Abstract;
+using TechnikSys.MoldManager.Domain.Entity;
 
 namespace TechnikMold.UI.Controllers
 {
@@ -44,6 +45,8 @@ namespace TechnikMold.UI.Controllers
         public IWEDMSettingRepository _wedmSettingRepository;
         public ITaskHourRepository _taskHourRepository;
         public IMachinesInfoRepository _machinesinfoRepository;
+        public IAttachFileInfoRepository _attachFileInfoRepository;
+        public IPurchaseItemRepository _purchaseItemRepository;
         #endregion
 
 
@@ -54,6 +57,40 @@ namespace TechnikMold.UI.Controllers
             Toolkits.WriteLog(logPath, content);
         }
         #endregion
-
+        public string GetCurrentUser()
+        {
+            try
+            {
+                //int _userID = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
+                //User _user = _userRepository.GetUserByID(_userID) ?? new User();
+                //return _user.FullName;
+                string _name = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"])??"";
+                return _name;
+            }
+            catch
+            {
+                return "";
+            }
+        }
+        /// <summary>
+        /// 获取时间戳
+        /// </summary>
+        /// <returns></returns>
+        public static string GetTimeStamp(System.DateTime time, int length = 13)
+        {
+            long ts = ConvertDateTimeToInt(time);
+            return ts.ToString().Substring(0, length);
+        }
+        /// <summary>  
+        /// 将c# DateTime时间格式转换为Unix时间戳格式  
+        /// </summary>  
+        /// <param name="time">时间</param>  
+        /// <returns>long</returns>  
+        public static long ConvertDateTimeToInt(System.DateTime time)
+        {
+            System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1, 0, 0, 0, 0));
+            long t = (time.Ticks - startTime.Ticks) / 10000;   //除10000调整为13位      
+            return t;
+        }
     }
 }

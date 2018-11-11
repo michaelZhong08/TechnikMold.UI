@@ -18,7 +18,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[1] = CNCItem.LabelName;
             cell[2] = CNCItem.Material;
             cell[3] = CNCItem.CreateTime.ToString("yyyy-MM-dd hh:mm");
-            cell[4] = Enum.GetName(typeof(CNCStatus), CNCItem.Status);
+            cell[4] = Enum.GetName(typeof(TaskStatus), CNCItem.Status);
         }
     }
 }

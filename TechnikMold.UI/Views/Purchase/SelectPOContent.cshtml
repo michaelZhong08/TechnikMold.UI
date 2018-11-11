@@ -1,10 +1,14 @@
 ﻿@{
     ViewBag.Title = "创建订单";
 }
-
+<style>
+    /*.form-control {
+        display: inline;
+    }*/
+</style>
 <div style="margin-top:60px">
     <h2>采购订单维护   </h2>
-    <table class="col-sm-12">
+    @*<table class="col-sm-12">
         <tr>
             <td class="col-sm-2">
                 <input type="text" class="form-control" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword"/>
@@ -26,7 +30,8 @@
             </td>
             <td><label>供应商</label></td>
             <td class="col-sm-1">
-                <select class="form-control" id="Supplier"></select>
+                <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:70%" />
+                <datalist id="SupplierIDD"></datalist>
             </td>
             <td><label>币种</label></td>
             <td class="col-sm-1">
@@ -50,6 +55,53 @@
                 </select>
             </td>
             <td class="col-sm-2"><button class="btn btn-primary" id="CreatePO">保存订单</button></td>
+        </tr>
+    </table>*@  
+    <table style="margin-left:18px;">
+        <tr>
+            <td>
+                <input style="height:34px;" type="text" class="form-inline" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword" />
+                <button class="btn btn-primary" id="Search">查询</button>            
+            </td>
+            <td>
+                <label>采购类型</label>
+                @if (ViewBag.PurchaseItemIDs == "")
+                {
+                    <select style="height:34px;" class="form-inline" id="PurchaseType"></select>
+                }
+                else
+                {
+                    <select style="height:34px;" class="form-inline" id="PurchaseType" disabled></select>
+                }
+            </td>
+            <td>
+                <label>供应商</label>
+                <input style="height:34px;" id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-inline" />
+                <datalist id="SupplierIDD"></datalist>
+            </td>
+            <td >
+                <label>币种</label>
+                <select style="height:34px;" id="Currency" class="form-inline">
+                    <option value="人民币">人民币</option>
+                    <option value="美元">美元</option>
+                    <option value="日元">日元</option>
+                    <option vlaue="欧元">欧元</option>
+                </select>
+            </td>
+            <td >
+                <label>税率</label>
+                <select style="height:34px;" id="TaxRate" class="form-inline">
+                    <option value="17">17%</option>
+                    <option value="6">6%</option>
+                    <option value="5">5%</option>
+                    <option value="4">4%</option>
+                    <option value="3">3%</option>
+                    <option value="0">0%</option>
+                </select>
+            </td>
+            <td>
+                <button class="btn btn-primary" id="CreatePO">保存订单</button>
+            </td>
         </tr>
     </table>
     <div class="col-sm-6">
@@ -174,7 +226,7 @@
         LoadSuppliers();
         LoadPurchaseTypes();
 
-
+        SupplierListImport('SupplierIDD');
 
         $("#Search").on("click", function () {
             if ($("#Keyword").val() != "") {

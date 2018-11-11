@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TechnikSys.MoldManager.Domain.Entity;
 using TechnikSys.MoldManager.Domain.Abstract;
-
+using TechnikSys.MoldManager.Domain.Status;
 
 namespace TechnikSys.MoldManager.Domain.Concrete
 {
@@ -142,6 +142,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
 
             CNCItem _item = QueryByID(CNCItemID);
+            _item.Status = (int)CNCItemStatus.备料;
             if (Reprint)
             {
                 _item.LabelPrinted = false;

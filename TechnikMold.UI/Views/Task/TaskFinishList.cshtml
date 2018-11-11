@@ -3,7 +3,7 @@
     ViewBag.Title = "任务点检";
 }
 @{
-    TaskType _taskType = new TaskType();
+    TaskTypeModelHelper _taskType = new TaskTypeModelHelper();
     int DeptID = 0;
     try
     {
@@ -168,7 +168,12 @@ else if (ViewBag.TaskType == 4)
         $("#BarCode").on("keyup", function () {
             delay_till_last('Position', function () {
                 // run something
-                ScanConfirm($("#BarCode").val());
+                var _barcode = $("#BarCode").val();
+                var _findexof = _barcode.indexOf('*');
+                var _lindexof = _barcode.lastIndexOf('*');
+                if (_findexof == 0 && _lindexof == _barcode.length-1) {
+                    ScanConfirm($("#BarCode").val());
+                }               
             }, 500);
         })
 
@@ -212,8 +217,10 @@ else if (ViewBag.TaskType == 4)
         $.getJSON(_url, function (msg) {
             if (Number(msg.CNCItemID) > 0) {
                 if (msg.Status == 10) {
-                    if ($("#" + msg.CNCItemID).length == 0) {
-                        $("#Ele_List_D").append("<tr><td><input class='itemid' type='checkbox' id='" + msg.CNCItemID + "' checked disabled></td><td>" + msg.LabelName + "</td></tr>")
+                    //var d = $('#1')[0];
+                    var _id=msg.CNCItemID + "_EleLabel";
+                    if ($("#" + _id).length == 0) {
+                        $("#Ele_List_D").append("<tr><td><input class='itemid' type='checkbox' id='" + _id + "' checked disabled></td><td>" + msg.LabelName + "</td></tr>")
                         $("#BarCode").val("");
                     }
                     else {
@@ -240,7 +247,9 @@ else if (ViewBag.TaskType == 4)
         var _items = $(".itemid:checked");
         var _itemIDs = "";
         for (i = 0; i < _items.length; i++) {
-            _itemIDs = _itemIDs == "" ? _items[i].id : _itemIDs + "," + _items[i].id;
+            var _id = _items[i].id;
+            _id = _id.substring(0, _id.indexOf('_'));
+            _itemIDs = _itemIDs == "" ? _id : _itemIDs + "," + _id;
         }
         var _url = "/Task/ElectrodeFinish?CNCItemIDs=" + _itemIDs + "&UserID=" + $("#CheckUser option:selected").val();
         $.ajax({

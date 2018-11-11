@@ -1,454 +1,457 @@
 ﻿@model IEnumerable<TechnikSys.MoldManager.Domain.Entity.Task>
 @{
     ViewBag.Title = "EDM加工任务";
+    Layout = null;
 }
 
-@using MoldManager.WebUI.Models.Helpers;
-@using TechnikSys.MoldManager.Domain.Entity;
-@{
-    TaskType _taskType = new TaskType();
-}
-<input type="hidden" id="CurrentTaskType" value="2" />
+<!DOCTYPE html>
 
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>CNC零件列表</title>
+    <link href="/Content/bootstrap.css" rel="stylesheet" />
+    <link href="/Content/site.css" rel="stylesheet" />
+    <link href="/Content/ui.jqgrid-bootstrap.css" rel="stylesheet" />
+    @using MoldManager.WebUI.Models.Helpers;
+    @using TechnikSys.MoldManager.Domain.Entity;
+</head>
+<body>
+    <input type="hidden" id="CurrentTaskType" value="2" />
 
-
-<div style="margin-top:60px">
-    <h2 class="page-header">@ViewBag.Title</h2>
-    <div class="col-sm-2">
-        <select id="EleList" size="30" class="form-control">
-            @foreach (Task _ele in Model)
+    <div style="margin-top:0px;">
+        <h2 class="page-header">@ViewBag.Title</h2>
+        <div class="col-sm-2">
+            <select id="EleList" size="30" class="form-control">
+                @foreach (Task _ele in Model)
             {
-                <option value="@_ele.TaskID">@_ele.TaskName</option>
-            }
-        </select>
-    </div>
-    <div class="col-sm-10">
-        <div id="Toolbar">
-           
-        </div>
-        <div class="col-sm-11" style="float:left;">
-            @*<ul class="nav nav-pills">
-                <li><button class="btn btn-primary" id="AddToQueue">设置任务开始</button></li>
-                <li><button class="btn btn-primary" id="SetEleFlag">设置电极加工标记</button></li>
-            </ul>*@
-            <table id="TaskGrid"></table>
-        </div>
-        <div class="col-sm-11" style="float:left;">
-            <ul class="nav nav-pills">
-                <li><button class="btn btn-primary" id="AddItem">加入</button></li>
-                <li><button class="btn btn-primary" id="RemoveItem">移除</button></li>
-                <li><button class="btn btn-primary" id="DeviceSelect">夏米尔350</button></li>
-                <li><button class="btn btn-primary" id="RaiseHeight">抬高高度:80</button></li>
-                <li><button class="btn btn-primary" id="PieceCount">工件个数:1</button></li>              
-                <li><button class="btn btn-primary" id="ItemPosition">电极位置</button></li>
-                <li><button class="btn btn-primary" id="ItemSurface">表面要求</button> </li>
-                <li><button class="btn btn-primary" id="Compensation">补偿值</button> </li>
-                <li><button class="btn btn-primary" id="ObitSelect">平动方式</button> </li>
-                <li><button class="btn btn-primary" id="MaterialSelect">修改材料</button> </li>
-                <li><button class="btn btn-success" id="CreateProgram">生成程序</button></li>
-            </ul>
-            <table id="ProcessGrid"></table>
-        </div>
-
-    </div>
-</div>
-@* 机床类别选择 *@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="DeviceSelectDialog" tabindex="-1" role="dialog" aria-labelledby="DeviceSelectLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="DeviceSelectLabel">机床类别选择</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>机床类别</label></td>
-                        <td class="col-sm-4">
-                            <select id="DeviceType" class="form-control">
-                                <option value="0">夏米尔350</option>
-                                <option value="1">夏米尔35P</option>
-                                <option value="2">夏米尔350 没有C</option>
-                                <option value="3">夏米尔35P 没有C</option>
-                                <option value="4">夏米尔350 选择跑位</option>
-                                <option value="5">夏米尔23 选择跑位</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="SaveDevice" class="btn btn-primary">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-@*抬高高度设置*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="RaiseHeightDialog" tabindex="-1" role="dialog" aria-labelledby="RaiseHeightLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="RaiseHeightLabel">抬高高度设置</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>抬高高度</label></td>
-                        <td class="col-sm-4">
-                            <input type="number" class="form-control" id="RaiseHeightValue" value="80" />
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="SaveRaiseHeight" class="btn btn-primary">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-@* 工件个数 *@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PieceCountDialog" tabindex="-1" role="dialog" aria-labelledby="PieceCountLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="PieceCountLabel">工件个数</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>工件个数</label></td>
-                        <td class="col-sm-4">
-                            <input type="number" class="form-control" id="PieceCountValue" value="1" />
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="SavePieceCount" class="btn btn-primary">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@*表面要求*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="ItemSurfaceDlg" tabindex="-1" role="dialog" aria-labelledby="ItemSurfaceLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="ItemSurfaceLabel">表面要求</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>表面要求</label></td>
-                        <td class="col-sm-4">
-                            <select class="form-control required" id="SurfaceVal" name="Surface">
-                                <option value="VDI27">VDI27</option>
-                                <option value="VDI24">VDI24</option>
-                                <option value="VDI21">VDI21</option>
-                                <option value="VDI18">VDI18</option>
-                                <option value="VDI15">VDI15</option>
-                                <option value="POLISH">POLISH</option>
-                            </select>
-                        </td>
-                    </tr>                   
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="SetItemSurface" class="btn btn-primary">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@*补偿值*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="CompensationDlg" tabindex="-1" role="dialog" aria-labelledby="CompensationLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="CompensationLabel">补偿值</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>间隙补偿</label></td>
-                        <td class="col-sm-4">
-                            <input type="number" id="GapCompensationVal" class="form-control" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="col-sm-2"><label>高度补偿</label></td>
-                        <td class="col-sm-4">
-                            <input type="number" id="ZCompensationVal" class="form-control" />
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="SetCompensationPara" class="btn btn-primary">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@* 平动方式 *@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="ObitDlg" tabindex="-1" role="dialog" aria-labelledby="ObitLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="ObitLabel">平动方式</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>平动方式</label></td>
-                        <td class="col-sm-4">
-                            <select class="form-control required" name="ObitList" id="ObitList">
-                                <option value="C">圆平动</option>
-                                <option value="S">球平动</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="SetObit" class="btn btn-primary">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-@*材料选择*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="MaterialDlg" tabindex="-1" role="dialog" aria-labelledby="MaterialLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="MaterialLabel">材料选择</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>材料选择</label></td>
-                        <td class="col-sm-4">
-                            <select class="form-control required" name="MaterialList" id="MaterialList">
-                                <option value="Copper">Copper </option>
-                                <option value="Graphite">Graphite</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="SetMaterial" class="btn btn-primary">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-@*选择电极位置*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PositionDlg" tabindex="-1" role="dialog" aria-labelledby="PositionLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="PositionLabel">选择电极位置</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>当前位置</label></td>
-                        <td class="col-sm-4">
-                            <input type="number" id="curPosition"  class="form-control"/>
-                        </td>
-                    </tr>       
-                    <tr>
-                        <td class="col-sm-2"><label>位置间隔</label></td>
-                        <td class="col-sm-4">
-                            <input type="number" id="PositionGap" value="1" class="form-control" />
-                        </td>
-                    </tr>             
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="SetElePosition" class="btn btn-primary">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@*显示加工程序*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="ProgramDlg" tabindex="-1" role="dialog" aria-labelledby="ProgramLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="ProgramLabel">EDM加工程序</h4>
-            </div>
-            <div class="modal-body">
-                @using (Html.BeginForm("DownloadProgram", "Task", FormMethod.Post, new { id = "Download" }))
-                {
-                <textarea class="form-control" id="ProgramContent" name="Program" rows="20"></textarea>
-                <input type="hidden" id="TaskID" value="@ViewBag.TaskID" name="TaskID" />
-                    <input type="hidden" id="FileName" name="FileName" />
+                    <option value="@_ele.TaskID">@_ele.TaskName</option>
                 }
+            </select>
+        </div>
+        <div class="col-sm-10">
+            <div id="Toolbar">
+
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="DownloadFile">下载程序</button>
+            <div class="col-sm-11" style="float:left;">
+                <table id="TaskGrid"></table>
             </div>
+            <div class="col-sm-11" style="float:left;">
+                <ul class="nav nav-pills">
+                    <li><button class="btn btn-primary" id="AddItem">加入</button></li>
+                    <li><button class="btn btn-primary" id="RemoveItem">移除</button></li>
+                    <li><button class="btn btn-primary" id="DeviceSelect">夏米尔350</button></li>
+                    <li><button class="btn btn-primary" id="RaiseHeight">抬高高度:80</button></li>
+                    <li><button class="btn btn-primary" id="PieceCount">工件个数:1</button></li>
+                    <li><button class="btn btn-primary" id="ItemPosition">电极位置</button></li>
+                    <li><button class="btn btn-primary" id="ItemSurface">表面要求</button> </li>
+                    <li><button class="btn btn-primary" id="Compensation">补偿值</button> </li>
+                    <li><button class="btn btn-primary" id="ObitSelect">平动方式</button> </li>
+                    <li><button class="btn btn-primary" id="MaterialSelect">修改材料</button> </li>
+                    <li><button class="btn btn-success" id="CreateProgram">生成程序</button></li>
+                </ul>
+                <table id="ProcessGrid"></table>
+            </div>
+
         </div>
     </div>
-</div>
-
-@*加工顺序*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="MachSequence" tabindex="-1" role="dialog" aria-labelledby="MachSequenceLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="MachSequenceLabel">加工顺序</h4>
-            </div>
-            <div class="modal-body">
-                
-                
-                <table>
-                    <tr>
-                        <td class="col-sm-2">
-                            <select id="SequenceSet" class="form-control">
-                                <option value="true">先开粗 后精加工</option>
-                                <option value="false">一般顺序</option>
-                            </select>
-                            
-                        </td>
-                    </tr>
-                </table>
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="SequenceSetButton">确定</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@*跑位检查*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PositionCheckDlg" tabindex="-1" role="dialog" aria-labelledby="PositionCheckLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="PositionCheckLabel">跑位选择</h4>
-            </div>
-            <div class="modal-body" style="min-height:200px">
-                <div class="col-sm-12">
-                    <div class="col-sm-4">
-                        <select id="ElePosList" size="10" class="form-control"></select>
-                    </div>
-                    <div class="col-sm-8">
-                        <table class="table-striped">
-                            <thead>
-                                <tr>
-                                    <td class="col-sm-5"><label>跑位</label></td>
-                                    <td class="col-sm-2"><label>选择</label></td>
-                                </tr>
-                            </thead>
-                            <tbody id="PositionList">
-                                
-                            </tbody>
-                        </table>
-                    </div>
+    @* 机床类别选择 *@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="DeviceSelectDialog" tabindex="-1" role="dialog" aria-labelledby="DeviceSelectLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="DeviceSelectLabel">机床类别选择</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><label>机床类别</label></td>
+                            <td class="col-sm-4">
+                                <select id="DeviceType" class="form-control">
+                                    <option value="0">夏米尔350</option>
+                                    <option value="1">夏米尔35P</option>
+                                    <option value="2">夏米尔350 没有C</option>
+                                    <option value="3">夏米尔35P 没有C</option>
+                                    <option value="4">夏米尔350 选择跑位</option>
+                                    <option value="5">夏米尔23 选择跑位</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SaveDevice" class="btn btn-primary">保存</button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="PositionSetButton">确定</button>
+        </div>
+    </div>
+    @*抬高高度设置*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="RaiseHeightDialog" tabindex="-1" role="dialog" aria-labelledby="RaiseHeightLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="RaiseHeightLabel">抬高高度设置</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><label>抬高高度</label></td>
+                            <td class="col-sm-4">
+                                <input type="number" class="form-control" id="RaiseHeightValue" value="80" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SaveRaiseHeight" class="btn btn-primary">保存</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<div class="modal" data-backdrop="static" data-keyboard="false" id="EleCompensationDialog" tabindex="-1" role="dialog" aria-labelledby="EleCompensationLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="EleCompensationLabel">电极确认</h4>
-            </div>
-            <div class="modal-body">
-                <table class="table-striped col-sm-12">
-
-                    <tr>
-                        <td class="col-sm-4"><label>电极名称</label></td>
-                        <td>
-                            <input type="text" id="LabelName" class="form-control" readonly />
-                            <input type="hidden" id="CNCItemID" name="CNCItemID" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="col-sm-4"><label>结论</label></td>
-                        <td>
-                            <select id="Result" name="Result" class="form-control">
-                                <option value="true">可以利用</option>
-                                <option value="false">不合格</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="col-sm-4"><label>火花间隙</label></td>
-                        <td><input type="number" id="GapCompensation" name="GapCompensation" class="form-control" /></td>
-                    </tr>
-                    <tr>
-                        <td class="col-sm-4"><label>高度间隙</label></td>
-                        <td><input type="number" id="ZCompensation" name="ZCompensation" class="form-control" /></td>
-                    </tr>
-                    <tr>
-                        <td class="col-sm-4"><label>检测报告</label></td>
-                        <td><a href="" id="ReportLink" target="_blank"><img id="ReportPic" src="" style="width:400px" /></a></td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+    @* 工件个数 *@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="PieceCountDialog" tabindex="-1" role="dialog" aria-labelledby="PieceCountLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="PieceCountLabel">工件个数</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><label>工件个数</label></td>
+                            <td class="col-sm-4">
+                                <input type="number" class="form-control" id="PieceCountValue" value="1" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SavePieceCount" class="btn btn-primary">保存</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    @*表面要求*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="ItemSurfaceDlg" tabindex="-1" role="dialog" aria-labelledby="ItemSurfaceLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="ItemSurfaceLabel">表面要求</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><label>表面要求</label></td>
+                            <td class="col-sm-4">
+                                <select class="form-control required" id="SurfaceVal" name="Surface">
+                                    <option value="VDI27">VDI27</option>
+                                    <option value="VDI24">VDI24</option>
+                                    <option value="VDI21">VDI21</option>
+                                    <option value="VDI18">VDI18</option>
+                                    <option value="VDI15">VDI15</option>
+                                    <option value="POLISH">POLISH</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SetItemSurface" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*补偿值*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="CompensationDlg" tabindex="-1" role="dialog" aria-labelledby="CompensationLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="CompensationLabel">补偿值</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><label>间隙补偿</label></td>
+                            <td class="col-sm-4">
+                                <input type="number" id="GapCompensationVal" class="form-control" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>高度补偿</label></td>
+                            <td class="col-sm-4">
+                                <input type="number" id="ZCompensationVal" class="form-control" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SetCompensationPara" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* 平动方式 *@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="ObitDlg" tabindex="-1" role="dialog" aria-labelledby="ObitLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="ObitLabel">平动方式</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><label>平动方式</label></td>
+                            <td class="col-sm-4">
+                                <select class="form-control required" name="ObitList" id="ObitList">
+                                    <option value="C">圆平动</option>
+                                    <option value="S">球平动</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SetObit" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*材料选择*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="MaterialDlg" tabindex="-1" role="dialog" aria-labelledby="MaterialLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="MaterialLabel">材料选择</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><label>材料选择</label></td>
+                            <td class="col-sm-4">
+                                <select class="form-control required" name="MaterialList" id="MaterialList">
+                                    <option value="Copper">Copper </option>
+                                    <option value="Graphite">Graphite</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SetMaterial" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*选择电极位置*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="PositionDlg" tabindex="-1" role="dialog" aria-labelledby="PositionLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="PositionLabel">选择电极位置</h4>
+                </div>
+                <div class="modal-body">
+                    <table>
+                        <tr>
+                            <td class="col-sm-2"><label>当前位置</label></td>
+                            <td class="col-sm-4">
+                                <input type="number" id="curPosition" class="form-control" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-2"><label>位置间隔</label></td>
+                            <td class="col-sm-4">
+                                <input type="number" id="PositionGap" value="1" class="form-control" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" id="SetElePosition" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*显示加工程序*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="ProgramDlg" tabindex="-1" role="dialog" aria-labelledby="ProgramLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="ProgramLabel">EDM加工程序</h4>
+                </div>
+                <div class="modal-body">
+                    @using (Html.BeginForm("DownloadProgram", "Task", FormMethod.Post, new { id = "Download" }))
+                    {
+                        <textarea class="form-control" id="ProgramContent" name="Program" rows="20"></textarea>
+                        <input type="hidden" id="TaskID" value="@ViewBag.TaskID" name="TaskID" />
+                        <input type="hidden" id="FileName" name="FileName" />
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="DownloadFile">下载程序</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*加工顺序*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="MachSequence" tabindex="-1" role="dialog" aria-labelledby="MachSequenceLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="MachSequenceLabel">加工顺序</h4>
+                </div>
+                <div class="modal-body">
 
 
+                    <table>
+                        <tr>
+                            <td class="col-sm-2">
+                                <select id="SequenceSet" class="form-control">
+                                    <option value="true">先开粗 后精加工</option>
+                                    <option value="false">一般顺序</option>
+                                </select>
 
-    <script src="~/Scripts/Task.js"></script>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="SequenceSetButton">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*跑位检查*@
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="PositionCheckDlg" tabindex="-1" role="dialog" aria-labelledby="PositionCheckLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="PositionCheckLabel">跑位选择</h4>
+                </div>
+                <div class="modal-body" style="min-height:200px">
+                    <div class="col-sm-12">
+                        <div class="col-sm-4">
+                            <select id="ElePosList" size="10" class="form-control"></select>
+                        </div>
+                        <div class="col-sm-8">
+                            <table class="table-striped">
+                                <thead>
+                                    <tr>
+                                        <td class="col-sm-5"><label>跑位</label></td>
+                                        <td class="col-sm-2"><label>选择</label></td>
+                                    </tr>
+                                </thead>
+                                <tbody id="PositionList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="PositionSetButton">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" data-backdrop="static" data-keyboard="false" id="EleCompensationDialog" tabindex="-1" role="dialog" aria-labelledby="EleCompensationLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="EleCompensationLabel">电极确认</h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table-striped col-sm-12">
+
+                        <tr>
+                            <td class="col-sm-4"><label>电极名称</label></td>
+                            <td>
+                                <input type="text" id="LabelName" class="form-control" readonly />
+                                <input type="hidden" id="CNCItemID" name="CNCItemID" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>结论</label></td>
+                            <td>
+                                <select id="Result" name="Result" class="form-control">
+                                    <option value="true">可以利用</option>
+                                    <option value="false">不合格</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>火花间隙</label></td>
+                            <td><input type="number" id="GapCompensation" name="GapCompensation" class="form-control" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>高度间隙</label></td>
+                            <td><input type="number" id="ZCompensation" name="ZCompensation" class="form-control" /></td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>检测报告</label></td>
+                            <td><a href="" id="ReportLink" target="_blank"><img id="ReportPic" src="" style="width:400px" /></a></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/Scripts/modernizr-2.6.2.js"></script>
+    <script src="/Scripts/jquery-1.10.2.js"></script>
+    <script src="/Scripts/bootstrap.js"></script>
+    <script src="/Scripts/respond.js"></script>
+    <script src="/Scripts/jquery.jqGrid.min.js"></script>
+    <script src="/Scripts/i18n/grid.locale-en.js"></script>
+    <script src="/Scripts/JqGridTemplate.js"></script>
     <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+    <script src="~/Scripts/Task.js"></script>
 
     <script>
         $("#document").ready(function () {
             EDMItemList(@ViewBag.TaskID);
             EDMCurrentItemList();
-
-
         });
 
         var Positions = new Array();
         var EleNames = new Array();
 
         function LoadElectrodeQC(ID) {
-            
+
             var _url = "/Task/JsonCNCItem?CNCItemID=" + ID
             $.getJSON(_url, function (msg) {
                 $("#EleCompensationLabel").html(msg.LabelName);
@@ -457,13 +460,6 @@
                 $("#ZCompensation").val(msg.ZCompensation);
                 $("#GapCompensation").val(msg.GapCompensation);
             })
-            //var _title = GetCellContent("TaskGrid", "LabelName");
-            //$("#EleCompensationLabel").html(_title);
-            //$("#LabelName").val(_title);
-            //$("#CNCItemID").val(_id);
-            //var _z = GetCellContent("ElectrodeGrid", "ZCompensation");
-            //var _gap = GetCellContent("ElectrodeGrid", "GapCompensation");
-
 
             _url = "/Task/JsonQCReport?CNCItemID=" + ID
             $.ajax({
@@ -480,12 +476,9 @@
                 }
 
             })
-
-
-
             $("#EleCompensationDialog").modal("show");
 
         }
     </script>
-
-
+</body>
+</html>

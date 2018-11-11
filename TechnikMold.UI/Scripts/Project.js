@@ -628,24 +628,6 @@ function SaveCustomer() {
     }
 }
 
-function ShowProjectFile(ProjectID) {
-    var _mold = GetCellContent("ProjectGrid", "MoldNo")
-    if (_mold.indexOf ("---") >= 0) {
-        alert("主项目不需要上传项目文件")
-    } else {
-
-    var id = ProjectID;
-
-        $("#FileProjectID").val(ProjectID);
-
-        $.getJSON("/Project/JsonProject?ProjectID=" + ProjectID, function (msg) {
-            $("#FilePath").val(msg.Attachment);
-        })
-        $("#ProjectFileDialog").modal("show");
-
-    }
-}
-
 function SaveProjectFile() {
     var _url = "/Project/SaveProjectFile?ProjectID=" + $("#FileProjectID").val() + "&Attachment=" + $("#FilePath").val();
 
@@ -781,10 +763,10 @@ function PhaseTask(ProjectID) {
     
 }
 
-function CellEdit_ModifyProJPhase(ProjectID, PhaseID, PlanCFinish) {
+function CellEdit_ModifyProJPhase(ProjectID, PhaseID, PlanCFinish,flag) {
     var result;
     $.ajaxSettings.async = false;//同步请求
-    $.get('/Project/Service_Save_ProJPhaseCFDate?ProJID=' + ProjectID + '&PhaseID=' + PhaseID + '&CFDate=' + PlanCFinish, function (res) {
+    $.get('/Project/Service_Save_ProJPhaseCFDate?ProJID=' + ProjectID + '&PhaseID=' + PhaseID + '&CFDate=' + PlanCFinish + '&Flag=' + flag, function (res) {
         //res = JSON.parse(res);
         result = res.Code;
     });

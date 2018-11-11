@@ -1,7 +1,8 @@
 ﻿@model MoldManager.WebUI.Models.ViewModel.ProjectViewModel
 @{
     int EditStatus = 10;
-    string _inputState="disabled";
+    string _inputState="readonly";@*disabled*@
+    string _selState = "disabled";
 }
 <script src="~/Scripts/Project.js"></script>
 
@@ -110,7 +111,7 @@ else
                                        maxlength="20" 
                                        @if ((Model.Project.ProjectID>0)||(Model.Project.Type==2))
                                        {
-                                           @:disabled
+                                           @_inputState
                                        }
                                        value="@(Model.Project.MoldNumber == "---" ? "" : @Model.Project.MoldNumber)" />
                             </td>
@@ -124,6 +125,24 @@ else
                         }
                     </tr>
                     <tr>
+                        <td class="col-sm-2"><label>客户</label></td>
+                        <td class="col-sm-4">
+                            @if (Model.Project.ProjectID == 0)
+                            {
+                                <select id="Project.Project.CustomerID"
+                                        name="Project.Project.CustomerID"
+                                        class="form-control required"
+                                        value="@Model.Project.CustomerID" @_selState></select>
+                                    <input type="hidden" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName" />
+                            }
+                            else
+                            {
+                                <input type="text" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName" class="form-control" @_inputState />
+                                <input type="hidden" id="Project.Project.CustomerID"
+                                       name="Project.Project.CustomerID" value="@Model.Project.CustomerID" />
+                            }
+                        </td>
+
                         <td class="col-sm-2">
                             @if (Model.Project.ParentID > 0)
                             {
@@ -136,26 +155,9 @@ else
                         </td>
                         <td class="col-sm-4">
                             <input type="text" class="form-control required" id="Project.Project.Name" maxlength="50"
-                                   name="Project.Project.Name" value="@Model.Project.Name" @_inputState/>
+                                   name="Project.Project.Name" value="@Model.Project.Name" />
                         </td>
-
-                        <td class="col-sm-2"><label>客户</label></td>
-                        <td class="col-sm-4">
-                        @if (Model.Project.ProjectID == 0)
-                                    {
-                            <select id="Project.Project.CustomerID" 
-                                    name="Project.Project.CustomerID" 
-                                    class="form-control required" 
-                                    value="@Model.Project.CustomerID" @_inputState></select>
-                            <input type="hidden" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName" />
-                        }
-                        else
-                        {
-                            <input type="text" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName"  class="form-control" disabled/>
-                            <input type="hidden" id="Project.Project.CustomerID" 
-                                    name="Project.Project.CustomerID" value="@Model.Project.CustomerID"/>
-                        }
-                        </td>
+                        
                     </tr>
                     @if (Model.Project.Type== 2)
                     {
@@ -330,7 +332,7 @@ else
                                 {
                                     <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
                                            name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value=""
-                                           disabled />
+                                           @_inputState />
                                 }
                                 else
                                 {

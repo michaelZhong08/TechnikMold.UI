@@ -217,6 +217,7 @@
     <Compile Include="App_Start\NinjectWebCommon.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AdministratorController.cs" />
+    <Compile Include="Controllers\AttachmentController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\DialogController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -241,11 +242,13 @@
     <Compile Include="Models\EditModel\TaskHourCostEditModel.cs" />
     <Compile Include="Models\EditModel\UserRoleEditModel.cs" />
     <Compile Include="Models\EditModel\WarehousePositionEditModel.cs" />
+    <Compile Include="Models\GridRowModel\AttachGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\CAMTaskGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\CNCItemGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\ElectrodeGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\ElectrodeStockGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\PartSearchGridRowModel.cs" />
+    <Compile Include="Models\GridRowModel\PurchaseAttachGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\SetupTaskGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\MachinesInfoGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\MGUptVerGridRowModel.cs" />
@@ -276,11 +279,13 @@
     <Compile Include="Models\GridRowModel\WHPOListGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\WHRequestGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\WHRequestItemGridRowModel.cs" />
+    <Compile Include="Models\GridViewModel\AttachGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\CAMTaskGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\CNCItemGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\ElectrodeGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\ElectrodeStockGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\PartSearchGridViewModel.cs" />
+    <Compile Include="Models\GridViewModel\PurchaseAttachGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\SetupTaskGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\MachinesInfoGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\MGUptVerGridViewModel.cs" />
@@ -373,7 +378,7 @@
     <Content Include="Content\ui.jqgrid-bootstrap.css" />
     <Content Include="Content\ui.jqgrid.css" />
     <Content Include="favicon.ico" />
-    <Content Include="Images\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Images\arrow-left.png" />
     <Content Include="Images\arrow-right.png" />
@@ -421,9 +426,7 @@
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.woff" />
-    <None Include="Properties\PublishProfiles\MoldManager.pubxml" />
     <None Include="Properties\PublishProfiles\MyMoldWeb.pubxml" />
-    <None Include="Properties\PublishProfiles\TechnikMold.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Scripts\i18n\grid.locale-cn.js" />
@@ -431,6 +434,7 @@
     <Content Include="Scripts\JqGridTemplate.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
+    <Content Include="Scripts\jquery.form.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery-ui.js" />
     <Content Include="Scripts\jquery.ba-throttle-debounce.js" />
@@ -559,12 +563,13 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Attach\" />
     <Folder Include="Views\WorkHour\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\fonts\glyphicons-halflings-regular.woff" />
-    <Content Include="Images\fonts\glyphicons-halflings-regular.ttf" />
-    <Content Include="Images\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />
     <Content Include="Scripts\jquery-1.10.2.min.map" />

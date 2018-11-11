@@ -122,5 +122,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public DbSet<SupplierGroup> SupplierGroups { get; set; }
         public DbSet<TaskType> TaskTypes { get; set; }
         public DbSet<PhaseTaskType> PhaseTaskTypes { get; set; }
+        public DbSet<AttachFileInfo> AttachFileInfos { get; set; }
     }
 }

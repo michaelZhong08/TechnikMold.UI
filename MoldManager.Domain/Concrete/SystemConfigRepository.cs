@@ -19,16 +19,28 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public string GetConfigValue(string Name)
         {
             SystemConfig _config = _context.SystemConfigs.Where(c => c.SettingName == Name).FirstOrDefault();
-            #region UNC拼接
-            string uncPanfu= _config.Value.Substring(0, _config.Value.IndexOf("\\"));
-            SystemConfig _configPanfu = _context.SystemConfigs.Where(c => c.SettingName == uncPanfu).FirstOrDefault();
-            if (_configPanfu != null)
+            try
             {
-                string uncPath = _configPanfu.Value + _config.Value.Substring(_config.Value.IndexOf("\\"), _config.Value.Length - _config.Value.IndexOf("\\"));
-                return uncPath;
+                #region UNC拼接
+                if (_config.Value.IndexOf("\\") >= 0)
+                {
+                    string uncPanfu = _config.Value.Substring(0, _config.Value.IndexOf("\\"));
+                    SystemConfig _configPanfu = _context.SystemConfigs.Where(c => c.SettingName == uncPanfu).FirstOrDefault();
+                    if (_configPanfu != null)
+                    {
+                        string uncPath = _configPanfu.Value + _config.Value.Substring(_config.Value.IndexOf("\\"), _config.Value.Length - _config.Value.IndexOf("\\"));
+                        return uncPath;
+                    }
+                }
+                else
+                {
+                    return _config.Value;
+                }                
+                #endregion
             }
+
+            catch {  }
             return null;
-            #endregion
         }
 
 

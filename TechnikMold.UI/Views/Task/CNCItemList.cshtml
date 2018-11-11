@@ -18,16 +18,16 @@
     <div class="col-sm-12" style="float:left;">
         <div id="Toolbar">
             <ul class="nav nav-pills">
-                @if (ViewBag.Type == 0) { 
-                <li><button class="btn btn-primary" id="PrintLabel">打印标签</button></li>
+                @if (ViewBag.Type == 0)
+                {
+                    <li><button class="btn btn-primary" id="PrintLabel">打印标签</button></li>
                 }
             </ul>
-
         </div>
         <table id="TaskItemGrid"></table>
         <div id="jqGridPager"></div>
-        </div>
-    
+    </div>
+
     <script src="/Scripts/modernizr-2.6.2.js"></script>
     <script src="/Scripts/jquery-1.10.2.js"></script>
     <script src="/Scripts/bootstrap.js"></script>
@@ -50,7 +50,7 @@
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                 <span style="font-size:12px; font-family:Verdana">准备完毕</span>
             </li>
-            
+
             <li id="Required">
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                 <span style="font-size:12px; font-family:Verdana">需要加工</span>
@@ -59,7 +59,7 @@
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                 <span style="font-size:12px; font-family:Verdana">不需加工</span>
             </li>
-           
+
 
         </ul>
     </div>

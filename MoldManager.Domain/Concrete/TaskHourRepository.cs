@@ -151,6 +151,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             {
                 (int)TaskHourStatus.完成,
                 (int)TaskHourStatus.暂停,
+                (int)TaskHourStatus.开始,
+                (int)TaskHourStatus.外发,
             };
             var _th = _context.TaskHours.Where(t => t.TaskID == TaskID && _FStatelist.Contains(t.State)).OrderByDescending(h=>h.TaskHourID).FirstOrDefault();
             if (_th != null)

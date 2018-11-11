@@ -1,7 +1,11 @@
 ﻿@{
     ViewBag.Title = "项目计划";
 }
-
+@section Headerjs{
+    <script>
+        var YJHEditedCellList=[];
+    </script>
+}
 @{
     int DeptID;
     int PosID;
@@ -53,38 +57,52 @@
         margin:0px;
         padding:0px;
     }
+    #modal_tb_ProJFiles td {
+            text-align: center;
+            /*height:60px!important;*/
+            padding: 0px !important;
+        }
 </style>
+
 <div style="margin-top:60px">
-    <div class="col-sm-12">        
-        <ul class="nav nav-pills">
-            @if (DeptID == 2)
+    <div class="col-sm-12">
+        <table>
+            <tr>
+                <td>
+                    <ul class="nav nav-pills">
+                        @if (DeptID == 2)
             {
-                <li><button class="btn btn-primary" id="CreateProject">创建项目</button></li>
-            }            
-            <li><button class="btn btn-primary" id="SearchProject">查找项目</button></li>
-            @*<li><button class="btn btn-primary" id="FinishedProject">历史项目</button></li>*@
-           @if (ViewBag.Type == 1)
-           {
-            <li><button class="btn btn-primary" id="FixMoldProject">修模项目 </button></li>
-           }
-           else if (ViewBag.Type == 2)
-           {
-            <li><button class="btn btn-primary" id="MoldProject">新模项目 </button></li>
-           }           
-        </ul>
-        @*<br />*@
-            <table id="ProjectGrid"></table>
-            <div id="jqGridPager"></div>
-            <input id="_oldPhaseID" hidden />
-            <input id="_oldPhaseCFDate" hidden/>
+                            <li><button class="btn btn-success" id="CreateProject"><span class="glyphicon glyphicon-plus-sign"></span> 创建项目</button></li>
+                        }
+                        <li style="float: right;"><button class="btn btn-primary" id="YJHCellSave" disabled><span class="glyphicon glyphicon-pencil"></span> 保存计划 </button></li>
+                        <li><button class="btn btn-default" id="SearchProject"><span class="glyphicon glyphicon-search"></span> 查找项目</button></li>
+
+                        @if (ViewBag.Type == 1)
+            {
+                            <li><button class="btn btn-default" id="FixMoldProject"><span class="glyphicon glyphicon-wrench"></span> 修模项目 </button></li>
+                        }
+                        else if (ViewBag.Type == 2)
+                        {
+                            <li><button class="btn btn-default" id="MoldProject"><span class="glyphicon glyphicon-tower"></span> 新模项目 </button></li>
+                        }
+                        @*<li><button id='111' class='attachbtn btn-danger' style='width: 80px; height: 48px;' ><span class='glyphicon glyphicon-paperclip'></span><br>附件(1)</button></li>*@
+                        @*<li><button class="form-control"><a class="glyphicon glyphicon-arrow-down"></a></button></li>*@
+                    </ul>
+                    <table id="ProjectGrid"></table>
+                    <div id="jqGridPager"></div>
+                    <input id="_oldPhaseID" hidden />
+                    <input id="_oldPhaseCFDate" hidden />
+                </td>
+            </tr>
+        </table>
+        
     </div>
 </div>
-
 
 @*右键菜单*@
 <div class="contextMenu dropdown" id="ProjectContextMenu" style="display:none">
     <ul style="width:200px">
-        @if (DeptID == 1)//Management Department User only
+        @if (DeptID == 2)//Management Department User only
         {
             <li id="AddProject">
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
@@ -126,7 +144,6 @@
             <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/memo.png" /></span>
             <span style="font-size:12px; font-family:Verdana">修改备注</span>
         </li>
-
         <li id="SetFile">
             <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Document.png" /></span>
             <span style="font-size:12px; font-family:Verdana">项目文件</span>
@@ -169,7 +186,6 @@
         </div>
     </div>
 </div>
-
 
 @*计划调整对话框*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="ModifyMilestone" tabindex="-1" role="dialog" aria-labelledby="ModifyMilestoneLabel" aria-hidden="true">
@@ -231,7 +247,6 @@
         </div>
     </div>
 </div>
-
 
 @*项目阶段完成*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="FinishPhaseDialog" tabindex="-1" role="dialog" aria-labelledby="FinishPhaseLabel" aria-hidden="true">
@@ -340,29 +355,27 @@
 
 @*项目文件路径输入*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="ProjectFileDialog" tabindex="-1" role="dialog" aria-labelledby="ProjectFileLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="width:700px;">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                 <h4 class="modal-title" id="ProjectFileLabel">项目文件</h4>
             </div>
             <div class="modal-body">
-                @using (Html.BeginForm("SaveProjectFile", "Project", FormMethod.Post, new { id = "FileUpload", enctype="multipart/form-data" }))
-                {
-                <table class="col-sm-12">
-                    <tr>
-                        <td class="col-sm-3">项目文件</td>
-                        <td class="col-sm-9">
-                            <input type="file" class="form-control" id="Attachment" name="Attachment" maxlength="500" />
-                            <input type="hidden" id="FileProjectID" name="FileProjectID" />
-                        </td>
-                    </tr>
-                </table>
-                }
+                <form id="modal_ProJAttachForm" name="modal_ProJAttachForm" method="post" enctype="multipart/form-data">
+                    <div id="modal_fileInputGroup" class="input-group">
+                        <input id="ObjID" name="ObjID" hidden/>
+                        <input id="ObjType" name="ObjType" value="Projects" hidden/>
+                        <input id="Files" name="Files" type="file"  class="form-control" placeholder="选择文件..." multiple="multiple" >
+                        <span class="input-group-btn">
+                            <button id="modal_ProJAttachSubmitbtn" class="btn btn-warning" type="button" style="width: 72px;"><span class="glyphicon glyphicon-upload"></span> 提交</button>
+                        </span>
+                    </div>
+                    <table id="modal_tb_ProJFiles"></table>
+                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="ProjectFileSaveBtn" class="btn btn-primary">保存</button>
+                <button id="modal_close_ProJFiles" type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>
@@ -391,22 +404,24 @@
 <div class="modal"  data-backdrop="static" data-keyboard="false" id="PhaseTaskDialog" tabindex="-1" role="dialog" aria-labelledby="PhaseTaskLabel" aria-hidden="true">
     <div class="modal-dialog" style="width:800px;">
         <div class="modal-content">
-            <div class="modal-header">
+            @*<div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                 <h4 class="modal-title" id="PhaseTaskLabel">加工任务</h4>
-            </div>
+            </div>*@
             <div class="modal-body">
-
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                 <ul id="PhaseTaskmodal_tabs" class="nav nav-tabs"></ul>
                 
-                <input type="hidden" id="MoldNumber" />
+                <select id="MoldNumber" class="form-control"></select>
+
                 <input type="hidden" id="TaskType" />
-                <input type="hidden" id="State" />
+                <input type="hidden" id="State" />@*hidden*@
                 <table id="TaskGrid"></table>
+                <table id="PurchaseItemGrid"></table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" id="PauseProjectBtn" class="btn btn-primary">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
+                @*<button type="button" id="PauseProjectBtn" class="btn btn-primary">确定</button>*@
             </div>
         </div>
     </div>
@@ -415,18 +430,21 @@
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/Project.js"></script>
 <script type="text/javascript">
-    $(document).ready(function(){
+    $(document).ready(function(){       
+        ////原计划
+        var YJHEditedCellList1 = [];
 
         GetPhases("PhaseID", @ViewBag.Type);
         GetPhases("FinishPhaseID", @ViewBag.Type);
+       
 
+        ProjectGrid("@ViewBag.Keyword", @ViewBag.State, @ViewBag.Type,@DeptID,YJHEditedCellList);
 
-        ProjectGrid("@ViewBag.Keyword", @ViewBag.State, @ViewBag.Type,@DeptID);
-
-        TaskList("", 0, 0, 1);
+        TaskList("", 0, 0, 1);//任务列表
         $("#TaskGrid").setGridWidth('740');
-        //TaskList("", -1, -1, -1);
-
+        PurchaseItem('','',0,0,true);//采购列表
+        $("#PurchaseItemGrid").setGridWidth('740');
+        
         @if (ViewBag.Type == 1)
         {
             @:$("#ProjectGrid").setGridParam().showHideCol("ProjectNo");
@@ -440,54 +458,80 @@
                 @if (ViewBag.Type == 1)
                 {
                 @:if ($("#PlanCFinish").val() != $("#PlanFinish").val()) {
-                @:if ($("#PlanCFinish").hasClass("invalidefield")) {
-                @:    alert("模具项目阶段完成时间不能晚于主项目");
-                @:}
-                @:else {
-                @:    $("#PhaseModify").submit();
-                @:}
-                @:} else {
-                @:    alert("调整后完成日期和原计划完成日期不能相同");
-                @:}
-                }
+                                    @:if ($("#PlanCFinish").hasClass("invalidefield")) {
+                                        @:    alert("模具项目阶段完成时间不能晚于主项目");
+                                        @:}
+                                        @:else {
+                                        @:    $("#PhaseModify").submit();
+                                        @:}
+                                    @:} else {
+                                    @:    alert("调整后完成日期和原计划完成日期不能相同");
+                                    @:}
+                                }
                 else if (ViewBag.Type == 2)
                 {
                 @:var _url = "/Project/CheckFixMoldPhase?ProjectID="+$("#ProjectID").val()+"&PhaseID="+$("#PhaseID").val()+"&PlanCFinish="+$("#PlanCFinish").val();
-                @:$.ajax({
-                @:  url:_url,
-                @:  type:"Get",
-                @:  success:function(msg){
-                @:    if (msg==""){
-                @:      $("#PhaseModify").submit();
-                @:    }else{
-                @:      alert(msg);
-                @:  }
-                @:  }
-                @:})
-                }
-
-
+                                @:$.ajax({
+                                    @:  url:_url,
+                                    @:  type:"Get",
+                                    @:  success:function(msg){
+                                        @:    if (msg==""){
+                                            @:      $("#PhaseModify").submit();
+                                            @:    }else{
+                                            @:      alert(msg);
+                                            @:  }
+                                        @:  }
+                                    @:})
+                                }
             }
-        })
+        });
+        $('#MoldNumber').on('change',function(){
+            var _tasktype=$('#TaskType').val();
+            if(_tasktype==200){//采购阶段
+                ReloadPurchaseItemGrid();
+            }
+            else{
+                ReloadTaskGrid();
+            }  
+        });
+        $('#YJHCellSave').on('click',function(){
+            var firsttdobj= $('#ProjectGrid td:eq(24)');//第一行 原计划单元格
+            //模拟单元格点击事件
+            firsttdobj.trigger("click");
 
-        //$("#PhaseTaskmodal_pills_now").on("click", function(){
-        //    $("#State").val(0);
-        //    ReloadTaskGrid();
-        //})
+            var listLength=YJHEditedCellList.length;
+            //alert(listLength);
+            var listLength1=YJHEditedCellList1.length;
+            if(listLength!=listLength1){
+                var num=listLength-listLength1;
+                var _result=0;
+                for(var j=0;j<num;j++){
+                    var seri=listLength-num+j;
+                    _result=_result+CellEdit_ModifyProJPhase(YJHEditedCellList[seri].projID,YJHEditedCellList[seri].phaseID,YJHEditedCellList[seri].cellvalue,YJHEditedCellList[seri].celltype);
+                    YJHEditedCellList1[seri]=YJHEditedCellList[seri];
+                }
+                if(_result>0)
+                    alert('部分结果保存失败！');
+                else{
+                    ReloadProJGrid();
+                    alert('保存成功！');
+                    $('#YJHCellSave').attr('disabled',true);
+                }                   
+            }
+        });
+    })
 
-        //$("#PhaseTaskmodal_pills_his").on("click", function(){
-        //    $("#State").val(1);
-        //    ReloadTaskGrid();
-        //})
-
-    }
-
-   );
-
+    //重载任务列表
     function ReloadTaskGrid(){
         var _url = "/Task/JsonMachineTasks?MoldNumber=" + $("#MoldNumber").val() + "&TaskType="+$("#TaskType").val()+"&State="+$("#State").val();
         $("#TaskGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
     }
+    //重载采购列表
+    function ReloadPurchaseItemGrid(){
+        var _url = "/Purchase/JsonPurchaseItemsGrids?MoldNumber=" + $("#MoldNumber").val() +"&State="+$("#State").val();
+        $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
+    }
+
     //初始化阶段任务列表及相关参数
     function ShowTaskPhase(projectid,phaseid){
         var _moldNo='';
@@ -495,19 +539,27 @@
         var isOpen=false;
         $.ajaxSettings.async = false;//同步请求
         $.get('/Project/Service_GetMoldNoByProID?projectid='+projectid,function(res){
-            if(res=="")//新模具项目
-                return;
             _moldNo=res;
-            $('#MoldNumber').val(_moldNo);
+            if(res!=null){
+                $('#MoldNumber').empty();
+                res=res.split(',');
+                $.each(res, function (i, n) {
+                    $("#MoldNumber").append($("<option/>", {
+                        value: n,
+                        text: n
+                    }))
+                })
+            }
+            else//无模具项目
+                return;           
         })
         $.get('/Project/Service_GetTaskTypeByPhaseID?phaseid='+phaseid,function(res){
-            if(res.length>0){//无对应加工任务类型
+            if(res.length>0){
                 isOpen=true;
                 $('#PhaseTaskmodal_tabs').empty();
                 $('#PhaseTaskmodal_pills').empty();
-            }
-            else
-                return;
+            }else
+                return;//无对应加工任务类型
             $.each(res, function(i,n){
                 if(_moldNo!='' && isOpen){
                     if(i==0){
@@ -521,113 +573,250 @@
                     }
                     //在最后添加
                     if(i==res.length-1){
-                        var pillhtml='<li id="PhaseTaskmodal_pills_now" role="presentation" class="state active" style="float: right;" onclick="PhaseTaskmodal_tabs_Click(this)"><a href="#">当前</a></li>';
-                        pillhtml+='<li id="PhaseTaskmodal_pills_his" role="presentation" class="state" style="float: right;" onclick="PhaseTaskmodal_tabs_Click(this)"><a href="#">历史</a></li>';
-                        $('#PhaseTaskmodal_tabs').append(pillhtml);
+                        var pillhtml='<li id="PhaseTaskmodal_pills_now" role="presentation" class="state active" style="float: right;" onclick="PhaseTaskmodal_tabs_Click(this)"><a href="#">进行中任务</a></li>';
+                        pillhtml+='<li id="PhaseTaskmodal_pills_his" role="presentation" class="state" style="float: right;" onclick="PhaseTaskmodal_tabs_Click(this)"><a href="#">已完成任务</a></li>';
+                        pillhtml+='<li id="PhaseTaskmodal_pills_pr" role="presentation" class="state" style="float: right; display:none;" onclick="PhaseTaskmodal_tabs_Click(this)"><a href="#">未开始任务</a></li>';
+                        $('#PhaseTaskmodal_tabs').append(pillhtml); 
                         $("#State").val(0);
-                    }
-                    _bulidTaskTable();
-                    var _url = '/Task/JsonMachineTasks?MoldNumber=' + _moldNo + '&TaskType='+n.TaskID+'&State=0';//当前
-                    $("#TaskGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
-                    $('#PhaseTaskDialog').modal('show');
+                        _bulidTaskTable();
+                        if(phaseid==3){//采购阶段
+                            $('#PhaseTaskmodal_pills_pr').show();
+                            ReloadPurchaseItemGrid();
+                        }
+                        else{
+                            $('#PhaseTaskmodal_pills_pr').hide();
+                            ReloadTaskGrid();
+                        }                        
+                        //var _url = '/Task/JsonMachineTasks?MoldNumber=' + _moldNo + '&TaskType='+n.TaskID+'&State=0';//当前
+                        //$("#TaskGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
+                        $('#PhaseTaskDialog').modal('show');
+                    }                  
                 }
-            })
+            })            
         })
     }
     //tab按钮点击
     function PhaseTaskmodal_tabs_Click(e){
         //alert(e.id);
-        var righttabs=['PhaseTaskmodal_pills_now','PhaseTaskmodal_pills_his'];
+        var righttabs=['PhaseTaskmodal_pills_now','PhaseTaskmodal_pills_his','PhaseTaskmodal_pills_pr'];
+        var _tasktype;
         ////调整任务类型
         if(righttabs.indexOf(e.id)<0){
-            var _tasktype=(e.id).split('_')[1];
+            _tasktype=(e.id).split('_')[1];
             $("#TaskType").val(_tasktype);
             $('#PhaseTaskmodal_tabs li.tasktype.active').removeClass('active');
-            $(e).attr('class', 'tasktype active');            
+            $(e).attr('class', 'tasktype active');      
         }
         ////调整状态
-        else{
+        else{     
+            _tasktype=$("#TaskType").val();
             if(e.id=='PhaseTaskmodal_pills_now'){
-                $("#State").val(0);
+                $("#State").val(0);//当前采购项
             }
-            else{
-                $("#State").val(1);
-            }           
+            else if(e.id=='PhaseTaskmodal_pills_his'){
+                $("#State").val(1);//历史采购项
+            }  
+            else if(e.id='PhaseTaskmodal_pills_pr'){
+                $("#State").val(-99);//PR
+            }
             $('#PhaseTaskmodal_tabs li.state.active').removeClass('active');
-            $(e).attr('class', 'state active');
+            $(e).attr('class', 'state active');           
+        }        
+        _bulidTaskTable();//调整列表列头
+        if(_tasktype==200){
+            ReloadPurchaseItemGrid();
+        }else{
+            ReloadTaskGrid();
         }
-        _bulidTaskTable();
-        ReloadTaskGrid();
     }
-    //初始化任务列表
+    //初始化任务列表       $('#gbox_TaskGrid').hide();PurchaseItemGrid
     function _bulidTaskTable(){
         var _tasktype=$("#TaskType").val();
         var _state=$("#State").val();
-        //隐藏所有列
-        var colModel = $("#TaskGrid").jqGrid('getGridParam', 'colModel');//列名
-        for(var z=0;z<colModel.length;z++){
-            var colname= colModel[z].name;
-            $("#TaskGrid").jqGrid( 'hideCol', colname);
-        }
-        /////重载列头
-        $("#TaskGrid").setGridParam().showHideCol("DrawingFile");
-        $("#TaskGrid").setGridParam().showHideCol("TaskName");
-        $("#TaskGrid").setGridParam().showHideCol("Version");
-        $("#TaskGrid").setGridParam().showHideCol("Memo");
+        ////非采购阶段
+        if(Number(_tasktype)!=200){
+            $('#gbox_TaskGrid').show();
+            $('#gbox_PurchaseItemGrid').hide();
+            //隐藏所有列
+            var colModel = $("#TaskGrid").jqGrid('getGridParam', 'colModel');//列名
+            for(var z=0;z<colModel.length;z++){
+                var colname= colModel[z].name;
+                $("#TaskGrid").jqGrid( 'hideCol', colname);
+            }
+            /////重载列头
+            $("#TaskGrid").setGridParam().showHideCol("DrawingFile");
+            $("#TaskGrid").setGridParam().showHideCol("TaskName");
+            $("#TaskGrid").setGridParam().showHideCol("Version");
+            $("#TaskGrid").setGridParam().showHideCol("Memo");
 
-        $("#TaskGrid").setGridParam().showHideCol("Time");
-        $("#TaskGrid").setGridParam().showHideCol("Priority");
-        $("#TaskGrid").setGridParam().showHideCol("Quantity");
-        $("#TaskGrid").setGridParam().showHideCol("StateMemo");
-        $("#TaskGrid").setGridParam().showHideCol("State");
-        $("#TaskGrid").setGridParam().showHideCol("CreateTime");
-        $("#TaskGrid").setGridParam().showHideCol("PlanTime");
-        $("#TaskGrid").setGridParam().showHideCol("AcceptTime");
-        $("#TaskGrid").setGridParam().showHideCol("StartTime");        
-        switch(_tasktype){
-            case 1:
-                $("#TaskGrid").setGridParam().showHideCol("Material");
-                $("#TaskGrid").setGridParam().showHideCol("R");
-                $("#TaskGrid").setGridParam().showHideCol("F");
-                $("#TaskGrid").setGridParam().showHideCol("Raw");
-                $("#TaskGrid").setGridParam().showHideCol("QCPoints");
-                break;
-            case 2:
-                break;
-            case 3:
-                $("#TaskGrid").setGridParam().showHideCol("CADPartName");
-                $("#TaskGrid").setGridParam().showHideCol("Preciston");
-                break;
-            case 4:
-                $("#TaskGrid").setGridParam().showHideCol("ProcessName");
-                break;
-            case 6:
-                $("#TaskGrid").setGridParam().showHideCol("CADPartName");
-                $("#TaskGrid").setGridParam().showHideCol("Material");
-                $("#TaskGrid").setGridParam().showHideCol("HRC");
-                $("#TaskGrid").setGridParam().showHideCol("ProcessName");//工艺
-                break;
+            $("#TaskGrid").setGridParam().showHideCol("Time");
+            $("#TaskGrid").setGridParam().showHideCol("Priority");
+            $("#TaskGrid").setGridParam().showHideCol("Quantity");
+            $("#TaskGrid").setGridParam().showHideCol("StateMemo");
+            $("#TaskGrid").setGridParam().showHideCol("State");
+            $("#TaskGrid").setGridParam().showHideCol("CreateTime");
+            $("#TaskGrid").setGridParam().showHideCol("PlanTime");
+            $("#TaskGrid").setGridParam().showHideCol("AcceptTime");
+            $("#TaskGrid").setGridParam().showHideCol("StartTime");        
+            switch(_tasktype){
+                case 1:
+                    $("#TaskGrid").setGridParam().showHideCol("Material");
+                    $("#TaskGrid").setGridParam().showHideCol("R");
+                    $("#TaskGrid").setGridParam().showHideCol("F");
+                    $("#TaskGrid").setGridParam().showHideCol("Raw");
+                    $("#TaskGrid").setGridParam().showHideCol("QCPoints");
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    $("#TaskGrid").setGridParam().showHideCol("CADPartName");
+                    $("#TaskGrid").setGridParam().showHideCol("Preciston");
+                    break;
+                case 4:
+                    $("#TaskGrid").setGridParam().showHideCol("ProcessName");
+                    break;
+                case 6:
+                    $("#TaskGrid").setGridParam().showHideCol("CADPartName");
+                    $("#TaskGrid").setGridParam().showHideCol("Material");
+                    $("#TaskGrid").setGridParam().showHideCol("HRC");
+                    $("#TaskGrid").setGridParam().showHideCol("ProcessName");//工艺
+                    break;
+            }
+            //加工(历史)界面显示隐藏列
+            if (_state==1){
+                var _tasktype=$("#TaskType").val();
+                $("#TaskGrid").setGridParam().showHideCol("ActualTime");
+                $("#TaskGrid").setGridParam().showHideCol("Operater");
+                $("#TaskGrid").setGridParam().showHideCol("Machine");
+                $("#TaskGrid").setGridParam().showHideCol("FinishTime");
+                if ((_tasktype==1)||(_tasktype==2)){
+                    $("#TaskGrid").setGridParam().showHideCol("Surface");
+                    $("#TaskGrid").setGridParam().showHideCol("Obit");
+                    $("#TaskGrid").setGridParam().showHideCol("ELEPos");
+                }
+                else if(_tasktype==3){
+                    $("#TaskGrid").setGridParam().showHideCol("Preciston");
+                    $("#TaskGrid").setGridParam().showHideCol("CADPartName");
+                }
+                else if(_tasktype==6){
+                    $("#TaskGrid").setGridParam().showHideCol("CADPartName");
+                }
+            }
+            ///////
         }
-        //加工(历史)界面显示隐藏列
-        if (_state==1){
-            var _tasktype=$("#TaskType").val();
-            $("#TaskGrid").setGridParam().showHideCol("ActualTime");
-            $("#TaskGrid").setGridParam().showHideCol("Operater");
-            $("#TaskGrid").setGridParam().showHideCol("Machine");
-            $("#TaskGrid").setGridParam().showHideCol("FinishTime");
-            if ((_tasktype==1)||(_tasktype==2)){
-                $("#TaskGrid").setGridParam().showHideCol("Surface");
-                $("#TaskGrid").setGridParam().showHideCol("Obit");
-                $("#TaskGrid").setGridParam().showHideCol("ELEPos");
+        ////采购阶段
+        else{
+            $('#gbox_TaskGrid').hide();
+            $('#gbox_PurchaseItemGrid').show();
+            //隐藏所有列
+            var colModel = $("#PurchaseItemGrid").jqGrid('getGridParam', 'colModel');//列名
+            for(var z=0;z<colModel.length;z++){
+                var colname= colModel[z].name;
+                $("#PurchaseItemGrid").jqGrid( 'hideCol', colname);
             }
-            else if(_tasktype==3){
-                $("#TaskGrid").setGridParam().showHideCol("Preciston");
-                $("#TaskGrid").setGridParam().showHideCol("CADPartName");
+
+            $("#PurchaseItemGrid").setGridParam().showHideCol("Supplier");
+            $("#PurchaseItemGrid").setGridParam().showHideCol("Name");
+            $("#PurchaseItemGrid").setGridParam().showHideCol("PartNumber");
+            $("#PurchaseItemGrid").setGridParam().showHideCol("Specification");
+            $("#PurchaseItemGrid").setGridParam().showHideCol("Quantity");
+            $("#PurchaseItemGrid").setGridParam().showHideCol("State");
+            $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseType");            
+
+            if(_state==0){//采购订单 当前
+                $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseOrder");
+                $("#PurchaseItemGrid").setGridParam().showHideCol("InStockQty");
+                $("#PurchaseItemGrid").setGridParam().showHideCol("OutStockQty");
+                $("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
+            }else if(_state==1){//采购订单 历史
+                $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseOrder");
+                $("#PurchaseItemGrid").setGridParam().showHideCol("InStockQty");
+                $("#PurchaseItemGrid").setGridParam().showHideCol("OutStockQty");
+                $("#PurchaseItemGrid").setGridParam().showHideCol("DeliveryDate");
+            }else if(_state==-99){//采购申请单
+                $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
+                $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseRequest");
+                $("#PurchaseItemGrid").setGridParam().showHideCol("QuotationRequest");
             }
-            else if(_tasktype==6){
-                $("#TaskGrid").setGridParam().showHideCol("CADPartName");
+        }       
+    }
+</script>
+
+<script>
+    $(document).ready(function(){
+
+        AttachFiles();//初始化附件列表
+        $("#modal_tb_ProJFiles").setGridWidth(658);
+
+        $('#modal_ProJAttachSubmitbtn').on('click',function(){
+            if ($('#Files').val() == '') {
+                alert('请选择上传表单！');
+                $('#Files').val('');
+                return false;
             }
-        }
-        ///////
+            $('#modal_ProJAttachForm').ajaxSubmit({
+                url: '/Attachment/Service_FileUpload/',
+                type: 'post',
+                async:false,
+                dataType: 'json',
+                success: function (msg) {
+                    if (msg.Code == 1) {
+                        $('#Files').val("");
+                        ReloadFileGrid($("#ObjID").val());
+                    }
+                    else
+                        alert(msg.Message);
+                }
+            })
+        })
+
+        $('#modal_close_ProJFiles').on('click',function(){
+            ReloadProJGrid();
+        })
+
+        $('#ProjectFileDialog').on('show.bs.modal',function() {
+            $('#Files').val("");
+            var _depList=[1,2,3,21,23];
+            if(@DeptID in _depList){
+                $('#modal_fileInputGroup').show();
+            }else{
+                $('#modal_fileInputGroup').hide();
+            }
+        })   
+        
+        //$('#ProjectFileDialog').on('shown.bs.modal',function() {
+        //    alert('!!!');
+        //    $('#modal_tb_ProJFiles').find("td").css('padding','0px!important');
+        //})
+    })
+    function ShowProjectFile(ProjectID) {
+        $("#ObjID").val(ProjectID);
+        $("#FileProjectID").val(ProjectID);
+        $("#ProjectFileDialog").modal("show");
+        ReloadFileGrid(ProjectID);
+    }
+    //重载列表
+    function ReloadFileGrid(ProjectID){
+        var _url = "/Attachment/Service_GetFilesByObj?ObjID=" + ProjectID +"&ObjType=Projects";
+        $("#modal_tb_ProJFiles").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");        
+    }
+    function DeleteAttach(ObjID,ObjType,FileName,FileType){
+        $.ajaxSettings.async = false;//同步请求
+        $.get('/Attachment/Service_DelAttach?ObjID='+ObjID+'&ObjType='+ObjType+'&FileName='+FileName+'&FileType='+FileType,function(res){
+            if(res.Code==-1){
+                alert('只允许上传附件本人删除！');
+                return false;
+            }
+            else
+                ReloadFileGrid(ObjID);           
+        })
+    }
+    function ReloadProJGrid(){
+        var _url = "/Project/JsonProjects?keyword=" + "@ViewBag.Keyword" + "&State=" + @ViewBag.State + "&Type=" + @ViewBag.Type + "&DepID=" + @DeptID;
+        $("#ProjectGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
+    }
+    function DownloadAttach(ObjID,ObjType,FileName,FileType){
+        $.ajaxSettings.async = false;//同步请求
+        $.get('/Attachment/Service_FileDownLoad?ObjID='+ObjID+'&ObjType='+ObjType+'&FileName='+FileName+'&FileType='+FileType)
     }
 </script>

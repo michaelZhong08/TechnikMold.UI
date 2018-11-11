@@ -96,7 +96,10 @@ function ConfirmInStock() {
         if ($("#ReceiveQty").val() <= 0) {
             alert("收货数量必须大于0");
         } else {
-            if ($("#ReceiveQty").val() + $("#ReceivedQty").val() > $("#Quantity").val()) {
+            //var q1 = $("#ReceiveQty").val();
+            //var q2 = $("#ReceivedQty").val();
+            //var q3 = $("#Quantity").val();
+            if (Number($("#ReceiveQty").val()) + Number($("#ReceivedQty").val()) > Number($("#Quantity").val())) {
                 alert("无法超量收货")
             } else {
                 var _url = "/Warehouse/POContentInStock";

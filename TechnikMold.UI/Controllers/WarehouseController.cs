@@ -35,7 +35,9 @@ namespace MoldManager.WebUI.Controllers
         private IWarehousePositionRepository _warehousePositionRepository;
         private IReturnItemRepository _returnItemRepository;
         private IReturnRequestRepository _returnRequestRepository;
-       
+        private IProjectRepository _projectRepository;
+        private IProjectPhaseRepository _projectPhaseRepository;
+
 
         public WarehouseController(IWarehouseRepository WarehouseRepository,
             IWarehouseStockRepository WarehouseStockRepository,
@@ -55,7 +57,9 @@ namespace MoldManager.WebUI.Controllers
             IStockTypeRepository StockTypeRepository, 
             IWarehousePositionRepository WarehousePositionRepository, 
             IReturnRequestRepository ReturnRequestRepository, 
-            IReturnItemRepository ReturnItemRepository)
+            IReturnItemRepository ReturnItemRepository,
+            IProjectRepository ProjectRepository,
+            IProjectPhaseRepository ProjectPhaseRepository)
         {
             _warehouseRepository = WarehouseRepository;
             _warehouseStockRepository = WarehouseStockRepository;
@@ -76,6 +80,8 @@ namespace MoldManager.WebUI.Controllers
             _warehousePositionRepository = WarehousePositionRepository;
             _returnRequestRepository = ReturnRequestRepository;
             _returnItemRepository = ReturnItemRepository;
+            _projectRepository = ProjectRepository;
+            _projectPhaseRepository = ProjectPhaseRepository;
         }
 
         // GET: Warehouse content list
@@ -182,8 +188,6 @@ namespace MoldManager.WebUI.Controllers
             {
                 return Name + "入库失败,请重试";
             }
-            
-
         }
 
         #region Json
@@ -438,8 +442,44 @@ namespace MoldManager.WebUI.Controllers
             }
             _purchaseItem.InStockQty = _purchaseItem.InStockQty+ReceiveQty;
             _purchaseItem.DeliveryTime = DateTime.Now;
-            _purchaseItemRepository.Save(_purchaseItem);
-
+            _purchaseItemRepository.Save(_purchaseItem);//采购结束
+            #region 项目采购阶段结束
+            if (!string.IsNullOrEmpty(_purchaseItem.MoldNumber))
+            {
+                IQueryable<PurchaseItem> _puritems = _purchaseItemRepository.PurchaseItems.Where(p => p.MoldNumber == _purchaseItem.MoldNumber);
+                bool isPurPhaseFinished = true;
+                foreach(var p in _puritems)
+                {
+                    if(p.State>=(int)PurchaseItemStatus.需求待审批 && p.State < (int)PurchaseItemStatus.完成)
+                    {
+                        isPurPhaseFinished = false;
+                    }
+                }
+                if (isPurPhaseFinished)
+                {
+                    IQueryable<Project> _projects = _projectRepository.Projects.Where(p=>p.MoldNumber== _purchaseItem.MoldNumber);
+                    foreach(var p in _projects)
+                    {
+                        ProjectPhase _proJPhase = _projectPhaseRepository.GetProjectPhase(p.ProjectID, 3);
+                        if (_proJPhase != null)
+                        {
+                            if (p.Type == 0 || p.Type == 1)
+                            {
+                                if (_proJPhase.ActualFinish == new DateTime(1, 1, 1) || _proJPhase.ActualFinish == new DateTime(1900, 1, 1))
+                                {
+                                    _proJPhase.ActualFinish = DateTime.Now;
+                                }
+                            }
+                            else
+                            {
+                                _proJPhase.ActualFinish = DateTime.Now;
+                            }
+                            _projectPhaseRepository.Save(_proJPhase);
+                        }                      
+                    }
+                }
+            }
+            #endregion
             //Close Purchase Request
             if (_purchaseItem.State==(int)PurchaseItemStatus.完成)
             {
@@ -991,8 +1031,6 @@ namespace MoldManager.WebUI.Controllers
         }
         #endregion
 
-        
-
         /// <summary>
         /// Left navigation bar for all warehouse pages
         /// </summary>
@@ -1017,8 +1055,6 @@ namespace MoldManager.WebUI.Controllers
 
             return _purchaseTypeIDs;
         }
-
-
 
         public ActionResult StockList(int PurchaseType = 0)
         {

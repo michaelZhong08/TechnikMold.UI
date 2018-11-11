@@ -133,14 +133,14 @@
     //---------EDM Program Generation Start-----------------
 
     $("#EDMProcessList").on("click", function () {
-        var ids = GetMultiSelectedIDs("TaskGrid");
-        var _ids = ids.split(',');
-        if (ids != "") {
-            location.href = "/Task/EDMProcessList?TaskID=" + _ids[0];
-        } else {
-            alert("请至少选择一项加工任务")
-        }
-
+        ShowEDMDetailsList();
+        //var ids = GetMultiSelectedIDs("TaskGrid");
+        //var _ids = ids.split(',');
+        //if (ids != "") {
+        //    location.href = "/Task/EDMProcessList?TaskID=" + _ids[0];
+        //} else {
+        //    alert("请至少选择一项加工任务")
+        //}
     })
 
     $("#AddItem").on("click", function () {
@@ -2161,5 +2161,16 @@ function AddToQueue() {
                 //StartTask();
                 break;
         }
+    }
+}
+
+function ShowEDMDetailsList() {
+    var TaskIDs = GetMultiSelectedIDs("TaskGrid");
+    var _ids = TaskIDs.split(',');
+    if (_ids != "") {
+        //location.href = "/Task/EDMProcessList?TaskID=" + _ids[0];
+        window.open("/Task/EDMProcessList?TaskID=" + _ids[0], "_blank", width = 500, height = 400);
+    } else {
+        alert("请至少选择一项加工任务")
     }
 }

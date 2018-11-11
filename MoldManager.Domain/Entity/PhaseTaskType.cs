@@ -14,7 +14,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         [Key, Column(Order = 0)]
         public int PhaseID { get; set; }
         [Key, Column(Order = 1)]
-        public int TaskID { get; set; }
+        public int TaskTypeID { get; set; }
         public bool Enable { get; set; }
     }
 }

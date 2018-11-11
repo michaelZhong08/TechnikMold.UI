@@ -40,6 +40,11 @@
         color:rgba(0,0,0,0)!important;
         font-size:44px!important;
     }
+     #modal_tb_PurchaseItemFiles td {
+            text-align: center;
+            /*height:60px!important;*/
+            padding: 0px !important;
+        }
 </style>
 <div style="margin-top:60px">
 
@@ -72,7 +77,9 @@
                         if (Model.DepartmentID == DeptID)
                         {
                             <button class="btn btn-primary" id="AddContent">添加零件</button>
+                            
                             <button class="btn btn-primary" id="DeleteContent">删除零件</button>
+                            <button class="btn btn-primary" id="ShowAttachFileModal">附件</button>
                             <button class="btn btn-primary" id="CreatePR">保存申请单</button>
                             <button class="btn btn-success" id="SubmitPR">提交申请单</button>
                             <button class="btn btn-warning" id="CancelPR">取消申请单</button>
@@ -514,6 +521,48 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove-sign"></span>关闭</button>
                 <button type="button" class="btn btn-success" id="NewPart"><span class="glyphicon glyphicon-plus-sign"></span>新建采购项</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*附件*@
+<div class="modal" id="PurchaseItemFileDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog" style="width:950px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title">采购项附件</h4>
+            </div>
+            <div class="modal-body">
+                <form id="modal_PurchaseItemAttachForm" name="modal_PurchaseItemAttachForm" method="post" enctype="multipart/form-data">
+                    <input id="ObjID" name="ObjID" hidden />
+                    <input id="ObjType" name="ObjType" value="PurchaseItems" hidden />
+                    <input id="_itemIDs" name="_itemIDs" hidden />
+                    <table>
+                        <tr>                          
+                            <td>
+                                <select id="modal_sel_purFileModal" name="purFileModal" class="form-control">
+                                    <option value="1">单附件</option>
+                                    <option value="2">多附件</option>
+                                </select>
+                            </td>                            
+                            <td>
+                                <input id="Files" name="Files" type="file" class="form-control" placeholder="文件名格式：零件号-xxx(任意字符)">
+                            </td>
+                            <td>
+                                <button id="modal_PurchaseItemAttachSubmitbtn" class="btn btn-warning" type="button" style="width: 72px;"><span class="glyphicon glyphicon-upload"></span> 提交</button>
+                            </td>
+                            <td>
+                                <a href="#" title="(多附件模式)文件名必须以'零件号(模具号-图纸号)'作为开头" class="form-control btn-info"><span id="modal_purFileHelper" class="glyphicon glyphicon-question-sign"></span></a>
+                            </td>
+                        </tr>
+                    </table>
+                    <table id="modal_tb_PurchaseItemFiles"></table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
@@ -985,24 +1034,24 @@
         }
     }
 
-    function SupplierListImport(_suplistID){
-        var js='';
-        $('#'+_suplistID).html('');
-        $.get('/Purchase/JsonSuppliersByJS?js='+js,function(res){
-            console.log(typeof(res));
-            var fo=res.toString();
-            fo=fo.split(",");
-            for(var i=0;i<fo.length;i++){
-                //中文
-                var v1=fo[i].split('-')[0];
-                //英文
-                var v2=fo[i].split('-')[1];
-                var ohtml = "<option value='"+v1+"'>"+v2+"</option>";
-                var $ohtml = $(ohtml);
-                $('#'+_suplistID).append($ohtml);
-            }
-        });
-    }
+    //function SupplierListImport(_suplistID){
+    //    var js='';
+    //    $('#'+_suplistID).html('');
+    //    $.get('/Purchase/JsonSuppliersByJS?js='+js,function(res){
+    //        console.log(typeof(res));
+    //        var fo=res.toString();
+    //        fo=fo.split(",");
+    //        for(var i=0;i<fo.length;i++){
+    //            //中文
+    //            var v1=fo[i].split('-')[0];
+    //            //英文
+    //            var v2=fo[i].split('-')[1];
+    //            var ohtml = "<option value='"+v1+"'>"+v2+"</option>";
+    //            var $ohtml = $(ohtml);
+    //            $('#'+_suplistID).append($ohtml);
+    //        }
+    //    });
+    //}
 
     //加载workshop对应部门人员
     function LoadWSUser(type) {
@@ -1060,4 +1109,94 @@
         $('#GetERPID').hide();
         $('#hr_ApprovalUser').hide();
     }
+</script>
+
+<script>
+    $(document).ready(function(){
+        PurchaseItemAttachFileGird();//初始化采购项附件列表
+
+        $('#ShowAttachFileModal').on('click',function(){
+            ReloadPurchaseItemGrid();
+            $('#Files').val("");
+            $('#PurchaseItemFileDialog').modal("show");
+        })
+
+        $('#modal_PurchaseItemAttachSubmitbtn').on('click',function(){
+            if ($('#Files').val() == '') {
+                alert('请选择上传表单！');
+                $('#Files').val('');
+                return false;
+            }
+            var _items=GetItemIDs();
+            $('#_itemIDs').val(_items);
+            $('#modal_PurchaseItemAttachForm').ajaxSubmit({
+                url: '/Attachment/Service_PurchaseItemFileUpload/',
+                type: 'post',
+                async:false,
+                dataType: 'json',
+                success: function (msg) {
+                    if (msg.Code == 1) {
+                        $('#Files').val("");
+                        ReloadPurchaseItemGrid();
+                    }
+                    else
+                        alert(msg.Message);
+                }
+            })
+        })
+
+        $('#modal_sel_purFileModal').on('change',function(){
+            var _sel=$('#modal_sel_purFileModal').val();
+            if(Number(_sel)==1){//单附件
+                //alert('1');
+                $('#Files').removeAttr('multiple');
+            }else{
+                //alert('2');
+                $('#Files').attr('multiple','multiple');
+            }
+        })
+    })
+
+    function ReloadPurchaseItemGrid(){
+        var _items=GetItemIDs();
+        _url='/Attachment/Service_GetFilesByPurchaseItem?_itemIDs='+_items;
+        $('#modal_tb_PurchaseItemFiles').jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+
+    function DeleteAttach(ObjID,ObjType,FileName,FileType){
+        $.ajaxSettings.async = false;//同步请求
+        $.get('/Attachment/Service_DelAttach?ObjID='+ObjID+'&ObjType='+ObjType+'&FileName='+FileName+'&FileType='+FileType,function(res){
+            if(res.Code==-1){
+                alert('只允许上传附件本人删除！');
+                return false;
+            }
+            else
+                ReloadFileGrid(ObjID);           
+        })
+    }
+
+    function DownloadAttach(ObjID,ObjType,FileName,FileType){
+        $.ajaxSettings.async = false;//同步请求
+        $.get('/Attachment/Service_FileDownLoad?ObjID='+ObjID+'&ObjType='+ObjType+'&FileName='+FileName+'&FileType='+FileType)
+    }
+
+    function GetItemIDs(){
+        var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
+        var _items='';
+        if (selrows.length==0){
+            selrows=  $('#PRContentGrid').getDataIDs();
+        }
+        for (i=0;i<selrows.length;i++){
+            var _id=$('#PRContentGrid').getCell(selrows[i], "PurchaseItemID");
+            _items=_items+_id+',';
+        }
+        _items=_items.substring(0,_items.length-1);
+        return _items;
+    }
+</script>
+
+<script>
+    $(function() {
+        $(document).tooltip();
+    });
 </script>

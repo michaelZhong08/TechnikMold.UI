@@ -64,6 +64,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 _dbEntry.TotalPriceWT = PurchaseItem.TotalPriceWT;
                 _dbEntry.TaxRate = PurchaseItem.TaxRate;
                 _dbEntry.CostCenterID = PurchaseItem.CostCenterID;
+                _dbEntry.AttachObjID = PurchaseItem.AttachObjID;
             }
             _context.SaveChanges();
             return PurchaseItem.PurchaseItemID;

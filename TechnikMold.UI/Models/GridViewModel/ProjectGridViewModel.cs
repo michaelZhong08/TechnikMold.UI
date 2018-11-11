@@ -18,6 +18,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public ProjectGridViewModel(IEnumerable<Project> Projects,
             IProjectPhaseRepository ProjectPhaseRepository, 
             IProjectRoleRepository ProjectRoleRepository,
+            IAttachFileInfoRepository AttachFileInfoRepository,
             List<Phase> Phases, 
             int TotalProjects=0, 
             int PageNo=1, 
@@ -41,7 +42,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 {
                     _flitter = _role.UserName;
                 }
-                rows.AddRange(new ProjectGridRowModels(_project, ProjectPhaseRepository.GetProjectPhases(_project.ProjectID), _flitter, Phases).ProjectRows);
+                int _attQty = AttachFileInfoRepository.GetAttachByObj(_project.ProjectID.ToString(), "Projects").Count();
+                rows.AddRange(new ProjectGridRowModels(_project, ProjectPhaseRepository.GetProjectPhases(_project.ProjectID), _flitter, Phases, _attQty).ProjectRows);
             }         
         }       
     }

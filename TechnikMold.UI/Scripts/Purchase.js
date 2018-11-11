@@ -2042,7 +2042,7 @@ function CreatePO() {
 
         }
 
-        itemData = itemData + "&Supplier=" + $("#Supplier option:selected").val() +
+        itemData = itemData + "&Supplier=" + $('#SupplierName').val()+//$("#Supplier option:selected").val() +
             "&Currency=" + $("#Currency").val() +
             "&TaxRate=" + $("#TaxRate").val() +
             "&PurchaseType=" + $("#PurchaseType").val() +
@@ -2154,4 +2154,23 @@ function getQueryString(name) {
     var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
     var r = window.location.search.substr(1).match(reg);
     if (r != null) return unescape(r[2]); return null;
+}
+
+function SupplierListImport(_suplistID) {
+    var js = '';
+    $('#' + _suplistID).html('');
+    $.get('/Purchase/JsonSuppliersByJS?js=' + js, function (res) {
+        console.log(typeof (res));
+        var fo = res.toString();
+        fo = fo.split(",");
+        for (var i = 0; i < fo.length; i++) {
+            //中文
+            var v1 = fo[i].split('-')[0];
+            //英文
+            var v2 = fo[i].split('-')[1];
+            var ohtml = "<option value='" + v1 + "'>" + v2 + "</option>";
+            var $ohtml = $(ohtml);
+            $('#' + _suplistID).append($ohtml);
+        }
+    });
 }

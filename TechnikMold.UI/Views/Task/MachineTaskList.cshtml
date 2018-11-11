@@ -318,8 +318,7 @@
              }             
          </ul>
      </div>
-}
-    
+}   
     <input type="hidden" id="MoldNumber" value="@ViewBag.MoldNumber" />
     <script src="~/Scripts/jquery.ba-throttle-debounce.js"></script>
 
@@ -362,7 +361,7 @@
                 <table id="tb_SetupWFTaskHour"></table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal" id="modal_btn_close_FinishTask">重载任务列表</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="modal_btn_close_FinishTask">返回</button>
                 @*<button type="button" class="btn btn-primary" id="modal_btn_FinishTask"><span class="glyphicon glyphicon glyphicon-sign"></span> 结束任务</button>*@
             </div>
         </div>
@@ -496,7 +495,6 @@
          }
 
          $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
-
 
          $("#SelMold").on("click", function(){
              ShowMoldSelect();
@@ -692,7 +690,7 @@
              $('.tr_TPHType').empty();
              $.get('/Task/Service_Json_GetTaskPeriodType',function(res){
                  for(var i=0;i<res.length;i++){
-                     var html='<tr class="tr_TPHType"><td><label>'+res[i].Name+'：</label></td><td><input id="'+res[i].Code+'" type="number" value="0" class="input_TPHType"/></td></tr>';
+                     var html='<tr class="tr_TPHType"><td><label>'+res[i].Name+'('+res[i].Code+')'+'：</label></td><td><input id="'+res[i].Code+'" type="number" value="0" class="input_TPHType"/></td></tr>';
                      $('#formTable_tph').append(html)
                  }
              })

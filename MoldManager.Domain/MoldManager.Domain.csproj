@@ -75,6 +75,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Abstract\IAttachFileInfoRepository.cs" />
     <Compile Include="Abstract\ICAMDrawingRepository.cs" />
     <Compile Include="Abstract\ICharmillRepository.cs" />
     <Compile Include="Abstract\IBrandRepository.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="Abstract\IWarehouseStockRepository.cs" />
     <Compile Include="Abstract\IWEDMSettingRepository.cs" />
     <Compile Include="Abstract\IWH_TaskPeriodTypeRepository.cs" />
+    <Compile Include="Concrete\AttachFileInfoRepository.cs" />
     <Compile Include="Concrete\BrandRepository.cs" />
     <Compile Include="Concrete\CAMDrawingRepository.cs" />
     <Compile Include="Concrete\CAMTaskRepository.cs" />
@@ -256,6 +258,7 @@
     <Compile Include="Concrete\WH_TaskPeriodRecordRepository.cs" />
     <Compile Include="Concrete\WH_TaskPeriodTypeRepository.cs" />
     <Compile Include="Concrete\WH_WorkTypeRepository.cs" />
+    <Compile Include="Entity\AttachFileInfo.cs" />
     <Compile Include="Entity\Base_DepPhase.cs" />
     <Compile Include="Entity\Brand.cs" />
     <Compile Include="Entity\CAMDrawing.cs" />
@@ -365,7 +368,8 @@
     <Compile Include="Output\SteelDrawing.cs" />
     <Compile Include="Output\WEDMTaskInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Status\CNCStatus.cs" />
+    <Compile Include="Status\CNCItemStatus.cs" />
+    <Compile Include="Status\TaskStatus.cs" />
     <Compile Include="Status\EDMStatus.cs" />
     <Compile Include="Status\GrindStatus.cs" />
     <Compile Include="Status\MGSettingStatus.cs" />

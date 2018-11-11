@@ -38,7 +38,9 @@ function UserGrid(Keyword) {
 }
 
 //项目列表
-function ProjectGrid(keyword, state, type, depID) {
+function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
+    
+
     if (state == undefined) {
         state = 1;
     }
@@ -154,7 +156,7 @@ function ProjectGrid(keyword, state, type, depID) {
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 175,
-        width: document.body.clientWidth * 0.98,
+        width: document.body.clientWidth,
         rownumbers: true, // show row numbers
         rownumWidth: 25, // the width of the row numbers columns
         rowNum: 60,
@@ -231,8 +233,18 @@ function ProjectGrid(keyword, state, type, depID) {
                         }
                     })
                 }
-                else
-                    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');  
+                else if (rowType == '实际完成') {
+                    $.ajaxSettings.async = false;//同步请求
+                    $.get('/Project/Service_Get_ProJPhaseAcManualFinish?ProJID=' + _projID + '&PhaseID=' + _phaseID, function (res) {
+                        if (res == '') {
+                            $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                        }
+                        else {
+                            console.log(res);
+                            $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+                        }
+                    })
+                }
             }
             else
                 $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
@@ -253,8 +265,6 @@ function ProjectGrid(keyword, state, type, depID) {
         },
         //保存单元格内容至服务器
         beforeSaveCell: function (rowid, cellname, value, iRow, iCol) {
-            //var columnArray = $("#ProjectGrid").jqGrid('getGridParam', 'colModel');
-            //var _nowcolid = columnArray[iCol];
             var _phaseID = $("#_oldPhaseID").val();
             var _projID = $("#ProjectGrid").getCell(rowid, 'ID');
             //if (1) {
@@ -264,15 +274,41 @@ function ProjectGrid(keyword, state, type, depID) {
             if (value.length != 8 && value.length!=10) {
                 value = '1900-01-01';
             }
-            var _result = CellEdit_ModifyProJPhase(_projID, _phaseID, value);
-            if (_result == 0) {//成功
-                console.log(_projID + '__' + _phaseID + '__' + value);
-                console.log($('#_oldPhaseCFDate').val());
-                return value;
-            }
-            else {//失败
-                console.log($('#_oldPhaseCFDate').val());
-                return $('#_oldPhaseCFDate').val() == '' ? ' ' : $('#_oldPhaseCFDate').val();//还原旧值
+            var rowType = $("#ProjectGrid").getCell(rowid, "Type");
+            if (rowType == '原计划' || rowType == '实际完成') {
+                var celltype=0;
+                if (rowType == '原计划')
+                    celltype = 0;
+                else//实际完成
+                    celltype = 2;
+                var listLength = YJHEditedCellList.length;
+                listLength = typeof(listLength) == typeof(undefined) ? 0 : listLength;
+                var content = { projID: _projID, phaseID: _phaseID, cellrowid: rowid, cellcolname: cellname, cellvalue: value, celltype: celltype };
+                var isRepeat = false;
+                $('#YJHCellSave').removeAttr('disabled');
+                if (listLength > 0) {
+                    for (var i = 0; i < listLength; i++) {
+                        if (YJHEditedCellList[i].cellrowid == content.cellrowid && YJHEditedCellList[i].cellcolname == content.cellcolname) {
+                            YJHEditedCellList[i].cellvalue = content.cellvalue;
+                            isRepeat = true;
+                            break;
+                        }
+                    }                   
+                }               
+                if (!isRepeat) {
+                    YJHEditedCellList[listLength] = content;
+                }               
+            } else if (rowType == '调整计划') {
+                var _result = CellEdit_ModifyProJPhase(_projID, _phaseID, value,1);
+                if (_result == 0) {//成功
+                    console.log(_projID + '__' + _phaseID + '__' + value);
+                    console.log($('#_oldPhaseCFDate').val());
+                    return value;
+                }
+                else {//失败
+                    console.log($('#_oldPhaseCFDate').val());
+                    return $('#_oldPhaseCFDate').val() == '' ? ' ' : $('#_oldPhaseCFDate').val();//还原旧值
+                }
             }
         },
         //格式化单元格内容 设置背景色
@@ -284,31 +320,47 @@ function ProjectGrid(keyword, state, type, depID) {
                     value.replace(new RegExp('/', 'g'), '-');
                     value = '20' + value;
                 }
+                
+                var _phaseID = $("#_oldPhaseID").val();
+                var _projID = $("#ProjectGrid").getCell(rowid, 'ID');
 
-                var tzDate = value
-                var nowDate = new Date();
-                nowDate = getNowFormatDate();
+                var rowType = $("#ProjectGrid").getCell(rowid, "Type");
+                var tzDate = value;
+                var nowDate = getNowFormatDate();
+                var tzDate = new Date(tzDate);//原/调整日期
+                var nowDate = new Date(nowDate);//当前日期
+                var PlanDate;
+                $.ajaxSettings.async = false;//同步请求
+                $.get('/Project/Service_Get_ProJPhasePlanDate?ProJID=' + _projID + '&PhaseID=' + _phaseID, function (res) {
+                    PlanDate = res;
+                })
+                PlanDate = new Date(PlanDate);//计划日期
 
-                //alert(tzDate + '_' + nowDate);
-                //时间格式 yyyy-MM-dd
-                var tzDate = new Date(tzDate);
-                var nowDate = new Date(nowDate);
-                var dayiff = ((tzDate - nowDate) / (1000 * 60 * 60 * 24));
-                var pValue;
-
-                if (value.length == 10)
+                var dayiff;
+                if (value.length == 10)//格式化日期
                     value = value.substring(2, value.length);
                 value = value.replace(/-/g, '/');
-
-                if (dayiff < 0)
-                    //红
-                    pValue = '<p style="background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );">' + value + '</p>';
-                else if (dayiff >= 0 && dayiff <= 3)
-                    //绿
-                    pValue = '<p style="background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );">' + value + '</p>';
-                else
-                    pValue = value;//value.substring(2, value.length)
-
+                if (rowType == '实际完成') {
+                    dayiff = ((PlanDate - tzDate) / (1000 * 60 * 60 * 24));//dayiff >0 延迟 红色 >=0 正常结束 绿色
+                    if (dayiff < 0)
+                        //红
+                        pValue = '<p style="background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );">' + value + '</p>';
+                    else
+                        //绿
+                        pValue = '<p style="background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );">' + value + '</p>';
+                } else {
+                    dayiff = ((tzDate - nowDate) / (1000 * 60 * 60 * 24));//dayiff >0 延迟 红色 <=3 >=0  黄色
+                    if (dayiff < 0)
+                        //红
+                        pValue = '<p style="background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );">' + value + '</p>';
+                    else if (dayiff >= 0 && dayiff <= 3)
+                        //黄
+                        pValue = '<p style="background: linear-gradient(rgba(255,127,36,1), rgba(255,127,36,0.1) 50% ,rgba(255,127,36,1)   );">' + value + '</p>';
+                    else
+                        pValue = value;
+                }                
+                //dayiff = ((tzDate - nowDate) / (1000 * 60 * 60 * 24));
+                var pValue;
                 //更新单元格标签
                 $("#ProjectGrid").jqGrid('setCell', rowid, cellname, pValue);
             }
@@ -325,12 +377,12 @@ function ProjectGrid(keyword, state, type, depID) {
                         location.href = "/Project/Edit?ParentID=" + pjID;
                                       
                     },
-                    'Milestone': function () {
-                        ShowPhaseModification(GetCurrentID("ProjectGrid"));
-                    },
-                    'FinishPhase': function () {
-                        FinishPhase(GetCurrentID("ProjectGrid"));
-                    },
+                    //'Milestone': function () {
+                    //    ShowPhaseModification(GetCurrentID("ProjectGrid"));
+                    //},
+                    //'FinishPhase': function () {
+                    //    FinishPhase(GetCurrentID("ProjectGrid"));
+                    //},
                     'AddMemo': function () {
                         $("#MemoProject").val(GetCurrentID("ProjectGrid"));
                         $("#Memo").val(GetMemo("ProjectGrid"));
@@ -340,10 +392,10 @@ function ProjectGrid(keyword, state, type, depID) {
                         var row = GetCurrentID("ProjectGrid");
                         ShowPauseProject(row);
                     },
-                    'SetFile': function (irow) {
-                        var row = GetCurrentID("ProjectGrid");
-                        ShowProjectFile(row);
-                    },
+                    //'SetFile': function (irow) {
+                    //    var row = GetCurrentID("ProjectGrid");
+                    //    ShowProjectFile(row);
+                    //},
                     'MoldFixProject': function () {
                         var row = GetCurrentID("ProjectGrid");
                         CreateMoldFixProject(row);
@@ -352,10 +404,10 @@ function ProjectGrid(keyword, state, type, depID) {
                         var row = GetCurrentID("ProjectGrid");
                         ShowProjectHistory(row);
                     },
-                    'PhaseTask': function () {
-                        var row = GetCurrentID("ProjectGrid");
-                        PhaseTask(row);
-                    }
+                    //'PhaseTask': function () {
+                    //    var row = GetCurrentID("ProjectGrid");
+                    //    PhaseTask(row);
+                    //}
 
                 },
                 onContextMenu: function (event/*, menu*/) {
@@ -527,6 +579,7 @@ function WFTaskFinishGrid(_TaskIDs) {
 
     })
 }
+
 //零件列表
 function PartListGrid(MoldID, Height) {
     $("#PartGrid").jqGrid({
@@ -757,7 +810,6 @@ function CAMTaskList(MoldNumber, TaskType, State, CAM) {
                         if (confirm("确认删除任务？")) {
                             DeleteTask(GetCurrentID("TaskGrid"));
                         }
-
                     },
                     //'PauseTask': function () {
                     //    if (confirm("确认暂停任务？")) {
@@ -765,15 +817,15 @@ function CAMTaskList(MoldNumber, TaskType, State, CAM) {
                     //        PauseTask(_id);
                     //    }
                     //},
-                    'DeleteTask': function () {
-                        if (confirm("确认取消任务？")) {
-                            var _id = GetCurrentID("TaskGrid");
-                            DeleteTaskByCAM(_id);
-                        }
-                    },
-                    'NewTask': function () {
+                    //'DeleteTask': function () {
+                    //    if (confirm("确认取消任务？")) {
+                    //        var _id = GetCurrentID("TaskGrid");
+                    //        DeleteTaskByCAM(_id);
+                    //    }
+                    //},
+                    //'NewTask': function () {
                         
-                    }
+                    //}
                 },
             });
         },
@@ -902,18 +954,18 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
                         var _id = GetCurrentID("TaskGrid");
                         AcceptCAMTask(_id);
                     },
-                    'ReleaseCAMTask': function () {
-                        var _id = GetCurrentID("TaskGrid");
-                        ReleaseCAMTask(_id);
-                    },
-                    'EditCNCTask': function () {
+                    //'ReleaseCAMTask': function () {
+                    //    var _id = GetCurrentID("TaskGrid");
+                    //    ReleaseCAMTask(_id);
+                    //},
+                    //'EditCNCTask': function () {
 
-                        ShowCNCItemList();
-                    },
-                    'ELECompensation': function () {
-                        var _id = GetCurrentID("TaskGrid");
-                        EditEleCompensation(_id);
-                    },
+                    //    ShowCNCItemList();
+                    //},
+                    //'ELECompensation': function () {
+                    //    var _id = GetCurrentID("TaskGrid");
+                    //    EditEleCompensation(_id);
+                    //},
                     'PauseTask': function () {
                         if (confirm("确认暂停/继续任务？")) {
                             var _id = GetCurrentID("TaskGrid");
@@ -956,17 +1008,17 @@ function CNCItemList(TaskIDs) {
         loadComplete: function () {
             $(".jqgrow", this).contextMenu("CNCItemContextMenu", {
                 bindings: {
-                    'TaskReady': function () {
-                        CNCTaskReady();
-                    },
-                    "Required": function () {
-                        var ids = GetMultiSelectedCell("TaskItemGrid", "CNCItemID");
-                        SetItemRequired(ids);
-                    },
-                    "NotRequired": function () {
-                        var ids = GetMultiSelectedCell("TaskItemGrid", "CNCItemID");
-                        SetItemNotRequired(ids);
-                    }
+                    //'TaskReady': function () {
+                    //    CNCTaskReady();
+                    //},
+                    //"Required": function () {
+                    //    var ids = GetMultiSelectedCell("TaskItemGrid", "CNCItemID");
+                    //    SetItemRequired(ids);
+                    //},
+                    //"NotRequired": function () {
+                    //    var ids = GetMultiSelectedCell("TaskItemGrid", "CNCItemID");
+                    //    SetItemNotRequired(ids);
+                    //}
                 },
             });
 
@@ -2271,9 +2323,15 @@ function EditNextRow(curRow) {
 
 
 
-function PurchaseItem(Keyword, MoldNumber, State, PurchaseType) {
+function PurchaseItem(Keyword, MoldNumber, State, PurchaseType, InPage) {
     var _url = "/Purchase/JsonPurchaseItems";
     var _condition = "";
+    var _height;
+    if (InPage == undefined) {
+        _height = document.documentElement.clientHeight - 200
+    } else {
+        _height = (document.documentElement.clientHeight - 220) * 0.6;//0.385
+    }
     if (Keyword != "") {
         _condition = "?Keyword=" + Keyword;
     }
@@ -2298,39 +2356,36 @@ function PurchaseItem(Keyword, MoldNumber, State, PurchaseType) {
         colModel: [
             { label: "", name: "ID", hidden: true },
             { label: "零件名", name: "Name", width: 100 },
-            { label: "物料号", name: "PartNumber", width: 60 },
-            { label: "规格", name: "Specification", width: 100 },
-            { label: "订单数量", name: "Quantity", width: 50 },
-            { label: "状态", name: "State", width: 60 },
-            { label: "采购类型", name: "PurchaseType", width: 60 },
-            { label: "申请单号", name: "PurchaseRequest", width: 55 },
-            { label: "询价单号", name: "QuotationRequest", width: 55, hidden: true },
-            { label: "订单号", name: "PurchaseOrder", width: 55, hidden: true },
-            { label: "供应商", name: "Supplier", width: 60, hidden: true },
-            { label: "采购人员", name: 'PurchaseUser', width: 60, hidden: true },
-            { label: "单价", name: "UnitPrice", width: 100, hidden: true },
-            { label: "总价", name: "TotalPrice", width: 60, hidden: true, sorttype: 'integer' },
-            { label: "到库数", name: "InStockQty", width: 40, hidden: true },
-            { label: "领用数", name: "OutStockQty", width: 40, hidden: true },
-            { label: "生成人员", name: "RequestUser", width: 40 },
-            { label: "总价", name: "TotalPriceWT", width: 40, hidden: true, sorttype: 'integer' },
-            { label: "需求日期", name: "ShipDate", width: 60, hidden: true },
-            { label: "计划到货日期", name: "PlanDate", width: 60, hidden: true },
-            { label: "到货日期", name: "DeliveryDate", width: 60, hidden: true },
+            { label: "物料号", name: "PartNumber", width: 80 },
+            { label: "规格", name: "Specification", width: 200 },
+            { label: "订单数量", name: "Quantity", width: 100 },
+            { label: "状态", name: "State", width: 80 },
+            { label: "采购类型", name: "PurchaseType", width: 100 },
+            { label: "申请单号", name: "PurchaseRequest", width: 100 },
+            { label: "询价单号", name: "QuotationRequest", width: 100, hidden: true },
+            { label: "订单号", name: "PurchaseOrder", width: 100, hidden: true },
+            { label: "供应商", name: "Supplier", width: 100, hidden: true },
+            { label: "采购人员", name: 'PurchaseUser', width: 100, hidden: true },
+            { label: "单价", name: "UnitPrice", width: 60, hidden: true },
+            { label: "总价", name: "TotalPrice", width: 80, hidden: true, sorttype: 'integer' },
+            { label: "到库数", name: "InStockQty", width: 60, hidden: true },
+            { label: "领用数", name: "OutStockQty", width: 60, hidden: true },
+            { label: "生成人员", name: "RequestUser", width: 100 },
+            { label: "总价", name: "TotalPriceWT", width: 60, hidden: true, sorttype: 'integer' },
+            { label: "需求日期", name: "ShipDate", width: 80, hidden: true },
+            { label: "计划到货日期", name: "PlanDate", width: 150, hidden: true },
+            { label: "到货日期", name: "DeliveryDate", width: 100, hidden: true },
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight - 200,
+        height: _height,
         width: document.body.clientWidth * 0.8,
         rowNum: 500,
         loadonce: true,
         multiselect: true,
+        //autoScroll: true,
+        //scroll: true,
+        shrinkToFit: false,
         ondblClickRow: function (iRow) {
-
-            //if (state < 2) {
-            //    var row = $(event.target).closest("tr.jqgrow").attr("id");
-            //    var _id = $("#PRContentGrid").getCell(row, "ID");
-            //    EditPrContent(_id, row);
-            //}
         }
     })
 }
@@ -2527,8 +2582,94 @@ function PurchaseOrderReport(startdate, enddate) {
     })
 }
 
+function AttachFiles(){
+    //var _url = "/Attachment/Service_Json_GetTaskByIDs?TaskIDs=" + _TaskIDs;
+    $("#modal_tb_ProJFiles").jqGrid({
+        url: '',
+        styleUI: 'Bootstrap',
+        datatype: "json",
+        height: 360,
+        colModel: [
+            { label: 'ObjID', name: 'ObjID', width: 30, hidden: true },
+            { label: 'ObjType', name: 'ObjType', width: 30, hidden: true },
+            { label: 'FilePath', name: 'FilePath', width: 30, hidden: true },
+            {
+                label: '附件', name: 'FileName', width: 238,
+                formatter: function (cellvalue, options, rowObject) {
+                    var aList = "";
+                    var _url = rowObject[2] + cellvalue + '.' + rowObject[4];
+                    //aList = "<div> <a href='" + _url + "' >" + cellvalue + "</a></div>";
+                    return cellvalue;
+                }
+            },
+            { label: '类型', name: 'FileType', width: 50, },
+            { label: '大小(M)', name: 'FileSize', width: 60, },
+            { label: '上传时间', name: 'CreateTime', width: 100, },
+            { label: '上传者', name: 'Creator', width: 80 },
+            {
+                label: '操作', name: '', width: 120,
+                formatter: function (cellvalue, options, rowObject) {
+                    var aList = '';
+                    rowObject[3] = rowObject[3].replace(/\+/g, '%2B');
+                    aList = aList + '<table style="width:100%"><tr>'
+                    aList = aList + '<td style="border:2px white solid;border-style:none solid none none;"><a style="width: 40px; height: 35px;" href="/Attachment/Service_FileDownLoad?ObjID=' + rowObject[0] + '&ObjType=' + rowObject[1] + '&FileName=' + rowObject[3] + '&FileType=' + rowObject[4] + '" class="btn btn-primary"><span class="glyphicon glyphicon-download-alt"></span></a></td>';
+                    aList = aList + '<td> <p class="btn btn-danger" style="width: 40px; height: 35px;" value="" onclick="DeleteAttach(' + "'" + rowObject[0] + "','" + rowObject[1] + "','" + rowObject[3] + "','" + rowObject[4] + "'" + ')"><span class="glyphicon glyphicon-trash"></span></p></td>';
+                    aList = aList + '</tr></table>';
+                    return aList;
+                }
+            },
+        ],
+        autoScroll: true,
+        shrinkToFit: false,
+        cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
+    })
+}
 
-
+function PurchaseItemAttachFileGird() {
+    $("#modal_tb_PurchaseItemFiles").jqGrid({
+        url: '',
+        styleUI: 'Bootstrap',
+        datatype: "json",
+        height: 360,
+        colModel: [
+            { label: 'ObjID', name: 'ObjID', width: 30, hidden: true },
+            { label: 'ObjType', name: 'ObjType', width: 30, hidden: true },
+            { label: '零件号', name: 'PartNumber', width: 80, },
+            { label: '零件名', name: 'Name', width: 80, },
+            { label: '规格', name: 'Specification', width: 80, },
+            { label: '材料', name: 'Material', width: 60, },
+            { label: '数量', name: 'Quantity', width: 60, },
+            { label: 'FilePath', name: 'FilePath', width: 30, hidden: true },
+            {
+                label: '附件', name: 'FileName', width: 120,
+                formatter: function (cellvalue, options, rowObject) {
+                    var aList = "";
+                    var _url = rowObject[2] + cellvalue + '.' + rowObject[4];
+                    return cellvalue;
+                }
+            },
+            { label: '类型', name: 'FileType', width: 50, },
+            { label: '大小(M)', name: 'FileSize', width: 60, },
+            { label: '上传时间', name: 'CreateTime', width: 100, },
+            { label: '上传者', name: 'Creator', width: 80 },
+            {
+                label: '操作', name: '', width: 120,
+                formatter: function (cellvalue, options, rowObject) {
+                    var aList = '';
+                    rowObject[3] = rowObject[3].replace(/\+/g, '%2B');
+                    aList = aList + '<table style="width:100%"><tr>'
+                    aList = aList + '<td style="border:2px white solid;border-style:none solid none none;"><a style="width: 40px; height: 35px;" href="/Attachment/Service_FileDownLoad?ObjID=' + rowObject[0] + '&ObjType=' + rowObject[1] + '&FileName=' + rowObject[8] + '&FileType=' + rowObject[9] + '" class="btn btn-primary"><span class="glyphicon glyphicon-download-alt"></span></a></td>';
+                    aList = aList + '<td> <p class="btn btn-danger" style="width: 40px; height: 35px;" value="" onclick="DeleteAttach(' + "'" + rowObject[0] + "','" + rowObject[1] + "','" + rowObject[8] + "','" + rowObject[9] + "'" + ')"><span class="glyphicon glyphicon-trash"></span></p></td>';
+                    aList = aList + '</tr></table>';
+                    return aList;
+                }
+            },
+        ],
+        autoScroll: true,
+        shrinkToFit: false,
+        cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求s
+    })
+}
 
 
 

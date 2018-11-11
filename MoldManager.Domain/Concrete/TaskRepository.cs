@@ -53,8 +53,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     Task.StartTime = Task.StartTime == null ? new DateTime() : Task.StartTime;
                     Task.Memo = Task.Memo == null ? "" : Task.Memo;
                     Task.StateMemo = Task.StateMemo == null ? "" : Task.StateMemo;
-                    Task.State = (int)CNCStatus.未发布;///If this is a new task, set the task in "Not Released" state;
-                    Task.PrevState = (int)CNCStatus.未发布;
+                    Task.State = (int)TaskStatus.未发布;///If this is a new task, set the task in "Not Released" state;
+                    Task.PrevState = (int)TaskStatus.未发布;
                     _context.Tasks.Add(Task);
                 }
                 else
@@ -164,7 +164,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             Task _task = QueryByTaskID(TaskID);
             _task.CAMUser = UserID;
-            _task.State = (int)CNCStatus.已接收;
+            _task.State = (int)TaskStatus.已接收;
             _task.AcceptTime = DateTime.Now;
             _context.SaveChanges();
         }
@@ -212,7 +212,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             Task _task = QueryByTaskID(TaskID);
             _task.PrevState = _task.State;
-            _task.State = (int)CNCStatus.暂停;
+            _task.State = (int)TaskStatus.暂停;
             _context.SaveChanges();
         }
         public void UnPause(int TaskID)
@@ -228,7 +228,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public void OutSource(int TaskID)
         {
             Task _task = QueryByTaskID(TaskID);
-            _task.State = (int)CNCStatus.外发;
+            _task.State = (int)TaskStatus.外发;
             _task.StartTime = DateTime.Now;
             //if (_task.TaskType == 1)
             //{
@@ -259,7 +259,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public void CancelOutSource(int TaskID)
         {
             Task _task = QueryByTaskID(TaskID);
-            _task.State = (int)CNCStatus.等待;
+            _task.State = (int)TaskStatus.等待;
             _context.SaveChanges();
         }
 
@@ -279,7 +279,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             Task _task = QueryByTaskID(TaskID);
             //以前任务结束 _task.State = 90;
-            _task.State = (int)CNCStatus.完成;
+            _task.State = (int)TaskStatus.完成;
             _task.FinishTime = DateTime.Now;
             User _user = _context.Users.Where(u => u.FullName == FinishBy).FirstOrDefault() ?? new User();
             _task.FinishBy = _user.UserID;
@@ -332,9 +332,9 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             Task _task = QueryByTaskID(TaskID);
             switch (_task.TaskType)
             {
-                case 1:
-                    _task.State = (int)CNCStatus.任务取消;
-                    break;
+                //case 1:
+                //    _task.State = (int)TaskStatus.任务取消;
+                //    break;
             }           
             _context.SaveChanges();
         }
