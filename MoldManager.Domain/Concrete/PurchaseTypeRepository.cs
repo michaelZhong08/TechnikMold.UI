@@ -23,7 +23,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             if (PurchaseType.PurchaseTypeID == 0)
             {
-                PurchaseType.ShortName = "";
+                PurchaseType.ShortName = PurchaseType.ShortName?? "";
+                PurchaseType.TaskType = PurchaseType.TaskType ?? "";
                 PurchaseType.Enabled = true;
                 _context.PurchaseTypes.Add(PurchaseType);
             }
@@ -32,14 +33,13 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 PurchaseType _dbEntry = _context.PurchaseTypes.Find(PurchaseType.PurchaseTypeID);
                 if (_dbEntry != null)
                 {
-                    _dbEntry.Name = PurchaseType.Name;
-                    _dbEntry.Name = PurchaseType.Name;
+                    _dbEntry.Name = PurchaseType.Name?? _dbEntry.Name;
                     _dbEntry.ParentTypeID = PurchaseType.ParentTypeID;
-                    _dbEntry.ShortName = "";
-                    _dbEntry.TaskType = PurchaseType.TaskType;
+                    _dbEntry.ShortName = PurchaseType.ShortName ?? _dbEntry.ShortName;
+                    _dbEntry.TaskType = PurchaseType.TaskType?? _dbEntry.TaskType;
                     _dbEntry.DefaultPeriod = PurchaseType.DefaultPeriod;
                     _dbEntry.Enabled = PurchaseType.Enabled;
-                    _dbEntry.DepID = PurchaseType.DepID;
+                    _dbEntry.DepID = PurchaseType.DepID?? _dbEntry.DepID;
                 }
             }
             _context.SaveChanges();

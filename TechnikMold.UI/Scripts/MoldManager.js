@@ -209,3 +209,9 @@ function SysSpecHide(spec) {
 function SysSpecShow(spec) {
     $('.' + spec).show();
 }
+
+function B_forbiden_menu() { //禁用鼠标右键
+    window.oncontextmenu = function () {
+        return false;
+    }
+}

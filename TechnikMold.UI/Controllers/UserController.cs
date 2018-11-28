@@ -81,8 +81,7 @@ namespace MoldManager.WebUI.Controllers
 
                     _cookie.Values.Add("UserID", _user.UserID.ToString());
                     _cookie.Values.Add("FullName", HttpUtility.UrlEncode(_user.FullName, Encoding.GetEncoding("UTF-8")));
-                    
-                    
+                                      
                     _cookie.Values.Add("Department", _user.DepartmentID.ToString());
                     _cookie.Values.Add("DepartmentName", HttpUtility.UrlEncode(_dept.Name, Encoding.GetEncoding("UTF-8")));
 

@@ -34,7 +34,7 @@
                     <td class="col-sm-2"><label>税率</label></td>
                     <td class="col-sm-2">
                         <select id="TaxRate" name="TaxRate" class="form-control required" autocomplete="off">
-                            <option value="0.17">17%</option>
+                            <option value="0.17" selected>17%</option>
                             <option value="0.06">6%</option>
                             <option value="0.05">5%</option>
                             <option value="0.04">4%</option>
@@ -59,9 +59,10 @@
                             <option value="0">未税价</option>
                         </select>
                     </td>
-                    <td class="col-sm-2"><label>报价人</label></td>
-                    <td class="col-sm-2">
-                        <select class="form-control" id="SupplierContact" name="ContactID"></select>
+                    <td class="col-sm-2" style="display:none"><label>报价人</label></td>
+                    <td class="col-sm-2" style="display:none">
+                        @*<select class="form-control" id="SupplierContact" name="ContactID"></select>*@
+                        <input id="SupplierContact" value="" hidden/>
                     </td>
                     <td class="col-sm-2"><label>总价</label></td>
                     <td class="col-sm-2">
@@ -70,8 +71,10 @@
 
                     @if (DeptID == 4)
                     {
-                        <td>
-                            <button class="btn btn-primary" id="SaveQuotation">保存报价</button>
+                        <td class="col-sm-2"></td>
+                        <td class="col-sm-2"></td>
+                        <td >
+                            <button class="btn btn-primary" id="SaveQuotation" style="float:right;">保存报价</button>
                         </td>
                     }
 
@@ -163,7 +166,7 @@
                 <input type="date" id="DeliveryDateValue" class="form-control" />
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SaveDeliveryDate" class="btn btn-primary">保存</button>
             </div>
         </div>
@@ -180,7 +183,6 @@
 
 
         $("#TaxRate").on("change", function(){
-
             UpdateTotalBatch();
         })
 
@@ -196,7 +198,7 @@
 
             LoadContacts(_supplierID);
 
-            LoadTaxRate(_supplierID);
+            //LoadTaxRate(_supplierID);
         })
 
         $("#DateSet").on("click", function(){
@@ -255,8 +257,8 @@
     function GetSelectedID(){
         var _supplierID=($("#QRSupplierList").val())
         LoadQuotation(_supplierID);
-        LoadContacts(_supplierID);
-        LoadTaxRate(_supplierID);
+        //LoadContacts(_supplierID);
+        //LoadTaxRate(_supplierID);
     }
 
 
@@ -362,6 +364,7 @@
             $("#TotalPrice\\["+Sequence+"\\]").val("");
             $("#TotalPriceWT\\["+Sequence+"\\]").val("");
         }
+        UpdateQuotationTotal();
     }
 
 
@@ -369,13 +372,14 @@
     function UpdateTotalBatch(){
 
         var _items = $("input[id^='UnitPrice[");
-        $("input[id^='UnitPrice[").each(function(i, n){
+        $("input[id^='UnitPriceWT[").each(function(i, n){
             var id=n.id;
-            var _seq = id.substring(id.indexOf('[')+1, id.indexOf(']'))
+            var _seq = id.substring(id.indexOf('[')+1, id.indexOf(']'));
+            var _val=n.value;
             if ($("#TaxInclude").val()==1){
-                UpdateTotal(_seq, true, true);
+                UpdateTotal(_val,_seq, true, true);
             }else{
-                UpdateTotal(_seq, true, false);
+                UpdateTotal(_val,_seq, true, false);
             }
 
         })
@@ -470,7 +474,7 @@
                 _total=_total+Number(n.value);
             }
         })
-        $("#QuotationTotal").val(Math.round(_total*100)/100);
+        $("#QuotationTotal").val(Math.round(_total*100,2)/100);
     }
 
     function GetSequence(Name){

@@ -123,23 +123,26 @@ namespace TechnikSys.MoldManager.NX.Common
             bool ChkAcc = false;
             string res = string.Empty;
             #region Ping IP地址
-            //try
-            //{
+            try
+            {
 
-            //    Ping ping = new Ping();
-            //    PingReply pingReply = ping.Send(_serverName);
-            //    if (pingReply.Status == IPStatus.Success)
-            //    {
-            //        online = true;
-            //    }
-            //    else
-            //        res = "IP地址无法ping通，请检查网络连接！";
+                Ping ping = new Ping();
+                int timeout = 500;
+                string data = "sendData:123";
+                byte[] buffer = Encoding.ASCII.GetBytes(data);
+                PingReply pingReply = ping.Send(_serverName, timeout, buffer);
+                if (pingReply.Status == IPStatus.Success)
+                {
+                    online = true;
+                }
+                else
+                    res = "地址:"+ _serverName + " 不通，请检查网络连接或WebServer.txt配置！";
 
-            //}
-            //catch (Exception ex)
-            //{
-            //    res = ex.Message;
-            //}
+            }
+            catch (Exception ex)
+            {
+                res = ex.Message;
+            }
             #endregion 
             if (string.IsNullOrEmpty(res))
             {
@@ -170,7 +173,7 @@ namespace TechnikSys.MoldManager.NX.Common
                 catch (WebException ex)
                 {
                     response = (HttpWebResponse)ex.Response;
-                    res = ex.Message;
+                    res =ex.Message;
                 }
                 #endregion
             }

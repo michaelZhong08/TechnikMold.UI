@@ -37,7 +37,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         //public string ToString(string UserName, string PurchaseOrderNo="")
         //{
         //    StringBuilder _val = new StringBuilder();
-        //    _val.Append(Date.ToString("yyyy-MM-dd hh:mm")+"   ");
+        //    _val.Append(Date.ToString("yyyy-MM-dd HH:mm")+"   ");
         //    _val.Append(UserName);
         //    _val.Append(RecordType == 1 ? "入库" : "出库");
         //    _val.Append(Name + ",数量:" + Quantity);

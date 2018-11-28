@@ -104,7 +104,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 _dbEntry.CNCMachMethod = CNCItem.CNCMachMethod;
                 _dbEntry.MoldNumber = CNCItem.MoldNumber;
                 _dbEntry.QCFinishTime = CNCItem.QCFinishTime;
-
             }
 
             _context.SaveChanges();
@@ -142,11 +141,13 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
 
             CNCItem _item = QueryByID(CNCItemID);
-            _item.Status = (int)CNCItemStatus.备料;
+            List<int> _ItemStatusList = new List<int>() { (int)CNCItemStatus.未开始,(int)CNCItemStatus.暂停 };
             if (Reprint)
             {
                 _item.LabelPrinted = false;
                 _item.LabelToPrint = true;
+                if(_ItemStatusList.Contains(_item.Status))
+                    _item.Status = (int)CNCItemStatus.备料;
                 _context.SaveChanges();
                 return "";
             }
@@ -155,6 +156,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 if (!_item.LabelPrinted)
                 {
                     _item.LabelToPrint = true;
+                    _item.Status = (int)CNCItemStatus.备料;
                     _context.SaveChanges();
                     return "";
                 }

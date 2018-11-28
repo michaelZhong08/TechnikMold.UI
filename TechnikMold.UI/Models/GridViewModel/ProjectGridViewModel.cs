@@ -19,32 +19,43 @@ namespace MoldManager.WebUI.Models.GridViewModel
             IProjectPhaseRepository ProjectPhaseRepository, 
             IProjectRoleRepository ProjectRoleRepository,
             IAttachFileInfoRepository AttachFileInfoRepository,
+            IProjectRepository ProjectRepository,
             List<Phase> Phases, 
             int TotalProjects=0, 
             int PageNo=1, 
             int PageCount=20)
         {
             page = PageNo;
-            total = TotalProjects / PageCount+1;
-            records = TotalProjects*3;
+            total = TotalProjects / PageCount + 1;
+            records = TotalProjects * 3;
             rows = new List<ProjectGridRowModel>();
-             ProjectRole _role;
-             string _flitter;
+            List<ProjectRole> _role;
+            string _flitter;
             foreach (Project _project in Projects)
             {
-                _role= ProjectRoleRepository.ProjectRoles.Where(f=>f.ProjectID ==_project.ProjectID )
-                    .Where(f=>f.RoleID ==3).FirstOrDefault();
-                if (_role == null)
+                _role = ProjectRoleRepository.ProjectRoles.Where(f => f.ProjectID == _project.ProjectID).OrderBy(p=>p.RoleID).ToList();
+                    //.Where(f => f.RoleID == 3).FirstOrDefault();
+                //if (_role == null)
+                //{
+                //    _flitter = "";
+                //}
+                //else
+                //{
+                //    _flitter = _role.UserName;
+                //}
+                int _attQty = AttachFileInfoRepository.GetAttachByObj(_project.ProjectID.ToString(), "Projects").Count();
+                string _mainProJName;
+                if (_project.ParentID == 0)
                 {
-                    _flitter = "";
+                    _mainProJName = _project.Name;
                 }
                 else
                 {
-                    _flitter = _role.UserName;
+                    Project _mainProJ = ProjectRepository.GetByID(_project.ParentID);
+                    _mainProJName = _mainProJ.Name;
                 }
-                int _attQty = AttachFileInfoRepository.GetAttachByObj(_project.ProjectID.ToString(), "Projects").Count();
-                rows.AddRange(new ProjectGridRowModels(_project, ProjectPhaseRepository.GetProjectPhases(_project.ProjectID), _flitter, Phases, _attQty).ProjectRows);
-            }         
-        }       
+                rows.AddRange(new ProjectGridRowModels(_project, ProjectPhaseRepository.GetProjectPhases(_project.ProjectID), _role, Phases, _attQty, _mainProJName).ProjectRows);
+            }
+        }
     }
 }

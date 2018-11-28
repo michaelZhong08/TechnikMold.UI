@@ -10,8 +10,10 @@ namespace TechnikSys.MoldManager.Domain.Status
     {
         开始=0,
         外发=11,
-        暂停=99,
+        任务等待 = 80,
+        暂停 =90,
         完成=100,
-        取消=-99
+        完成记录 = 110,//工时period设置好之后
+        取消 =-99
     }
 }

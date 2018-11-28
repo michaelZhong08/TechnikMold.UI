@@ -12,5 +12,6 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public string GroupName { get; set; }
         public string MailList { get; set; }
         public bool active { get; set; }
+        public string SupplierIDs { get; set; }
     }
 }

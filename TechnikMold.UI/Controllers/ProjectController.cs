@@ -220,6 +220,7 @@ namespace MoldManager.WebUI.Controllers
             if (newProject)
             {
                 //Project.Project.ProjectStatus = 1;
+                Project.Project.Creator = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"].ToString(), Encoding.GetEncoding("UTF-8"));
                 Project.Project.Enabled = true;
             }
             int _projectID = _projectRepository.Save(Project.Project);
@@ -823,7 +824,7 @@ namespace MoldManager.WebUI.Controllers
             }
             List<Phase> _phases = _phasesRepository.Phases.OrderBy(p => p.Sequence).ToList();
           
-            ProjectGridViewModel _gridViewModel = new ProjectGridViewModel(_projects, _projectPhaseRepository, _projectRoleRepository,_attachFileInfoRepository, _phases);
+            ProjectGridViewModel _gridViewModel = new ProjectGridViewModel(_projects, _projectPhaseRepository, _projectRoleRepository,_attachFileInfoRepository,_projectRepository, _phases);
             return Json(_gridViewModel, JsonRequestBehavior.AllowGet);
         }
         /// <summary>
@@ -921,6 +922,7 @@ namespace MoldManager.WebUI.Controllers
                 _projectPhaseRepository,
                 _projectRoleRepository,
                 _attachFileInfoRepository,
+                _projectRepository,
                 _phases,
                 _totalprojects,
                 Page,
@@ -1187,9 +1189,21 @@ namespace MoldManager.WebUI.Controllers
             return state;
         }
 
-        public void DeleteProject(int ProjectID, string Memo)
+        public int DeleteProject(int ProjectID, string Memo)
         {
-            _projectRepository.DeleteProject(ProjectID, Memo);
+            try
+            {
+                int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+                string _username = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], Encoding.GetEncoding("UTF-8"));
+                Project _project = _projectRepository.GetByID(ProjectID);
+                if (_depid == 1 || _username == _project.Creator)
+                {
+                    _projectRepository.DeleteProject(ProjectID, Memo);
+                    return 1;
+                }
+            }
+            catch { }
+            return -99;
         }
 
         public int FinishPhase(int ProjectID, int PhaseID)

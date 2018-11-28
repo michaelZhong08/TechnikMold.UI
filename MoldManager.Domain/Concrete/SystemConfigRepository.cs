@@ -61,5 +61,12 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             _context.SaveChanges();
             return _config.SystemConfigID;
         }
+        public string GetValueByName(string _configName)
+        {
+            var _config= _context.SystemConfigs.Where(s => s.SettingName == _configName).FirstOrDefault();
+            if(_config!=null)
+                return _config.Value;
+            return string.Empty;
+        }
     }
 }

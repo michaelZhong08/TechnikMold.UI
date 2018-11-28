@@ -101,6 +101,8 @@
     <Compile Include="Abstract\IPhaseTaskTypeRepository.cs" />
     <Compile Include="Abstract\ISupplierGroupRepository.cs" />
     <Compile Include="Abstract\ITaskTypeRepository.cs" />
+    <Compile Include="Abstract\IWHPartRepository.cs" />
+    <Compile Include="Abstract\IWHStockRepository.cs" />
     <Compile Include="Abstract\IWH_TaskPeriodRecordRepository.cs" />
     <Compile Include="Abstract\IWH_WorkTypeRepository.cs" />
     <Compile Include="Abstract\IOutStockFormRepository.cs" />
@@ -255,6 +257,8 @@
     <Compile Include="Concrete\WarehouseRequestRepository.cs" />
     <Compile Include="Concrete\WarehouseStockRepository.cs" />
     <Compile Include="Concrete\WEDMSettingRepository.cs" />
+    <Compile Include="Concrete\WHPartRepository.cs" />
+    <Compile Include="Concrete\WHStockRepository.cs" />
     <Compile Include="Concrete\WH_TaskPeriodRecordRepository.cs" />
     <Compile Include="Concrete\WH_TaskPeriodTypeRepository.cs" />
     <Compile Include="Concrete\WH_WorkTypeRepository.cs" />
@@ -357,6 +361,8 @@
     <Compile Include="Entity\WEDMCutSpeed.cs" />
     <Compile Include="Entity\WEDMPrecision.cs" />
     <Compile Include="Entity\WEDMSetting.cs" />
+    <Compile Include="Entity\WHPart.cs" />
+    <Compile Include="Entity\WHStock.cs" />
     <Compile Include="Entity\WH_TaskPeriodType.cs" />
     <Compile Include="Entity\WH_TaskPeriodRecords.cs" />
     <Compile Include="Entity\WH_WorkType.cs" />
@@ -369,6 +375,7 @@
     <Compile Include="Output\WEDMTaskInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Status\CNCItemStatus.cs" />
+    <Compile Include="Status\QuotationRequestStatus.cs" />
     <Compile Include="Status\TaskStatus.cs" />
     <Compile Include="Status\EDMStatus.cs" />
     <Compile Include="Status\GrindStatus.cs" />
@@ -382,6 +389,7 @@
     <Compile Include="Status\TaskHourStatus.cs" />
     <Compile Include="Status\WarehouseRequestStatus.cs" />
     <Compile Include="Status\WEDMStatus.cs" />
+    <Compile Include="WebServiceModel\QRMailModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="SQL\BasicData.sql" />

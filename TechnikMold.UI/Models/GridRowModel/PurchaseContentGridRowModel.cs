@@ -14,7 +14,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
         //新建PR单
         public PurchaseContentGridRowModel(Part Part,string mrPurDate, string MoldNumber)
         {
-            cell = new string[22];
+            cell = new string[26];
             cell[0] = "";
             cell[1] = Part.PartID.ToString();
             cell[2] = "0";
@@ -38,18 +38,24 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[19] = "";
             cell[20] = "";//
             cell[21] = Part.Memo;
+            cell[22] = "";
+            cell[23] = "";
+            cell[24] = "";
+            cell[25] = Part.TotalQty.ToString();
         }
         //外发任务
-        public PurchaseContentGridRowModel(Task Task, SetupTaskStart _setuptaskStart,string mrPurDate, IProjectPhaseRepository ProjectPhaseRepository, ISteelCAMDrawingRepository SteelDrawingRepo)
+        public PurchaseContentGridRowModel(Task Task, SetupTaskStart _setuptaskStart,string mrPurDate, IProjectPhaseRepository ProjectPhaseRepository, ISteelCAMDrawingRepository SteelDrawingRepo
+            ,IWHPartRepository WHPartRepository)
         {
             int _phaseID = 0;
-            cell = new string[25];
+            string _partNum = WHPartRepository.GetwfTaskPartNum(Task.TaskID);
+            cell = new string[26];
             cell[0] = "";
             cell[1] = "0";
             cell[2] = Task.TaskID.ToString();
             cell[3] = "0";
             //零件名 taskname+processname
-            cell[4] = Task.TaskName+"_"+Task.ProcessName;
+            cell[4] = Task.TaskName+"_"+Task.ProcessName+"(V"+string.Format("{0:00}", Task.Version) +")";
             //数量
             if (Task.TaskType == 1)
             {
@@ -60,8 +66,8 @@ namespace MoldManager.WebUI.Models.GridRowModel
                 //cell[5] = Task.Quantity.ToString();
                 cell[5] = _setuptaskStart.Qty.ToString();
             }
-            //物料编号 模具号-taskid
-            cell[6] = Task.MoldNumber+"-"+Task.TaskID.ToString();
+            ////物料编号 模具号-taskid
+            cell[6] = _partNum;//Task.MoldNumber+"-"+Task.TaskID.ToString();
             //规格
             cell[7] = Task.Raw;
             //材料
@@ -69,7 +75,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //硬度
             cell[9] = Task.HRC;
             //零件号
-            cell[10]= Task.TaskID.ToString();
+            cell[10]= _partNum.Split('-')[1];
             cell[11] = "";
             cell[12] = _setuptaskStart.MachinesName ?? "";
             cell[13] = "true";
@@ -85,11 +91,12 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[22] = _setuptaskStart.UserName ?? "";
             cell[23] = _setuptaskStart.MachinesName ?? "";
             cell[24] = _setuptaskStart.MachinesCode ?? "";
+            cell[25] = Task.Quantity.ToString();
         }
         //库存新增
         public PurchaseContentGridRowModel(string mrPurDate, WarehouseStock StockItem)
         {
-            cell = new string[22];
+            cell = new string[26];
             cell[0] = "";
             cell[1] = "0";
             cell[2] = "0";
@@ -115,11 +122,15 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[19] = "";
             cell[20] = "";
             cell[21] = "";
+            cell[22] = "";
+            cell[23] = "";
+            cell[24] = "";
+            cell[25] = "0";
         }
         //编辑PR单
         public PurchaseContentGridRowModel(PRContent PRContent, string State, string CostCenter, string ERPNo,SetupTaskStart _setupTask)
         {
-            cell = new string[25];
+            cell = new string[26];
             cell[0] = PRContent.PRContentID.ToString();
             cell[1] = PRContent.PartID.ToString();
             cell[2] = PRContent.TaskID.ToString();
@@ -151,6 +162,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[22] = _setupTask.UserName ?? "";
             cell[23] = _setupTask.MachinesName ?? "";
             cell[24] = _setupTask.MachinesCode ?? "";
+            cell[25] = PRContent.Quantity.ToString();
         }        
     }
 }

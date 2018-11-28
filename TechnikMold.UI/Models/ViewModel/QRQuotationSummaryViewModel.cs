@@ -12,7 +12,7 @@ namespace MoldManager.WebUI.Models.ViewModel
 
         public IEnumerable<QRQuotation> Quotations { get; set; }
 
-        public List<Supplier> Suppliers { get; set; }
+        public List<SupplierGroup> SupplierGroups { get; set; }
 
         public IEnumerable<QRSupplier> QRSuppliers { get; set; }
 
@@ -24,12 +24,12 @@ namespace MoldManager.WebUI.Models.ViewModel
             int State,
             IEnumerable<QRContent> QRContents, 
             IEnumerable<QRQuotation> PRQuotations, 
-            List<Supplier> Suppliers,
+            List<SupplierGroup> SupplierGroups,
             IEnumerable<QRSupplier> QRSuppliers)
         {
             this.Contents = QRContents;
             this.Quotations = PRQuotations;
-            this.Suppliers = Suppliers;
+            this.SupplierGroups = SupplierGroups;
             this.QRSuppliers = QRSuppliers;
             this.QRID = QuotationRequestID;
             this.QRState = State;

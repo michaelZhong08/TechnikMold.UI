@@ -53,7 +53,7 @@ namespace MoldManager.WebUI.Tools
                 throw new Exception("端口未打开~！");
             }
         }
-        //关闭打印端口  
+        //返回打印端口  
         public bool Close()
         {
             return CloseHandle(iHandle);

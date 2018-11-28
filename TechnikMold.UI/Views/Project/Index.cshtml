@@ -85,8 +85,6 @@
                         {
                             <li><button class="btn btn-default" id="MoldProject"><span class="glyphicon glyphicon-tower"></span> 新模项目 </button></li>
                         }
-                        @*<li><button id='111' class='attachbtn btn-danger' style='width: 80px; height: 48px;' ><span class='glyphicon glyphicon-paperclip'></span><br>附件(1)</button></li>*@
-                        @*<li><button class="form-control"><a class="glyphicon glyphicon-arrow-down"></a></button></li>*@
                     </ul>
                     <table id="ProjectGrid"></table>
                     <div id="jqGridPager"></div>
@@ -105,57 +103,48 @@
         @if (DeptID == 2)//Management Department User only
         {
             <li id="AddProject">
-                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">新模具项目</span>
             </li>
-            
-            <li id="Milestone">
-                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
-                <span style="font-size:12px; font-family:Verdana">调整计划</span>
+            <li id="EditProject">
+                <img src="~/Images/EditProject.png" />
+                <span style="font-size:12px; font-family:Verdana">编辑项目</span>
             </li>
             <li id="PauseProject">
-                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">启动/暂停项目</span>
             </li>
+            
             <li id="DeleteProject">
-                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">删除项目</span>
             </li>
-
+        }
+        @if (DeptID == 1)
+        {
+            <li id="EditProject">
+                <img src="~/Images/EditProject.png" />
+                <span style="font-size:12px; font-family:Verdana">编辑项目</span>
+            </li>
+            <li id="DeleteProject">
+                <img src="~/Images/EditProject.png" />
+                <span style="font-size:12px; font-family:Verdana">删除项目</span>
+            </li>
         }
         @if (DeptID == 3)
         {
             <li id="MoldFixProject">
-                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">新修模项目</span>
             </li>
-            <li id="Milestone">
-                <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
-                <span style="font-size:12px; font-family:Verdana">调整计划</span>
-            </li>
         }
-        
-        <li id="FinishPhase">
-            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
-            <span style="font-size:12px; font-family:Verdana">阶段结束</span>
-        </li>
-               
+                 
         <li id="AddMemo">
-            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/memo.png" /></span>
+            <img src="~/Images/memo.png" />
             <span style="font-size:12px; font-family:Verdana">修改备注</span>
         </li>
-        <li id="SetFile">
-            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Document.png" /></span>
-            <span style="font-size:12px; font-family:Verdana">项目文件</span>
-        </li>
-
-        <li id="PhaseTask">
-            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/task-new.png" /></span>
-            <span style="font-size:12px; font-family:Verdana">加工任务</span>
-        </li>
-
         <li id="ProjectHistory">
-            <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/ProjectSchedule.png" /></span>
+            <img src="~/Images/ProjectSchedule.png" />
             <span style="font-size:12px; font-family:Verdana">项目历史</span>
         </li>
 
@@ -180,7 +169,7 @@
                 }
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SaveMemo" class="btn btn-primary">保存</button>
             </div>
         </div>
@@ -240,7 +229,7 @@
                 }
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SavePhaseModify" class="btn btn-primary">保存</button>
                 
             </div>
@@ -273,7 +262,7 @@
                 }
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="FinishPhaseModify" class="btn btn-primary">结束</button>
 
             </div>
@@ -296,7 +285,7 @@
                 <textarea id="PauseMemo" class="form-control" rows="5" style="resize:none" maxlength="100"></textarea>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="PauseProjectBtn" class="btn btn-primary">确定</button>
             </div>
         </div>
@@ -317,7 +306,7 @@
                 <textarea id="DeleteMemo" class="form-control" rows="5" style="resize:none"></textarea>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="DeleteProjectBtn" class="btn btn-primary">确认删除</button>
             </div>
         </div>
@@ -346,7 +335,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="ProjectSearchBtn" class="btn btn-primary">查询</button>
             </div>
         </div>
@@ -394,7 +383,7 @@
                 <select id="ProjectLog" class="form-control" size="20"></select>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>
@@ -430,13 +419,13 @@
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/Project.js"></script>
 <script type="text/javascript">
-    $(document).ready(function(){       
+    $(document).ready(function(){
         ////原计划
         var YJHEditedCellList1 = [];
 
         GetPhases("PhaseID", @ViewBag.Type);
         GetPhases("FinishPhaseID", @ViewBag.Type);
-       
+
 
         ProjectGrid("@ViewBag.Keyword", @ViewBag.State, @ViewBag.Type,@DeptID,YJHEditedCellList);
 
@@ -444,13 +433,14 @@
         $("#TaskGrid").setGridWidth('740');
         PurchaseItem('','',0,0,true);//采购列表
         $("#PurchaseItemGrid").setGridWidth('740');
-        
+
         @if (ViewBag.Type == 1)
         {
             @:$("#ProjectGrid").setGridParam().showHideCol("ProjectNo");
             @:$("#ProjectGrid").setGridParam().setLabel('FOT', 'FOT','','');
-            @:$("#ProjectGrid").setGridWidth(document.body.clientWidth*0.98);
         }
+
+        $("#ProjectGrid").setGridWidth(document.body.clientWidth*0.98);
 
         $("#SavePhaseModify").on("click", function () {
             if (ValidateForm("PhaseModify")) {
@@ -492,7 +482,7 @@
             }
             else{
                 ReloadTaskGrid();
-            }  
+            }
         });
         $('#YJHCellSave').on('click',function(){
             var firsttdobj= $('#ProjectGrid td:eq(24)');//第一行 原计划单元格
@@ -516,7 +506,7 @@
                     ReloadProJGrid();
                     alert('保存成功！');
                     $('#YJHCellSave').attr('disabled',true);
-                }                   
+                }
             }
         });
     })
@@ -551,7 +541,7 @@
                 })
             }
             else//无模具项目
-                return;           
+                return;
         })
         $.get('/Project/Service_GetTaskTypeByPhaseID?phaseid='+phaseid,function(res){
             if(res.length>0){
@@ -576,7 +566,7 @@
                         var pillhtml='<li id="PhaseTaskmodal_pills_now" role="presentation" class="state active" style="float: right;" onclick="PhaseTaskmodal_tabs_Click(this)"><a href="#">进行中任务</a></li>';
                         pillhtml+='<li id="PhaseTaskmodal_pills_his" role="presentation" class="state" style="float: right;" onclick="PhaseTaskmodal_tabs_Click(this)"><a href="#">已完成任务</a></li>';
                         pillhtml+='<li id="PhaseTaskmodal_pills_pr" role="presentation" class="state" style="float: right; display:none;" onclick="PhaseTaskmodal_tabs_Click(this)"><a href="#">未开始任务</a></li>';
-                        $('#PhaseTaskmodal_tabs').append(pillhtml); 
+                        $('#PhaseTaskmodal_tabs').append(pillhtml);
                         $("#State").val(0);
                         _bulidTaskTable();
                         if(phaseid==3){//采购阶段
@@ -586,13 +576,13 @@
                         else{
                             $('#PhaseTaskmodal_pills_pr').hide();
                             ReloadTaskGrid();
-                        }                        
+                        }
                         //var _url = '/Task/JsonMachineTasks?MoldNumber=' + _moldNo + '&TaskType='+n.TaskID+'&State=0';//当前
                         //$("#TaskGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
                         $('#PhaseTaskDialog').modal('show');
-                    }                  
+                    }
                 }
-            })            
+            })
         })
     }
     //tab按钮点击
@@ -605,23 +595,23 @@
             _tasktype=(e.id).split('_')[1];
             $("#TaskType").val(_tasktype);
             $('#PhaseTaskmodal_tabs li.tasktype.active').removeClass('active');
-            $(e).attr('class', 'tasktype active');      
+            $(e).attr('class', 'tasktype active');
         }
         ////调整状态
-        else{     
+        else{
             _tasktype=$("#TaskType").val();
             if(e.id=='PhaseTaskmodal_pills_now'){
                 $("#State").val(0);//当前采购项
             }
             else if(e.id=='PhaseTaskmodal_pills_his'){
                 $("#State").val(1);//历史采购项
-            }  
+            }
             else if(e.id='PhaseTaskmodal_pills_pr'){
                 $("#State").val(-99);//PR
             }
             $('#PhaseTaskmodal_tabs li.state.active').removeClass('active');
-            $(e).attr('class', 'state active');           
-        }        
+            $(e).attr('class', 'state active');
+        }
         _bulidTaskTable();//调整列表列头
         if(_tasktype==200){
             ReloadPurchaseItemGrid();
@@ -650,15 +640,14 @@
             $("#TaskGrid").setGridParam().showHideCol("Memo");
 
             $("#TaskGrid").setGridParam().showHideCol("Time");
-            $("#TaskGrid").setGridParam().showHideCol("Priority");
-            $("#TaskGrid").setGridParam().showHideCol("Quantity");
+            $("#TaskGrid").setGridParam().showHideCol("Priority");            
             $("#TaskGrid").setGridParam().showHideCol("StateMemo");
             $("#TaskGrid").setGridParam().showHideCol("State");
             $("#TaskGrid").setGridParam().showHideCol("CreateTime");
             $("#TaskGrid").setGridParam().showHideCol("PlanTime");
             $("#TaskGrid").setGridParam().showHideCol("AcceptTime");
-            $("#TaskGrid").setGridParam().showHideCol("StartTime");        
-            switch(_tasktype){
+            $("#TaskGrid").setGridParam().showHideCol("StartTime");
+            switch(Number(_tasktype)){
                 case 1:
                     $("#TaskGrid").setGridParam().showHideCol("Material");
                     $("#TaskGrid").setGridParam().showHideCol("R");
@@ -667,15 +656,19 @@
                     $("#TaskGrid").setGridParam().showHideCol("QCPoints");
                     break;
                 case 2:
+                    $("#TaskGrid").setGridParam().showHideCol("Quantity");
                     break;
                 case 3:
+                    $("#TaskGrid").setGridParam().showHideCol("Quantity");
                     $("#TaskGrid").setGridParam().showHideCol("CADPartName");
                     $("#TaskGrid").setGridParam().showHideCol("Preciston");
                     break;
                 case 4:
+                    $("#TaskGrid").setGridParam().showHideCol("Quantity");
                     $("#TaskGrid").setGridParam().showHideCol("ProcessName");
                     break;
                 case 6:
+                    $("#TaskGrid").setGridParam().showHideCol("Quantity");
                     $("#TaskGrid").setGridParam().showHideCol("CADPartName");
                     $("#TaskGrid").setGridParam().showHideCol("Material");
                     $("#TaskGrid").setGridParam().showHideCol("HRC");
@@ -721,7 +714,7 @@
             $("#PurchaseItemGrid").setGridParam().showHideCol("Specification");
             $("#PurchaseItemGrid").setGridParam().showHideCol("Quantity");
             $("#PurchaseItemGrid").setGridParam().showHideCol("State");
-            $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseType");            
+            $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseType");
 
             if(_state==0){//采购订单 当前
                 $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseOrder");
@@ -738,13 +731,12 @@
                 $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseRequest");
                 $("#PurchaseItemGrid").setGridParam().showHideCol("QuotationRequest");
             }
-        }       
+        }
     }
 </script>
 
 <script>
     $(document).ready(function(){
-
         AttachFiles();//初始化附件列表
         $("#modal_tb_ProJFiles").setGridWidth(658);
 
@@ -784,10 +776,6 @@
             }
         })   
         
-        //$('#ProjectFileDialog').on('shown.bs.modal',function() {
-        //    alert('!!!');
-        //    $('#modal_tb_ProJFiles').find("td").css('padding','0px!important');
-        //})
     })
     function ShowProjectFile(ProjectID) {
         $("#ObjID").val(ProjectID);

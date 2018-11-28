@@ -20,10 +20,11 @@ namespace TechnikSys.MoldManager.Domain.Status
         未发布 = -99,
         暂停 = -1,
         等待 = 0,
-        已接收 = 1,
-        等待中 = 2,
+        已接收 = 3,
+        等待中 = 5,           
         正在加工 = 10,
         外发 = 11,
+        CNC结束 = 20,
         完成 = 100,
         已升版 = 200
     }

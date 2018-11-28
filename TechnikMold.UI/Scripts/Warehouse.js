@@ -93,7 +93,7 @@ function ConfirmInStock() {
         _accept = true;
     }
     if (_accept) {
-        if ($("#ReceiveQty").val() <= 0) {
+        if (Number($("#ReceiveQty").val()) <= 0) {
             alert("收货数量必须大于0");
         } else {
             //var q1 = $("#ReceiveQty").val();
@@ -136,9 +136,10 @@ function ConfirmInStock() {
 
 function ClosePO() {
     var PurchaseOrderID = $("#PurchaseOrderID").val();
-    if (confirm("确认要关闭订单？")) {
-        location.href = "/Warehouse/ClosePurchaseOrder?PurchaseOrderID=" + PurchaseOrderID;
-    }
+    location.href = "/Warehouse/ClosePurchaseOrder?PurchaseOrderID=" + PurchaseOrderID;
+    //if (confirm("确认要返回订单？")) {
+    //    location.href = "/Warehouse/ClosePurchaseOrder?PurchaseOrderID=" + PurchaseOrderID;
+    //}
 }
 
 //---------------Context Menu------------------

@@ -108,37 +108,35 @@
                             </ul>
                         </li>
                         @*<li><button class="btn btn-primary" id="AddToQueue">设置加工开始</button></li>*@
-                        switch (type)
-                        {
-                            case 1://电极任务
-                                <li><button class="btn btn-primary" id="CNCItemList">电极信息</button></li>
-                                <li><button class="btn btn-primary" id="AddToQueue">电极扫描</button></li>
-                                <li><button class="btn btn-primary" id="PointCheck">任务点检</button></li>
-                                break;
-                            case 2://EDM任务                               
-                                <li><button class="btn btn-primary" id="AddToQueue">设置加工开始</button></li>
-                                <li><button class="btn btn-primary" id="EDMProcessList">加工选中任务</button></li>
-                                <li><button class="btn btn-primary" id="FinishTask">设置加工结束</button></li>
-                                <li><button class="btn btn-primary" id="EleQCResult">电极确认</button></li>
+                switch (type)
+                {
+                    case 1://电极任务
+                        <li><button class="btn btn-primary" id="CNCItemList">电极信息</button></li>
+                        <li><button class="btn btn-primary" id="AddToQueue">电极扫描</button></li>
+                        <li><button class="btn btn-primary" id="PointCheck">任务点检</button></li>
+                        break;
+                    case 2://EDM任务
+                        <li><button class="btn btn-primary" id="EDMProcessList">加工选中任务</button></li>
+                        <li><button class="btn btn-primary" id="EleQCResult">电极确认</button></li>
                                 <li><button class="btn btn-primary" id="EleInStock">电极库存</button></li>
-                                break;
-                            case 4://铣铁任务
-                                <li><button class="btn btn-primary" id="AddToQueue">开始加工</button></li>
-                                <li><button class="btn btn-primary" id="PointCheck">任务点检</button></li>
-                                break;
-                            default:
-                                <li><button class="btn btn-primary" id="AddToQueue">设置加工开始</button></li>
-                                <li><button class="btn btn-primary" id="FinishTask">设置加工结束</button></li>
-                                break;
-                        }
-                        @*只有主管以上级别可以设置加工设备信息*@
-                        if ((PosID >= 2) && (type == 1 || type == 4))
-                        {
-                            <li><button class="btn btn-primary" id="MachineSetting">加工设备管理</button></li>
-                        }
-                        if ((DeptID == 7) && (type == 1 || type == 4))
-                        {
-                            <li><button class="btn btn-primary" id="AddCNCTask">新建CNC加工任务</button></li>
+                        break;
+                    case 4://铣铁任务
+                        <li><button class="btn btn-primary" id="AddToQueue">开始加工</button></li>
+                        <li><button class="btn btn-primary" id="PointCheck">任务点检</button></li>
+                        break;
+                    default:
+                        <li><button class="btn btn-primary" id="AddToQueue">设置加工开始</button></li>
+                        break;
+                }
+                <li><button class="btn btn-primary" id="FinishTask">设置加工结束</button></li>
+                @*只有主管以上级别可以设置加工设备信息*@
+                if ((PosID >= 2) && (type == 1 || type == 4))
+                {
+                    <li><button class="btn btn-primary" id="MachineSetting">加工设备管理</button></li>
+                }
+                if ((DeptID == 7) && (type == 1 || type == 4))
+                {
+                    <li><button class="btn btn-primary" id="AddCNCTask">新建CNC加工任务</button></li>
                         }
                         else if (DeptID == 8 && type == 2)
                         {
@@ -162,6 +160,7 @@
                     <li><button class="btn btn-primary" id="QueryTask">查询</button></li>
                 }
             </ul>
+
         </div>
         <table id="TaskGrid"></table>
         <div id="jqGridPager"></div>
@@ -191,7 +190,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="ConfirmDeleteTask" class="btn btn-primary">删除任务</button>
             </div>
         </div>
@@ -255,7 +254,7 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                     <button type="button" id="ConfirmFinishEDM" class="btn btn-primary">确定</button>
                 </div>
             </div>
@@ -282,38 +281,38 @@
              {
                  if (DeptID == 7)
                  {
-                     <li id="EditCNCTask">
+                     @*<li id="EditCNCTask">
                          <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                          <span style="font-size:12px; font-family:Verdana">任务信息编辑</span>
-                     </li>
-                     <li id="DeleteTask">
+                     </li>*@
+                     @*<li id="DeleteTask">
                          <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                          <span style="font-size:12px; font-family:Verdana">CNC删除</span>
-                     </li>
+                     </li>*@
                  }
              }
              @if (ViewBag.TaskType == 2)
              {
                  if (DeptID == 8)
                  {
-                     <li id="DeleteEDMTask">
-                         <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png" /></span>
-                         <span style="font-size:12px; font-family:Verdana">EDM删除</span>
-                     </li>
-                     <li id="CheckEleStatus">
-                         <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Document.png" /></span>
-                         <span style="font-size:12px; font-family:Verdana">电极状态</span>
-                     </li>
+                    <li id="SetWaiting">
+                        <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
+                        <span style="font-size:12px; font-family:Verdana">设置为等待中</span>
+                    </li>
+                    @*<li id="CheckEleStatus">
+                        <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Document.png" /></span>
+                        <span style="font-size:12px; font-family:Verdana">电极状态</span>
+                    </li>*@                 
                  }
              }
              @if (ViewBag.TaskType == 4)
              {
                  if (DeptID == 7)
                  {
-                     <li id="DeleteTask">
+                     @*<li id="DeleteTask">
                          <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                          <span style="font-size:12px; font-family:Verdana">CNC删除</span>
-                     </li>
+                     </li>*@
                  }
              }             
          </ul>
@@ -334,7 +333,7 @@
                     <select id="EleState" class="form-control" size="20"></select>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 </div>
             </div>
         </div>
@@ -342,10 +341,10 @@
 
 @*设置任务结束*@
 <div class="modal fade" id="SetupWFTaskHourModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog" role="document" style="width:980px;">
         <div class="modal-content">
             <div class="modal-header">
-                @*<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>*@
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title">设置任务结束</h4>
             </div>
             <div class="modal-body">
@@ -389,7 +388,7 @@
                 <table id="tb_TaskStart"></table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove-sign"></span> 关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove-sign"></span> 返回</button>
                 <button type="button" id="modal_btn_StartTask" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span> 提交</button>
                 <button type="button" id="modal_btn_wfTask" class="btn btn-primary" style="display:none;"><span class="glyphicon glyphicon-save"></span> 确认外发</button>
             </div>
@@ -418,7 +417,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon glyphicon-off"></span>关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon glyphicon-off"></span>返回</button>
                 <button type="button" class="btn btn-primary" id="modal_btn_SubmitTPHour" disabled="disabled"><span class="glyphicon glyphicon glyphicon-save"></span>提交</button>
             </div>
         </div>
@@ -444,8 +443,7 @@
          TaskStartGrid('');
          //外发任务结束表格初始化
          WFTaskFinishGrid('');
-         //Hide the not wanted columns
-         $("#TaskGrid").setGridParam().showHideCol("Quantity");
+         //Hide the not wanted columns         
          $("#TaskGrid").setGridParam().showHideCol("StateMemo");
          $("#TaskGrid").setGridParam().showHideCol("State");
          $("#TaskGrid").setGridParam().showHideCol("CreateTime");
@@ -560,7 +558,7 @@
          $('#modal_sel_machinesinfo').on('change',function(){
                 var val = $('#modal_sel_machinesinfo').val();
                 val = val.split(',');
-
+                
                 var selrows = $("#tb_TaskStart").jqGrid('getGridParam', 'selarrrow');
                 if (selrows.length==0){
                     selrows=  $('#tb_TaskStart').getDataIDs();
@@ -671,6 +669,7 @@
 
          $("#SetTaskStartModal").on("shown.bs.modal", function () {
              LoadWSUser($('#FTaskType').val());
+             //LoadMInfoList($('#FTaskType').val());
          })
          //确认外发
          $('#modal_btn_wfTask').on('click',function(){
@@ -697,13 +696,13 @@
          })
          //绑定blur事件 父级绑定
          $('#formTable_tph').on('blur','input',function(){
-             var _totaltime=$('#modalinput_TotalTime').val();
+             var _totaltime=Number($('#modalinput_TotalTime').val());
              var _curtime=0;
              var _inputtime=0;
              $(".input_TPHType").each(function(){
                  _inputtime+=Number($(this).val());
              });
-             _curtime=_totaltime-_inputtime;
+             _curtime=Math.round(_totaltime-_inputtime,2);
              if($(this).val()<0){
                  alert("无效输入！");
                  $(this).val(0);
@@ -756,7 +755,12 @@
                                name+'['+i+'].UserID='+rowData.UserID+'&' + 
                                name+'['+i+'].UserName='+rowData.UserName+'&' +
                                name+'['+i+'].TotalTime='+rowData.TotalTime+'&' +
-                               name+'['+i+'].Qty='+rowData.Qty;
+                               name+'['+i+'].Qty='+rowData.Qty+'&'+
+
+                               name+'['+i+'].StartTime='+rowData.StartTime+'&'+
+                               name+'['+i+'].FinishTime='+rowData.FinishTime+'&'+
+                               name+'['+i+'].SemiTaskFlag='+rowData.SemiTaskFlag+'&'+
+                               name+'['+i+'].TaskHourID='+rowData.TaskHourID;
                  //alert(itemData);
                  $.get('/Task/SetWFTaskFinish',itemData,function(res){
                      res=Number(res);
@@ -780,42 +784,6 @@
              location.reload();
          })
      })
-
-    //加载workshop对应部门人员
-    function LoadWSUser(type) {
-        $("#CheckUser option").remove();
-        var _depid=0;
-        type=Number(type);
-        switch(type){
-            case 1:
-                _depid=7;
-                break;
-            case 2:
-                _depid=8;
-                break;
-            case 3:
-                _depid=9;
-                break;
-            case 4:
-                _depid=7;
-                break;
-            case 6:
-                _depid=5;
-                break;
-        }
-        $.getJSON("/User/GetUsersByDepartment?DepartmentID="+_depid, function (msg) {
-            $("#CheckUser").append($("<option/>", {
-                value: 0,
-                text: '-'
-            }))
-            $.each(msg, function (i, n) {
-                $("#CheckUser").append($("<option/>", {
-                    value: n.UserID,
-                    text: n.FullName
-                }))
-            })
-        })
-    }
 
     function addColumnlists(ids,GridTableName,row,ColName){
         if (ids == "") {

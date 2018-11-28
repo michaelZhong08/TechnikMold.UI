@@ -26,7 +26,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             get { return _context.TaskHours; }
         }
-
         public int Save(TaskHour model)
         {
             TaskHour dbentry;
@@ -51,6 +50,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 dbentry.Operater = model.Operater;
                 dbentry.Qty = model.Qty;
                 dbentry.Cost = model.Cost;
+                dbentry.SemiTaskFlag = model.SemiTaskFlag;
                 _context.TaskHours.Add(dbentry);
             }
             #endregion
@@ -86,6 +86,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     dbentry.State = model.State;
                     dbentry.Qty = model.Qty;
                     dbentry.Cost = model.Cost;
+                    dbentry.SemiTaskFlag = model.SemiTaskFlag;
                     dbentry.Memo = model.Memo + " 时间：" + dbentry.Time.ToString();
                 }               
             }
@@ -96,6 +97,11 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public TaskHour GetCurTHByTaskID(int TaskID)
         {
             TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && h.Enabled == true && h.State==(int)TaskHourStatus.开始).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            return _taskhour;
+        }
+        public TaskHour GetCurTHBySemiTaskFlag(string SemiTaskFlag)
+        {
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && h.Enabled == true && h.State == (int)TaskHourStatus.开始).OrderByDescending(h => h.TaskHourID).FirstOrDefault() ?? new TaskHour();
             return _taskhour;
         }
         public decimal GetTotalHourByTaskID(int TaskID)
@@ -140,6 +146,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             {
                 (int)TaskHourStatus.完成,
                 (int)TaskHourStatus.暂停,
+                (int)TaskHourStatus.开始,
+                (int)TaskHourStatus.外发,
             };
             TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && _FStatelist.Contains(h.State)).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
             string _operater = _taskhour.TaskHourID > 0 ? _taskhour.Operater != null ? _taskhour.Operater : "" : "";
@@ -158,6 +166,37 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             if (_th != null)
             {
                 MachinesInfo _mInfo = _context.MachinesInfo.Where(m => m.MachineCode == _th.MachineCode).FirstOrDefault();
+                if (_mInfo != null)
+                    return _mInfo.MachineName + "_" + _mInfo.MachineCode;
+            }
+            return "";
+        }
+        public string GetOperaterBySemiTaskFlag(string SemiTaskFlag)
+        {
+            List<int> _FStatelist = new List<int>
+            {
+                (int)TaskHourStatus.完成,
+                (int)TaskHourStatus.暂停,
+                (int)TaskHourStatus.开始,
+                (int)TaskHourStatus.外发,
+            };
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && _FStatelist.Contains(h.State)).OrderByDescending(h => h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            string _operater = _taskhour.TaskHourID > 0 ? _taskhour.Operater != null ? _taskhour.Operater : "" : "";
+            return _operater;
+        }
+        public string GetMachineBySemiTaskFlag(string SemiTaskFlag)
+        {
+            List<int> _FStatelist = new List<int>
+            {
+                (int)TaskHourStatus.完成,
+                (int)TaskHourStatus.暂停,
+                (int)TaskHourStatus.开始,
+                (int)TaskHourStatus.外发,
+            };
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && _FStatelist.Contains(h.State)).OrderByDescending(h => h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            if (_taskhour != null)
+            {
+                MachinesInfo _mInfo = _context.MachinesInfo.Where(m => m.MachineCode == _taskhour.MachineCode).FirstOrDefault();
                 if (_mInfo != null)
                     return _mInfo.MachineName + "_" + _mInfo.MachineCode;
             }

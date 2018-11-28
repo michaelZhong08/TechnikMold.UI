@@ -57,6 +57,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Memo = POContent.Memo;
                     _dbEntry.ReceivedQty = POContent.ReceivedQty;
                     _dbEntry.State = POContent.State;
+                    _dbEntry.unit = POContent.unit ?? "件";
                     _dbEntry.Enabled = true;
 
                 }

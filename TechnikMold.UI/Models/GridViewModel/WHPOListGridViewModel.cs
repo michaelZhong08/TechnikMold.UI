@@ -17,11 +17,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Total;
         public int Records;
 
-        public WHPOListGridViewModel(IEnumerable<PurchaseOrder> Orders, List<User> Users)
+        public WHPOListGridViewModel(IEnumerable<PurchaseOrder> Orders, List<User> Users,ISupplierRepository _supplierRepository)
         {
             rows = new List<WHPOListGridRowModel>();
             string _userName;
             string _status;
+            string _supplierName;
             foreach (PurchaseOrder _order in Orders)
             {
                 try
@@ -35,7 +36,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
 
                 _status = Enum.GetName(typeof(PurchaseOrderStatus), _order.State);
                 _status = _status == "发布" ? "待收货" : _status;
-                rows.Add(new WHPOListGridRowModel(_order, _userName, _status));
+                _supplierName = (_supplierRepository.QueryByID(_order.SupplierID)??new Supplier()).Name;
+                rows.Add(new WHPOListGridRowModel(_order, _userName, _status, _supplierName));
             }
             Page = 1;
             Total = Orders.Count();

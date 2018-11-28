@@ -43,6 +43,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Memo = QRContent.Memo;
                     _dbEntry.Enabled = QRContent.Enabled;
                     _dbEntry.SupplierID = QRContent.SupplierID;
+                    _dbEntry.QRcMemo = QRContent.QRcMemo;
                     _dbEntry.RequireDate = QRContent.RequireDate;
                 }
             }

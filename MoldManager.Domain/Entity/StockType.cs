@@ -14,5 +14,8 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int StockTypeID { get; set; }
         public string Name { get; set; }
         public bool Enabled { get; set; }
+        public string Code { get; set; }
+        public string PurchaseType { get; set; }
+        public string Parent { get; set; }
     }
 }

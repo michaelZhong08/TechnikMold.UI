@@ -25,5 +25,6 @@ namespace MoldManager.WebUI.Models.ViewModel
         public int EleType { get; set; }
         public double StockGap { get; set; }
         public int CNCMachMethod { get; set; }
+        public string CNCStautsName { get; set; }
     }
 }

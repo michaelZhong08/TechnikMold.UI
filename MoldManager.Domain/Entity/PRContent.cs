@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,5 +45,8 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int CostCenterID { get; set; }
         public int PurchaseTypeID { get; set; }
         public string ERPPartID { get; set; }
+        [NotMapped]
+        public decimal PlanQty { get; set; }
+        public string unit { get; set; }
     }
 }

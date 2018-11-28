@@ -36,6 +36,9 @@ namespace MoldManager.WebUI.Controllers
         IWarehouseStockRepository _warehouseStockRepository;
         ISupplierRepository _supplierRepository;
         IPartListRepository _partListRepository;
+        IPurchaseItemRepository _purchaseItemRepository;
+        IWHPartRepository _whPartRepository;
+        IWHStockRepository _whStockRepository;
 
         public PartController(IPartRepository PartRepository,
             IPartTypeRepository PartTypeRepository,
@@ -48,7 +51,10 @@ namespace MoldManager.WebUI.Controllers
             IPartStockRepository PartStockRepository,
             IWarehouseStockRepository WarehouseStockRepository,
             ISupplierRepository SupplierRepository,
-            IPartListRepository PartListRepository)
+            IPartListRepository PartListRepository,
+            IPurchaseItemRepository PurchaseItemRepository,
+            IWHPartRepository WHPartRepository,
+            IWHStockRepository WHStockRepository)
         {
             _partRepository = PartRepository;
             _partTypeRepository = PartTypeRepository;
@@ -62,6 +68,9 @@ namespace MoldManager.WebUI.Controllers
             _warehouseStockRepository = WarehouseStockRepository;
             _supplierRepository = SupplierRepository;
             _partListRepository = PartListRepository;
+            _purchaseItemRepository = PurchaseItemRepository;
+            _whPartRepository = WHPartRepository;
+            _whStockRepository = WHStockRepository;
         }
 
 
@@ -299,19 +308,7 @@ namespace MoldManager.WebUI.Controllers
         {
             Part _part = _partRepository.QueryByID(PartID);
             return Json(_part, JsonRequestBehavior.AllowGet);
-        }
-
-        public JsonResult JsonBrands(string Keyword = "")
-        {
-            IEnumerable<Brand> _brands = _brandRepository.Brands.Where(b => b.Enabled == true).Where(b => b.Name.Contains(Keyword));
-            return Json(_brands, JsonRequestBehavior.AllowGet);
-        }
-
-        public int GetBrand(string BrandName)
-        {
-            int _count = _brandRepository.QueryByName(BrandName).Count();
-            return _count;
-        }
+        }      
 
         public JsonResult JsonSuppliers()
         {
@@ -1633,7 +1630,7 @@ namespace MoldManager.WebUI.Controllers
                 using (FileStream fs = System.IO.File.Open(ImportFilePath, FileMode.Open,
                 FileAccess.Read, FileShare.ReadWrite))
                 {
-                    //把xls文件读入workbook变量里，之后就可以关闭了
+                    //把xls文件读入workbook变量里，之后就可以返回了
                     hssfworkbook = new XSSFWorkbook(fs);
                     fs.Close();
                 }
@@ -1912,38 +1909,117 @@ namespace MoldManager.WebUI.Controllers
         /// </summary>
         /// <param name="sel">1:零件短名 2:物料编号 3:规格</param>
         /// <param name="Keywords"></param>
+        /// <param name="_selPartModal">1 模具直接材料 2 模具生产耗材 5 模具耗材备库</param>
         /// <returns></returns>
-        public JsonResult Service_Json_GetPartByKeys(int sel=0,string Keywords="")
+        public JsonResult Service_Json_GetPartByKeys(int sel=0,string Keywords="",int _selPartModal=1)
         {
-            Expression<Func<Part, bool>> _kwexp = null;
+            List<PurchaseItem> _items = new List<PurchaseItem>();
+            List<WHPart> _whparts;
+            switch (_selPartModal)
+            {
+                case 1:
+                    IQueryable<Part> _parts = _partRepository.GetLatestVerParts();
+                    foreach(var p in _parts)
+                    {
+                        int _stockQty = Convert.ToInt32( _whStockRepository.GetStockQtyByPart(p.PartNumber, p.PartID));
+                        PurchaseItem _item = new PurchaseItem()
+                        {
+                            PartID = p.PartID,
+                            Name = p.Name,
+                            PartNumber = p.PartNumber,
+                            Specification = p.Specification,
+                            Material = p.MaterialName,
+                            SupplierName = p.BrandName,
+                            PurchaseType = 0,
+                            Quantity= p.TotalQty-_stockQty,
+                        };
+                        _items.Add(_item);
+                    }
+                    break;
+                case 2:
+                    //模具耗材 不属于 直接材料、外发项、备库项
+                    //_items = _purchaseItemRepository.PurchaseItems.Where(p => p.State >= 0 && p.TaskID == 0 && p.PartID == 0 && p.WarehouseStockID == 0).ToList();                    
+                    _whparts = _whPartRepository.GetPartsByType("生产耗材");
+                    foreach(var w in _whparts)
+                    {
+                        int _stockQty = Convert.ToInt32(_whStockRepository.GetStockQtyByPart(w.PartNum, w.PartID));
+                        PurchaseItem _item = new PurchaseItem()
+                        {
+                            PartID = 0,
+                            Name = w.PartName,
+                            PartNumber = w.PartNum,
+                            Specification = w.Specification,
+                            Material = w.Materials,
+                            SupplierName = "",
+                            MoldNumber=w.MoldNumber,
+                            PurchaseType = 0,
+                            Quantity=Convert.ToInt32(w.PlanQty)- _stockQty,
+                        };
+                        _items.Add(_item);
+                    }
+                    break;
+                case 5:
+                    //IQueryable<WarehouseStock> _whStocks = _warehouseStockRepository.WarehouseStocks.Where(w => w.Enabled == true);
+                    _whparts = _whPartRepository.GetPartsByType("模具耗材备库");
+                    foreach (var w in _whparts)
+                    {
+                        int _stockQty = Convert.ToInt32(_whStockRepository.GetStockQtyByPart(w.PartNum, w.PartID));
+                        PurchaseItem _item = new PurchaseItem()
+                        {
+                            PartID = 0,
+                            Name = w.PartName,
+                            PartNumber = w.PartNum,
+                            Specification = w.Specification,
+                            Material = w.Materials,
+                            SupplierName = "",
+                            MoldNumber = w.MoldNumber,
+                            PurchaseType = 0,
+                            Quantity = Convert.ToInt32(w.PlanQty) - _stockQty,
+                        };
+                        _items.Add(_item);
+                    }
+                    break;
+            }
+            Expression<Func<PurchaseItem, bool>> _kwexp = null;
             if (sel != 0)
             {
-                _kwexp = p => p.Enabled == true;
+                //_kwexp = p => p.Enabled == true;
                 try
                 {
-                    switch (sel)
+                    if (!string.IsNullOrEmpty(Keywords))
                     {
-                        case 1:
-                            _kwexp = PredicateBuilder.And(_kwexp, p => p.ShortName.Contains(Keywords));
-                            break;
-                        case 2:
-                            _kwexp = PredicateBuilder.And(_kwexp, p => p.PartNumber.Contains(Keywords));
-                            break;
-                        default:
-                            _kwexp = PredicateBuilder.And(_kwexp, p => p.Specification.Contains(Keywords));
-                            break;
-                    }
-                    IQueryable<Part> _parts = _partRepository.GetLatestVerParts();
-                    if (_parts != null)
+                        Keywords = Keywords.ToUpper();
+                        switch (sel)
+                        {
+                            case 1:
+                                _items = _items.Where(p => p.Name.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Name.Contains(Keywords));
+                                break;
+                            case 2:
+                                _items = _items.Where(p => p.PartNumber.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.PartNumber.Contains(Keywords));
+                                break;
+                            default:
+                                _items = _items.Where(p => p.Specification.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Specification.Contains(Keywords));
+                                break;
+                        }
+                    }                                    
+                    if (_items.Count>0)
                     {
-                        _parts = _parts.Where(_kwexp);
-                        PartSearchGridViewModel _viewmodel = new PartSearchGridViewModel(_parts.ToList());
+                        //_items = _items.Where(_kwexp);
+                        PartSearchGridViewModel _viewmodel = new PartSearchGridViewModel(_items);
                         return Json(_viewmodel, JsonRequestBehavior.AllowGet);
                     }
                 }
                 catch { }
             }            
             return null;
+        }
+        public JsonResult Service_Part_GetPartByPartNum(string _partNum)
+        {
+            WHPart _part = _whPartRepository.GetPart(_partNum);
+            return Json(_part, JsonRequestBehavior.AllowGet);
         }
         public string Service_Chk_Part(string _partnum)
         {

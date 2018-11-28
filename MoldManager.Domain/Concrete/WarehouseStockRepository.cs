@@ -188,7 +188,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
 
         public IEnumerable<WarehouseStock> QueryByMoldNumber(string MoldNumber)
         {
-            IEnumerable<WarehouseStock> _stocks = _context.WarehouseStocks.Where(w => w.Name.Contains(MoldNumber));
+            IEnumerable<WarehouseStock> _stocks = _context.WarehouseStocks.Where(w => w.MoldNumber.ToUpper().Contains(MoldNumber.ToUpper()) && w.Enabled==true);
             return _stocks;
         }
 

@@ -39,8 +39,10 @@
             <select id="OutSourceType" class="form-control"></select>
         </div>
 
-        <div class="col-sm-2">
-            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项关键字" />
+        <div class="col-sm-3">
+            <input type="hidden" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID" />
+            <input type="hidden" id="PurchaseTypeName" value="@ViewBag.PurchaseTypeName" />
+            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" />
         </div>
         
         
@@ -54,7 +56,7 @@
             <button class="btn btn-primary" id="Quotation">开始询价</button>
 
 
-            <button class="btn btn-primary" id="PruchaseOrder">创建订单</button>
+            <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
 
         }
         <div class="col-sm-11" style="float:left;">
@@ -82,7 +84,7 @@
             LoadMoldNumber($("#Keyword").val());
         })
 
-        $("#MoldSelect").on("change", function () {
+        $("#MoldSelect").on("change", function () {            
             $("#MoldNumber").val($("#MoldSelect option:selected").val());
             QueryOutSourceItem("", $("#MoldNumber").val(), $("#OutSourceType").val());
         })
@@ -92,6 +94,15 @@
         })
 
         $("#OutSourceType").on("change", function () {
+            var _purchaseTypeID = $('#OutSourceType').val();
+            var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID=" + _purchaseTypeID;
+            $.getJSON(_url, function (msg) {
+                if (msg.ParentTypeID == 0) {
+                    $('#PruchaseOrder').attr('disabled', 'disabled');
+                } else {
+                    $('#PruchaseOrder').removeAttr('disabled');
+                }
+            });
             QueryOutSourceItem("", "", $("#OutSourceType").val());
         })
 
@@ -129,25 +140,40 @@
     })
 
     function LoadOutSourceType() {
-        var _url = "/Purchase/JsonPurchaseTypes?ContainParent=false&TypeName=模具委外加工";
+        var _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&TypeName=" + $('#PurchaseTypeName').val();
         $("#OutSourceType option").remove();
-        $("#OutSourceType").append($("<option/>", { value: 3, text: "外发任务", selected:true }));
+        //$("#OutSourceType").append($("<option/>", { value: 3, text: "外发任务", selected:true }));
         $.getJSON(_url, function (msg) {
             $.each(msg, function (i, n) {
-                $("#OutSourceType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+                var _name = n.Name;
+                var _html;
+                if (n.ParentTypeID > 0) {
+                    _name = '&nbsp;&nbsp;&nbsp;&nbsp;' + _name;
+                }
+                _html = '<option value="' + n.PurchaseTypeID + '">' + _name + '</option>';
+                $('#OutSourceType').append(_html);
+                //$("#OutSourceType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
             })
         })
     }
 
 
     function LoadMoldNumber(Keyword, MoldNumber) {
-        var _url = "/Purchase/JsonMoldNumber?State=@ViewBag.State&Keyword=" + $("#Keyword").val()+"&PurchaseType=3";
-        if (Keyword != "") {
+        var _url = "/Purchase/JsonMoldNumber?State=@ViewBag.State&Keyword=" + $("#Keyword").val() + "&PurchaseType=" + $('#PurchaseTypeID').val();
+
+        if (Keyword != "" && Keyword != undefined) {
             _url = _url + "?Keyword=" + Keyword;
         }
+
         $("#MoldSelect option").remove();
 
         $.getJSON(_url, function (msg) {
+            if (msg.length > 0) {
+                $("#MoldSelect").append($("<option/>", {
+                    value: "ALL",
+                    text: "ALL"
+                }))
+            }
             $.each(msg, function (i, n) {
                 if (MoldNumber == n) {
                     $("#MoldSelect").append($("<option/>", {

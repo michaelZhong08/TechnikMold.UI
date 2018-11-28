@@ -11,12 +11,12 @@ namespace MoldManager.WebUI.Models.GridRowModel
     {
         public string[] cell;
 
-        public WHPOListGridRowModel(PurchaseOrder PurchaseOrder, string UserName, string StatusName)
+        public WHPOListGridRowModel(PurchaseOrder PurchaseOrder, string UserName, string StatusName,string SupplierName)
         {
             cell = new string[6];
             cell[0] = PurchaseOrder.PurchaseOrderID.ToString();
             cell[1] = PurchaseOrder.PurchaseOrderNumber;
-            cell[2] = PurchaseOrder.SupplierName;
+            cell[2] = SupplierName;
             cell[3] = UserName;
             cell[4] = PurchaseOrder.ReleaseDate.ToString("yyyy-MM-dd");
             cell[5] = StatusName;

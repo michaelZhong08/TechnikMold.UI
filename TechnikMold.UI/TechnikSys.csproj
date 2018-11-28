@@ -242,6 +242,7 @@
     <Compile Include="Models\EditModel\TaskHourCostEditModel.cs" />
     <Compile Include="Models\EditModel\UserRoleEditModel.cs" />
     <Compile Include="Models\EditModel\WarehousePositionEditModel.cs" />
+    <Compile Include="Models\Function\ExcelHelper.cs" />
     <Compile Include="Models\GridRowModel\AttachGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\CAMTaskGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\CNCItemGridRowModel.cs" />
@@ -318,7 +319,7 @@
     <Compile Include="Models\Helpers\ProjectStatus.cs" />
     <Compile Include="Models\Helpers\PurchaseOrderStatus.cs" />
     <Compile Include="Models\Helpers\PurchaseRequestStatus.cs" />
-    <Compile Include="Models\Helpers\QuotationRequestStatus.cs" />
+    <Compile Include="Models\Helpers\__QuotationRequestStatus.cs" />
     <Compile Include="Models\Helpers\TaskResponsibleType.cs" />
     <Compile Include="Models\Helpers\TaskStatus.cs" />
     <Compile Include="Models\Helpers\TaskTypeModelHelper.cs" />
@@ -326,6 +327,7 @@
     <Compile Include="Models\ViewModel\EDMItemViewModel.cs" />
     <Compile Include="Models\ViewModel\MGTaskUptVerViewModel.cs" />
     <Compile Include="Models\ViewModel\PartViewForExport.cs" />
+    <Compile Include="Models\ViewModel\PDReportViewModel.cs" />
     <Compile Include="Models\ViewModel\POViewModel.cs" />
     <Compile Include="Models\ViewModel\ProjectPhaseViewModel.cs" />
     <Compile Include="Models\ViewModel\ProjectViewModel.cs" />
@@ -333,6 +335,7 @@
     <Compile Include="Models\ViewModel\Purchase2ViewForExport.cs" />
     <Compile Include="Models\ViewModel\PurchaseTypePOViewModel.cs" />
     <Compile Include="Models\ViewModel\PurchaseViewForExport.cs" />
+    <Compile Include="Models\ViewModel\__QRMailModel.cs" />
     <Compile Include="Models\ViewModel\QRMailTable.cs" />
     <Compile Include="Models\ViewModel\QRQuotationSummaryViewModel.cs" />
     <Compile Include="Models\ViewModel\QRViewModel.cs" />
@@ -372,11 +375,14 @@
     <Content Include="Content\bootstrap-treeview.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\jAlert.css" />
     <Content Include="Content\jquery-ui.css" />
+    <Content Include="Content\layui.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\ui.jqgrid-bootstrap-ui.css" />
     <Content Include="Content\ui.jqgrid-bootstrap.css" />
     <Content Include="Content\ui.jqgrid.css" />
+    <Content Include="DownLoad\setup.exe" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -426,11 +432,15 @@
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="DownLoad\模具系统插件安装程序.msi" />
+    <Content Include="DownLoad\PluginSetup.rar" />
     <None Include="Properties\PublishProfiles\MyMoldWeb.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Scripts\i18n\grid.locale-cn.js" />
     <Content Include="Scripts\i18n\grid.locale-en.js" />
+    <Content Include="Scripts\jAlert-functions.js" />
+    <Content Include="Scripts\jAlert.js" />
     <Content Include="Scripts\JqGridTemplate.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
@@ -444,6 +454,7 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\layer.js" />
     <Content Include="Scripts\List.js" />
     <Content Include="Scripts\locales\bootstrap-datepicker.zh-CN.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
@@ -560,9 +571,11 @@
     <Content Include="Views\Warehouse\WHPOList.cshtml" />
     <Content Include="Views\Warehouse\WHRequestDetail.cshtml" />
     <Content Include="Views\Task\AddMGTask.cshtml" />
+    <Content Include="Views\Purchase\OtherPurItemList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="SysPDFFile\" />
     <Folder Include="Views\Attach\" />
     <Folder Include="Views\WorkHour\" />
   </ItemGroup>

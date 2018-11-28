@@ -83,7 +83,7 @@ $.jgrid.regional["cn"] = {
     },
     view : {
         caption: "查看记录",
-        bClose: "关闭"
+        bClose: "返回"
     },
     del : {
         caption: "删除",

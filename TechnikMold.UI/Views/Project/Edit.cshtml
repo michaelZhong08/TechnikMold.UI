@@ -1,8 +1,15 @@
 ﻿@model MoldManager.WebUI.Models.ViewModel.ProjectViewModel
 @{
     int EditStatus = 10;
-    string _inputState="readonly";@*disabled*@
+    string _inputState = "readonly";
     string _selState = "disabled";
+    int _depID;
+    try
+    {
+        _depID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+
+    }
+    catch { _depID = 0; }
 }
 <script src="~/Scripts/Project.js"></script>
 
@@ -132,7 +139,12 @@ else
                                 <select id="Project.Project.CustomerID"
                                         name="Project.Project.CustomerID"
                                         class="form-control required"
-                                        value="@Model.Project.CustomerID" @_selState></select>
+                                        value="@Model.Project.CustomerID"
+                                        @if (EditStatus!=10)
+                                        {
+                                            @_selState
+                                        }
+                                        ></select>
                                     <input type="hidden" id="Project.Project.CustomerName" name="Project.Project.CustomerName" value="@Model.Project.CustomerName" />
                             }
                             else
@@ -154,8 +166,17 @@ else
                             }
                         </td>
                         <td class="col-sm-4">
-                            <input type="text" class="form-control required" id="Project.Project.Name" maxlength="50"
-                                   name="Project.Project.Name" value="@Model.Project.Name" />
+                            @*新建模具项目 项目名称为 空*@
+                            @if (Model.Project.ProjectID==0 && Model.Project.Type == 1)
+                            {
+                                <input type="text" class="form-control required" id="Project.Project.Name" maxlength="50"
+                                       name="Project.Project.Name" />
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control required" id="Project.Project.Name" maxlength="50"
+                                       name="Project.Project.Name" value="@Model.Project.Name" />
+                            }                           
                         </td>
                         
                     </tr>
@@ -276,7 +297,7 @@ else
                         string _finish = "";
                         if ((Model.Project.Type == 2) && (_phase.Name == "FOT"))
                         {
-                            <td class="col-sm-2"><label>修模</label></td>
+                            <td class="col-sm-2"><label>试模</label></td>
                         }
                         else
                         {
@@ -312,34 +333,42 @@ else
                                     <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
                                            name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="" />
                                 }
-                                @*if (_phase.PhaseID > 12)
-                                {
-                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
-                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish" />
-                                }
-                                else
-                                {
-                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
-                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="" />
-                                }*@
-
                             }
                             // 新模/主项目 计划设置
                             else
                             {
-                                ///Mold projects inherit all milestone from main project
-                                if (_camPhases.Contains(_phase.PhaseID))
+                                if (Model.Project.ProjectID == 0)
                                 {
-                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
-                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value=""
-                                           @_inputState />
+                                    ///Mold projects inherit all milestone from main project
+                                    if (_camPhases.Contains(_phase.PhaseID))
+                                    {
+                                        <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                               name="Project.ProjectPhases[@i].PlanFinish" class="form-control" readonly />
+
+                                    }
+                                    else
+                                    {
+                                        <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                               name="Project.ProjectPhases[@i].PlanFinish" class="form-control" />                                               
+                                    }
                                 }
                                 else
                                 {
-                                    <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
-                                           name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish"
-                                           />
+                                    ///Mold projects inherit all milestone from main project
+                                    if (_camPhases.Contains(_phase.PhaseID))
+                                    {
+                                        <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                               name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish"
+                                               @_inputState />
+                                    }
+                                    else
+                                    {
+                                        <input type="date" id="Project.ProjectPhases[@i].PlanFinish"
+                                               name="Project.ProjectPhases[@i].PlanFinish" class="form-control " value="@_finish"
+                                               @if (_depID != 1) { @_inputState  } />
+                                    }
                                 }
+
                             }
 
                             @*if the project is a mold project, put the main project phase date in background*@
@@ -499,7 +528,6 @@ else
     </script>
 }
 
-
 <div class="modal" data-backdrop="static" data-keyboard="false" id="UserSelect" tabindex="-1" role="dialog" aria-labelledby="EditUserLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -520,7 +548,7 @@ else
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="DefineUser" class="btn btn-primary">确定</button>
             </div>
         </div>

@@ -123,5 +123,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public DbSet<TaskType> TaskTypes { get; set; }
         public DbSet<PhaseTaskType> PhaseTaskTypes { get; set; }
         public DbSet<AttachFileInfo> AttachFileInfos { get; set; }
+        public DbSet<WHPart> WHParts { get; set; }
+        public DbSet<WHStock> WHStocks { get; set; }
     }
 }

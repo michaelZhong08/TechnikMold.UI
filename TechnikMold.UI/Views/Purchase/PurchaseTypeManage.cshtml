@@ -30,49 +30,53 @@
                 <li><button class="btn btn-primary" id="NewType">新建采购类型</button></li>
                 <li><button class="btn btn-warning" id="DeleteType">删除采购类型</button></li>
             </ul>
-        }
-        
+        }     
         <form id="SavePurchaseTypeForm">
             <table class="col-sm-12 table table-striped">
-                @*@using (Html.BeginForm("Save", "Purchase", FormMethod.Post, new { id = "SaveDepartmentForm" }))
-                {*@
+                <tr id="purType_ShortName" hidden>
+                    <td class="col-sm-4"><label>代码</label></td>
+                    <td class="col-sm-8">
+                        <input type="text" id="ShortName" name="ShortName" class="form-control" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-sm-4"><label>名称</label></td>
+                    <td class="col-sm-8">
+                        <input type="text" id="Name" name="Name" class="form-control" />
+                        <input type="hidden" id="PurchaseTypeID" name="PurchaseTypeID" />
+                        <input type="hidden" id="TaskType" name="TaskType" />
+                        <input type="hidden" id="Enabled" name="Enabled" />
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>上级类型</label></td>
+                    <td>
+                        <select id="ParentTypeID" class="form-control" name="ParentTypeID">
+                            <option value="0">-</option>
+                            @foreach (PurchaseType _type in Model)
+                            {
+                                <option value="@_type.PurchaseTypeID">@_type.Name</option>
+                            }
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>默认采购周期（天）</label></td>
+                    <td><input type="number" class="form-control" id="DefaultPeriod" name="DefaultPeriod" min="1" /></td>
+                </tr>
+                <tr id="purType_BelongDep" hidden>
+                    <td colspan="2">
+                        <table id="tb_purType_BelongDep">
+                            @*<tr id="purType_BelongDep">
+                                <td><input type="checkbox" id="TaskType_ELE" class="form-control" /> &nbsp;<label>电极</label></td>
+                            </tr>*@
+                        </table>
+                    </td>
+                </tr>
 
-
-
-                    <tr>
-                        <td class="col-sm-4"><label>名称</label></td>
-                        <td class="col-sm-8">
-                            <input type="text" id="Name" name="Name" class="form-control" />
-                            <input type="hidden" id="PurchaseTypeID" name="PurchaseTypeID" />
-                            <input type="hidden" id="ShortName" name="ShortName" />
-                            <input type="hidden" id="TaskType" name="TaskType" />
-                            <input type="hidden" id="Enabled" name="Enabled" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><label>上级类型</label></td>
-                        <td>
-                            <select id="ParentTypeID" class="form-control" name="ParentTypeID">
-                                <option value="0">-</option>
-                                @foreach (PurchaseType _type in Model)
-                                {
-                                    <option value="@_type.PurchaseTypeID">@_type.Name</option>
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><label>默认采购周期（天）</label></td>
-                        <td><input type="number" class="form-control" id="DefaultPeriod" name="DefaultPeriod" min="1" /></td>
-                    </tr>
-                    <tr></tr>
-
-                @*}*@
-                @*<tr>
-                    <td colspan="2"><button id="SaveType" class="btn btn-primary">保存</button></td>
-                </tr>*@
             </table>
         </form>
+
         @if (_deptID == 4)
         {
         <button id="SaveType" class="btn btn-primary">保存</button>
@@ -115,49 +119,7 @@
                 
             })
         })
-    }
-
-    function LoadPurchaseType() {
-        var _purchaseTypeID = $("#PurchaseTypeList").val();
-        var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+_purchaseTypeID;
-        $.getJSON(_url, function (msg) {
-            $("#PurchaseTypeID").val(msg.PurchaseTypeID);
-            $("#Name").val(msg.Name);
-            $("#ParentTypeID").val(msg.ParentTypeID);
-            $("#DefaultPeriod").val(msg.DefaultPeriod);
-            $("#Enabled").val(msg.Enabled);
-        })
-    }
-
-    function SavePurchaseType() {
-        var _url = "/Purchase/SavePurchaseType";
-        if ($("#Name").val() == "") {
-            alert("类型名称不能为空")
-            return false;
-        }
-        if (($("#DefaultPeriod").val() == "") || (Number($("#DefaultPeriod").val()) <= 0)) {
-            alert("默认采购周期必须大于0");
-            return false;
-        }
-        $.ajax({
-            url: _url,
-            type: "Post",
-            data: $("#SavePurchaseTypeForm").serialize(),
-            success: function (msg) {
-                if (msg == "") {
-                    alert("保存成功")
-                    LoadPurchaseTypeTree();
-                } else {
-                    alert(msg);
-                }
-            }
-        })
-        return false;
-    }
-
-    function ResetForm() {
-        $("#SavePurchaseTypeForm input").val("");
-    }
+    }          
 
     function DeleteType() {
         var _url = "/Purchase/DeletePurchaseType?PurchaseTypeID=";
@@ -183,6 +145,143 @@
             }
         }
 
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        LoadBelongDepChk();
+    });
+
+    function LoadBelongDepChk() {
+        $.get('/Administrator/Service_GetDepartmentJson', function (res) {
+            var _html = '';
+            $.each(res, function (i, n) {
+                var _quyu = Number(i % 6);
+                if (_quyu == 0) {
+                    _html = _html + '<tr>';
+                }
+                _html = _html + '<td><input type="checkbox" id="' + n.DepartmentID + '" /> &nbsp;<label>' + n.Name + '</label></td>';
+                if (_quyu == 5) {
+                    _html = _html + '</tr>';
+                }
+                //console.log(parseInt(i/6));// 取整
+                console.log(_quyu);
+            });
+            $('#tb_purType_BelongDep').append(_html);
+        })
+    }
+
+    function LoadPurchaseType() {
+        ClearFormChkBox();
+        var _purchaseTypeID = $("#PurchaseTypeList").val();
+        var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID=" + _purchaseTypeID;
+        $.getJSON(_url, function (msg) {
+            if (msg.ParentTypeID == 0) {
+                $('#DeleteType').attr('disabled', 'disabled');
+                $('#Name').attr('disabled', 'disabled');
+                $('#ParentTypeID').attr('disabled', 'disabled');
+                $('#purType_BelongDep').hide();
+            } else {
+                $('#DeleteType').removeAttr('disabled');
+                $('#Name').removeAttr('disabled');
+                $('#ParentTypeID').removeAttr('disabled');
+                $('#purType_BelongDep').show();
+
+                var _depArray = msg.DepID.split(',');
+                for (var i = 0; i < _depArray.length; i++) {
+                    if (_depArray[i] != 'all') {
+                        //document.getElementById('TaskType_ELE').checked = false;
+                        var _chk = document.getElementById(_depArray[i]);
+                        if (_chk != null && _chk != undefined)
+                            _chk.checked = true;
+                    } else {
+                        var _allcb = $("#SavePurchaseTypeForm :checkbox");
+                        $.each(_allcb, function (i, n) {
+                            var _id = n.id;
+                            document.getElementById(_id).checked = true;
+                        });
+                        console.log(_depArray[i]);
+                    }
+                }
+            }
+            if (msg.ParentTypeID == 2) {
+                //$('#purType_ShortName').show();
+                $('#ShortName').val(msg.ShortName);
+            } else {
+                $('#purType_ShortName').hide();
+            }
+            $("#PurchaseTypeID").val(msg.PurchaseTypeID);
+            $("#Name").val(msg.Name);
+            $("#ParentTypeID").val(msg.ParentTypeID);
+            $("#DefaultPeriod").val(msg.DefaultPeriod);
+            $("#Enabled").val(msg.Enabled);
+
+            //var _chkedInput = $("input:checked");
+            //var _belongDep = '0';
+            //var _belongDep = '0';
+            //$.each(_chkedInput, function (i, n) {
+            //    //console.log(n.id);
+            //    _belongDep = _belongDep + ',' + n.id;
+            //});
+            //console.log(_belongDep);
+            //console.log($('#Name').val());
+            //console.log($('#ParentTypeID').val());
+            //console.log($('#ShortName').val());
+            //console.log($('#DefaultPeriod').val());
+        })
+    }
+
+    function SavePurchaseType() {
+        var _url = "/Purchase/SavePurchaseType";
+        if ($("#Name").val() == "") {
+            alert("类型名称不能为空")
+            return false;
+        }
+        if (($("#DefaultPeriod").val() == "") || (Number($("#DefaultPeriod").val()) <= 0)) {
+            alert("默认采购周期必须大于0");
+            return false;
+        }
+
+        var _chkedInput = $("input:checked");
+        var _belongDep = '0';
+        $.each(_chkedInput, function (i, n) {
+            //console.log(n.id);
+            _belongDep = _belongDep + ',' + n.id;
+        });
+        var _postData = { 'PurchaseTypeID': $('#PurchaseTypeID').val(), 'Name': $('#Name').val(), 'ParentTypeID': $('#ParentTypeID').val(), 'ShortName': $('#ShortName').val(), 'DefaultPeriod': $('#DefaultPeriod').val(), 'DepID': _belongDep }
+        $.ajax({
+            url: _url,
+            type: "Post",
+            data: _postData,
+            success: function (msg) {
+                if (msg == "") {
+                    alert("保存成功")
+                    LoadPurchaseTypeTree();
+                    ResetForm();
+                } else {
+                    alert(msg);
+                }
+            }
+        })
+        return false;
+    }
+
+    function ResetForm() {
+        $('#DeleteType').removeAttr('disabled');
+        $('#Name').removeAttr('disabled');
+        $('#ParentTypeID').removeAttr('disabled');
+        $("#SavePurchaseTypeForm :input").val("");
+
+        ClearFormChkBox();
+    }
+
+    function ClearFormChkBox() {
+        var _allcb = $("#SavePurchaseTypeForm :checkbox");
+        $.each(_allcb, function (i, n) {
+            var _id = n.id;
+            document.getElementById(_id).checked = false;
+        })
     }
 </script>
 

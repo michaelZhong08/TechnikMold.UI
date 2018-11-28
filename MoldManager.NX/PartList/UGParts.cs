@@ -184,7 +184,7 @@ namespace TechnikSys.MoldManager.NX.PartList
 
         public List<Brand> GetPartBrands()
         {
-            string _url = "/Part/JsonBrands";
+            string _url = "/Administrator/Service_GetBrandsByType?_type=模具材料";
             string _data = _server.ReceiveStream(_url);
             List<Brand> _brands = JsonConvert.DeserializeObject<List<Brand>>(_data);
             return _brands;

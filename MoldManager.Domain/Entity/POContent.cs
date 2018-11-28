@@ -33,6 +33,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public bool Enabled { get; set; }
         public int PurchaseItemID { get; set; }
         public DateTime RequireTime { get; set; }
+        public string unit { get; set; }
 
 
         public POContent()
@@ -64,8 +65,8 @@ namespace TechnikSys.MoldManager.Domain.Entity
             PartSpecification = PurchaseItem.Specification;
             Quantity = PurchaseItem.Quantity;
             PurchaseOrderID = PurchaseItem.PurchaseOrderID;
-            UnitPrice = PurchaseItem.UnitPrice;
-            SubTotal = PurchaseItem.TotalPrice;
+            UnitPrice = PurchaseItem.UnitPriceWT;
+            SubTotal = PurchaseItem.TotalPriceWT;
             BrandName ="";
             Memo = "";
             ReceivedQty = 0;

@@ -24,7 +24,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             }
             else
             {
-                cell[5] = FinishDate.ToString("yyyy-MM-dd hh:mm");
+                cell[5] = FinishDate.ToString("yyyy-MM-dd HH:mm");
             }
             cell[6] = CNCItem.Gap.ToString();
         }

@@ -16,7 +16,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
 
             cell[0] = Task.TaskID.ToString();
             cell[1] = Task.TaskName;
-            cell[2] = Task.StartTime.ToString("yyyy-MM-dd hh:mm");
+            cell[2] = Task.StartTime.ToString("yyyy-MM-dd HH:mm");
             cell[3] = "";
 
         }
@@ -26,7 +26,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell = new string[4];
             cell[0] = Item.CNCItemID.ToString();
             cell[1] = Item.LabelName;
-            cell[2] = Item.CNCStartTime.ToString("yyyy-MM-dd hh:mm");
+            cell[2] = Item.CNCStartTime.ToString("yyyy-MM-dd HH:mm");
             cell[3] = Item.CNCMachine;
         }
     }

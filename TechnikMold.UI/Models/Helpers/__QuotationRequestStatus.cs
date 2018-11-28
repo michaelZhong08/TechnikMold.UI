@@ -5,7 +5,7 @@ using System.Web;
 
 namespace MoldManager.WebUI.Models.Helpers
 {
-    public enum QuotationRequestStatus
+    public enum __QuotationRequestStatus
     {
         新建=1,
         发出=2,

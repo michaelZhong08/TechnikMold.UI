@@ -69,6 +69,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.CostCenterID = PRContent.CostCenterID;
                     _dbEntry.ERPPartID = PRContent.ERPPartID ?? "";
                     _dbEntry.Enabled = PRContent.Enabled;
+                    _dbEntry.unit = PRContent.unit ?? "件";
                 }
             }
             _context.SaveChanges();

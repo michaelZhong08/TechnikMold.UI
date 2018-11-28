@@ -43,6 +43,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int CostCenterID { get; set; }
         public int ProcedureType { get; set; }
         public string AttachObjID { get; set; }
+        public string unit { get; set; }
 
 
         public PurchaseItem()

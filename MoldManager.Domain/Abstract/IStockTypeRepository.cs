@@ -11,12 +11,13 @@ namespace TechnikSys.MoldManager.Domain.Abstract
     {
         IEnumerable<StockType> StockTypes { get; }
 
-        int Save(string Name);
+        int Save(StockType model);
 
         StockType QueryByID(int StockTypeID);
 
         StockType QueryByName(string Name);
 
         void Delete(int StockTypeID);
+        List<StockType> GetTypeList(string Parent);
     }
 }

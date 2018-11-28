@@ -24,5 +24,8 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         decimal GetTotalHourByTaskID(int TaskID);
         string GetOperaterByTaskID(int TaskID);
         string GetMachineByTask(int TaskID);
+        TaskHour GetCurTHBySemiTaskFlag(string SemiTaskFlag);
+        string GetOperaterBySemiTaskFlag(string SemiTaskFlag);
+        string GetMachineBySemiTaskFlag(string SemiTaskFlag);
     }
 }

@@ -44,6 +44,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         
         public bool IsPublish { get; set; }
 
+        public string Creator { get; set; }
         public Project()
         {
             ProjectID=0;
@@ -64,7 +65,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             FinishTime=new DateTime(1900,1,1);
             FixMoldType="";
             MainPhaseChange=false;
-
+            Creator = "";
         }
     }
 }

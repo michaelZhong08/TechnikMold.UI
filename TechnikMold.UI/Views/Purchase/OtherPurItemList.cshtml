@@ -1,0 +1,209 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    int DeptID;
+    try
+    {
+        DeptID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+}
+<div style="margin-top:60px">
+    <h2>@ViewBag.Title</h2>
+    <div class="col-sm-2">
+        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
+        <select class="form-control" id="MoldSelect" size="20"></select>
+    </div>
+    <div class="col-sm-10">
+
+        <div class="col-sm-2">
+            <select id="ChargePurType" class="form-control">
+                <option value="2">模具耗材</option>
+                <option value="4">固定资产</option>
+            </select>
+        </div>
+
+        <div class="col-sm-2">
+            <select id="PurchaseType" class="form-control"></select>
+        </div>
+
+        <div class="col-sm-3">
+            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" />
+        </div>
+
+
+        <input type="hidden" id="MoldNumber" />
+        <input type="hidden" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID"/>
+        <input type="hidden" id="PurchaseTypeName" value="@ViewBag.PurchaseTypeName"/>
+
+        <button class="btn btn-primary" id="Query">查询</button>
+
+        @if (DeptID == 4)
+        {
+
+            <button class="btn btn-primary" id="Quotation">开始询价</button>
+
+
+            <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
+
+        }
+        <div class="col-sm-11" style="float:left;">
+            <table id="PurchaseItemGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+
+<script>
+    $("document").ready(function () {
+        LoadPurchaseType();
+        LoadMoldNumber("");
+        PurchaseItem("", "", 30, 2);
+
+        var _listsize = Math.round((document.documentElement.clientHeight-210) / 18);
+        $("#MoldSelect").attr("size", _listsize);
+
+        $("#RefreshMold").on("click", function () {
+            LoadMoldNumber("",$("#MoldSelect").val());
+        })
+
+        $("#Keyword").on("keyup", function () {
+            LoadMoldNumber($("#Keyword").val());
+        })
+
+        $("#MoldSelect").on("change", function () {
+            $("#MoldNumber").val($("#MoldSelect option:selected").val());
+            QueryOtherPurItem("", $("#MoldNumber").val(), $("#PurchaseType").val());
+        })
+
+        $("#Query").on("click", function () {
+            QueryOtherPurItem($("#ItemKeyword").val(), $("#MoldNumber").val(), $("#PurchaseType").val());
+        })
+
+        $("#PurchaseType").on("change", function () {
+            var _purchaseTypeID = $('#PurchaseType').val();
+            var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID=" + _purchaseTypeID;
+            $.getJSON(_url, function (msg) {
+                if (msg.ParentTypeID == 0) {
+                    $('#PruchaseOrder').attr('disabled', 'disabled');
+                } else {
+                    $('#PruchaseOrder').removeAttr('disabled');
+                }
+            });
+            QueryOtherPurItem("", "", $("#PurchaseType").val());
+        })
+
+        $("#Quotation").on("click", function () {
+            StartQuotation();
+        })
+
+        $("#PruchaseOrder").on("click", function () {
+            var _ids = GetMultiSelectedIDs("PurchaseItemGrid");
+
+            var _url = "/Purchase/SelectPOContent?";
+            var _condition = ""
+
+            if ($("#ItemKeyword").val() == "") {
+                _condition = "Keyword=" + $("#MoldSelect").val() + "&PurchaseType=" + $("#PurchaseType").val() + "&PurchaseItemIDs=" + _ids;
+            } else {
+                _condition = "Keyword=" + $("#ItemKeyword").val() + "&PurchaseType=" + $("#PurchaseType").val() + "&PurchaseItemIDs=" + _ids;
+            }
+            _url = _url + _condition;
+            location.href = _url;
+        })
+
+        $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
+        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+
+
+        $('#ChargePurType').on('change', function () {
+            var _typeID = $('#ChargePurType option:selected').val();
+            var _typeName = $('#ChargePurType option:selected').text();
+            $('#PurchaseTypeID').val(_typeID);
+            $('#PurchaseTypeName').val(_typeName);
+            $('#MoldSelect').empty();
+
+            //alert($('#PurchaseTypeID').val());
+            setTimeout('LoadMoldNumber()', 500);
+            setTimeout('LoadPurchaseType()', 500);
+            setTimeout('QueryOtherPurItem("","",' + _typeID + ')', 500);
+        })
+    })
+
+    function LoadPurchaseType() {
+        var _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&TypeName="+$('#PurchaseTypeName').val();
+        $("#PurchaseType option").remove();
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                var _name = n.Name;
+                var _html;
+                if (n.ParentTypeID > 0) {
+                    _name = '&nbsp;&nbsp;&nbsp;&nbsp;' + _name;
+                }
+                _html = '<option value="' + n.PurchaseTypeID + '">' + _name + '</option>';
+                $('#PurchaseType').append(_html);
+                //$("#PurchaseType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+            })
+        })
+    }
+
+
+    function LoadMoldNumber(Keyword, MoldNumber, PurchaseType) {
+        if (PurchaseType == undefined)
+            PurchaseType = $('#PurchaseTypeID').val();
+        var _url = "/Purchase/JsonMoldNumber?State=@ViewBag.State&Keyword=" + $("#Keyword").val() + "&PurchaseType=" + $('#PurchaseTypeID').val();
+
+        if (Keyword != "" && Keyword != undefined) {
+            _url = _url + "?Keyword=" + Keyword;
+        }
+        $("#MoldSelect option").remove();
+
+        $.getJSON(_url, function (msg) {
+            if (msg.length > 0) {
+                $("#MoldSelect").append($("<option/>", {
+                    value: "ALL",
+                    text: "ALL"
+                }))
+            }
+            $.each(msg, function (i, n) {
+                if (MoldNumber == n) {
+                    $("#MoldSelect").append($("<option/>", {
+                        value: n,
+                        text: n,
+                        selected:true
+                    }))
+                } else {
+                    $("#MoldSelect").append($("<option/>", {
+                        value: n,
+                        text: n
+                    }))
+                }
+
+            })
+
+        })
+    }
+
+    function QueryOtherPurItem(Keyword, MoldNumber, PurchaseType) {
+
+        var _url = "/Purchase/JsonPurchaseItems?MoldNumber=" + $("#MoldNumber").val() +
+            "&Keyword=" + Keyword +
+            "&PurchaseType=" + PurchaseType +
+            "&State=30";
+        $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+
+    function StartQuotation() {
+        var ids = GetMultiSelectedIDs("PurchaseItemGrid");
+        location.href = "/Purchase/QRDetail?PurchaseItemIDs=" + ids;
+    }
+
+</script>
+

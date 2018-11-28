@@ -53,5 +53,9 @@ namespace TechnikSys.MoldManager.Domain.Entity
         /// </summary>
         public int Qty { get; set; }
         public decimal Cost { get; set; }
+        /// <summary>
+        /// 子任务标记(电极标签列表)
+        /// </summary>
+        public string SemiTaskFlag { get; set; }
     }
 }

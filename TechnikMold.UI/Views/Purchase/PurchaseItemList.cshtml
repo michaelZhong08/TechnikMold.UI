@@ -23,8 +23,8 @@
                 <select id="PurchaseType" class="form-control"></select>
             </div>
         }
-        <div class="col-sm-2">
-            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项关键字" />
+        <div class="col-sm-3">
+            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" />
         </div>
          <input type="hidden" id="MoldNumber" />
  
@@ -35,8 +35,8 @@
      
              <button class="btn btn-primary" id="Quotation">开始询价</button>
      
-     
-             <button class="btn btn-primary" id="PruchaseOrder">创建订单</button>
+    
+             <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
      
          }
         <div class="col-sm-11" style="float:left;">
@@ -85,6 +85,15 @@
         })
 
         $("#PurchaseType").on("change", function(){
+            var _purchaseTypeID = $('#PurchaseType').val();
+            var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+_purchaseTypeID;
+            $.getJSON(_url, function (msg) {
+                if (msg.ParentTypeID == 0) {
+                    $('#PruchaseOrder').attr('disabled', 'disabled');
+                } else {
+                    $('#PruchaseOrder').removeAttr('disabled');
+                }
+            });
             QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
         })
 
@@ -116,6 +125,12 @@
         $("#MoldSelect option").remove();
 
         $.getJSON(_url, function (msg) {
+            if(msg.length>0){
+                $("#MoldSelect").append($("<option/>",{
+                    value:"ALL",
+                    text:"ALL"
+                }))
+            }
             $.each(msg, function (i, n) {
                 $("#MoldSelect").append($("<option/>",{
                     value:n,
@@ -162,12 +177,17 @@
     function LoadPurchaseType() {
         var _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&TypeName=模具直接材料";
         $("#PurchaseType option").remove();
-        //$("#PurchaseType").append($("<option/>", { value: 3, text: "零件采购", selected:true }));
         $.getJSON(_url, function (msg) {
             $.each(msg, function (i, n) {
-                $("#PurchaseType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+                var _name=n.Name;
+                var _html;
+                if(n.ParentTypeID>0){
+                    _name='&nbsp;&nbsp;&nbsp;&nbsp;'+_name;
+                }
+                _html='<option value="'+n.PurchaseTypeID+'">'+_name+'</option>';
+                //$("#PurchaseType").append($("<option/>", { value: n.PurchaseTypeID, text: _name}));
+                $('#PurchaseType').append(_html);
             })
         })
     }
 </script>
-

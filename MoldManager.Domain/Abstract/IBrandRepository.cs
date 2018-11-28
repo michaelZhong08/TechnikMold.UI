@@ -27,5 +27,7 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         Brand QueryByID(int BrandID);
 
         int Delete(int BrandID);
+        IQueryable<Brand> QueryAll();
+        IQueryable<Brand> QueryByType(string _type);
     }
 }

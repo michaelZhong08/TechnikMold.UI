@@ -92,7 +92,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             }
             else
             {
-                _suppliers = _context.Suppliers.OrderBy(s=>s.SupplierID).ToList();
+                _suppliers = _context.Suppliers.Where(s => s.Enabled == true).OrderBy(s=>s.SupplierID).ToList();
             }
             return _suppliers;
         }

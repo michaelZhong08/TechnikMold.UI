@@ -418,7 +418,7 @@ function LoadBrands() {
         value: 0,
         text: "-"
     }))
-    $.getJSON("/Part/JsonBrands", function (msg) {
+    $.getJSON("/Administrator/Service_GetBrandsByType?_type=模具材料", function (msg) {
         $.each(msg, function (i, n) {
             $("#BrandID").append($("<option/>", {
                 value: n.BrandID,

@@ -538,10 +538,14 @@ function DeleteProject() {
                     url: "/Project/DeleteProject?" + _data,
                     error: function () { },
                     success: function (msg) {
-                        alert("项目已删除");
-                        $("#DeleteProjectDialog").modal("hide");
-                        $("#ProjectGrid").jqGrid().trigger("reloadGrid");
-                        $("#DeleteMemo").val("");
+                        if (msg == 1) {
+                            alert("项目已删除");
+                            $("#DeleteProjectDialog").modal("hide");
+                            $("#ProjectGrid").jqGrid().trigger("reloadGrid");
+                            $("#DeleteMemo").val("");
+                        } else {
+                            alert("仅管理部门和项目创建者可以删除项目！");
+                        }
                     }
                 })
             } else {

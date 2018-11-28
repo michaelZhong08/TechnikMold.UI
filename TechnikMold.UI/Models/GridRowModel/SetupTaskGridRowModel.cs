@@ -13,7 +13,7 @@ namespace TechnikMold.UI.Models.GridRowModel
         public string[] cell;
         public SetupTaskGridRowModel(SetupTaskStart _setupTask)
         {
-            cell = new string[9];
+            cell = new string[13];
             cell[0] = _setupTask.TaskID.ToString();
             cell[1] = _setupTask.TaskName.ToString();
             cell[2] = _setupTask.State; //Enum.GetName(typeof(CNCStatus), _task.State) ?? "-";
@@ -23,6 +23,11 @@ namespace TechnikMold.UI.Models.GridRowModel
             cell[6] = _setupTask.UserID.ToString();
             cell[7] = _setupTask.Qty.ToString();
             cell[8] = _setupTask.TotalTime.ToString();
+
+            cell[9] = _setupTask.StartTime.ToString("yyyy/MM/dd HH:mm:ss");
+            cell[10] = _setupTask.FinishTime.ToString("yyyy/MM/dd HH:mm:ss");
+            cell[11] = _setupTask.SemiTaskFlag;
+            cell[12] = _setupTask.TaskHourID.ToString();
         }
     }
 }

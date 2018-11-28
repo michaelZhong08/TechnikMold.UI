@@ -14,5 +14,6 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         string GetConfigValue(string Name);
 
         int Save(string Name, string Value);
+        string GetValueByName(string _configName);
     }
 }

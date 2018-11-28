@@ -20,5 +20,9 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int BrandID { get; set; }
         public string Name { get; set; }
         public bool Enabled { get; set; }
+        /// <summary>
+        /// 模具材料;生产耗材
+        /// </summary>
+        public string Type { get; set; }
     }
 }

@@ -77,27 +77,28 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[11] = Task.Time.ToString();
             //状态
             string stateName;
-            switch (Task.TaskType)
-            {
-                case 1:
-                    stateName = Enum.GetName(typeof(TechnikSys.MoldManager.Domain.Status.TaskStatus), Task.State);
-                    break;
-                case 2:
-                    stateName = Enum.GetName(typeof(EDMStatus), Task.State);
-                    break;
-                case 3:
-                    stateName = Enum.GetName(typeof(WEDMStatus), Task.State);
-                    break;
-                case 4:
-                    stateName = Enum.GetName(typeof(SteelStatus), Task.State);
-                    break;
-                case 6:
-                    stateName = Enum.GetName(typeof(GrindStatus), Task.State);
-                    break;
-                default:
-                    stateName = "";
-                    break;
-            }
+            //switch (Task.TaskType)
+            //{
+            //    case 1:
+            //        stateName = Enum.GetName(typeof(TechnikSys.MoldManager.Domain.Status.TaskStatus), Task.State);
+            //        break;
+            //    case 2:
+            //        stateName = Enum.GetName(typeof(EDMStatus), Task.State);
+            //        break;
+            //    case 3:
+            //        stateName = Enum.GetName(typeof(WEDMStatus), Task.State);
+            //        break;
+            //    case 4:
+            //        stateName = Enum.GetName(typeof(SteelStatus), Task.State);
+            //        break;
+            //    case 6:
+            //        stateName = Enum.GetName(typeof(GrindStatus), Task.State);
+            //        break;
+            //    default:
+            //        stateName = "";
+            //        break;
+            //}
+            stateName = Enum.GetName(typeof(TechnikSys.MoldManager.Domain.Status.TaskStatus), Task.State);
             cell[12] = stateName;
             //状态备注
             cell[13] = Task.StateMemo;

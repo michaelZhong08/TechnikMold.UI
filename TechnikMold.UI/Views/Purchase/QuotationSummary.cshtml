@@ -20,9 +20,9 @@
                     <td class="col-sm-2"><label>选择供应商</label></td>
                     <td class="col-sm-4">
                         <select id="AssignedSupplier" name="SupplierName" class="form-control">
-                            @foreach (Supplier _supplier in Model.Suppliers)
+                            @foreach (SupplierGroup _supplierGroup in Model.SupplierGroups)
                             {
-                                <option value="@_supplier.SupplierID">@_supplier.Name</option>
+                                <option value="@_supplierGroup.ID">@_supplierGroup.GroupName</option>
                             }
                         </select>
                     </td>
@@ -48,12 +48,12 @@
                         <td class="col-sm-1" rowspan="2"><label>零件号</label></td>
                         <td class="col-sm-1" rowspan="2"><label>规格</label></td>
                         <td rowspan="2"><label>数量</label></td>
-                        @foreach (Supplier _supplier in Model.Suppliers)
+                        @foreach (SupplierGroup _supplierGroup in Model.SupplierGroups)
                         {
-                            QRSupplier _qrSupplier = Model.QRSuppliers.Where(p => p.SupplierID == _supplier.SupplierID).FirstOrDefault();
+                            QRSupplier _qrSupplier = Model.QRSuppliers.Where(p => p.SupplierID == _supplierGroup.ID).FirstOrDefault();
                             <td colspan="3">
 
-                                <label>@_supplier.Name</label>
+                                <label>@_supplierGroup.GroupName</label>
                                 @if (_qrSupplier.QuotationDate.ToString("yyyy-MM-dd") != "0001-01-01") { 
                                 <p>
                                     报价日期:@_qrSupplier.QuotationDate.ToString("yyyy-MM-dd")
@@ -65,12 +65,11 @@
                                 {
                                     <p>未报价</p>
                                 }
-                            </td>
-                            
+                            </td>                           
                         }
                     </tr>
                     <tr>
-                        @foreach (Supplier _supplier in Model.Suppliers)
+                        @foreach (SupplierGroup _supplierGroup in Model.SupplierGroups)
                         {
                         <td><label>未税总价</label></td>
                             <td><label>含税总价</label></td>
@@ -98,14 +97,14 @@
                             <td>@_content.PartNumber</td>
                             <td>@_content.PartSpecification</td>
                             <td>@_content.Quantity</td>
-                            @foreach (Supplier _supplier in Model.Suppliers)
+                            @foreach (SupplierGroup _supplierGroup in Model.SupplierGroups)
                             {
-                                QRQuotation _quotation = Model.Quotations.Where(q => q.QRContentID == _content.QRContentID).Where(q => q.SupplierID == _supplier.SupplierID).FirstOrDefault();
+                                QRQuotation _quotation = Model.Quotations.Where(q => q.QRContentID == _content.QRContentID).Where(q => q.SupplierID == _supplierGroup.ID).FirstOrDefault();
 
                                 if ((_quotation != null)&&(_quotation.UnitPrice>0))
                                 {
                                     <td>@_quotation.TotalPrice</td>
-                                    <td><span id="@_supplier.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPriceWT</span></td>
+                                    <td><span id="@_supplierGroup.ID-@_content.PurchaseItemID">@_quotation.TotalPriceWT</span></td>
                                     <td>@_quotation.ShipDate.ToString("yyyy-MM-dd")</td>
 
                                 }
@@ -122,17 +121,17 @@
                     <tr>
                         
                         <td colspan="5"><label>总价</label></td>
-                        @foreach (Supplier _supplier in Model.Suppliers)
+                        @foreach (SupplierGroup _supplierGroup in Model.SupplierGroups)
                         {
-                            double _total = @Model.Quotations.Where(q => q.SupplierID == _supplier.SupplierID).Where(q=>q.UnitPrice>0).Sum(q => q.TotalPriceWT);
+                            double _total = @Model.Quotations.Where(q => q.SupplierID == _supplierGroup.ID).Where(q=>q.UnitPrice>0).Sum(q => q.TotalPriceWT);
                             <td colspan="3">
                                 @if (_total == 0)
                                 {
-                                    <p id="@_supplier.SupplierID">NA</p>
+                                    <p id="@_supplierGroup.ID">NA</p>
                                 }
                                 else
                                 {
-                                    <p id="@_supplier.SupplierID">@_total</p>
+                                    <p id="@_supplierGroup.ID">@_total</p>
                                 }
                                 </td>
 
@@ -178,7 +177,7 @@
                 }
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="ConfirmSupplier" class="btn btn-primary">确定</button>
             </div>
         </div>

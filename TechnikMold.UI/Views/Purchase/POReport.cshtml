@@ -10,14 +10,6 @@
 <div style="margin-top:60px">
 
     <div class="col-sm-12">
-        @*<table>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </table>*@
         <h2>订单记录查询</h2>
         <ul class="nav nav-pills">
             <li><label>开始日期</label></li>
@@ -29,6 +21,7 @@
                 <input type="date" id="EndDate" class="form-control"/>
             </li>
             <li><button class="btn btn-primary" id="GetReport">查询</button></li>
+            <li><button class="btn btn-info" id="CatchPDReport">导出</button></li>
         </ul>
 
         <table id="POReport"></table>
@@ -46,7 +39,7 @@
             if (($("#StartDate").val() == undefined) || ($("#StartDate").val() == '')) {
                 alert("请选择开始日期");
                 return false;
-            } else {                
+            } else {
                 startdate = $("#StartDate").val();
                 _url = _url + "?StartDate=" + startdate;
             }
@@ -58,6 +51,26 @@
             _url = _url + "&EndDate=" + enddate;
             $("#POReport").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
         })
+
+        $('#CatchPDReport').on('click', function () {
+            var startdate = '';
+            var enddate = ''
+            var _url = "@Url.Action("Service_CatchPDExcel", "Purchase")";
+            if (($("#StartDate").val() == undefined) || ($("#StartDate").val() == '')) {
+                alert("请选择开始日期");
+                return false;
+            } else {
+                startdate = $("#StartDate").val();
+                _url = _url + "?StartDate=" + startdate;
+            }
+            if (($("#EndDate").val() == undefined) || ($("#EndDate").val() == '')) {
+                enddate = '';
+            } else {
+                enddate = $("#EndDate").val();
+            }
+            _url = _url + "&EndDate=" + enddate;
+            location.href = _url;
+        })
     })
-    
+
 </script>

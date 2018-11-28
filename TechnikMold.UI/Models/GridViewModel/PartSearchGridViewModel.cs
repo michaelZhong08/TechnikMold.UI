@@ -15,9 +15,9 @@ namespace TechnikMold.UI.Models.GridViewModel
         public int Page;
         public int Total;
         public int Records;
-        public PartSearchGridViewModel(List<Part> _parts)
+        public PartSearchGridViewModel(List<PurchaseItem> _items)
         {
-            foreach(var p in _parts)
+            foreach(var p in _items)
             {
                 rows.Add(new PartSearchGridRowModel(p));
             }

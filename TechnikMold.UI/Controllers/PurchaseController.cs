@@ -22,6 +22,9 @@ using System.Configuration;
 using TechnikSys.MoldManager.UI.Models.ViewModel;
 using TechnikMold.UI.Models;
 using TechnikMold.UI.Models.ViewModel;
+using TechnikMold.UI.Models.Function;
+using Newtonsoft.Json;
+using TechnikSys.MoldManager.Domain.WebServiceModel;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -60,6 +63,11 @@ namespace MoldManager.WebUI.Controllers
         private ITaskHourRepository _taskHourRepository;
         private IMachinesInfoRepository _machinesinfoRepository;
         private ISupplierGroupRepository _supplierGroupRepository;
+        private IQuotationFileRepository _quotationFileRepository;
+        private IStockTypeRepository _stockTypeRepository;
+        private IWHPartRepository _whPartRepository;
+        private IAttachFileInfoRepository _attachRepository;
+        private ISystemConfigRepository _sysConfigRepository;
         #endregion
         #region 构造
         public PurchaseController(IPartRepository PartRepository,
@@ -92,7 +100,12 @@ namespace MoldManager.WebUI.Controllers
             IPartListRepository partListRepository,
             ITaskHourRepository taskHourRepository,
             IMachinesInfoRepository MachinesInfoRepository,
-            ISupplierGroupRepository SupplierGroupRepository)
+            ISupplierGroupRepository SupplierGroupRepository,
+            IQuotationFileRepository QuotationFileRepository,
+            IStockTypeRepository StockTypeRepository,
+            IWHPartRepository WHPartRepository,
+            IAttachFileInfoRepository AttachRepository,
+            ISystemConfigRepository SysConfigRepository)
         {
             _partRepository = PartRepository;
             _prContentRepository = PRContentRepository;
@@ -126,6 +139,11 @@ namespace MoldManager.WebUI.Controllers
             _taskHourRepository = taskHourRepository;
             _machinesinfoRepository = MachinesInfoRepository;
             _supplierGroupRepository = SupplierGroupRepository;
+            _quotationFileRepository = QuotationFileRepository;
+            _stockTypeRepository = StockTypeRepository;
+            _whPartRepository = WHPartRepository;
+            _attachRepository = AttachRepository;
+            _sysConfigRepository = SysConfigRepository;
         }
         #endregion
 
@@ -321,7 +339,7 @@ namespace MoldManager.WebUI.Controllers
         [HttpPost]
         public string AccsetupTaskData(List<SetupTaskStart> _viewmodel)
         {
-            if (Session["setupTask"] == null)
+            if (Session["setupTask"] != null)
                 Session["setupTask"] = null;
             if (_viewmodel.Count > 0)
                 Session["setupTask"] = _viewmodel;
@@ -392,26 +410,29 @@ namespace MoldManager.WebUI.Controllers
 
         public ActionResult QuotationSummary(int QuotationRequestID)
         {
-            List<Supplier> _suppliers = new List<Supplier>();
+            List<SupplierGroup> _SupplierGroups = new List<SupplierGroup>();
             int _state = _quotationRequestRepository.GetByID(QuotationRequestID).State;
             IEnumerable<QRSupplier> _prSuppliers = _qrSupplierRepository.QueryByQRID(QuotationRequestID);
-            foreach (QRSupplier _supplier in _prSuppliers)
+            foreach (QRSupplier _qrsupplier in _prSuppliers)
             {
-                _suppliers.Add(_supplierRepository.QueryByID(_supplier.SupplierID));
+                SupplierGroup _suppliergroup = _supplierGroupRepository.QueryByID(_qrsupplier.SupplierID);
+                if (_suppliergroup != null)
+                {
+                    _SupplierGroups.Add(_suppliergroup);
+                }               
             }
 
             IEnumerable<QRContent> _qrContents = _qrContentRepository.QueryByQRID(QuotationRequestID).OrderBy(q => q.SupplierID);
             IEnumerable<QRQuotation> _qrQuotations = _qrQuotationRepository.QueryByQRID(QuotationRequestID);
-            QRQuotationSummaryViewModel _viewModel = new QRQuotationSummaryViewModel(QuotationRequestID, _state, _qrContents, _qrQuotations, _suppliers, _prSuppliers);
+            QRQuotationSummaryViewModel _viewModel = new QRQuotationSummaryViewModel(QuotationRequestID, _state, _qrContents, _qrQuotations, _SupplierGroups, _prSuppliers);
             return View(_viewModel);
         }
 
         #endregion
 
         #region HttpPost Actions
-
-
         /// <summary>
+        /// TODO:保存PR单
         /// Stage 1:Create/Update PR
         /// 1. Create the purchase request(PR) 
         /// 2. Create purchase request contents
@@ -514,8 +535,6 @@ namespace MoldManager.WebUI.Controllers
 
                 int _itemID = _purchaseItemRepository.Save(_item);
 
-
-
                 _content.PurchaseItemID = _itemID;
 
                 if (_content.PartNumber == null)
@@ -533,21 +552,130 @@ namespace MoldManager.WebUI.Controllers
                     _taskRepository.OutSource(_content.TaskID);
                     Task _task = _taskRepository.QueryByTaskID(_content.TaskID);
                     DateTime _iniTime = DateTime.Parse("1900/1/1");
+
+                    #region 创建外发零件至零件表
+                    WHPart _tpart = _whPartRepository.GetPart(_content.PartNumber);
+                    if (_tpart == null)
+                    {
+                        Task _task1 = _taskRepository.QueryByTaskID(_content.TaskID);
+                        WHPart _part = new WHPart()
+                        {
+                            PartNum = _content.PartNumber,
+                            PartName = _content.PartName,
+                            Specification = _content.PartSpecification,
+                            SafeQuantity = _task1.Quantity,
+                            Materials = _content.MaterialName,
+                            StockTypes = "0",
+                            PurchaseType = _content.PurchaseTypeID.ToString(),
+                            MoldNumber = _content.MoldNumber,
+                            Enable = true,
+                            CreateUserID = Convert.ToInt32(Request.Cookies["User"]["UserID"]),
+                            CreDate = DateTime.Now,
+                            PartID=0,
+                            TaskID=_content.TaskID,
+                            PlanQty=_content.PlanQty,
+                        };
+                        _whPartRepository.Save(_part);
+                    }                   
+                    #endregion
                     #endregion
                 }
                 if (_content.PartID > 0)
                 {
+                    #region PartList零件
                     Part _part = _partRepository.QueryByID(_content.PartID);
                     _part.InPurchase = true;
                     //零件上锁 michael
                     _part.Locked = true;
                     _partRepository.Save(_part);
+
+                    #region 创建模具零件至零件表
+                    WHPart _tpart = _whPartRepository.WHParts.Where(p=>p.PartID==_content.PartID).FirstOrDefault();
+                    if (_tpart == null)
+                    {
+                        Part _part1 = _partRepository.QueryByID(_content.PartID);
+                        WHPart _part2 = new WHPart()
+                        {
+                            PartNum = _content.PartNumber,
+                            PartName = _content.PartName,
+                            Specification = _content.PartSpecification,
+                            SafeQuantity = _part1.Quantity,
+                            Materials = _content.MaterialName,
+                            StockTypes = "0",
+                            PurchaseType = _content.PurchaseTypeID.ToString(),
+                            MoldNumber = _content.MoldNumber,
+                            Enable = true,
+                            CreateUserID = Convert.ToInt32(Request.Cookies["User"]["UserID"]),
+                            CreDate = DateTime.Now,
+                            PartID = _part1.PartID,
+                            PlanQty = _content.PlanQty,
+                        };
+                        _whPartRepository.Save(_part2);
+                    }
+                    #endregion
+                    #endregion
                 }
 
                 if (_content.SupplierName == null)
                 {
                     _content.SupplierName = "";
                 }
+                #region 新建备库零件
+                StockType _stockType = _stockTypeRepository.StockTypes.Where(s => s.Code == _content.MoldNumber).FirstOrDefault() ?? new StockType();
+                if (_stockType != null)
+                {
+                    //string _supname = _item.SupplierName == null ? "" : _item.SupplierName;
+                    //WarehouseStock _warehouseStockPre = _warehouseStockRepository.QueryByMoldNumber(_content.MoldNumber).LastOrDefault();
+                    //WarehouseStock _warehouseStockCur = _warehouseStockRepository.WarehouseStocks.Where(s => s.MaterialNumber == _content.PartNumber).FirstOrDefault();
+                    WHPart _whpartPre = _whPartRepository.GetPartsByMold(_content.MoldNumber).LastOrDefault();
+                    WHPart _whpartCur = _whPartRepository.GetPart(_content.PartNumber);
+                    if (_whpartCur == null)
+                    {
+                        //Supplier _supplier = _supplierRepository.QueryByID(SupplierID) ?? new TechnikSys.MoldManager.Domain.Entity.Supplier();//Suppliers.Where(s => s.Name == _supname).FirstOrDefault() ?? new TechnikSys.MoldManager.Domain.Entity.Supplier();
+                        int SafeQuantity = 0;
+                        if (_whpartPre != null)
+                        {
+                            SafeQuantity = _whpartPre.SafeQuantity;
+                        }
+
+                        //WarehouseStock _warehouseStock = new WarehouseStock()
+                        //{
+                        //    WarehouseStockID = 0,
+                        //    Name = _content.PartName,
+                        //    Specification = _content.PartSpecification,
+                        //    SafeQuantity = SafeQuantity,
+                        //    MaterialNumber = _content.PartNumber,
+                        //    Material = _content.MaterialName,
+                        //    Enabled = true,
+                        //    SupplierID = _supplier.SupplierID,
+                        //    SupplierName = _supplier.Name,
+                        //    PurchaseItemID = _itemID,
+                        //    PurchaseType = PurchaseType,
+                        //    MoldNumber = _content.MoldNumber,
+                        //    StockType = _stockType.StockTypeID,
+                        //    InStockTime = new DateTime(1900, 1, 1),
+                        //};
+                        //_warehouseStockRepository.Save(_warehouseStock);
+                        WHPart _part = new WHPart()
+                        {
+                            PartNum = _content.PartNumber,
+                            PartName = _content.PartName,
+                            Specification = _content.PartSpecification,
+                            SafeQuantity= SafeQuantity,
+                            Materials=_content.MaterialName,
+                            StockTypes= _stockType.StockTypeID.ToString(),
+                            PurchaseType=_content.PurchaseTypeID.ToString(),
+                            MoldNumber= _content.MoldNumber,
+                            Enable=true,
+                            CreateUserID= Convert.ToInt32(Request.Cookies["User"]["UserID"]),
+                            CreDate = DateTime.Now,
+                            PartID = 0,
+                            PlanQty = _content.PlanQty,
+                        };
+                        _whPartRepository.Save(_part);
+                    }                    
+                }
+                #endregion
                 _prContentRepository.Save(_content);
             }
             #endregion
@@ -560,9 +688,21 @@ namespace MoldManager.WebUI.Controllers
             }
             #endregion
             return _requestID;
-
         }
 
+        public string Service_GetBKJonNo(string _bkClass="")
+        {
+            WarehouseStock _warehouseStockPre = _warehouseStockRepository.QueryByMoldNumber(_bkClass).LastOrDefault();
+            if (_warehouseStockPre != null)
+            {
+                string _moldNum = _warehouseStockPre.MaterialNumber;
+                int _partNumInt = Convert.ToInt32(_moldNum.Substring(_moldNum.Length - 3, 3))+1;
+                string _str = "000" + _partNumInt.ToString();
+                string _partNumStr = "Z" + _str.Substring(_str.Length - 3, 3);
+                return _partNumStr;
+            }
+            return "Z001";
+        }
         /// <summary>
         /// Stage 2: Purchase request accept
         /// Set the responsible user for the request 
@@ -924,7 +1064,7 @@ namespace MoldManager.WebUI.Controllers
                     else
                         _task.Memo = "外发";
                 }
-                PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_taskList, _viewmodel, _projectPhaseRepository, _steelDrawingRepository,_taskRepository );
+                PurchaseContentGridViewModel _model = new PurchaseContentGridViewModel(_taskList, _viewmodel, _projectPhaseRepository, _steelDrawingRepository,_taskRepository,_whPartRepository);
                return Json(_model, JsonRequestBehavior.AllowGet);
             }
             else
@@ -1056,6 +1196,30 @@ namespace MoldManager.WebUI.Controllers
             return Json(_Supplier.OrderBy(s => s.Name), JsonRequestBehavior.AllowGet);
         }
 
+        public JsonResult Service_GetSupplierGroup(int QuotationRequestID = 0)
+        {
+            List<SupplierGroup> _suppliergroups = _supplierGroupRepository.QuerySGList();
+            if (QuotationRequestID > 0)
+            {
+                IEnumerable<QRSupplier> _qrSuppliers = _qrSupplierRepository.QueryByQRID(QuotationRequestID);
+                foreach (QRSupplier _qrSupplier in _qrSuppliers)
+                {
+                    _suppliergroups = _suppliergroups.Where(s => s.ID != _qrSupplier.SupplierID).ToList();
+                }
+            }
+            return Json(_suppliergroups.OrderBy(s => s.GroupName), JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult Service_GetQrSupplierGroup(int QuotationRequestID, int SupplierID = 0)
+        {
+            IEnumerable<QRSupplier> _qrSuppliers = _qrSupplierRepository.QueryByQRID(QuotationRequestID);
+            if (SupplierID > 0)
+            {
+                _qrSuppliers = _qrSuppliers.Where(q => q.SupplierID == SupplierID);
+            }
+            return Json(_qrSuppliers, JsonRequestBehavior.AllowGet);
+        }
+
         public JsonResult JsonSupplier(int SupplierID)
         {
             Supplier _supplier = _supplierRepository.QueryByID(SupplierID);
@@ -1106,9 +1270,7 @@ namespace MoldManager.WebUI.Controllers
 
         #endregion
 
-
-
-
+        #region region
         private void PRRecord(int PurchaseRequestID, string Message)
         {
             int _userID;
@@ -1231,78 +1393,36 @@ namespace MoldManager.WebUI.Controllers
             IEnumerable<QRContent> _qrContents = _qrContentRepository.QueryByQRID(QuotationRequestID);
             QRViewModel _model = new QRViewModel(_qrContents, _user, _qr);
             return View(_model);
-        }
-        public ActionResult Service_Add_MailListenRecord(int RecordID,string RecordType)
-        {
-            try
-            {
-                string _user = (_userRepository.GetUserByID(GetCurrentUser()) ?? new User()).FullName;
-                string sql = "exec Proc_Add_MailListenRecord " + RecordID + ",'" + RecordType + "','" + _user + "'";
-                SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
-                if (conn.State == System.Data.ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
-                SqlCommand comm = new SqlCommand(sql, conn);
-                comm.ExecuteNonQuery();
-                return Json(new { Code = 0, Message = "请耐心等待Outlook程序打开！" });
-            }
-            catch(Exception ex)
-            {
-                return Json(new { Code = -1, Message = "程序异常！" });
-            }
-        }
+        }       
         /// <summary>
-        /// 邮件数据流
+        /// QR PDF界面
         /// </summary>
+        /// <param name="PurchaseRequestID"></param>
         /// <returns></returns>
-        public JsonResult Service_Json_GetMailListenQRContents()
-        {
-            List<QRContent> _qrcontents=new List<QRContent>();
-            try
-            {
-                #region 获取目标索引
-                int QuotationRequestID = 0;
-                string sql = "exec Proc_Get_MailListenRecord 'QR'";
-                SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
-                if (conn.State == System.Data.ConnectionState.Closed)
-                {
-                    conn.Open();
-                }
-                SqlCommand comm = new SqlCommand(sql, conn);
-                comm.ExecuteNonQuery();
-                DataSet ds = new DataSet();
-                SqlDataAdapter da = new SqlDataAdapter(comm);
-                da.Fill(ds, "qr");
-                //conn.Close();
-                QuotationRequestID = Convert.ToInt32(ds.Tables[0].Rows[0]["RecordID"]);
-                #endregion
-                #region 获取目标单据内容并转成List
-                QuotationRequest _qr = _quotationRequestRepository.GetByID(QuotationRequestID);
-
-                if (_qr.State == (int)QuotationRequestStatus.新建)
-                {
-                    _quotationRequestRepository.ChangeStatus(QuotationRequestID, (int)QuotationRequestStatus.发出);
-                }
-                _qrcontents = _qrContentRepository.QueryByQRID(QuotationRequestID).ToList();
-                #endregion
-                #region 更新数据状态
-                string sqlupt = "exec Proc_Upt_MailListenRecord 'QR'";
-                SqlCommand commupt = new SqlCommand(sqlupt, conn);
-                commupt.ExecuteNonQuery();
-                #endregion
-            }
-            catch
-            {
-
-            }
-            return Json(_qrcontents, JsonRequestBehavior.AllowGet);
-        }
-
         public FileResult QRFormPDF(int PurchaseRequestID)
         {
             string _server = "http://" + Request.Url.Host + ":" + Request.Url.Port;
             byte[] file = PDFUtil.GetQR(_server, PurchaseRequestID);
+
+            //#region 生成报价文件
+            //string fileFullPath = Service_Chk_QRPDFFile(PurchaseRequestID);
+            //if (!string.IsNullOrEmpty(fileFullPath))
+            //{
+            //    #region 创建文件
+            //    try
+            //    {
+            //        FileStream fs = new FileStream(fileFullPath, FileMode.OpenOrCreate);
+            //        fs.Write(file, 0, file.Length);
+            //        fs.Close();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //    }
+            //    #endregion
+            //}
+            ////GeneratePRPDFFile(PurchaseRequestID);
+            //#endregion
+
             return File(file, "application/pdf");
         }
 
@@ -1316,7 +1436,11 @@ namespace MoldManager.WebUI.Controllers
             POViewModel _model = new POViewModel(_poContents, _order, _user, _supplier, _contact);
             return View(_model);
         }
-
+        /// <summary>
+        /// TODO:PO PDF界面
+        /// </summary>
+        /// <param name="PurchaseOrderID"></param>
+        /// <returns></returns>
         public FileResult POFormPDF(int PurchaseOrderID)
         {
             PurchaseOrder _po = _purchaseOrderRepository.QueryByID(PurchaseOrderID);
@@ -1536,11 +1660,18 @@ namespace MoldManager.WebUI.Controllers
             List<PurchaseItem> items = _purchaseItemRepository.QueryByPurchaseRequestID(PurchaseRequestID).ToList<PurchaseItem>();
             foreach (PurchaseItem item in items)
             {               
-                Part p = _partRepository.QueryByID(item.PartID) ?? new Part();                
+                Part p = _partRepository.QueryByID(item.PartID) ?? new Part();
+                List<int> _piStatus = new List<int>() { (int)PurchaseItemStatus.待询价 };
+                         
                 if (p.PartID > 0)
                 {
-                    p.InPurchase = false;
-                    _partRepository.SaveNew(p);
+                    List<PurchaseItem> _pitems = _purchaseItemRepository.PurchaseItems.Where(i => i.PartID == p.PartID && i.State >= (int)PurchaseItemStatus.待询价).ToList();
+                    //POContent _porder=_poContentRepository.POContents.Where(o=>o. p.PartID)
+                    if (_pitems.Count == 0)
+                    {
+                        p.InPurchase = false;
+                        _partRepository.SaveNew(p);
+                    }                    
                 }                
             }
             #endregion
@@ -1621,6 +1752,7 @@ namespace MoldManager.WebUI.Controllers
                 ViewBag.Duedate = _request.DueDate.ToString("yyyy-MM-dd");
                 ViewBag.QRState = _request.State;
                 ViewBag.PurchaseItemIDs = "";
+                ViewBag.Memo = _request.Memo;
                 return View(_request);
             }
             else if ((PurchaseRequestID != 0) || (PRContentIDs != ""))
@@ -1638,6 +1770,7 @@ namespace MoldManager.WebUI.Controllers
                 ViewBag.QuotationRequestID = 0;
                 ViewBag.QRState = 0;
                 ViewBag.PurchaseItemIDs = "";
+                ViewBag.Memo = "";
                 return View();
             }
             else if (PurchaseItemIDs != "")
@@ -1651,6 +1784,7 @@ namespace MoldManager.WebUI.Controllers
                 ViewBag.QuotationRequestID = 0;
                 ViewBag.QRState = 0;
                 ViewBag.PurchaseItemIDs = PurchaseItemIDs;
+                ViewBag.Memo ="";
                 return View();
             }
             else
@@ -1664,6 +1798,7 @@ namespace MoldManager.WebUI.Controllers
                 ViewBag.DueDate = null;
                 ViewBag.QRState = 0;
                 ViewBag.PurchaseItemIDs = "";
+                ViewBag.Memo = "";
                 return View();
             }
         }
@@ -1674,11 +1809,18 @@ namespace MoldManager.WebUI.Controllers
             {
                 string[] _prContentID = PRContentIDs.Split(',');
                 List<PRContent> _prContentList = new List<PRContent>();
+                //PurchaseRequest _pr = new PurchaseRequest();
+                string prMemo="";
                 for (int i = 0; i < _prContentID.Length; i++)
                 {
                     _prContentList.Add(_prContentRepository.QueryByID(Convert.ToInt32(_prContentID[i])));
                 }
-                QRContentGridViewModel _model = new QRContentGridViewModel(_prContentList);
+                if (_prContentList.Count > 0)
+                {
+                    prMemo = _purchaseRequestRepository.GetByID(_prContentRepository.QueryByID(Convert.ToInt32(_prContentID[0])).PurchaseRequestID).Memo;
+                }
+                 
+                QRContentGridViewModel _model = new QRContentGridViewModel(_prContentList, prMemo);
                 return Json(_model, JsonRequestBehavior.AllowGet);
             }
             else
@@ -1715,13 +1857,14 @@ namespace MoldManager.WebUI.Controllers
         }
 
         [HttpPost]
-        public int QRSave(List<QRContent> QRContents, DateTime DueDate, int PurchaseRequestID = 0, int QuotationRequestID = 0, int ProjectID = 0)
+        public int QRSave(List<QRContent> QRContents, DateTime DueDate, int PurchaseRequestID = 0, int QuotationRequestID = 0, int ProjectID = 0,string Memo="")
         {
             int _requestID = 0;
             QuotationRequest _request = null;
             int _supplier = 0;
             string MoldNumber = "";
-            //Save Quotation Request
+            PurchaseRequest _pr = new PurchaseRequest();
+            #region Save Quotation Request
             if (QuotationRequestID == 0)
             {
                 _request = new QuotationRequest();
@@ -1729,7 +1872,7 @@ namespace MoldManager.WebUI.Controllers
                 {
 
                     _request.PurchaseRequestID = PurchaseRequestID;
-                    PurchaseRequest _pr = _purchaseRequestRepository.GetByID(PurchaseRequestID);
+                    _pr = _purchaseRequestRepository.GetByID(PurchaseRequestID);
                     _supplier = _pr.SupplierID;
                     _request.ProjectID = _pr.ProjectID;
                     //MoldNumber = _projectRepository.GetByID(_request.ProjectID).MoldNumber;
@@ -1752,6 +1895,7 @@ namespace MoldManager.WebUI.Controllers
                 _request.QuotationNumber = _sequenceRepository.GetNextNumber("quotationrequest");
                 _request.State = (int)QuotationRequestStatus.新建;
                 _request.Enabled = true;
+                _request.Memo = string.IsNullOrEmpty(Memo)? _pr.Memo: Memo;
                 _requestID = _quotationRequestRepository.Save(_request);
 
                 if (_supplier > 0)
@@ -1767,10 +1911,13 @@ namespace MoldManager.WebUI.Controllers
             else
             {
                 _requestID = QuotationRequestID;
+                _request = _quotationRequestRepository.GetByID(QuotationRequestID);
+                _request.Memo = string.IsNullOrEmpty(Memo) ? _pr.Memo : Memo;
+                _requestID = _quotationRequestRepository.Save(_request);
             }
+            #endregion
 
-
-            //Save QRContents
+            #region Save QRContents
             foreach (QRContent _content in QRContents)
             {
 
@@ -1815,9 +1962,16 @@ namespace MoldManager.WebUI.Controllers
                     _content.RequireDate = new DateTime(1900, 1, 1);
                 }
                 _content.PurchaseItemID = _purchaseItemID;
+                if(string.IsNullOrEmpty(_content.Memo))
+                    _content.Memo = _pr.Memo;
+                _content.unit = "件";
                 _qrContentRepository.Save(_content);
             }
+            #endregion
 
+            #region 创建询价文件
+            GeneratePRPDFFile(_requestID);
+            #endregion
 
             return _requestID;
         }
@@ -2269,12 +2423,20 @@ namespace MoldManager.WebUI.Controllers
         {
             IEnumerable<int> _outsource = _purchaseTypeRepository.QueryByParentName("模具委外加工").Select(t => t.PurchaseTypeID);
             return _outsource.Contains(PurchaseType);
-
         }
 
-        public ActionResult PurchaseItemList(int State = 0)
+        /// <summary>
+        /// 采购项查询页面
+        /// </summary>
+        /// <param name="State"></param>
+        /// <param name="PurchaseTypeID">默认：直接材料</param>
+        /// <returns></returns>
+        public ActionResult PurchaseItemList(int State = 0,int PurchaseTypeID=1)
         {
+            //PurchaseType _pt = _purchaseTypeRepository.QueryByID(PurchaseTypeID);
             ViewBag.State = State;
+            //ViewBag.PurchaseTypeID = PurchaseTypeID;
+            //ViewBag.PurchaseTypeName = _pt.Name;
 
             switch (State)
             {
@@ -2308,12 +2470,22 @@ namespace MoldManager.WebUI.Controllers
             }
             return View();
         }
-
-        public ActionResult OutSourceItemList(int State = 0)
+        public ActionResult OtherPurItemList(int State = 0, int PurchaseTypeID = 2)
         {
+            PurchaseType _pt = _purchaseTypeRepository.QueryByID(PurchaseTypeID);
             ViewBag.State = State;
-            ViewBag.PurchaseType = 3;
-            ViewBag.Title = "外发任务清单";
+            ViewBag.PurchaseTypeID = PurchaseTypeID;
+            ViewBag.PurchaseTypeName = _pt.Name;
+            ViewBag.Title = "待处理资材项";
+            return View();
+        }
+        public ActionResult OutSourceItemList(int State = 0, int PurchaseTypeID = 3)
+        {
+            PurchaseType _pt = _purchaseTypeRepository.QueryByID(PurchaseTypeID);
+            ViewBag.State = State;
+            ViewBag.PurchaseTypeID = PurchaseTypeID;
+            ViewBag.PurchaseTypeName = _pt.Name;
+            ViewBag.Title = "待处理外发项";
             return View();
         }
 
@@ -2377,21 +2549,27 @@ namespace MoldManager.WebUI.Controllers
             }
 
 
+            PurchaseType _pt = _purchaseTypeRepository.QueryByID(PurchaseType);
             IEnumerable<int> _type;
-            if ((PurchaseType == 1) || (PurchaseType == 3))
+            if (_pt != null)
             {
-                _type = _purchaseTypeRepository.QueryByParentID(PurchaseType).Select(p => p.PurchaseTypeID);
-                _exp2 = i => (_type.Contains(i.PurchaseType));
-            }
-            else
-            {
-                _exp2 = i => i.PurchaseType == PurchaseType;
-            }
-            _exp1 = PredicateBuilder.And(_exp1, _exp2);
+                if (_pt.ParentTypeID == 0)
+                {
+                    _type = _purchaseTypeRepository.QueryByParentID(PurchaseType).Select(p => p.PurchaseTypeID);
+                    _exp2 = i => (_type.Contains(i.PurchaseType));
+                    _exp1 = PredicateBuilder.And(_exp1, _exp2);
+                }
+                else
+                {
+                    _exp2 = i => i.PurchaseType == PurchaseType;
+                    _exp1 = PredicateBuilder.And(_exp1, _exp2);
+                }
+            }            
 
             if (MoldNumber != "")
             {
-                _exp1 = PredicateBuilder.And(_exp1, i => i.MoldNumber == MoldNumber);
+                if(!MoldNumber.Equals("ALL"))
+                    _exp1 = PredicateBuilder.And(_exp1, i => i.MoldNumber == MoldNumber);
             }
 
 
@@ -2406,11 +2584,13 @@ namespace MoldManager.WebUI.Controllers
                 _exp1 = PredicateBuilder.And(_exp1, i => (!excludeIDs.Contains(i.PurchaseItemID)));
             }
 
-            Keyword = Keyword.ToUpper();
-
-
-
-            _items = _purchaseItemRepository.PurchaseItems.Where(p => p.Name.ToUpper().Contains(Keyword)).Where(_exp1);
+            if (!string.IsNullOrEmpty(Keyword))
+            {
+                Keyword = Keyword.ToUpper();
+                _exp1= PredicateBuilder.And(_exp1, p => (p.Name.ToUpper().Contains(Keyword) || p.PartNumber.ToUpper().Contains(Keyword) || p.Specification.ToUpper().Contains(Keyword)));
+            }
+                     
+            _items = _purchaseItemRepository.PurchaseItems.Where(_exp1);
 
             PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_items,
                 _purchaseRequestRepository,
@@ -2524,8 +2704,12 @@ namespace MoldManager.WebUI.Controllers
             string[] _ids = ItemIDs.Split(',');
             for (int i = 0; i < _ids.Length; i++)
             {
-                var _id = Convert.ToInt32(_ids[i]);
-                _items.Add(_purchaseItemRepository.QueryByID(_id));
+                if (_ids[i].Length > 0)
+                {
+                    var _id = Convert.ToInt32(_ids[i]);
+                    _items.Add(_purchaseItemRepository.QueryByID(_id));
+                }
+                
             }
 
             PurchaseOrderItemGridViewModel _viewModel = new PurchaseOrderItemGridViewModel(_items.Distinct().ToList());
@@ -2551,37 +2735,41 @@ namespace MoldManager.WebUI.Controllers
             {
                 _purchaseUserID = 0;
             }
-
+            int _rate = Convert.ToInt16(TaxRate);
             try
             {
                 PurchaseOrder _po = new PurchaseOrder();
-
                 _po.SupplierID = _supplier.SupplierID;
                 _po.SupplierName = SupplierName;
                 _po.Responsible = _purchaseUserID;
                 _po.State = (int)PurchaseOrderStatus.新建;
                 _po.PurchaseOrderNumber = _sequenceRepository.GetNextNumber("purchaseorder");
                 _po.PurchaseType = PurchaseType;
-                _po.TotalPrice = POContents.Sum(p => p.SubTotal);
-                _po.TaxRate = Convert.ToInt16(TaxRate);
+                _po.TotalPrice = POContents.Sum(p => p.TotalPriceWT);
+                _po.TaxRate = _rate;
                 _po.Currency = Currency;
                 _po.UserID = _purchaseUserID;
 
                 _purchaseOrderID = _purchaseOrderRepository.Save(_po);
 
-
+                
                 foreach (PurchaseOrderItemEditModel _model in POContents)
                 {
                     PurchaseItem _item = _purchaseItemRepository.QueryByID(_model.PurchaseItemID);
                     _item.Quantity = _model.Quantity;
-                    _item.UnitPrice = _model.UnitPrice;
-                    _item.TotalPrice = _model.SubTotal;
+                    _item.UnitPriceWT = _model.UnitPriceWT;
+                    _item.TotalPriceWT = _model.TotalPriceWT;
+                    #region 未税价格
+                    _item.UnitPrice = Math.Round(_model.UnitPriceWT / (1 + _rate * 0.01), 2);
+                    _item.TotalPrice = Math.Round(_model.TotalPriceWT / (1 + _rate * 0.01), 2);
+                    #endregion
                     _item.RequireTime = _model.PlanTime;
                     _item.PurchaseOrderID = _purchaseOrderID;
                     _item.PurchaseUserID = _purchaseUserID;
                     _item.State = (int)PurchaseItemStatus.订单新建;
                     _item.SupplierID = _supplier.SupplierID;
                     _item.SupplierName = SupplierName;
+                    _item.TaxRate = _rate;
 
                     _purchaseItems.Add(_item);
                     _purchaseItemID = _purchaseItemRepository.Save(_item);
@@ -2610,8 +2798,14 @@ namespace MoldManager.WebUI.Controllers
                 .Where(q => q.QuotationRequestID == QuotationID).Where(q => q.Enabled == true).FirstOrDefault();
             return Json(_qrSupplier, JsonRequestBehavior.AllowGet);
         }
-
-        public ActionResult JsonPurchaseTypes(string TypeName = "", bool ContainParent = true)
+        /// <summary>
+        /// 加载采购类型
+        /// </summary>
+        /// <param name="TypeName"></param>
+        /// <param name="ContainParent"></param>
+        /// <param name="QFDep">区分部门</param>
+        /// <returns></returns>
+        public ActionResult JsonPurchaseTypes(string TypeName = "", bool ContainParent = true,bool QFDep=false)
         {
 
             List<PurchaseType> _types;
@@ -2633,9 +2827,38 @@ namespace MoldManager.WebUI.Controllers
                     _types = _purchaseTypeRepository.PurchaseTypes.Where(p => p.ParentTypeID > 0 && p.ParentTypeID!= _purchaseType.PurchaseTypeID).ToList();
                 }
             }
+            if (QFDep)
+            {
+                string _depid = Request.Cookies["User"]["Department"].ToString();
+                _types = _types.Where(t => t.DepID.Split(',').Contains(_depid) || t.DepID == "all").ToList();
+            }           
             return Json(_types, JsonRequestBehavior.AllowGet);
         }
+        public ActionResult JsonPurchaseTypeLevel(int ParentID = 0)
+        {
+            List<PurchaseType> _types = _purchaseTypeRepository.QueryByParentID(ParentID).ToList();
+            return Json(_types, JsonRequestBehavior.AllowGet);
+        }
+        public string UpdatePurchaseType(string POContentIDs, int PurchaseTypeID)
+        {
+            string[] _ids = POContentIDs.Split(',');
+            try
+            {
+                for (int i = 0; i < _ids.Length; i++)
+                {
+                    int _itemid = _poContentRepository.QueryByID(Convert.ToInt32(_ids[i])).PurchaseItemID;
+                    PurchaseItem _item = _purchaseItemRepository.QueryByID(_itemid);
+                    _item.PurchaseType = PurchaseTypeID;
+                    _purchaseItemRepository.Save(_item);
+                }
+                return "采购类型更新成功";
+            }
+            catch
+            {
+                return "保存失败,请刷新后重试";
+            }
 
+        }
         #endregion
 
         public ActionResult SideBar()
@@ -2653,13 +2876,7 @@ namespace MoldManager.WebUI.Controllers
                 _purchaseTypeIDs.Add(ParentID);
             }
             return _purchaseTypeIDs;
-        }
-
-        public ActionResult GetPurchaseTypeInfo(int PurchaseTypeID)
-        {
-            PurchaseType _type = _purchaseTypeRepository.QueryByID(PurchaseTypeID);
-            return Json(_type, JsonRequestBehavior.AllowGet);
-        }
+        }       
 
 
         public ActionResult JsonOutSourcePO()
@@ -2714,8 +2931,6 @@ namespace MoldManager.WebUI.Controllers
             Expression<Func<PurchaseItem, bool>> _exp1 = null;
             Expression<Func<PurchaseItem, bool>> _exp2 = null;
 
-
-
             switch (State)
             {
                 case 0:
@@ -2757,12 +2972,13 @@ namespace MoldManager.WebUI.Controllers
                 _exp1 = PredicateBuilder.And(_exp1, _exp2);
             }
 
+            PurchaseType _pt = _purchaseTypeRepository.QueryByID(PurchaseType);
             IEnumerable<int> _type;
-            if ((PurchaseType == 1) || (PurchaseType == 3))
+            if (_pt.ParentTypeID == 0)
             {
                 _type = _purchaseTypeRepository.QueryByParentID(PurchaseType).Select(p => p.PurchaseTypeID);
                 _exp2 = i => (_type.Contains(i.PurchaseType));
-            }
+            }            
             else
             {
                 _exp2 = i => i.PurchaseType == PurchaseType;
@@ -2895,35 +3111,7 @@ namespace MoldManager.WebUI.Controllers
         {
             IEnumerable<PurchaseType> _topTypes = _purchaseTypeRepository.QueryByParentID(0);
             return View(_topTypes);
-        }
-
-        [HttpPost]
-        public string SavePurchaseType(PurchaseType PurchaseType)
-        {
-            try
-            {
-                _purchaseTypeRepository.Save(PurchaseType);
-            }
-            catch
-            {
-                return "采购类型保存失败,请重试";
-            }
-            return "";
-        }
-
-        public string DeletePurchaseType(int PurchaseTypeID)
-        {
-            int _count = _purchaseOrderRepository.PurchaseOrders.Where(p => p.PurchaseType == PurchaseTypeID).Count();
-            if (_count == 0)
-            {
-                _purchaseTypeRepository.DeletePurchaseType(PurchaseTypeID);
-                return "";
-            }
-            else
-            {
-                return "系统中存在该类型采购订单,无法删除类型";
-            }
-        }
+        }        
 
         public bool OrderOutSource(int PurchaseTypeID)
         {
@@ -4474,7 +4662,7 @@ namespace MoldManager.WebUI.Controllers
             {
                 foreach(var s in _suppliers)
                 {
-                    _nameStrs = _nameStrs + s.Name+"-"+s.JianSuo + ",";
+                    _nameStrs = _nameStrs + s.Name+"/"+s.JianSuo + ",";
                 }
             }
             if(!string.IsNullOrEmpty(_nameStrs))
@@ -4490,31 +4678,7 @@ namespace MoldManager.WebUI.Controllers
                 return _supplier.SupplierID;
             return 0;
         }
-        #region PO report for finacial dept
-
-        public ActionResult POReport()
-        {
-            return View();
-        }
-
-
-        public ActionResult JsonPOReport(string StartDate, string EndDate = "")
-        {
-            DateTime _startDate = Convert.ToDateTime(StartDate + " 00:00");
-            DateTime _endDate;
-            if (EndDate == "")
-            {
-                EndDate = DateTime.Now.ToString("yyyy-MM-dd") + " 23:59";
-            }
-            _endDate = Convert.ToDateTime(EndDate);
-            List<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems.Where(p => p.DeliveryTime > _startDate)
-                .Where(p => p.DeliveryTime <= _endDate)//.Where(p => p.State == (int)PurchaseItemStatus.完成)
-                .ToList();
-            PurchaseOrderReportGridViewModel _viewModel = new PurchaseOrderReportGridViewModel(_items,
-                _purchaseTypeRepository, _supplierRepository, _purchaseOrderRepository, _costCenterRepository);
-            return Json(_viewModel, JsonRequestBehavior.AllowGet);
-        }
-        #endregion
+        
         /// <summary>
         /// 获取PR默认采购日期
         /// </summary>
@@ -4633,6 +4797,515 @@ namespace MoldManager.WebUI.Controllers
             }
             return Convert.ToInt32(len);
         }
+        #endregion
+
+        #region QuotationFile Upload
+
+        [HttpPost]
+        public string QuotationUpload(int RequestID, int UploadSupplier, HttpPostedFileBase File)
+        {
+            List<QuotationFile> _exist = _quotationFileRepository.QueryByQuotationRequest(RequestID, UploadSupplier);
+            foreach (QuotationFile _file in _exist)
+            {
+                _file.Enabled = false;
+                _quotationFileRepository.Save(_file);
+            }
+
+            try
+            {
+                QuotationFile _file = new QuotationFile(RequestID, UploadSupplier, File.FileName, File.ContentType);
+                #region 创建文件夹
+                string filePath = Server.MapPath(string.Format("~/{0}/{1}", "Upload", "Quotation"));
+                if (!Directory.Exists(filePath))
+                {
+                    Directory.CreateDirectory(filePath);
+                }
+                string ImportFilePath = Path.Combine(filePath, _file.FileName);
+                File.SaveAs(ImportFilePath);
+                #endregion
+                _quotationFileRepository.Save(_file);
+                return "";
+            }
+            catch(Exception ex)
+            {
+                return "error";
+            }
+        }
+
+
+        public ActionResult JsonQuotationFiles(int QuotationRequestID)
+        {
+            List<QuotationFile> _files = _quotationFileRepository.QueryByQuotationRequest(QuotationRequestID);
+            List<QuotationFileViewModel> _models = new List<QuotationFileViewModel>();
+            foreach (QuotationFile _file in _files)
+            {
+                string _supplierName = _supplierRepository.QueryByID(_file.SupplierID).Name;
+                QuotationFileViewModel _model = new QuotationFileViewModel(_file, _supplierName);
+                _models.Add(_model);
+            }
+            return Json(_models, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult GetQuotationFile(int QuotationFileID)
+        {
+            QuotationFile _file = _quotationFileRepository.QueryByID(QuotationFileID);
+            string _filepath = Server.MapPath("~/Upload/Quotation/" + _file.FileName);
+            return File(_filepath, _file.MimeType, _file.FileName);
+        }
+
+        public int QuotationFileCount(int QuotationRequestID, int SupplierID)
+        {
+            int _count = _quotationFileRepository.QueryByQuotationRequest(QuotationRequestID, SupplierID).Count();
+            return _count;
+        }
+        #endregion
+
+        #endregion
+
+        #region 采购对账Excel导出
+
+        #region PO report for finacial dept
+
+        public ActionResult POReport()
+        {
+            return View();
+        }
+
+        public List<PDReportViewModel> Service_GetPDReportList(string StartDate, string EndDate = "")
+        {
+            DateTime _startDate = Convert.ToDateTime(StartDate + " 00:00");
+            DateTime _endDate;
+            if (EndDate == "")
+            {
+                EndDate = DateTime.Now.ToString("yyyy-MM-dd") + " 23:59";
+            }
+            _endDate = Convert.ToDateTime(EndDate + " 23:59");//Convert.ToDateTime(EndDate);
+            List<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems.Where(p => p.DeliveryTime > _startDate)
+                .Where(p => p.DeliveryTime <= _endDate)//.Where(p => p.State == (int)PurchaseItemStatus.完成)
+                .OrderByDescending(p=>p.PurchaseOrderID)
+                .ToList();
+
+            List<PDReportViewModel> _prItems = new List<PDReportViewModel>();
+            if (_items.Count > 0)
+            {
+                foreach (var p in _items)
+                {
+                    string bu, costcent,fClass,sClass,supFullname,supName,zcClass;
+                    try
+                    {
+                        CostCenter _cc = _costCenterRepository.QueryByID(p.CostCenterID) ?? new TechnikSys.MoldManager.Domain.Entity.CostCenter();
+                        if (_cc.Name.IndexOf('_') > 0)
+                        {
+                            var _name = _cc.Name.Split('_');
+                            bu = _name[0];
+                            costcent = _name[1];
+                        }
+                        else { bu = "";costcent = ""; }
+                    }
+                    catch { bu = ""; costcent = ""; }
+                    try
+                    {
+                        PurchaseType _type = _purchaseTypeRepository.QueryByID(p.PurchaseType) ?? new PurchaseType();
+                        if (_type.ParentTypeID > 0)
+                        {
+                            PurchaseType _Ftype = _purchaseTypeRepository.QueryByID(_type.ParentTypeID);
+                            fClass = _Ftype.Name;
+                        }
+                        else { fClass = ""; }
+                        sClass = _type.Name;
+                    }
+                    catch { fClass = ""; sClass = ""; }
+                    try
+                    {
+                        Supplier _sup = _supplierRepository.QueryByID(p.SupplierID);
+                        if (_sup != null)
+                        {
+                            supFullname = _sup.FullName;
+                            supName = _sup.Name;
+                        }
+                        else { supFullname = ""; supName = ""; }
+                    }
+                    catch { supFullname = ""; supName = ""; }
+                    switch (p.ProcedureType)
+                    {
+                        //case 0:
+                        //    zcClass = "";
+                        //    break;
+                        case 10:
+                            zcClass = "制模";
+                            break;
+                        case 20:
+                            zcClass = "修模";
+                            break;
+                        case 30:
+                            zcClass = "耗材";
+                            break;
+                        default:
+                            zcClass = "";
+                            break;
+                    }
+                    PDReportViewModel _pditem = new PDReportViewModel()
+                    {                        
+                        事业部 = bu,
+                        成本中心 = costcent,
+                        制程分类 = zcClass,
+                        一级分类 = fClass,
+                        二级分类 = sClass,
+                        供应商全称 = supFullname,
+                        模号 = p.MoldNumber,
+                        规格 = p.Specification,
+                        数量 = p.Quantity,
+                        单位 = "件",
+                        含税单价 =Math.Round( p.UnitPriceWT,2),
+                        含税总价 = Math.Round(p.TotalPriceWT,2),
+                        税率 = p.TaxRate,
+                        未税总价 = Math.Round(p.TotalPrice,2),
+                        订单 = (_purchaseOrderRepository.QueryByID(p.PurchaseOrderID).PurchaseOrderNumber),
+                        请购单 =(_purchaseRequestRepository.GetByID(p.PurchaseRequestID).PurchaseRequestNumber),
+                        备注 = p.Memo,
+                        其它 = "",
+                        PurchaseItemID = p.PurchaseItemID,
+                        物料编号 = p.PartNumber,
+                        供应商 = supName,
+                        实际到达日期 = p.DeliveryTime,
+                        生成时间 = p.CreateTime,
+                        预计交货日期=p.PlanTime,
+                    };
+                    _prItems.Add(_pditem);
+                }
+            }            
+            return _prItems;
+        }
+        public ActionResult JsonPOReport(string StartDate, string EndDate = "")
+        {
+            List<PDReportViewModel> _items = Service_GetPDReportList(StartDate, EndDate);
+            PurchaseOrderReportGridViewModel _viewModel = new PurchaseOrderReportGridViewModel(_items,
+                _purchaseTypeRepository, _supplierRepository, _purchaseOrderRepository, _costCenterRepository);
+            return Json(_viewModel, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
+        /// <summary>
+        /// TODO:将带数据的excel表装载成流
+        /// </summary>
+        /// <param name="StartDate"></param>
+        /// <param name="EndDate"></param>
+        /// <returns></returns>
+        public MemoryStream CatchPDExcelStream(string StartDate, string EndDate = "")
+        {
+            ExcelHelper _exhelper = new ExcelHelper();
+            List<PDReportViewModel> _pi = Service_GetPDReportList(StartDate, EndDate); //_purchaseItemRepository.PurchaseItems.Take(10).ToList();
+            string _path = "~/Images/Template_采购对账.xlsx";
+            MemoryStream _ms= _exhelper.ExportExcelStream<PDReportViewModel>(_pi, _path, "采购对账1",null,true);
+            return _ms;
+        }
+
+        public ActionResult Service_CatchPDExcel(string StartDate, string EndDate = "")
+        {
+            MemoryStream _ms=new MemoryStream();
+            try
+            {
+                _ms = CatchPDExcelStream(StartDate, EndDate);
+            }
+            catch(Exception ex)
+            {
+                _ms = null;
+            }
+            string date = string.Format("{0:yyyyMMddHHmmss}", DateTime.Now);
+            string fileName = string.Format("采购对账单_{0}.xlsx", date);
+            return File(_ms, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+        #endregion
+
+        #region Some Function       
+
+        public ActionResult GetPurchaseTypeInfo(int PurchaseTypeID)
+        {
+            PurchaseType _type = _purchaseTypeRepository.QueryByID(PurchaseTypeID);
+            return Json(_type, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public string SavePurchaseType(PurchaseType PurchaseType)
+        {
+            try
+            {
+                PurchaseType.Enabled = true;
+                _purchaseTypeRepository.Save(PurchaseType);
+            }
+            catch
+            {
+                return "采购类型保存失败,请重试";
+            }
+            return "";
+        }
+
+        public string DeletePurchaseType(int PurchaseTypeID)
+        {
+            int _count = _purchaseOrderRepository.PurchaseOrders.Where(p => p.PurchaseType == PurchaseTypeID).Count();
+            if (_count == 0)
+            {
+                _purchaseTypeRepository.DeletePurchaseType(PurchaseTypeID);
+                return "";
+            }
+            else
+            {
+                return "系统中存在该类型采购订单,无法删除类型";
+            }
+        }
+        #endregion
+
+        #region 打开默认邮箱 发送报价邮件
+        public ActionResult Service_Add_MailListenRecord(int RecordID, string RecordType)
+        {
+            try
+            {
+                //string QRPDFFile = Service_Chk_QRPDFFile(RecordID);
+
+                #region 执行存储过程
+                string _user = (_userRepository.GetUserByID(GetCurrentUser()) ?? new User()).FullName;
+                string sql = "exec Proc_Add_MailListenRecord " + RecordID + ",'" + RecordType + "','" + _user + "'";
+                SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
+                if (conn.State == System.Data.ConnectionState.Closed)
+                {
+                    conn.Open();
+                }
+                SqlCommand comm = new SqlCommand(sql, conn);
+                comm.ExecuteNonQuery();
+                #endregion
+                #region 创建询价文件
+                GeneratePRPDFFile(RecordID);
+                #endregion
+
+                return Json(new { Code = 0, Message = "请耐心等待Outlook程序打开！", JsonRequestBehavior.AllowGet });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Code = -1, Message = "程序异常！", JsonRequestBehavior.AllowGet });
+            }
+        }
+        /// <summary>
+        /// 邮件数据流
+        /// </summary>
+        /// <returns></returns>
+        public JsonResult Service_Json_GetMailListenQRContents(int qrID=0)
+        {           
+            List<QRMailModel> _qrMailList = new List<QRMailModel>();
+            try
+            {
+                int QuotationRequestID= qrID;
+                if (QuotationRequestID == 0)
+                {
+                    #region 获取目标索引
+                    //int QuotationRequestID = 0;
+                    string sql = "exec Proc_Get_MailListenRecord 'QR'";
+                    SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
+                    if (conn.State == System.Data.ConnectionState.Closed)
+                    {
+                        conn.Open();
+                    }
+                    SqlCommand comm = new SqlCommand(sql, conn);
+                    comm.ExecuteNonQuery();
+                    DataSet ds = new DataSet();
+                    SqlDataAdapter da = new SqlDataAdapter(comm);
+                    da.Fill(ds, "qr");
+                    //conn.Close();
+                    QuotationRequestID = Convert.ToInt32(ds.Tables[0].Rows[0]["RecordID"]);
+                    #endregion
+                    #region 更新数据状态
+                    string sqlupt = "exec Proc_Upt_MailListenRecord 'QR'";
+                    SqlCommand commupt = new SqlCommand(sqlupt, conn);
+                    commupt.ExecuteNonQuery();
+                    #endregion
+                }
+                _qrMailList= JsonConvert.DeserializeObject<List<QRMailModel>>(Service_GetMailContent(QuotationRequestID));
+            }
+            catch
+            {
+            }
+            return Json(_qrMailList, JsonRequestBehavior.AllowGet);
+        }
+        public string Service_GetMailContent(int qrID=0)
+        {
+            List<QRContent> _qrcontents = new List<QRContent>();
+            List<QRMailModel> _qrMailList = new List<QRMailModel>();
+            if (qrID > 0)
+            {
+                #region 获取目标单据内容并转成List
+                QuotationRequest _qr = _quotationRequestRepository.GetByID(qrID);
+
+                if (_qr.State == (int)QuotationRequestStatus.新建)
+                {
+                    _quotationRequestRepository.ChangeStatus(qrID, (int)QuotationRequestStatus.发出);
+                }
+                _qrcontents = _qrContentRepository.QueryByQRID(qrID).ToList();
+                #endregion               
+                #region 构造
+                if (_qrcontents.Count() > 0)
+                {
+                    string sysQRFilePath = _sysConfigRepository.SystemConfigs.Where(s => s.SettingName == "QRPDFFilePath").FirstOrDefault().Value;
+                    string sysAttFilePath = _sysConfigRepository.SystemConfigs.Where(s => s.SettingName == "AttachFilePath").FirstOrDefault().Value;
+                    string _server = "http://" + Request.Url.Host + ":" + Request.Url.Port;
+                    foreach (var q in _qrcontents)
+                    {
+                        QRMailModel _qrMail = new QRMailModel();
+                        _qrMail.PartNum = q.PartNumber;
+                        _qrMail.PartName = q.PartName;
+                        _qrMail.QRContent = q.QRContentID;
+                        _qrMail.PurchaseItemID = q.PurchaseItemID;
+                        _qrMail.Qty = q.Quantity;
+                        _qrMail.Specification = q.PartSpecification;
+                        _qrMail.Materials = q.MaterialName;
+                        _qrMail.Hardness = q.Hardness;
+                        _qrMail.Brand = q.BrandName;
+                        _qrMail.RequiredDate = q.RequireDate.ToString("yyyy-MM-dd");
+                        string QRAttachFilePath = "", ItemAttachPath = "", SecretMailAddr = "", Subject = "";
+                        PurchaseItem _pi = _purchaseItemRepository.QueryByID(q.PurchaseItemID);
+                        if (_pi != null)
+                        {
+                            _qrMail.IsAttach = string.IsNullOrEmpty(_pi.AttachObjID) ? "" : "Y";
+                        }
+                        _qrMail.IsAttach = "";
+                        _qrMail.Memo = q.Memo;
+                        if (_pi != null)
+                        {
+                            AttachFileInfo _attchinfo = _attachRepository.AttachFileInfos.Where(a => a.ObjID == _pi.AttachObjID && a.Enable == true).FirstOrDefault();
+                            if (_attchinfo != null)
+                            {
+                                ItemAttachPath = _server + _attchinfo.FilePath + _attchinfo.FileName + "." + _attchinfo.FileType;
+                                if (!System.IO.File.Exists(ItemAttachPath))//判断附件是否存在
+                                {
+                                    ItemAttachPath = string.Empty;
+                                }
+                            }
+                        }
+                        QRAttachFilePath = string.Format(sysQRFilePath, _server, "PurchaseRequest(" + q.QuotationRequestID.ToString() + ").pdf");
+                        if (!System.IO.File.Exists(QRAttachFilePath))//判断附件是否存在
+                        {
+                            QRAttachFilePath = string.Empty;
+                        }
+                        _qrMail.QRAttachFilePath = QRAttachFilePath;
+                        _qrMail.ItemAttachPath = ItemAttachPath;
+                        #region 主题、密送地址
+                        QRSupplier _qrsupplier = _qrSupplierRepository.QueryByQRID(q.QuotationRequestID).Where(s => s.Enabled == true).FirstOrDefault();
+                        if (_qrsupplier != null)
+                        {
+                            _qrsupplier.QuotationState = true;
+                            _qrSupplierRepository.Save(_qrsupplier);
+                            SupplierGroup _supplierGroup = _supplierGroupRepository.QueryByID(_qrsupplier.SupplierID);
+                            if (_supplierGroup != null)
+                            {
+                                SecretMailAddr = _supplierGroup.MailList;
+                                Subject = _supplierGroup.GroupName;
+                            }
+
+                        }
+                        _qrMail.SecretMailAddr = SecretMailAddr;
+                        _qrMail.Subject = Subject;
+                        #endregion
+                        _qrMailList.Add(_qrMail);
+                    }                   
+                }
+                #endregion
+                string _qrContent = HttpUtility.UrlEncode(JsonConvert.SerializeObject(_qrMailList));
+                return _qrContent;
+            }
+            return string.Empty;
+        }
+        public void GeneratePRPDFFile(int QRID)
+        {
+            //string sysQRFilePath = _sysConfigRepository.SystemConfigs.Where(s => s.SettingName == "QRPDFFilePath").FirstOrDefault().Value;
+            //#region 创建文件夹
+            //string filePath =string.Format("{0}/SysPDFFile/QR/", Server.MapPath("~"));//Server.MapPath(string.Format("~/{0}/{1}", "SysPDFFile", "QR"))
+            //if (!Directory.Exists(filePath))
+            //{
+            //    Directory.CreateDirectory(filePath);
+            //}
+            //#endregion
+
+            //string fileFullPath = Path.Combine(filePath, "PurchaseRequest("+ QRID.ToString()+").pdf");
+            //if (System.IO.File.Exists(fileFullPath))
+            //{
+            //    return;
+            //}
+            //else
+            //{
+            string fileFullPath = Service_Chk_QRPDFFile(QRID);
+            if (!string.IsNullOrEmpty(fileFullPath))
+            {
+                #region 创建文件
+                try
+                {
+                    string _server = "http://" + Request.Url.Host + ":" + Request.Url.Port;
+                    byte[] file = PDFUtil.GetQR(_server, QRID);
+                    FileStream fs = new FileStream(fileFullPath, FileMode.OpenOrCreate);
+                    fs.Write(file, 0, file.Length);
+                    fs.Close();
+                }
+                catch (Exception ex) { }
+                #endregion
+            }
+            //}
+        }
+        public string Service_Chk_QRPDFFile(int QRID)
+        {
+            #region 创建文件夹
+            string filePath = string.Format("{0}/SysPDFFile/QR/", Server.MapPath("~"));
+            if (!Directory.Exists(filePath))
+            {
+                Directory.CreateDirectory(filePath);
+            }
+            #endregion
+            QuotationRequest _qr = _quotationRequestRepository.GetByID(QRID);
+            string fileFullPath = Path.Combine(filePath, "QuotationRequest(" + _qr.QuotationNumber.ToString() + ").pdf");
+            if (System.IO.File.Exists(fileFullPath))
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return fileFullPath;
+            }
+        }
+        #endregion
+
+        #region 报价组
+        public JsonResult Service_GetSGGList()
+        {
+            List<SupplierGroup> _supplierGroups = _supplierGroupRepository.QuerySGList();
+            return Json(_supplierGroups, JsonRequestBehavior.AllowGet);
+        }
+        //保存报价组
+        [HttpPost]        
+        public int Service_SG_Save(SupplierGroup _sg)
+        {
+            int res = _supplierGroupRepository.Save(_sg);
+            return 1;
+        }
+        //加载供应商列表
+        public JsonResult Service_SG_GetsgSupplierLIsts(int _sgID)
+        {
+            return Json(_supplierGroupRepository.QuerySuppliersByGroupID(_sgID),JsonRequestBehavior.AllowGet);
+        }
+        //根据短名获得供应商信息
+        public JsonResult Service_Sup_GetsupByName(string _supName)
+        {
+            Supplier _sup = _supplierRepository.Suppliers.Where(s => s.Name == _supName && s.Enabled == true).FirstOrDefault();
+            return Json(_sup, JsonRequestBehavior.AllowGet);
+        }
+        public JsonResult Service_Get_sgByID(int _sgID)
+        {
+            return Json(_supplierGroupRepository.QueryByID(_sgID), JsonRequestBehavior.AllowGet);
+        }
+        //删除
+        public int Service_SG_DelSGObj(int _sgID)
+        {
+            int res = _supplierGroupRepository.Delete(_sgID);
+            return res;
+        }
+        //public int Service_SG_DelSGSup()
+        //{
+
+        //}
         #endregion
     }
 }

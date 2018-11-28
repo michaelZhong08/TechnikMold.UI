@@ -26,5 +26,10 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int PurchaseItemID { get; set; }
         public DateTime RequireDate { get; set; }
         public int SupplierID { get; set; }
+        public string QRcMemo { get; set; }
+        /// <summary>
+        /// 单位 默认 件
+        /// </summary>
+        public string unit { get; set; }
     }
 }

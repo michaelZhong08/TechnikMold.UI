@@ -37,6 +37,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Enabled = QuotationRequest.Enabled;
                     _dbEntry.State = QuotationRequest.State;
                     _dbEntry.PurchaseRequestID = QuotationRequest.PurchaseRequestID;
+                    _dbEntry.Memo = QuotationRequest.Memo;
                 }
             }
             _context.SaveChanges();

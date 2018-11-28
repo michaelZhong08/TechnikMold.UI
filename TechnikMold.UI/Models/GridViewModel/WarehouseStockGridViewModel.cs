@@ -15,21 +15,23 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Total;
         public int Records;
 
-        public WarehouseStockGridViewModel(IEnumerable<WarehouseStock> StockItems,
+        public WarehouseStockGridViewModel(List<WHStock> StockItems,
             IUserRepository UserRepo, 
             IPurchaseItemRepository PurchaseItemRepo, 
             IPurchaseTypeRepository PurchaseTypeRepo, 
             IStockTypeRepository StockTypeRepo, 
             IWarehouseRepository WarehouseRepo, 
-            IWarehousePositionRepository WarehousePositionRepo)
+            IWarehousePositionRepository WarehousePositionRepo,
+            IWHPartRepository WHPartRepository)
         {
             string UserName, PurchaseUserName, WarehouseUserName, PurchaseType, StockType, Warehouse, WarehousePosition;
-            foreach (WarehouseStock _item in StockItems)
+            foreach (var _item in StockItems)
             {
-                PurchaseItem _purchaseItem = PurchaseItemRepo.QueryByID(_item.PurchaseItemID);
+                //PurchaseItem _purchaseItem = PurchaseItemRepo.QueryByID(_item.PurchaseItemID);
                 try
                 {
-                    UserName = UserRepo.GetUserByID(_purchaseItem.RequestUserID).FullName;
+                    //UserName = UserRepo.GetUserByID(_item.RequestUserID).FullName;
+                    UserName = "";
                 }
                 catch
                 {
@@ -37,7 +39,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 }
                 try
                 {
-                    PurchaseUserName = UserRepo.GetUserByID(_purchaseItem.PurchaseUserID).FullName;
+                    //PurchaseUserName = UserRepo.GetUserByID(_purchaseItem.PurchaseUserID).FullName;
+                    PurchaseUserName = "";
 
                 }
                 catch
@@ -46,7 +49,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 }
                 try
                 {
-                    WarehouseUserName = UserRepo.GetUserByID(_item.WarehouseUserID).FullName;
+                    //WarehouseUserName = UserRepo.GetUserByID(_item.WarehouseUserID).FullName;
+                    WarehouseUserName = "";
                 }
                 catch
                 {
@@ -63,7 +67,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 }
                 try
                 {
-                    StockType = StockTypeRepo.QueryByID(_item.StockType).Name;
+                    var _PartNumStrs = _item.PartNum.Split('-');
+                    StockType = StockTypeRepo.StockTypes.Where(s => s.Code == _PartNumStrs[0]).FirstOrDefault().Name;//StockTypeRepo.QueryByID(_item.StockType).Name;
                 }
                 catch
                 {
@@ -85,12 +90,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 {
                     WarehousePosition = "";
                 }
-                
+                WHPart _part1 = WHPartRepository.GetPart(_item.PartNum, _item.PartID) ?? new WHPart();
                 rows.Add(new WarehouseStockGridRowModel(_item,
-                    _purchaseItem,
-                    UserName,
-                    PurchaseUserName,
-                    WarehouseUserName,
+                    _part1,
+                    //UserName,
+                    //PurchaseUserName,
+                    //WarehouseUserName,
                     PurchaseType,
                     StockType, 
                     Warehouse, 

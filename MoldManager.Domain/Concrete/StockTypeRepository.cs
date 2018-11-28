@@ -29,14 +29,24 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
 
 
-        public int Save(string Name)
+        public int Save(StockType _model)
         {
-            StockType _stockType = new StockType();
-            _stockType.Name = Name;
-            _stockType.Enabled = true;
-            _context.StockTypes.Add(_stockType);
+            StockType _stockType = _context.StockTypes.Where(s => s.StockTypeID == _model.StockTypeID).FirstOrDefault();
+            if (_stockType == null)
+            {
+                _model.Enabled = true;
+                _context.StockTypes.Add(_model);
+            }
+            else
+            {
+                _stockType.Name = _model.Name;
+                _stockType.Code = _model.Code ?? _stockType.Code;
+                _stockType.Parent = _model.Parent?? _stockType.Parent;
+                _stockType.PurchaseType = _model.PurchaseType ?? _stockType.PurchaseType;
+                _stockType.Enabled = _model.Enabled;
+            }            
             _context.SaveChanges();
-            return _stockType.StockTypeID;
+            return _model.StockTypeID;
         }
 
 
@@ -48,6 +58,16 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 _stockType.Enabled = false;
             }
             _context.SaveChanges();
+        }
+        /// <summary>
+        /// 获取耗材/备库类型列表
+        /// </summary>
+        /// <param name="Parent">生产耗材 / 模具耗材备库</param>
+        /// <returns></returns>
+        public List<StockType> GetTypeList(string Parent)
+        {
+            List<StockType> _stypes = _context.StockTypes.Where(s => s.Parent == Parent && s.Enabled == true && (s.Code!="" && s.Code!=null)).ToList();
+            return _stypes;
         }
     }
 }

@@ -44,14 +44,14 @@
                 case (int)ReturnRequestStatus.通过:
                     if (DeptID == 20)
                     {
-                        <button class="btn btn-primary" id="CloseRequest">关闭退货单</button>
+                        <button class="btn btn-primary" id="CloseRequest">返回退货单</button>
                     }
 
                     break;
                 case (int)ReturnRequestStatus.拒绝:
                     if (DeptID == 20)
                     {
-                        <button class="btn btn-primary" id="CloseRequest">关闭退货单</button>
+                        <button class="btn btn-primary" id="CloseRequest">返回退货单</button>
                         <button class="btn btn-primary" id="RestartRequest">重启退货单</button>
                     }
                     break;
@@ -289,7 +289,7 @@
             type:"Get",
             success:function(msg){
                 if (msg==""){
-                    alert("退货单关闭成功")
+                    alert("退货单返回成功")
                     location.href="/Warehouse/ReturnRequestList";
                 }
             }

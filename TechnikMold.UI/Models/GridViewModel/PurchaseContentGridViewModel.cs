@@ -48,6 +48,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             IProjectPhaseRepository ProjectPhaseRepository, 
             ISteelCAMDrawingRepository SteelDrawingRepo,
             ITaskRepository TaskRepository,
+            IWHPartRepository WHPartRepository,
             string mrPurDate = ""
             )
         {
@@ -55,7 +56,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             foreach (var m in _viewmodel)
             {
                 Task _task = TaskRepository.QueryByTaskID(m.TaskID) ?? new Task();
-                rows.Add(new PurchaseContentGridRowModel(_task, m, mrPurDate, ProjectPhaseRepository, SteelDrawingRepo));
+                rows.Add(new PurchaseContentGridRowModel(_task, m, mrPurDate, ProjectPhaseRepository, SteelDrawingRepo, WHPartRepository));
             }
             Page=1;
             Total=Tasks.Count();
@@ -105,9 +106,10 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 }
 
                 String _costcenter;
-                if (_purchaseItem.CostCenterID > 0)
+                CostCenter _centerObj= CostCenterRepository.QueryByID(_purchaseItem.CostCenterID);
+                if (_centerObj!=null)
                 {
-                    _costcenter = CostCenterRepository.QueryByID(_purchaseItem.CostCenterID).Name;
+                    _costcenter = _centerObj.Name;
                 }
                 else
                 {

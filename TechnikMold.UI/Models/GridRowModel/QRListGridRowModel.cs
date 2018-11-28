@@ -6,6 +6,7 @@ using MoldManager.WebUI.Models.GridRowModel;
 using TechnikSys.MoldManager.Domain.Entity;
 using TechnikSys.MoldManager.Domain.Abstract;
 using MoldManager.WebUI.Models.Helpers;
+using TechnikSys.MoldManager.Domain.Status;
 
 namespace MoldManager.WebUI.Models.GridRowModel
 {

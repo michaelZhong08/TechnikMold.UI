@@ -18,12 +18,13 @@
             <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
             <input type="hidden" id="ReturnRequestID" value="@ViewBag.ReturnRequestID" />
             <ul class="nav nav-pills">
+                <li><button class="btn btn-primary" id="ClosePO">返回</button> </li>
                 @if (DeptID == 20)
                 {
-                    if (ViewBag.State < (int)PurchaseOrderStatus.完成)
+                    @*if (ViewBag.State < (int)PurchaseOrderStatus.完成)
                     {
-                        <li><button class="btn btn-primary" id="ClosePO">关闭订单</button> </li>
-                    }
+                        <li><button class="btn btn-primary" id="ClosePO">返回</button> </li>
+                    }*@                    
                     if ((ViewBag.State == (int)PurchaseOrderStatus.部分收货) || (ViewBag.State == (int)PurchaseOrderStatus.完成))
                     {
                         if (ViewBag.ReturnRequestID > 0)
@@ -113,7 +114,7 @@
                 }
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 
                     <button type="button" id="ConfirmInStock" class="btn btn-primary">确认收货</button>
                
@@ -136,7 +137,7 @@
                 <select id="POHistory" class="form-control" size="20"></select>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>

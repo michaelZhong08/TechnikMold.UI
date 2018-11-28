@@ -9,17 +9,17 @@ namespace TechnikMold.UI.Models.GridRowModel
     public class PartSearchGridRowModel
     {
         public string[] cell;
-        public PartSearchGridRowModel(Part _part)
+        public PartSearchGridRowModel(PurchaseItem _item)
         {
             cell = new string[8];
-            cell[0] = _part.PartID.ToString();
-            cell[1] = _part.ShortName;
-            cell[2] = _part.PartNumber;
-            cell[3] = _part.Specification ?? "";
-            cell[4] = _part.MaterialName ?? "";
-            cell[5] = _part.BrandName ?? "";
-            cell[6] = _part.Quantity.ToString();
-            cell[7] = _part.Version;
+            cell[0] = _item.PartID.ToString();
+            cell[1] = _item.Name;
+            cell[2] = _item.PartNumber;
+            cell[3] = _item.Specification ?? "";
+            cell[4] = _item.Material ?? "";
+            cell[5] = _item.SupplierName ?? "";
+            cell[6] = _item.Quantity.ToString();
+            cell[7] = "";
         }
     }
 }

@@ -45,42 +45,55 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             else
             {
                 Project _dbEntry = _context.Projects.Find(Project.ProjectID);
+                #region 更新主项目下所有子项目客户
+                if (Project.MoldNumber == "---")
+                {
+                    if (_dbEntry.CustomerID != Project.CustomerID)
+                    {
+                        IQueryable<Project> _projects = _context.Projects.Where(p => p.ProjectNumber == Project.ProjectNumber);
+                        foreach(var p in _projects)
+                        {
+                            p.CustomerID = Project.CustomerID;
+                            p.CustomerName = Project.CustomerName;
+                        }
+                    }
+                }
+                #endregion
                 if (_dbEntry != null)
                 {
-                     _dbEntry.Name =Project.Name;
-                     _dbEntry.ProjectNumber = Project.ProjectNumber;
-                     _dbEntry.Type =Project.Type;
-                     _dbEntry.MoldNumber =Project.MoldNumber;
-                     _dbEntry.CustomerID =Project.CustomerID;
-                     _dbEntry.CustomerName =Project.CustomerName;
-                     _dbEntry.ProjectStatus =Project.ProjectStatus;
-                    _dbEntry.Memo = Project.Memo==null?"":Project.Memo;
-                    _dbEntry.Attachment=Project.Attachment==null?"":Project.Attachment;
-                     _dbEntry.ParentID = Project.ParentID;
-                     _dbEntry.Enabled = Project.Enabled;
-                     _dbEntry.OldID = Project.OldID;
-                     _dbEntry.CreateTime = Project.CreateTime;
-                     _dbEntry.FinishTime = Project.FinishTime;
-                     _dbEntry.FixMoldType = Project.FixMoldType;
-                     _dbEntry.MainPhaseChange = Project.MainPhaseChange;
+                    _dbEntry.Name = Project.Name;
+                    _dbEntry.ProjectNumber = Project.ProjectNumber;
+                    _dbEntry.Type = Project.Type;
+                    _dbEntry.MoldNumber = Project.MoldNumber;
+                    _dbEntry.CustomerID = Project.CustomerID;
+                    _dbEntry.CustomerName = Project.CustomerName;
+                    _dbEntry.ProjectStatus = Project.ProjectStatus;
+                    _dbEntry.Memo = Project.Memo == null ? "" : Project.Memo;
+                    _dbEntry.Attachment = Project.Attachment == null ? "" : Project.Attachment;
+                    _dbEntry.ParentID = Project.ParentID;
+                    _dbEntry.Enabled = Project.Enabled;
+                    _dbEntry.OldID = Project.OldID;
+                    _dbEntry.CreateTime = Project.CreateTime;
+                    _dbEntry.FinishTime = Project.FinishTime;
+                    _dbEntry.FixMoldType = Project.FixMoldType;
+                    _dbEntry.MainPhaseChange = Project.MainPhaseChange;
                 }
             }
-
             
-
-            IEnumerable<Project> _subs = _context.Projects.Where(p => p.ParentID == Project.ProjectID);
-            if (_subs.Count() > 0)
-            {
-                foreach (Project _sub in _subs)
-                {
-                    _sub.CustomerID = Project.CustomerID;
-                    _sub.CustomerName = Project.CustomerName;
-                    
-                }
-            }
+            //IEnumerable<Project> _subs = _context.Projects.Where(p => p.ParentID == Project.ProjectID);
+            //if (_subs.Count() > 0)
+            //{
+            //    foreach (Project _sub in _subs)
+            //    {
+            //        _sub.CustomerID = Project.CustomerID;
+            //        _sub.CustomerName = Project.CustomerName;                    
+            //    }
+            //}
             _context.SaveChanges();
             return Project.ProjectID;
         }
+
+        
 
         /// <summary>
         /// Query project by keyword
@@ -283,14 +296,20 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public IQueryable<Project> GetProjectsByDep(int Department)
         {
             DateTime iniDate = new DateTime(1, 1, 1);
-            var _projects = from pj in _context.Projects
-                             join ph in _context.ProjectPhases on pj.ProjectID equals ph.ProjectID into _p1
-                             from _p2 in _p1.DefaultIfEmpty()
-                             join dp in _context.Base_DepPhases on _p2.PhaseID equals dp.PhaseId into _p3
-                             from _p4 in _p3.DefaultIfEmpty()
-                             where pj.ProjectNumber != "Sinnotech" && pj.ProjectStatus >= 0 && ((_p4.DepId == Department && iniDate.Equals( _p2.ActualFinish)) || Department == 1) && pj.Enabled==true
-                             select pj;
-
+            DateTime iniDate1 = new DateTime(1900, 1, 1);
+            //var _projects = from pj in _context.Projects
+            //                 join ph in _context.ProjectPhases on pj.ProjectID equals ph.ProjectID into _p1
+            //                where pj.ProjectNumber != "Sinnotech" && pj.ProjectStatus >= 0 && pj.Enabled == true
+            //                from _p2 in _p1.DefaultIfEmpty()
+            //                join dp in _context.Base_DepPhases on _p2.PhaseID equals dp.PhaseId into _p3
+            //                from _p4 in _p3.DefaultIfEmpty()
+            //                where ((_p4.DepId == Department && iniDate.Equals(_p2.ActualFinish)) || Department == 1) 
+            //                select pj;
+            var _proJIDList = (from _p1 in _context.ProjectPhases
+                               join _p2 in _context.Base_DepPhases on _p1.PhaseID equals _p2.PhaseId
+                               where (_p2.DepId == Department && _p2.Enable==true && (iniDate.Equals(_p1.ActualFinish) || iniDate1.Equals(_p1.ActualFinish))) || Department == 1
+                               select _p1.ProjectID).Distinct();
+            var _projects = _context.Projects.Where(p => p.ProjectNumber != "Sinnotech" && p.ProjectStatus >= 0 && p.Enabled == true && _proJIDList.Contains(p.ProjectID));
             return _projects.Distinct();
         }
     }

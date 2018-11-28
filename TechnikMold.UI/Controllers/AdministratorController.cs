@@ -8,6 +8,7 @@ using TechnikSys.MoldManager.Domain.Entity;
 using MoldManager.WebUI.Models;
 using TechnikMold.UI.Models.GridViewModel;
 using TechnikMold.UI.Models;
+using System.IO;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -24,6 +25,7 @@ namespace MoldManager.WebUI.Controllers
         private IDepPhaseRepository _depphaseRepository;
         private IMachinesInfoRepository _machinesinfoRepository;
         private IMachineRepository _machinesRepository;
+        private ISystemConfigRepository _systemConfigRepository;
 
         public AdministratorController(ITaskHourCostRepository  TaskHourCostRepository, 
             IDepartmentRepository DepartmentRepository, 
@@ -35,7 +37,8 @@ namespace MoldManager.WebUI.Controllers
             IPhaseRepository PhaseRepository,
             IDepPhaseRepository DepPhaseRepository,
             IMachinesInfoRepository MachinesInfoRepository,
-            IMachineRepository MachinesRepository)
+            IMachineRepository MachinesRepository,
+            ISystemConfigRepository SystemConfigRepository)
         {
             _taskHourCostRepository = TaskHourCostRepository;
             _departmentRepository =DepartmentRepository ;
@@ -48,7 +51,8 @@ namespace MoldManager.WebUI.Controllers
             _depphaseRepository = DepPhaseRepository;
             _machinesinfoRepository = MachinesInfoRepository;
             _machinesRepository = MachinesRepository;
-        }
+            _systemConfigRepository= SystemConfigRepository;
+    }
         // GET: Administrator
         public ActionResult Index()
         {
@@ -408,25 +412,7 @@ namespace MoldManager.WebUI.Controllers
 
             }
             
-        }
-
-
-        public ActionResult BrandManagement()
-        {
-            return View();
-        }
-
-        public int SaveBrand(Brand Brand)
-        {
-            Brand.Enabled = true;
-            int _brandID= _brandRepository.Save(Brand);
-            return _brandID;            
-        }
-
-        public void DeleteBrand(int BrandID)
-        {
-            _brandRepository.Delete(BrandID);
-        }
+        }        
         #endregion
         #region 日志记录
         public void LogRecord(string filename, string content)
@@ -436,9 +422,90 @@ namespace MoldManager.WebUI.Controllers
         }
         #endregion
 
+        #region 部门
+        public JsonResult Service_GetDepartmentJson()
+        {
+            List<Department> _depList = _departmentRepository.Departments.Where(d => d.Enabled == true).ToList();
+            return Json(_depList, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
+
+        #region 品牌
+        public ActionResult BrandManagement()
+        {
+            return View();
+        }
+
+        public int SaveBrand(Brand Brand)
+        {
+            Brand.Enabled = true;
+            int _brandID = _brandRepository.Save(Brand);
+            return _brandID;
+        }
+
+        public void DeleteBrand(int BrandID)
+        {
+            _brandRepository.Delete(BrandID);
+        }
+
+        public JsonResult Service_GetBrandsByDep(string Keyword = "")
+        {
+            int _depID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+            IQueryable<Brand> _brands;
+            switch (_depID)
+            {
+                case 4:
+                    _brands = _brandRepository.QueryAll().Where(b => b.Name.Contains(Keyword));
+                    break;
+                default:
+                    _brands= _brandRepository.QueryByType("模具材料").Where(b => b.Name.Contains(Keyword));
+                    break;
+            }
+            return Json(_brands, JsonRequestBehavior.AllowGet);
+        }
+        public JsonResult Service_GetBrandsByType(string _type = "", string Keyword = "")
+        {
+            IQueryable<Brand> _brands = _brandRepository.QueryByType(_type).Where(b => b.Name.Contains(Keyword));
+            return Json(_brands, JsonRequestBehavior.AllowGet);
+        }
+        public int GetBrand(string BrandName)
+        {
+            int _count = _brandRepository.QueryByName(BrandName).Count();
+            return _count;
+        }
+        public JsonResult Service_GetBrandByID(int _brandID)
+        {
+            Brand _brand = _brandRepository.QueryByID(_brandID);
+            return Json(_brand, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
         public string AcceptClientData(string testData="")
         {
             return testData;
         }
+        #region Plug-in
+        public string Service_GetServerInfo()
+        {
+            string urlHost = Request.Url.Host;
+            string urlPort = Request.Url.Port.ToString();
+            string ServerMapPath = Server.MapPath("~");
+            string ServiceUri = _systemConfigRepository.GetValueByName("ServiceUri");
+            string resStr = string.Format("&urlHost*{0}&urlPort*{1}&Obj*QRMail&ServiceUri*{2}&ServerMapPath*{3}&arg*", urlHost, urlPort, ServiceUri, ServerMapPath);//&ServerMapPath*{2} ServerMapPath
+            return resStr;
+        }
+        public ActionResult Service_FileDownLoad()
+        {
+            try
+            {
+                string _url = string.Format( Server.MapPath("~/{0}/{1}"),"DownLoad", "PluginSetup.rar");
+                return File(new FileStream(_url, FileMode.Open), "text/plain", "模具系统插件安装.rar"); //返回FileStream
+            }
+            catch (Exception ex)
+            {
+                LogRecord("插件下载", ex.InnerException == null ? ex.Message : ex.InnerException.InnerException == null ? ex.Message : ex.InnerException.InnerException.ToString());
+                return Json(new { Code = -1, Message = "插件下载失败！" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+        #endregion
     }
 }

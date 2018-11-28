@@ -233,30 +233,28 @@
 
     //生成程序
     $("#CreateProgram").on("click", function () {
-        var selr = $('#ProcessGrid').jqGrid('getGridParam', 'selarrrow');
-        if (selr != "") {
-
-            if (($("#DeviceSelect").text() == "夏米尔350") || ($("#DeviceSelect").text() == "夏米尔350选择跑位")) {
+        //var selr = $('#ProcessGrid').jqGrid('getGridParam', 'selarrrow');
+        //if (selr != "") {
+        if (($("#DeviceType").text() == "夏米尔350") || ($("#DeviceType").text() == "夏米尔350选择跑位")) {
                 $("#FileName").val("O0001.iso");
                 $("#MachSequence").modal("show");
             } else {
                 $("#FileName").val(".CMD");
-                //alert(($("#DeviceSelect").text() == "夏米尔350 选择跑位") || (($("#DeviceSelect").text() == "夏米尔23 选择跑位")));
-                if ($("#DeviceSelect").text().indexOf("选择跑位") >= 0) {
+                if ($("#DeviceType").text().indexOf("选择跑位") >= 0) {
                     ShowPositionSelect();
                 } else {
                     GetProgram();
                 }
 
             }
-        } else {
-            alert("请至少选择一个加工项");
-        }
+        //} else {
+        //    alert("请至少选择一个加工项");
+        //}
     })
 
 
     $("#SequenceSetButton").on("click", function () {
-        if ($("#DeviceSelect").text().indexOf("选择跑位") >= 0) {
+        if ($("#DeviceType").text().indexOf("选择跑位") >= 0) {
             ShowPositionSelect();
         } else {
             GetProgram();
@@ -297,7 +295,7 @@
     })
 
     $("#SetAccept").on("click", function () {
-        SetTaskAccept()
+        //SetTaskAccept()
     })
 
 
@@ -452,22 +450,26 @@ function TaskListCNC() {
 }
 
 //EDM任务列表
-function TaskListEDM() {  
+function TaskListEDM() {
+    $("#TaskGrid").setGridParam().showHideCol("Quantity");
 }
 
 //WEDM任务列表
 function TaskListWEDM() {
+    $("#TaskGrid").setGridParam().showHideCol("Quantity");
     $("#TaskGrid").setGridParam().showHideCol("CADPartName");
     $("#TaskGrid").setGridParam().showHideCol("Preciston");
 }
 
 //铣铁任务列表
 function TaskListMill() {
+    $("#TaskGrid").setGridParam().showHideCol("Quantity");
     $("#TaskGrid").setGridParam().showHideCol("ProcessName");
 }
 
 //铣磨任务列表
 function TaskListGrind() {
+    $("#TaskGrid").setGridParam().showHideCol("Quantity");
     $("#TaskGrid").setGridParam().showHideCol("CADPartName");
     $("#TaskGrid").setGridParam().showHideCol("Material");
     $("#TaskGrid").setGridParam().showHideCol("HRC");
@@ -1169,8 +1171,6 @@ function SetElePosition() {
         rowno = 1 + Number(rowno);
         posval = Number(posgap) + Number(posval);
     }
-
-
     $("#PositionDlg").modal("hide");
 }
 
@@ -1258,7 +1258,8 @@ function SetMaterial() {
 ///提交EDM数据并获取程序结果
 function GetProgram() {
     var sourceGrid = "#ProcessGrid";
-    var selrows = $(sourceGrid).jqGrid('getGridParam', 'selarrrow');
+    //var selrows = $(sourceGrid).jqGrid('getGridParam', 'selarrrow');
+    var selrows = $('#ProcessGrid').getDataIDs();
     var itemData = "";
     var name = "Items";
     for (var i = 0; i < selrows.length; i++) {
@@ -1288,14 +1289,15 @@ function GetProgram() {
     itemData = itemData + "DeviceType=" + $("#DeviceType option:selected").val() + "&" +
         "RaiseHeight=" + $("#RaiseHeightValue").val() + "&" +
         "PieceCount=" + $("#PieceCountValue").val() + "&" +
-        "MachineName=" + $("#DeviceSelect").text() + "&" +
+        "MachineName=" + $("#DeviceType").text() + "&" +
         "SelectFirst=" + $("#SequenceSet").val();
+        //"_thWorkUser=" + $("#CheckUser").val() + "&" +
+        //"_thMachine=" + $("#sel_machinesinfo").val();
     //alert(itemData);
     for (i = 0; i < Positions.length; i++) {
         itemData = itemData + "&EleList[" + i + "]=" + EleNames[i] +
             "&PosList[" + i + "]=" + Positions[i];
     }
-
 
     $.ajax({
         type: "Post",
@@ -1620,8 +1622,8 @@ function UpdateEleMachInfo(TaskID) {
                 ElePoints: n.ElePoints,
                 EleType: n.EleType,
                 StockGap: n.StockGap,
-                CNCMachMethod: n.CNCMachMethod
-
+                CNCMachMethod: n.CNCMachMethod,
+                CNCStautsName: n.CNCStautsName
             }
             $("#TaskGrid").addRowData(+i, data, 0, 0);
         })
@@ -1985,19 +1987,27 @@ function LoadEDMUsers() {
 }
 
 function DownloadFile() {
+    var selrows = $('#ProcessGrid').getDataIDs();
+    var itemData = '';
+    //var name = "_eleLabNames";
+    var _eleLabNames = '';
+    for (var i = 0; i < selrows.length; i++) {
+        //itemData = itemData+ name + "[" + i + "].LableName=" + $(sourceGrid).getCell(selrows[i], "LableName") + "&";
+        _eleLabNames = _eleLabNames + $('#ProcessGrid').getCell(selrows[i], "LableName") + ",";
+    }
+    var val = $('#sel_machinesinfo').val();
+    val = val.split(',');
+    _eleLabNames = _eleLabNames.substring(0, _eleLabNames.length - 1);
 
-    //var _url = "/Task/DownloadProgram";
-    //$.ajax({
-    //    url: _url,
-    //    type: "Post",
-    //    dataType: "html",
-    //    data: $("#Download").serialize(),
-    //    success: function (msg) {
-    //        location.reload();
-    //    }
-
-    //})
-    $("#Download").submit();
+    itemData = itemData + '_eleLabNames=' + _eleLabNames + '&TaskID=' + $('#TaskID').val() + '&_thWorkUser=' + $('#CheckUser option:selected').text() + '&_thMachine=' + val[1];
+    var _url = '/Task/Service_Insert_EDMTaskHourRecord';
+    if ($('#CheckUser').val() == '' || $('#sel_machinesinfo').val() == '') {
+        alert(' 请选择加工人员/机器！');
+        return;
+    } else {
+        $.get(_url, itemData);
+        $("#Download").submit();
+    }   
 }
 
 
@@ -2174,3 +2184,64 @@ function ShowEDMDetailsList() {
         alert("请至少选择一项加工任务")
     }
 }
+
+//加载workshop对应部门人员
+    function LoadWSUser(type) {
+        $("#CheckUser option").remove();
+        var _depid=0;
+        type=Number(type);
+        switch(type){
+            case 1:
+                _depid=7;
+                break;
+            case 2:
+                _depid=8;
+                break;
+            case 3:
+                _depid=9;
+                break;
+            case 4:
+                _depid=7;
+                break;
+            case 6:
+                _depid=5;
+                break;
+        }
+        $.getJSON("/User/GetUsersByDepartment?DepartmentID="+_depid, function (msg) {
+            $("#CheckUser").append($("<option/>", {
+                value: 0,
+                text: '-'
+            }))
+            $.each(msg, function (i, n) {
+                $("#CheckUser").append($("<option/>", {
+                    value: n.UserID,
+                    text: n.FullName
+                }))
+            })
+        })
+    }
+
+    function ShowTaskHourPhaseForm(_totaltime, _col) {
+        //var _totaltime = $("#tb_SetupWFTaskHour").getCell($("#tb_SetupWFTaskHour").getGridParam("selrow"), "TotalTime");
+        var firsttdobj = $('#tb_SetupWFTaskHour td:eq(' + _col + ')');//' + _col + '
+        //模拟单元格点击事件
+        firsttdobj.trigger("click");
+
+        if (_totaltime > 0) {
+            $('#SetupTaskPeriodHourModal').modal('show');
+        }
+        else
+            alert('请先填写总工时!');
+    }
+
+    function SetTaskWaiting(taskID) {
+        $.get('/Task/Service_SetTaskWaiting?_taskID=' + taskID, function (res) {
+            if (res == 1) {
+                alert('设置成功！');
+                location.reload();
+            } else {
+                alert('设置失败！');
+                return false;
+            }
+        })
+    }

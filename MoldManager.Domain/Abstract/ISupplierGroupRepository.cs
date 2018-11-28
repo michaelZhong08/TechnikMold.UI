@@ -13,5 +13,7 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         int Save(SupplierGroup model);
         List<SupplierGroup> QuerySGList();
         SupplierGroup QueryByID(int _sgID);
+        List<Supplier> QuerySuppliersByGroupID(int _groupID);
+        int Delete(int _sgID);
     }
 }

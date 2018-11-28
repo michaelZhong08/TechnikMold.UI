@@ -15,12 +15,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Total;
         public int Records;
 
-        public QRContentGridViewModel(IEnumerable<PRContent> PRContents)
+        public QRContentGridViewModel(IEnumerable<PRContent> PRContents,string prMemo)
         {
             rows = new List<QRContentGridRowModel>();
             foreach (PRContent _prContent in PRContents)
             {
-                rows.Add(new QRContentGridRowModel(_prContent));
+                rows.Add(new QRContentGridRowModel(_prContent, prMemo));
             }
             Page = 1;
             Total = PRContents.Count();

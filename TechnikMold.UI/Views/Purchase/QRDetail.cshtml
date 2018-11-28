@@ -1,4 +1,5 @@
 ﻿@model TechnikSys.MoldManager.Domain.Entity.QuotationRequest
+@using TechnikSys.MoldManager.Domain.Status
 @using MoldManager.WebUI.Models.Helpers;
 
 @{
@@ -52,45 +53,67 @@
         }
         <div id="Toolbar">
 
-            @if (Model == null)
+            <table>
+                <tr>
+                    @if (Model == null)
             {
-                <button class="btn btn-success" id="SaveQR">保存询价单</button>
-                <button class="btn btn-primary" id="AddQRContent">添加零件</button>
-                <button class="btn btn-primary" id="DeleteQRContent">删除零件</button>
-            }
-            else
-            {
-                if (DeptID == 4)
-                {
-                    switch (Model.State)
-                    {
-                        case (int)QuotationRequestStatus.新建:
-                            <button class="btn btn-primary" id="AddQRContent">添加零件</button>
+                        <td>
+                            <button class="btn btn-success" id="SaveQR">保存询价单</button>
+                        </td>
+                        <td><button class="btn btn-primary" id="AddQRContent">添加零件</button></td>
+                        <td>
                             <button class="btn btn-primary" id="DeleteQRContent">删除零件</button>
-                            <button class="btn btn-primary" id="SaveQR">保存询价单</button>
-                            <button class="btn btn-warning" id="CancelQR">取消</button>
-                            <button class="btn btn-primary" id="SelectQRSupplier">选择供应商</button>
-                            <button class="btn btn-primary" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span> 询价文件</button>
-                            <button class="btn btn-primary" id="GenerateLink"><span class="glyphicon glyphicon-envelope"></span> 发送邮件</button>
-                            <button class="btn btn-primary" id="ExportStdData">标准件信息输出</button>
-                            break;
-                        case (int)QuotationRequestStatus.发出:
-                            <button class="btn btn-primary" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span> 询价文件</button>
-                            <button class="btn btn-primary" id="GenerateLink"><span class="glyphicon glyphicon-envelope"></span> 发送邮件</button>
-                            <button class="btn btn-primary" id="SelectQRSupplier">选择供应商</button>
-                            <button class="btn btn-primary" id="QuotationInput">输入供应商报价</button>
-                            <button class="btn btn-primary" id="CompareQuotation">报价对比&供应商指定</button>
-                            <button class="btn btn-primary" id="QuotationUpload">供应商报价文件</button>
-                            <button class="btn btn-warning" id="CloseQR">关闭询价单</button>
-                            break;
-                        case (int)QuotationRequestStatus.完成:
-                            <button class="btn btn-warning" id="RestartQR">重新询价</button>
-                            <button class="btn btn-primary" id="CompareQuotation">报价对比&生成订单</button>
-                            break;
+                        </td>
                     }
-                    
-                }
-            }
+                    else
+                    {
+                        if (DeptID == 4)
+                        {
+                            switch (Model.State)
+                            {
+                                case (int)QuotationRequestStatus.新建:
+                                    <td><button class="btn btn-primary" id="AddQRContent">添加零件</button></td>
+                                    <td><button class="btn btn-primary" id="DeleteQRContent">删除零件</button></td>
+                                    <td><button class="btn btn-primary" id="SaveQR">保存询价单</button></td>
+                                    <td><button class="btn btn-warning" id="CancelQR">取消</button></td>
+                                    <td><button class="btn btn-primary" id="SelectQRSupplier">选择报价组</button></td>
+                                    <td><button class="btn btn-primary" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span> 询价文件</button></td>
+                                    <td id="td_GenerateLink"></td>
+                                    break;
+                                case (int)QuotationRequestStatus.发出:
+                                    <td>
+                                        <button class="btn btn-primary" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span> 询价文件</button>
+                                    </td>
+                                    <td id="td_GenerateLink">
+
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" id="SelectQRSupplier">选择报价组</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" id="QuotationInput">输入供应商报价</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" id="CompareQuotation">报价对比&供应商指定</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-warning" id="CloseQR">关闭询价单</button>
+                                    </td>
+                                    break;
+                                case (int)QuotationRequestStatus.完成:
+                                    <td>
+                                        <button class="btn btn-warning" id="RestartQR">重新询价</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" id="CompareQuotation">报价对比&生成订单</button>
+                                    </td>
+                                    break;
+                            }
+                        }
+                    }
+                </tr>
+            </table>
+
         </div>
         <div id="Basic" class="col-sm-10 PRInfo">
             @if (ViewBag.QuotationRequestID == 0)
@@ -159,13 +182,27 @@
                         <tr>
                             <td class="col-sm-1"><label>状态</label></td>
                             <td class="col-sm-2"><input type="text" id="QuotationRequestStatus" class="form-control" value="@status" readonly></td>
-                            <td class="col-sm-1"><label>已选择供应商</label></td>
+                            <td class="col-sm-1"><label>已选择报价组</label></td>
                             <td class="col-sm-2">
                                 <input type="text" id="ExistingSuppliers" class="form-control" readonly />
                             </td>
                         </tr>
+                        if (Model.State >= (int)QuotationRequestStatus.发出)
+                        {
+                            <tr>
+                                <td class="col-sm-1"><label>备注</label></td>
+                                <td colspan="3" class="col-sm-5"><input type="text" id="Memo" class="form-control" placeholder="备注" value="@ViewBag.Memo" readonly /></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <td class="col-sm-1"><label>备注</label></td>
+                                <td colspan="3" class="col-sm-5"><input type="text" id="Memo" class="form-control" placeholder="备注" value="@ViewBag.Memo" /></td>
+                            </tr>
+                        }
                     }
-                        
+
             </table>
         </div>
 
@@ -205,7 +242,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SaveQRContentQty" class="btn btn-primary">保存</button>
             </div>
         </div>
@@ -269,7 +306,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SaveQRContent" class="btn btn-primary">确定</button>
             </div>
         </div>
@@ -282,7 +319,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="SupplierSelectLabel">选择供应商</h4>
+                <h4 class="modal-title" id="SupplierSelectLabel">选择报价组</h4>
             </div>
             <div class="modal-body" style="height:300px">
                 <div class="col-sm-5">
@@ -298,7 +335,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SaveQRSuppliers" class="btn btn-primary">保存</button>
             </div>
         </div>
@@ -336,7 +373,7 @@
                
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SendQRMail" class="btn btn-primary">发送</button>
             </div>
         </div>
@@ -355,7 +392,7 @@
                 <textarea class="form-control" rows="10" id="QRContentInfo"></textarea>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>
@@ -372,7 +409,6 @@
             <div class="modal-body">
                 <form action="/Purchase/QuotationUpload" id="UploadFileForm" enctype="multipart/form-data" method="post">
                     <table class="table-bordered">
-
                         <tr>
                             <td class="col-sm-4">供应商</td>
                             <td class="col-sm-8">
@@ -406,7 +442,7 @@
                 </table>         
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>
@@ -427,11 +463,21 @@
             //    $('#Toolbar').append(aStr);
             //    document.getElementById("qrMail").click();
             //});
+            //alert('请耐心等待Outlook程序打开！');
+            $.jAlert({ //this is the normal usage
+                //'title': 'Test',
+                'content': '请耐心等待Outlook程序打开！',
+                //'theme': 'green',
+                'autoClose' : 5000,
+                'closeBtn':false,
+                'size': 'xsm'
+            });
             var qrID=Number($('#QuotationRequestID').val());
             $.get('/Purchase/Service_Add_MailListenRecord?RecordID='+qrID+'&RecordType=QR',function(res){
                 res=JSON.parse(res);
                 if(res.Code==0){
-                    alert(res.Message);
+                    return;
+                    //alert(res.Message);
                 }
                 else{
                     alert(res.Message);
@@ -525,7 +571,6 @@
         var _formData = new FormData($("#UploadFileForm")[0]);
 
         $.ajax({
-
             type:"POST", 
             dataType:"html", 
             url:"/Purchase/QuotationUpload", 
@@ -583,5 +628,37 @@
             alert('当前页面不存在数据行！');
             return false;
         }
+    }
+</script>
+
+<script>
+    $(function(){
+        //$.get('/Purchase/Service_GetMailContent?qrID='+$('#QuotationRequestID').val(),function(res){
+        //    var _html='<a class="btn btn-info" href=zrj:'+res+'><span class="glyphicon glyphicon-envelope"></span> 发送邮件12</a>'
+        //    $('#test').append(_html);
+        //})     
+        $.get('/Administrator/Service_GetServerInfo',function(res){
+            var _qrID=$('#QuotationRequestID').val();
+            var _html='<a class="btn btn-primary" onclick="ShowDialog()" href=MoldSysPlugin:'+res+_qrID +'&aaaa><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>'
+            $('#td_GenerateLink').append(_html);
+        });        
+    });
+    function ShowDialog(){
+        $.jAlert({ //this is the normal usage
+            'content': '请耐心等待Outlook程序打开！<br />若无反应请<a href="/Administrator/Service_FileDownLoad">点击此处</a>下载插件',
+            'autoClose' : 5000,
+            'closeBtn':false,
+            'size': 'xsm'
+        });
+        var qrID=Number($('#QuotationRequestID').val());
+        $.get('/Purchase/Service_Add_MailListenRecord?RecordID='+qrID+'&RecordType=QR',function(res){
+            res=JSON.parse(res);
+            if(res.Code==0){
+                return;
+            }
+            //else{
+            //    alert(res.Message);
+            //}
+        })
     }
 </script>

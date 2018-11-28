@@ -76,8 +76,11 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Quantity = Task.Quantity;
                     _dbEntry.Memo = Task.Memo == null ? "" : Task.Memo;
                     _dbEntry.StateMemo = Task.StateMemo == null ? "" : Task.StateMemo;
-                    _dbEntry.PrevState = _dbEntry.State;
-                    _dbEntry.State = Task.State;
+                    if(_dbEntry.State!= Task.State)
+                    {
+                        _dbEntry.PrevState = _dbEntry.State;
+                        _dbEntry.State = Task.State;
+                    }                   
                     _dbEntry.ProjectID = Task.ProjectID;
                     _dbEntry.TaskType = Task.TaskType;
                     _dbEntry.ProgramID = Task.ProgramID;
@@ -343,7 +346,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public void AcceptItem(int TaskID)
         {
             Task _task = QueryByTaskID(TaskID);
-            _task.State = (int)SteelStatus.已接收;
+            _task.State = (int)TaskStatus.已接收;
             _task.AcceptTime = DateTime.Now;
             _context.SaveChanges();
         }

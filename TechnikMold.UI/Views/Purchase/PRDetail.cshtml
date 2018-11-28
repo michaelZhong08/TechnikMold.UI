@@ -64,7 +64,7 @@
 
             @if (Model == null)
             {
-                <button class="btn btn-primary" id="AddContent">添加零件</button>
+                <button class="btn btn-primary" id="AddContent" disabled>添加零件</button>
                 <button class="btn btn-primary" id="DeleteContent">删除零件</button>
                 <button class="btn btn-success" id="CreatePR">保存申请单</button>
             }
@@ -76,11 +76,10 @@
                     case (int)PurchaseRequestStatus.新建:
                         if (Model.DepartmentID == DeptID)
                         {
-                            <button class="btn btn-primary" id="AddContent">添加零件</button>
-                            
+                            <button class="btn btn-primary" id="AddContent">添加零件</button>                            
                             <button class="btn btn-primary" id="DeleteContent">删除零件</button>
-                            <button class="btn btn-primary" id="ShowAttachFileModal">附件</button>
-                            <button class="btn btn-primary" id="CreatePR">保存申请单</button>
+                            <button class="btn btn-info" id="ShowAttachFileModal">添加附件</button>
+                            <button class="btn btn-success" id="CreatePR">保存申请单</button>
                             <button class="btn btn-success" id="SubmitPR">提交申请单</button>
                             <button class="btn btn-warning" id="CancelPR">取消申请单</button>
                         }
@@ -114,7 +113,6 @@
                         break;
                 }
             }
-
         </div>
         <div id="Basic" class="col-sm-10 PRInfo">
             <table>
@@ -221,6 +219,7 @@
                         <td class="col-sm-2">
                             <label>采购类型</label>
                             <select id="PurchaseType" class="form-control" name="PurchaseType" style="display:inline;float:right;width:80%"></select>
+                            <input type="hidden" id="PurchaseTypeName" readonly />
                         </td>
                         <td class="col-sm-2">
                             <label style="float:left">推荐供应商</label>
@@ -269,7 +268,6 @@
         </div>
     </div>
 </div>
-<input id="btntest" type="button" class="form-control" value="ceshianniu" />
 <input type="hidden" id="tempID" value="-1" />
 
 <input type="hidden" id="row" />
@@ -284,16 +282,30 @@
             <div class="modal-body">
                 <table class="table-striped col-sm-12">
                     <tr>
-                        <td class="col-sm-4">模号</td>
+                        <td class="col-sm-4 ">
+                            <div class="_selPart1">模号</div>
+                            <div class="_selPart2">耗材类型</div>
+                            <div class="_selPart5">备库大类</div>
+                        </td>
                         <td class="col-sm-8">
-                            <input type="text" class="form-control required" name="MoldNum" id="MoldNum" min="0" value="" placeholder="请输入模号" />
+                            <div class="_selPart1">
+                                <input type="text" class="form-control required" name="MoldNum" id="MoldNum" min="0" value="" placeholder="请输入模号" />
+                            </div>
+                            <div class="_selPart2">
+                                <input type="text" list="modal_HCClassList" class="form-control required" name="HCClass" id="HCClass" />
+                                <datalist id="modal_HCClassList"></datalist>
+                            </div> 
+                            <div class="_selPart5">
+                                <input type="text" list="modal_BKClassList" class="form-control required" name="BKClass" id="BKClass" />
+                                <datalist id="modal_BKClassList"></datalist>
+                            </div>
                         </td>
                     </tr>
                     <tr>
                         <td class="col-sm-4">零件号</td>
                         <td class="col-sm-8">
                             <input type="hidden" class="form-control" name="PartNumber" id="PartNumber" min="0" value="" />
-                            <input type="text" class="form-control required" name="JobNo" id="JobNo" min="0" value="" placeholder="请输入JOB NO" />
+                            <input type="text" class="form-control required" name="JobNo" id="JobNo" min="0" value="" placeholder="请输入JOB NO" readonly/>
                         </td>
                     </tr>
                     <tr>
@@ -311,6 +323,10 @@
                     <tr>
                         <td class="col-sm-4">数量</td>
                         <td class="col-sm-8"><input type="number" class="form-control required" name="Quantity" id="Quantity" min="0" value="" /></td>
+                    </tr>
+                    <tr id="tr_PlanQty" hidden>
+                        <td class="col-sm-4">计划数量</td>
+                        <td class="col-sm-8"><input type="number" class="form-control required" name="PlanQty" id="PlanQty" min="0" value="" /></td>
                     </tr>
                     <tr>
                         <td class="col-sm-4">规格</td>
@@ -341,10 +357,8 @@
                     <tr>
                         <td class="col-sm-4">供应商</td>
                         <td class="col-sm-8">
-                            @*<select class="form-control" id="AvailableSuppliers" name="SupplierID"></select>*@
                             <input id="AvailableSuppliers" list="modal_SupplierIDD" type="text" name="AvailableSuppliers" class="form-control" />
                             <datalist id="modal_SupplierIDD"></datalist>
-                            @*<input id="AvailableSuppliers" name="SupplierID" hidden>*@
                         </td>
                     </tr>
                     <tr>
@@ -368,7 +382,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SaveContent" class="btn btn-primary">确定</button>
             </div>
         </div>
@@ -396,7 +410,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" class="btn btn-primary" data-dismiss="modal" id="PRSubmitButton">确定</button>
             </div>
         </div>
@@ -437,13 +451,12 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" class="btn btn-primary" data-dismiss="modal" id="PRReviewButton">确定</button>
             </div>
         </div>
     </div>
 </div>
-
 
 @*重启申请单对话框*@
 <div class="modal" id="RestartPRDialog" tabindex="-1" role="dialog" aria-labelledby="RestartPRLabel">
@@ -458,14 +471,12 @@
                 <textarea id="RestartMemo" name="Memo" rows="5" class="form-control" maxlength="99" style="resize:none"></textarea>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="RestartPRBtn" class="btn btn-primary">保存</button>
             </div>
         </div>
     </div>
 </div>
-
-
 
 @*申请单历史显示*@
 <div class="modal" id="PRHistoryModal" tabindex="-1" role="dialog" aria-labelledby="PRHistoryLabel">
@@ -479,16 +490,15 @@
                 <select id="PRHistoryList" class="form-control" size="20"></select>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>
 </div>
 
-
 @*添加零件*@
 <div class="modal" id="PartSearch" tabindex="-1" role="dialog" aria-labelledby="RequireDateLabel">
-    <div class="modal-dialog" style="width:700px">
+    <div class="modal-dialog" style="width:800px">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
@@ -498,28 +508,39 @@
                 <table>
                     <tr>
                         <td>
-                            <div class="input-group">
+                            @*<select id="_selPartModal" class="form-control" style="width:140px;position:relative;">
+                                <option value="1">模具直接材料</option>
+                                <option value="2">模具生产耗材</option>
+                                <option value="5">模具耗材备库</option>
+                            </select>*@
+                            <input id="_selPartModalTxt" class="form-control" style="width:140px" readonly/>
+                            <input id="_selPartModal" hidden />
+                        </td>
+                        <td>
+                            <div class="input-group" style="float:right;">
                                 <div class="input-group-btn">
                                     <label>查询关键字：</label>
                                     <select id="_sel" class="form-control" style="width:120px;position:relative;">
                                         <option value="2">物料编号</option>
-                                        <option value="1">零件短名</option>                                        
+                                        <option value="1">零件短名</option>
                                         <option value="3">规格</option>
                                     </select>
-                                </div>
-                                <input type="text" class="form-control" id="SpecKeyword" placeholder="请键入搜索关键字"/>
-                            </div>
-                        </td>
-                        <td>
-                            <button class="btn btn-default" id="PartSearchBtn"><span class="glyphicon glyphicon-search"></span>查询</button>
-                            <button class="btn btn-primary" id="modal_AddPart"><span class="glyphicon glyphicon-share-alt"></span>添加至表格</button>
+                                    <input type="text" class="form-control" id="SpecKeyword" placeholder="请键入搜索关键字" style="width:140px;"/>
+                                    <button class="btn btn-default" id="PartSearchBtn"><span class="glyphicon glyphicon-search"></span>查询</button>
+                                    <button class="btn btn-primary" id="modal_AddPart"><span class="glyphicon glyphicon-share-alt"></span>添加至表格</button>
+                                </div>          
+                            </div>                           
                         </td>
                     </tr>
-                </table>
-                <table class="table-striped col-sm-12" id="tb_PartSearch"></table>
+                    <tr>
+                        <td colspan="2">
+                            <table class="table-striped col-sm-12" id="tb_PartSearch"></table>
+                        </td>
+                    </tr>
+                </table>                
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove-sign"></span>关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove-sign"></span>返回</button>
                 <button type="button" class="btn btn-success" id="NewPart"><span class="glyphicon glyphicon-plus-sign"></span>新建采购项</button>
             </div>
         </div>
@@ -562,7 +583,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>
@@ -721,29 +742,49 @@
             }
             for(var i=0;i<selrows.length;i++){
                 var _partid= $("#tb_PartSearch").getCell(selrows[i], "PartID");
-                AddPart(_partid);
+                var _partnum= $("#tb_PartSearch").getCell(selrows[i], "PartNumber");
+                if(_partid>0){
+                    AddPart(_partid);
+                }else{
+                    AddPartByPartNum(_partnum);
+                }                
             }
-        })
+        });
 
         $('#JobNo').on('blur',function(){
             var _prid=$("#PRContentID").val();
+            var moldNum='';
+            var _selPartModal = Number($('#_selPartModal').val());
+            switch (_selPartModal) {
+                case 1:
+                    moldNum = $('#MoldNum').val();
+                    break;
+                case 2:
+                    moldNum = $('#HCClass').val();
+                    break;
+                case 5:
+                    moldNum = $('#BKClass').val();
+                    break;
+            }
             if(_prid==0){
-                if($('#MoldNum').val()!='' && $('#MoldNum').val()!=undefined){
-                    var _partnumber=$('#MoldNum').val()+'-'+$('#JobNo').val();
+                if(moldNum!='' && moldNum!=undefined){
+                    var _partnumber=moldNum+'-'+$('#JobNo').val();
                     $.get('/Part/Service_Chk_Part?_partnum='+_partnumber,function(res){
                         if(res!=''){
                             alert(res);
                             $('#JobNo').val('');
                         }
-                    })
+                    });
                 }
                 else{
                     alert('请先输入模号！');
                     $('#MoldNum').val('');
+                    $('#HCClass').val('');
+                    $('#BKClass').val('');
                     $('#JobNo').val('');
                 }
             }   
-        })
+        });
 
         _wfViewConfig($('#TaskType').val());
 
@@ -771,15 +812,15 @@
         var _url="";
         @if (ViewBag.PartIDs != "")
         {
-            @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具直接材料&ContainParent=false";
+            @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具直接材料&ContainParent=false&QFDep=true";
                                                                         }
         else if (ViewBag.TaskIDs!="")
         {
-            @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具委外加工&ContainParent=false";
+            @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具委外加工&ContainParent=false&QFDep=true";
                                                                 }
         else
         {
-            @:_url = "/Purchase/JsonPurchaseTypes?ContainParent=true";
+            @:_url = "/Purchase/JsonPurchaseTypes?ContainParent=true&QFDep=true";
                                                         }
         if (_url!=""){
             $.getJSON(_url, function(msg){
@@ -791,7 +832,7 @@
                         if(n.ParentTypeID==0){
                             $("#PurchaseType").append(
                                 $("<option/>", {
-                                    value:n.PurchaseTypeID,text:'----'+n.Name+'----'
+                                    value:0,text:'----'+n.Name+'----'
                                 }));
                         }
                         else{
@@ -884,7 +925,8 @@
     function PartSearch(){
         var _key = $("#SpecKeyword").val();
         var _sel=$('#_sel').val();
-        var _url = "/Part/Service_Json_GetPartByKeys?sel=" + _sel + "&Keywords=" + _key;
+        var _selPartModal=$('#_selPartModal').val();
+        var _url = "/Part/Service_Json_GetPartByKeys?sel=" + _sel + "&Keywords=" + _key+'&_selPartModal='+_selPartModal;
         reloadGrid(_url,'tb_PartSearch');
         //var _url = "/Part/QueryBySpec?Keyword="+_key;
         //var _row = "";
@@ -927,7 +969,37 @@
                 State:"",
                 RequireTime: "",
                 MoldNumber:_moldNumber,
-                ERPPartID:msg.ERPPartID
+                ERPPartID:msg.ERPPartID,
+                PlanQty:msg.TotalQty
+            };
+            $("#PRContentGrid").addRowData(_tempID, data, 0, 0);
+        })
+    }
+    //添加至表格
+    function AddPartByPartNum(PartNum){
+        var _url = "/Part/Service_Part_GetPartByPartNum?_partNum="+PartNum;
+        $.getJSON(_url, function(msg){
+            var _tempID = Number($("#tempID").val())- 1;
+            $("#tempID").val(_tempID);            
+            var _partNums=(msg.PartNum).split('-');
+            data = {
+                ID: "",
+                PartID:0,
+                Name: msg.PartName,
+                Quantity: msg.PlanQty,
+                PartNumber: msg.PartNum,
+                Material:  msg.Materials,
+                Hardness: '',
+                Specification: msg.Specification,
+                BrandName: '',
+                SupplierName: '',
+                JobNo:_partNums[1],
+                Memo: "",
+                State:"",
+                RequireTime: "",
+                MoldNumber:msg.MoldNumber,
+                ERPPartID:'',
+                PlanQty:msg.PlanQty,
             };
             $("#PRContentGrid").addRowData(_tempID, data, 0, 0);
         })
@@ -939,6 +1011,7 @@
         $("#PRContentAdd select").val(0);
         LoadBrands();
         showBrand('');
+        $("#row").val(0);
         $("#PRContentAdd").modal("show");
     }
 
@@ -960,6 +1033,7 @@
             })
         })
     }
+
     function RemoveCancelItems(){
         var selr = $('#PRContentGrid').jqGrid('getGridParam', 'selarrrow');
         if(selr.length==0){
@@ -1089,7 +1163,7 @@
             //表格列头
             $("#PRContentGrid").setGridParam().showHideCol("Operater");
             $("#PRContentGrid").setGridParam().showHideCol("MachineName");
-            //关闭相应按钮
+            //返回相应按钮
             $('#AddContent').hide();
             $('#brandtr').hide();
             //$('#Brand').hide();
@@ -1197,6 +1271,190 @@
 
 <script>
     $(function() {
-        $(document).tooltip();
+        $(document).tooltip();       
+
+        $('#PRContentAdd').on('shown.bs.modal',function(){     
+            //var row=$("#row").val();
+            //if (row == 0) {//新增
+            //    $('#tr_PlanQty').show();
+            //}else{//编辑
+            //    $('#tr_PlanQty').hide();
+            //}
+            //var _selPartModal=Number($('#_selPartModal').val());
+            //$('#modal_HCClassList').empty();
+            //$('#modal_BKClassList').empty();
+            //switch(_selPartModal){
+            //    case 1://直接材料
+            //        $('._selPart1').show();
+            //        $('._selPart2').hide();
+            //        $('._selPart5').hide();
+            //        $('#JobNo').removeAttr('readonly');
+            //        break;
+            //    case 2://耗材
+            //        $('._selPart1').hide();
+            //        $('._selPart2').show();
+            //        $('._selPart5').hide();   
+            //        $('#JobNo').removeAttr('readonly');
+            //        HCClassImport();
+            //        break;
+            //    case 5://备库
+            //        $('._selPart1').hide();
+            //        $('._selPart2').hide();
+            //        $('._selPart5').show(); 
+            //        $('#JobNo').attr('readonly','readonly');
+            //        BKClassImport();
+            //        break;
+            //}           
+        });
+
+        $('#BKClass').on('blur',function(){
+            $.get('/Purchase/Service_GetBKJonNo?_bkClass='+$('#BKClass').val(),function(res){
+                $('#JobNo').val(res);
+            });
+        });
+
+        $('#PurchaseType').on('change',function(){
+            var _selpurTypetxt=$('#PurchaseType option:selected').text();
+            $('#PurchaseTypeName').val(_selpurTypetxt);
+            if($('#PurchaseType').val()>0){
+                $('#AddContent').removeAttr('disabled');
+            }else{
+                $('#AddContent').attr('disabled','disabled');
+            }
+            _webPurTypeIntialConfig();
+        });
+
+        $('#PRContentAdd').on('shown.bs.modal',function(){
+            //var _partNum= $('#PartNumber').val();
+            //if(_partNum!=null && _partNum!='' && _partNum!=undefined){//编辑零件               
+            //    $('#JobNo').attr('readonly','readonly');
+            //    $('#Specification').attr('readonly','readonly');      
+            //}else{//新增零件
+            //    $('#JobNo').removeAttr('readonly');
+            //    $('#Specification').removeAttr('readonly');                
+            //}            
+            var row=$("#row").val();
+            if (row == 0) {//新增
+                $('#tr_PlanQty').show();
+                $('#JobNo').removeAttr('readonly');
+                $('#Specification').removeAttr('readonly');   
+            }else{//编辑
+                $('#tr_PlanQty').hide();
+                $('#JobNo').attr('readonly','readonly');
+                $('#Specification').attr('readonly','readonly');  
+            }
+            var _selPartModal=Number($('#_selPartModal').val());
+            $('#modal_HCClassList').empty();
+            $('#modal_BKClassList').empty();
+            switch(_selPartModal){
+                case 1://直接材料
+                    $('._selPart1').show();
+                    $('._selPart2').hide();
+                    $('._selPart5').hide();
+                    $('#JobNo').removeAttr('readonly');
+                    break;
+                case 2://耗材
+                    $('._selPart1').hide();
+                    $('._selPart2').show();
+                    $('._selPart5').hide();   
+                    $('#JobNo').removeAttr('readonly');
+                    HCClassImport();
+                    break;
+                case 5://备库
+                    $('._selPart1').hide();
+                    $('._selPart2').hide();
+                    $('._selPart5').show(); 
+                    $('#JobNo').attr('readonly','readonly');
+                    BKClassImport();
+                    break;
+                default:
+                    $('._selPart1').show();
+                    $('._selPart2').hide();
+                    $('._selPart5').hide();
+                    $('#JobNo').removeAttr('readonly');
+                    break;
+            } 
+        });
+
+        $('#PartSearch').on('shown.bs.modal',function(){
+            _webPurTypeIntialConfig();
+        })
+
+        $('#HCClass').on('change',function(){
+            GetJobNo();
+        });
+        $('#BKClass').on('change',function(){
+            GetJobNo();
+        });
     });
+    function HCClassImport() {
+        $.get('/Warehouse/Service_GetHCClassList', function (res) {
+            $.each(res,function(i,n){
+                var ohtml = "<option value='" + n.Code + "'>" + n.Name + "</option>";
+                var $ohtml = $(ohtml);
+                $('#modal_HCClassList').append($ohtml);
+            })
+        })
+        //var ohtml = "<option value='123'>456</option>";
+        //var $ohtml = $(ohtml);
+        //$('#modal_HCClassList').append($ohtml);
+    }
+    function BKClassImport(){
+        $.get('/Warehouse/Service_GetBKClassList', function (res) {
+            $.each(res,function(i,n){
+                var ohtml = "<option value='" + n.Code + "'>" + n.Name + "</option>";
+                var $ohtml = $(ohtml);
+                $('#modal_BKClassList').append($ohtml);
+            })
+        })
+        //var ohtml = "<option value='123'>456</option>";
+        //var $ohtml = $(ohtml);
+        //$('#modal_BKClassList').append($ohtml);
+    }
+    function _webPurTypeIntialConfig(){
+        var _purtype = Number($('#PurchaseType').val());
+        var _purtypeName = $('#PurchaseTypeName').val();
+        if (_purtypeName == "生产耗材") {
+            $('#_selPartModal').val('2');
+            $('#_selPartModalTxt').val('生产耗材');
+            $('#JobNo').attr('readonly','readonly');
+        } else if (_purtypeName == "模具耗材备库") {
+            $('#_selPartModal').val('5');
+            $('#_selPartModalTxt').val('耗材备库');
+            $('#JobNo').attr('readonly','readonly');
+        } else {
+            $('#_selPartModal').val('1');
+            $('#_selPartModalTxt').val('直接材料');
+            $('#JobNo').removeAttr('readonly');
+        }
+    }
+
+    function GetJobNo(){
+        var _text;
+        var _selPartModal = Number($('#_selPartModal').val());
+        switch (_selPartModal) {
+            //case 1:
+            //    _text = $('#MoldNum').val();
+            //    break;
+            case 2:
+                _text = $('#HCClass').val();
+                break;
+            case 5:
+                _text = $('#BKClass').val();
+                break;
+        }
+        $.ajaxSetup({  
+            async : false  
+        }); 
+        if(_text!='' && _text!=undefined && _text!=null){
+            $.get('/WareHouse/Service_WH_GetPartNumByType?_type='+_text,function(res){
+                var _strs=res.split('-');
+                $('#JobNo').val(_strs[1]);
+                $('#PartNumber').val(res);
+            });
+        }else{
+            alert('类型无效！');
+            $('#SaveStockItem').attr('disabled','disabled');
+        }     
+    }
 </script>
