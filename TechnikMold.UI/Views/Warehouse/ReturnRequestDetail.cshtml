@@ -12,6 +12,26 @@
         DeptID = 0;
     }
 }
+<style>
+    #ReturnItemGrid td {
+        margin: 0px !important;
+        padding: 0px !important;
+        height: 30px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 12px;
+        /*position:absolute;*/
+    }
+
+    #ReturnItemGrid input {
+        height: 24px;
+        border-style: none;
+        outline: none;
+        font-size: 12px;
+        margin: 0px;
+        padding: 0px;
+    }
+</style>
 <div style="margin-top:60px">
     <h2>退货单 @Model.ReturnRequestNumber</h2>
     <div class="col-sm-11">
@@ -44,14 +64,14 @@
                 case (int)ReturnRequestStatus.通过:
                     if (DeptID == 20)
                     {
-                        <button class="btn btn-primary" id="CloseRequest">返回退货单</button>
+                        <button class="btn btn-primary" id="CloseRequest">关闭退货单</button>
                     }
 
                     break;
                 case (int)ReturnRequestStatus.拒绝:
                     if (DeptID == 20)
                     {
-                        <button class="btn btn-primary" id="CloseRequest">返回退货单</button>
+                        <button class="btn btn-primary" id="CloseRequest">关闭退货单</button>
                         <button class="btn btn-primary" id="RestartRequest">重启退货单</button>
                     }
                     break;
@@ -163,10 +183,10 @@
                     alert("退货数量不能大于库存数量");
                     return false;
                 }else{
-                    console.log(i+"-"+rowData[i].ID)
+                    //console.log(i+"-"+rowData[i].ID)
                     _itemData = _itemData+_name+"["+i+"].ReturnItemID="+rowData[i].ID+"&"+
                         _name+"["+i+"].Name="+rowData[i].Name+"&"+
-                        _name+"["+i+"].MaterialNumber="+rowData[i].MaterialNumber+"&"+
+                        _name+"["+i+"].MaterialNumber="+rowData[i].PartNum+"&"+
                         _name+"["+i+"].Specification="+rowData[i].Specification+"&"+
                         _name+"["+i+"].Quantity="+rowData[i].Quantity+"&"+
                         _name+"["+i+"].WarehouseItemID="+rowData[i].WarehouseStockID+"&"+
@@ -289,7 +309,7 @@
             type:"Get",
             success:function(msg){
                 if (msg==""){
-                    alert("退货单返回成功")
+                    alert("退货单关闭成功")
                     location.href="/Warehouse/ReturnRequestList";
                 }
             }

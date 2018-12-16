@@ -19,7 +19,6 @@ namespace MoldManager.QC.QCCheck
         }
 
 
-
         /// <summary>
         /// Private Sub RefereshTiejianList(ByVal FilterStr As String)
         /// Private Sub RefereshDianjiList(ByVal FilterStr As String)

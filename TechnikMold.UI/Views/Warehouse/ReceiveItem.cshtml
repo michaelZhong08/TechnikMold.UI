@@ -36,8 +36,8 @@
                         foreach (WarehouseRequestItem _item in Model)
                         {
                             int _qty = _item.Quantity - _item.ReceivedQuantity;
-                            List<WarehouseStock> _stocks = ViewBag.StockItems;
-                            int _stock = _stocks.Where(w => w.WarehouseStockID == _item.WarehouseStockID).FirstOrDefault().Quantity;
+                            List<WHStock> _stocks = ViewBag.StockItems;
+                            decimal _stock = _stocks.Where(w => w.ID == _item.WarehouseStockID).FirstOrDefault().Qty;
                             <tr>
                                 <td class="col-sm-2">@_item.PartName</td>
                                 <td class="col-sm-2">@_item.PartNumber</td>

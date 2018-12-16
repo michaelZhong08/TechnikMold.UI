@@ -59,7 +59,16 @@ $(document).ready(function () {
 
     $(".userselect").on("click", function (event) {
         usertarget = "#" + this.id;
-        LoadUsers("");
+        //181129 更新 by michael
+        console.log(this.id.lastIndexOf("."));
+        var _inptRoleID = this.id.substring(0, this.id.lastIndexOf(".")) + '.RoleID';
+        console.log(_inptRoleID);
+        //var _proJRole = $('"#' + _inptRoleID+'"')[0];
+        var _proJRole = document.getElementById(_inptRoleID).value;
+        console.log(_proJRole);
+        $('#ProJRole').val(_proJRole);
+
+        LoadUsers("", _proJRole);
         
         $("#UserKeyword").val("");
         $("#UserSelect").modal("show");
@@ -67,7 +76,7 @@ $(document).ready(function () {
 
     //Filter the user list when user keyword is input
     $("#UserKeyword").on("keyup", function () {
-        LoadUsers($("#UserKeyword").val());
+        LoadUsers($("#UserKeyword").val(), $('#ProJRole').val());
     });
 
     //Define the selected user to project role
@@ -202,11 +211,11 @@ $(document).ready(function () {
 //----------------------Project Edit Functions---------------------------------------------
 //Load User information to UserList
 //When keyword is changed, filter the users list according to the keywords
-function LoadUsers(keyword) {
-    var ajaxUsers = "/User/FilterUser";
+function LoadUsers(keyword,_proJRole) {
+    var ajaxUsers = "/User/FilterUser?_proJRole=" + _proJRole;
     $("#UserList option").remove();    
     if (keyword != "") {
-        ajaxUsers = ajaxUsers + "?UserName=" + keyword;
+        ajaxUsers = ajaxUsers + "&UserName=" + keyword;
     }    
     $.getJSON(ajaxUsers, function (msg) {
         $.each(msg, function (i, n) {

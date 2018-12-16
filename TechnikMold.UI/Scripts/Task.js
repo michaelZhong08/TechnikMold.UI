@@ -87,21 +87,7 @@
             PrintLabels(selIDs);
             //window.close();
         }
-    })
-
-    $("#OutSource").on("click", function () {
-        var _ids = GetMultiSelectedIDs("TaskGrid");
-        if (_ids == "") {
-            alert("请选择至少一个任务");
-        } else {
-            //if (confirm("外发选中任务？")) {
-            //    var _ids = GetMultiSelectedIDs("TaskGrid");
-            //    //Outsource(_ids);
-            //}
-            var _ids = GetMultiSelectedIDs("TaskGrid");
-            SetupTaskStart('true')
-        }
-    })
+    })   
 
     $("#CancelOutSource").on("click", function () {
         var _ids = GetMultiSelectedIDs("TaskGrid");
@@ -2144,7 +2130,7 @@ function LoadMInfoList(tasktype) {
 //isWF true 外发
 function LoadTaskMInfoList(tasktype, isWF) {
     $('#MInfoCodeDL').html('');
-    $.get('/Task/Service_Get_TaskMInfoByTaskType?TaskType=' + tasktype + '&isWF=' + isWF, function (res) {
+    $.get('/Task/Service_Get_TaskMInfoByTaskType?TaskType=' + tasktype + '&isWF=' + isWF, function (res) {        
         var jsonObj = eval(res);
         $.each(jsonObj, function (i, n) {
             var ohtml = "<option value='" + n.MachineName + ',' + n.MachineCode + "'></option>";
@@ -2244,4 +2230,48 @@ function ShowEDMDetailsList() {
                 return false;
             }
         })
+    }
+
+    function FinishWFTaskHour(_col) {
+        var r = confirm('确认结束外发工时？');
+        if (r) {
+            var firsttdobj = $('#tb_SetupWFTaskHour td:eq(' + _col + ')');//' + _col + '
+            //模拟单元格点击事件
+            firsttdobj.trigger("click");
+
+            var row = $("#tb_SetupWFTaskHour").getGridParam("selrow");
+            var rowData = $("#tb_SetupWFTaskHour").jqGrid('getRowData', row);
+            console.log('当前操作行：'+row);
+            console.log(rowData);
+            //验证 工时不能为0
+            if (Number(rowData.TotalTime) > 0) {
+                //结束工时       
+                var i = 0;
+                var name = '_viewmodel';
+                var itemData = name + '[' + i + '].TaskID=' + rowData.ID + '&' +
+                              name + '[' + i + '].State=' + rowData.State + '&' +
+                              name + '[' + i + '].MachinesCode=' + rowData.MachinesCode + '&' +
+                              name + '[' + i + '].MachinesName=' + rowData.MachinesName + '&' +
+                              name + '[' + i + '].UserID=' + rowData.UserID + '&' +
+                              name + '[' + i + '].UserName=' + rowData.UserName + '&' +
+                              name + '[' + i + '].TotalTime=' + rowData.TotalTime + '&' +
+                              name + '[' + i + '].Qty=' + rowData.Qty + '&' +
+                              name + '[' + i + '].StartTime=' + rowData.StartTime + '&' +
+                              name + '[' + i + '].FinishTime=' + rowData.FinishTime + '&' +
+                              name + '[' + i + '].SemiTaskFlag=' + rowData.SemiTaskFlag + '&' +
+                              name + '[' + i + '].TaskHourID=' + rowData.TaskHourID;
+                $.get('/Task/SetWFTaskFinish', itemData, function (res) {
+                    res = Number(res);
+                    if (res > 0) {
+                        alert('提交成功！');
+                    }
+                    else {
+                        alert('任务工时结束失败！');
+                    }
+                });
+            } else {
+                alert('任务工时不能等于/小于 0！');
+                return;
+            }
+        }           
     }

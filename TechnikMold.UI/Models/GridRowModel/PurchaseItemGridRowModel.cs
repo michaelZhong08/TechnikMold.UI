@@ -16,9 +16,10 @@ namespace MoldManager.WebUI.Models.GridRowModel
             string PONO, 
             string PurchaseUser, 
             string PurchaseType,
-            string RequestUser)
+            string RequestUser,
+            string htmlTitle)
         {
-            cell = new string[21];
+            cell = new string[24];
 
             cell[0] = PurchaseItem.PurchaseItemID.ToString();
             cell[1] = PurchaseItem.Name;
@@ -58,13 +59,19 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[11] = PurchaseUser;
             cell[12] = PurchaseItem.UnitPrice.ToString();
             cell[13] = PurchaseItem.TotalPrice.ToString();
-            cell[14] = PurchaseItem.InStockQty.ToString();
-            cell[15] = PurchaseItem.OutStockQty.ToString();
-            cell[16] = RequestUser;
-            cell[17] = PurchaseItem.TotalPrice==0?"":PurchaseItem.TotalPrice.ToString();
-            cell[18] = PurchaseItem.RequireTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.RequireTime.ToString("yyyy-MM-dd");
-            cell[19] = PurchaseItem.PlanTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanTime.ToString("yyyy-MM-dd");
+          
+            cell[14] = PurchaseItem.OutStockQty.ToString();
+            
+            cell[15] = PurchaseItem.TotalPriceWT==0?"":PurchaseItem.TotalPriceWT.ToString();
+            cell[16] = PurchaseItem.RequireTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.RequireTime.ToString("yyyy-MM-dd");
+            cell[17] = PurchaseItem.PlanTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanTime.ToString("yyyy-MM-dd");
+            cell[18] = "<label class='Lab_PlanAJDate' title='"+htmlTitle+"'>" +(PurchaseItem.PlanAJTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanAJTime.ToString("yyyy-MM-dd"))+"</label>";
+
+            cell[19] = RequestUser;
             cell[20] = PurchaseItem.DeliveryTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.DeliveryTime.ToString("yyyy-MM-dd");
+            cell[21] = PurchaseItem.InStockQty.ToString();
+            cell[22] = PurchaseItem.UnitPriceWT.ToString();
+            cell[23] = PurchaseItem.Memo;
         }
     }
 }

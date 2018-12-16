@@ -37,92 +37,133 @@
         PosID = 0;
     }
 }
+<style>
+    #Basic td {
+        text-align: center;
+    }
 
-<div style="margin-top:60px">
-
-    <div class="col-sm-11">
-
-        <h3>订单 @Model.PurchaseOrderNumber </h3>
-        <div id="Toolbar">         
-            @switch (Model.State)
-            {
-                case (int)PurchaseOrderStatus.新建:
-                    if (DeptID == 4) { 
-                        <button class="btn btn-primary" id="DeletePOContent">删除零件</button>
-                        <button class="btn btn-primary" id="PurchaseTypeBatch">采购类型</button>
+    #Toolbar button {
+        height: 30px;
+        width: 120px;
+        margin-top: 5px;
+        float: left;
+        font-size: 14px;
+        font-weight: bold;
+    }
+</style>
+<div style="position:absolute;left:0px;top:60px;right:0px;bottom:0px;min-width:1920px;">
+    <h3 style="line-height:40px;font-size:24px;margin:0px;padding:0px;text-indent:10px;">订单 @Model.PurchaseOrderNumber </h3>
+    <div id="Toolbar" style="position:absolute;left:10px;height:40px;border:1px rgba(0,0,0,0.2) solid;border-style:none none none none;overflow:hidden;">
+        @switch (Model.State)
+        {
+            case (int)PurchaseOrderStatus.新建:
+                if (DeptID == 4)
+                {
+                    <button class="btn btn-primary" id="DeletePOContent">删除零件</button>
+                    <button class="btn btn-primary" id="PurchaseTypeBatch">采购类型</button>
                         <button class="btn btn-primary" id="SubmitPO">提交审批</button>
                         <button class="btn btn-warning" id="CancelPO">取消订单</button>
-                    }
-                    break;
-                case (int)PurchaseOrderStatus.待审批:
-                    if (PosID == 3) { 
-                        <button class="btn btn-primary" id="ReviewPO">审批</button>
-                    }
-                    if (DeptID == 4)
-                    {
+                }
+                break;
+            case (int)PurchaseOrderStatus.待审批:
+                if (PosID == 3)
+                {
+                    <button class="btn btn-primary" id="ReviewPO">审批</button>
+                }
+                if (DeptID == 4)
+                {
+                    <button class="btn btn-warning" id="CancelPO">取消订单</button>
+                }
+                break;
+            case (int)PurchaseOrderStatus.发布:
+                if (DeptID == 4)
+                {
+                    <button class="btn btn-primary" id="SendPO">生成订单</button>
+                    <button class="btn btn-warning" id="CancelPO">取消订单</button>
+                }
+                break;
+            case (int)PurchaseOrderStatus.拒绝:
+                if (DeptID == 4)
+                {
+                    <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
+                    <button class="btn btn-primary" id="QuotationAgain">重新询价</button>
                         <button class="btn btn-warning" id="CancelPO">取消订单</button>
-                    }
-                    break;
-                case (int)PurchaseOrderStatus.发布:
-                    if (DeptID == 4)
-                    {
-                        <button class="btn btn-primary" id="SendPO">生成订单</button>
-                        <button class="btn btn-warning" id="CancelPO">取消订单</button>
-                    }
-                    break;
-                case (int)PurchaseOrderStatus.拒绝:
-                    if (DeptID == 4)
-                    {
-                        <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
-                        <button class="btn btn-primary" id="QuotationAgain">重新询价</button>
-                        <button class="btn btn-warning" id="CancelPO">取消订单</button>
-                    }
-                    break;
+                }
+                break;
 
-            } 
-        </div>
-        <div id="Basic" class="col-sm-10 PRInfo">
-            <table>              
+        }
+    </div>
+    <div id="Basic" style="position:absolute;left:10px;top:90px;right:10px;height:50px;border:1px rgba(0,0,0,0.2) solid;border-style:solid none solid none;">
+        <table style="margin-top:5px;">
+            <colgroup>
+                <col width="80" />
+                <col width="220" />
+                <col width="80" />
+                <col width="220" />
+                <col width="80" />
+                <col width="220" />
+                <col width="80" />
+                <col width="220" />
+                <col width="80" />
+                <col width="220" />
+                <col width="80" />
+                <col width="320" />
+            </colgroup>
+            <tr>
+                <td style="height:40px;">供应商</td>
+                <td>
+                    <input type="text" class="form-control" id="SupplierName" readonly>
+                    <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
+                </td>
+                <td>状态</td>
+                <td>
+                    <input type="text" class="form-control" id="State" value="@Enum.GetName(typeof(PurchaseOrderStatus),@Model.State)" readonly>
+                </td>
+                <td>采购类型</td>
+                <td>
+                    <input type="text" class="form-control" id="PurchaseType" value="@ViewBag.PurchaseType" readonly />
+                </td>
+                <td style="height:40px;">总价</td>
+                <td>
+                    <input type="text" class="form-control" id="TotalPrice" value="@(Model.TotalPrice+"("+Model.Currency+")")" readonly>
+                </td>
+                <td>税率</td>
+                <td>
+                    @{
+                        string _tax = Model.TaxRate + "%";
+                    }
+                    <input type="text" class="form-control" value="@(Model.TaxRate + "%")" readonly />
+                </td>
+                <td>备注</td>
+                <td>
+                    <input type="text" class="form-control" id="Memo" value="@Model.Memo" readonly />
+                </td>
+            </tr>
+            @*@if (DeptID == 4) {
                 <tr>
-                    
-                    <td class="col-sm-1"><label>供应商</label></td>
-                    <td class="col-sm-2">
-                        <input type="text" class="form-control" id="SupplierName" readonly>
-                        <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
-                    </td>
-                    <td class="col-sm-1"><label>状态</label></td>
-                    <td class="col-sm-2">
-                        <input type="text" class="form-control" id="State" value="@Enum.GetName(typeof(PurchaseOrderStatus),@Model.State)" readonly>
-                    </td>
-                </tr>
-                @if (DeptID == 4) { 
-                <tr>
-                    <td class="col-sm-1"><label>总价</label></td>
-                    <td class="col-sm-2">
+                    <td style="height:40px;">总价</td>
+                    <td >
                         <input type="text" class="form-control" id="TotalPrice" value="@(Model.TotalPrice+"("+Model.Currency+")")" readonly>
                     </td>
-                    <td class="col-sm-1"><label>税率</label></td>
-                    <td class="col-sm-2">      
+                    <td >税率</td>
+                    <td>
                         @{
                             string _tax = Model.TaxRate + "%";
                         }
                         <input type="text" class="form-control" value="@(Model.TaxRate + "%")" readonly />
                     </td>
-                </tr>
-                }
-                <tr>
-                    <td class="col-sm-1"><label>备注</label></td>
-                    <td class="col-sm-5" colspan="3">
-                        <input type="text" class="form-control" id="Memo" value="@Model.Memo" readonly/>
+                    <td>备注</td>
+                    <td colspan="3">
+                        <input type="text" class="form-control" id="Memo" value="@Model.Memo" readonly />
                     </td>
                 </tr>
-            </table>
-        </div>
+                }*@
+        </table>
+    </div>
 
-        <div class="col-sm-12" style="float:left;">
-            <table id="POContentGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+    <div id="tb_div" style="position:absolute;left:10px;top:140px;right:10px;bottom:0px;border:1px rgba(0,0,0,0.2) solid;overflow:hidden;">
+        <table id="POContentGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
 
@@ -266,7 +307,7 @@
             if (confirm("确认取消订单?")){
                 CancelPO();
             }
-            
+
         })
 
         $("#PurchaseTypeBatch").on("click", function(){
@@ -276,7 +317,7 @@
             }else{
                 alert("请至少选择一项申请内容")
             }
-            
+
         })
 
         $("#PurchaseTypeModal").on("shown.bs.modal", function(){
@@ -296,8 +337,8 @@
     function CancelPO(){
         var _url = "/Purchase/CancelPO?PurchaseOrderID="+$("#PurchaseOrderID").val();
         $.ajax({
-            url:_url, 
-            type:"Get", 
+            url:_url,
+            type:"Get",
             success:function(msg){
                 if (msg==""){
                     alert("订单取消成功");
@@ -317,9 +358,9 @@
         var _url = '/Purchase/JsonPurchaseTypeLevel?ParentID='+parent;
         $.getJSON(_url, function(msg){
             $.each(msg, function(i, n){
-               
+
                 $("#"+target).append($("<option/>",{
-                    value:n.PurchaseTypeID, 
+                    value:n.PurchaseTypeID,
                     text:n.Name
                 }))
                 if (i==0){
@@ -343,8 +384,8 @@
         }
         var _url = "/Purchase/UpdatePurchaseType?PurchaseTypeID="+_val+"&POContentIDs="+_poContentIDs;
         $.ajax({
-            url:_url, 
-            type:"Get", 
+            url:_url,
+            type:"Get",
             success:function(msg){
                 alert(msg);
             }

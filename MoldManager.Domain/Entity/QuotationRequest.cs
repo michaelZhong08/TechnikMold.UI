@@ -19,6 +19,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int State { get; set; }
         public int PurchaseRequestID { get; set; }
         public string Memo { get; set; }
+        public string QuotationGroupIDs { get; set; }
 
     }
 }

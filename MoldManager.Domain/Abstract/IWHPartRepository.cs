@@ -19,5 +19,6 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         WHPart GetwfTaskPart(int _taskID);
         string GetwfTaskPartNum(int _taskID);
         List<WHPart> GetwfWHPartByMoldNum(string _moldNum);
+        string GetwfTaskPartNum(string MooldNum);
     }
 }

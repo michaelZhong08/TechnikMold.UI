@@ -820,18 +820,21 @@ namespace MoldManager.WebUI.Controllers
 
         #region 电极标签逻辑更新 michael
         /// <summary>
-        /// updated by michael 粗电极个位 1，2，3 精电极 4......9
+        /// TODO:创建电极标签对象 updated by michael 粗电极个位 1，2，3 精电极 4......9
         /// </summary>
-        /// <param name="Task"></param>
-        public void CreateCNCItems(Task Task)
+        /// <param name="Task">电极任务对象</param>
+        /// <param name="RGap">粗间隙</param>
+        /// <param name="FGap">精间隙</param>
+        /// <param name="r_Number">粗电极个数 初始值0</param>
+        /// <param name="f_Number">精电极个数 初始值3</param>
+        public void CreateCNCItems(Task Task, int r_Number=0,int f_Number=3,double RGap=0, double FGap =0)
         {
-
             CNCItem _cncItem;
             string _seq = "";
             string _ver = Task.Version > 9 ? Task.Version.ToString() : "0" + Task.Version.ToString();
             int _itemID;
-            int R_Number = 0;
-            int F_Number = 3;
+            int R_Number = r_Number;
+            int F_Number = f_Number;
             for (int i = 0; i < Task.R; i++)
             {
                 if ((R_Number % 10) == 3)
@@ -852,15 +855,15 @@ namespace MoldManager.WebUI.Controllers
                 res1 = res1.Substring(res1.Length - 2);
                 _cncItem.LabelName = Task.TaskName + "/" + _ver + "/" + res1 + "-" + "R";
                 _cncItem.Material = Task.Material;
-
                 //_cncItem.Raw = Task.Raw;
                 _cncItem.TaskID = Task.TaskID;
-                //待测试
+                //已通过
                 _cncItem.ELE_INDEX = Convert.ToInt32((Task.TaskID.ToString() + _seq));
                 //_cncItem.Required = true;
                 _cncItem.SafetyHeight = GetSafetyHeight(Task.Raw);
                 _cncItem.MoldNumber = Task.MoldNumber;
                 _cncItem.Status = (int)CNCItemStatus.未开始;
+                _cncItem.Gap = RGap;
                 _itemID = _cncItemRepository.Save(_cncItem);
             }
 
@@ -886,12 +889,13 @@ namespace MoldManager.WebUI.Controllers
                 _cncItem.Material = Task.Material;
                 //_cncItem.Raw = Task.Raw;
                 _cncItem.TaskID = Task.TaskID;
-                //待测试
+                
                 _cncItem.ELE_INDEX = Convert.ToInt32((Task.TaskID.ToString() + _seq));
                 //_cncItem.Required = true;
                 _cncItem.SafetyHeight = GetSafetyHeight(Task.Raw);
                 _cncItem.MoldNumber = Task.MoldNumber;
                 _cncItem.Status = (int)CNCItemStatus.未开始;
+                _cncItem.Gap = FGap;
                 _itemID = _cncItemRepository.Save(_cncItem);
             }
         }
@@ -1598,7 +1602,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="_setupTS"></param>
         /// <returns></returns>
         [HttpPost]
-        public string Service_StartTask(List<SetupTaskStart> _setupTS)
+        public string Service_StartTask(List<SetupTaskStart> _setupTS,int _thStata=(int)TaskHourStatus.开始,int _thRecordType=0)
         {
             if (_setupTS != null)
             {
@@ -1637,7 +1641,7 @@ namespace MoldManager.WebUI.Controllers
                         _taskRepository.Save(_task);
 
                         #region 任务工时
-                        CreateTaskHour(_task, 0, s.MachinesCode, s.UserName,s.Qty);
+                        CreateTaskHour(_task, _thRecordType, s.MachinesCode, s.UserName,s.Qty, "",_thStata);
                         #endregion
                     }
                     return "";
@@ -1896,7 +1900,30 @@ namespace MoldManager.WebUI.Controllers
                 _machInfoRepository, _edmDetailRepository, _taskRepository, _projectPhaseRepository,_mgSettingRepository,_wedmSettingRepository,_taskHourRepository);
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
-
+        /// <summary>
+        /// TODO:(已完成)任务列表 
+        /// </summary>
+        /// <param name="MoldNumber"></param>
+        /// <param name="TaskType"></param>
+        /// <param name="Keyword"></param>
+        /// <returns></returns>
+        public JsonResult Service_Task_GetFinishedTaskJson(string MoldNumber = "", int TaskType = 1, string Keyword = "")
+        {
+            IEnumerable<Task> _tasks = _taskRepository.QueryByMoldNumber(MoldNumber, TaskType);
+            _tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.完成);
+            string _camDrawingPath = "";
+            if (TaskType == 6)
+                _camDrawingPath = GetTaskDrawingPath("CAD");
+            else
+                _camDrawingPath = GetTaskDrawingPath();
+            if (!string.IsNullOrEmpty(Keyword) && Keyword != "undefined")
+            {
+                _tasks = _tasks.Where(t => t.TaskName.ToUpper().Contains(Keyword.ToUpper()));
+            }
+            _tasks = _tasks.OrderBy(t => t.Priority);
+            TaskGridViewModel _viewModel = new TaskGridViewModel(_tasks.OrderBy(t => t.Priority), _userRepository, _camDrawingPath);
+            return Json(_viewModel, JsonRequestBehavior.AllowGet);
+        }
         public ActionResult JsonTaskBasic(int TaskID)
         {
             Task _task = _taskRepository.QueryByTaskID(TaskID);
@@ -2402,7 +2429,7 @@ namespace MoldManager.WebUI.Controllers
                         {
                             //FinishBy 暂时记录当前系统用户
                             #region 任务下所有工时全部结束 任务设置为完成
-                            List<int> _thStateList = new List<int>() { (int)TaskHourStatus.完成, (int)TaskHourStatus.暂停, (int)TaskHourStatus.取消,(int)TaskHourStatus.任务等待, (int)TaskHourStatus.完成记录 };
+                            List<int> _thStateList = new List<int>() { (int)TaskHourStatus.暂停, (int)TaskHourStatus.取消,(int)TaskHourStatus.任务等待, (int)TaskHourStatus.完成记录 };
                             List<int> _taskStateList = new List<int>() { (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.正在加工 , (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.外发
                                 ,(int)TechnikSys.MoldManager.Domain.Status.TaskStatus.CNC结束 };
                             var _task = _taskRepository.QueryByTaskID(t.TaskID);
@@ -4476,62 +4503,76 @@ namespace MoldManager.WebUI.Controllers
         }
 
 
-        public string ReaddCNCTask(string TaskIDs, int RCount, int FCount)
+        public string ReaddCNCTask(string TaskIDs, int RCount, int FCount, int TaskType = 1)
         {
             string[] _taskid = TaskIDs.Split(',');
-            string _deptName = Request.Cookies["User"]["DepartmentName"];
+            string _deptName = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]).ToString();
             string _msg = "";
             for (int i = 0; i < _taskid.Length; i++)
             {
                 Task _newTask = DuplicateTask(Convert.ToInt32(_taskid[i]));
-                _newTask.ReleaseTime = DateTime.Now;
-                _newTask.CreateTime = DateTime.Now;
-                if (_newTask.R > 0)
-                {
-                    _newTask.R = RCount;
-                }
-                if (_newTask.F > 0)
-                {
-                    _newTask.F = FCount;
-                }
-
-                _newTask.Memo = "Created By " + _deptName;
-                int _id = _taskRepository.AddNewTask(_newTask);
-                _newTask.TaskID = _id;
-                double _fgap ;
-                double _rgap;
-                try
-                {
-                    _fgap = _cncItemRepository.QueryByTaskID(Convert.ToInt32(_taskid[i])).Where(c => c.LabelName.EndsWith("F")).FirstOrDefault().Gap;
-                }
-                catch
-                {
-                    _fgap = 0;
-                }
-
-                try
-                {
-                    _rgap = _cncItemRepository.QueryByTaskID(Convert.ToInt32(_taskid[i])).Where(c => c.LabelName.EndsWith("R")).FirstOrDefault().Gap;
-
-                }
-                catch
-                {
-                    _rgap = 0;
-                }
-                if (_newTask.TaskType == 1)
-                {
-                    ReaddCNCItem(_newTask, _rgap, _fgap);
-                }
-
-                if ((_newTask.F == 0) && (_newTask.R == 0))
+                if (TaskType == 1 && RCount<=0 && FCount<=0)
                 {
                     _msg = _msg == "" ? _newTask.TaskName : _msg + "," + _newTask.TaskName;
+                    continue;
                 }
                 else
                 {
-                    CreateQCTaskWithTask(_newTask);
-                }
+                    #region 创建任务                
+                    _newTask.ReleaseTime = DateTime.Now;
+                    _newTask.CreateTime = DateTime.Now;
+                    if (_newTask.R > 0)
+                    {
+                        _newTask.R = RCount;
+                    }
+                    if (_newTask.F > 0)
+                    {
+                        _newTask.F = FCount;
+                    }
 
+                    _newTask.Memo = "手工(" + _deptName + ")";//"Created By " + _deptName;
+                    int _id = _taskRepository.AddNewTask(_newTask);
+                    #endregion
+
+                    #region 创建电极标签对象
+                    if (TaskType == 1)
+                    {
+                        _newTask.TaskID = _id;
+                        double _fgap;
+                        double _rgap;
+                        try
+                        {
+                            _fgap = _cncItemRepository.QueryByTaskID(Convert.ToInt32(_taskid[i])).Where(c => c.LabelName.EndsWith("F")).FirstOrDefault().Gap;
+                        }
+                        catch
+                        {
+                            _fgap = 0;
+                        }
+                        try
+                        {
+                            _rgap = _cncItemRepository.QueryByTaskID(Convert.ToInt32(_taskid[i])).Where(c => c.LabelName.EndsWith("R")).FirstOrDefault().Gap;
+
+                        }
+                        catch
+                        {
+                            _rgap = 0;
+                        }
+                        if (_newTask.TaskType == 1)
+                        {
+                            //ReaddCNCItem(_newTask, _rgap, _fgap);
+                            CreateCNCItems(_newTask, GetCurCNCItemSequence("R", _newTask.TaskName), GetCurCNCItemSequence("F", _newTask.TaskName), _rgap, _fgap);
+                        }
+                    }
+                    #endregion
+                    //if ((_newTask.F == 0) && (_newTask.R == 0))
+                    //{
+                    //    _msg = _msg == "" ? _newTask.TaskName : _msg + "," + _newTask.TaskName;
+                    //}
+                    //else
+                    //{
+                    CreateQCTaskWithTask(_newTask);
+                    //}
+                }
             }
             return _msg;
         }
@@ -4570,6 +4611,8 @@ namespace MoldManager.WebUI.Controllers
         private int GetCNCItemSequence(string TaskName)
         {
             int _seq = 0;
+
+            //取最大序列号
             CNCItem _item = _cncItemRepository.CNCItems
                 .Where(c => c.LabelName.Contains(TaskName))
                 .OrderByDescending(c => c.LabelName).FirstOrDefault();
@@ -4582,6 +4625,48 @@ namespace MoldManager.WebUI.Controllers
             }
 
             return _seq + 1;
+        }
+        /// <summary>
+        /// 获取粗/精电极最大序号
+        /// </summary>
+        /// <param name="_type">R/F</param>
+        /// <param name="TaskName"></param>
+        /// <returns></returns>
+        private int GetCurCNCItemSequence(string _type,string TaskName)
+        {
+            int _Num = 0;
+            CNCItem _item = _item = _cncItemRepository.CNCItems
+                .Where(c => c.LabelName.Contains(TaskName)).ToList()
+                .Where(c=>c.LabelName.Substring(c.LabelName.Length-1,1)==_type)
+                .OrderByDescending(c => c.LabelName).FirstOrDefault();
+            //取最大序列号
+            if (_item != null)
+            {
+                string _itemName = _item.LabelName;
+                _itemName = _itemName.Substring(_itemName.LastIndexOf('/') + 1);
+                _itemName = _itemName.Substring(0, _itemName.LastIndexOf('-'));
+                _Num = Convert.ToInt32(_itemName);
+            }
+            else
+            {               
+                if (_type == "R")
+                {
+                    _Num = 0;
+                }
+                else if (_type == "F")
+                {
+                    _Num = 3;
+                }
+            }
+            
+            //if (_item != null)
+            //{
+            //    string _itemName = _item.LabelName;
+            //    _itemName = _itemName.Substring(_itemName.LastIndexOf('/') + 1);
+            //    _itemName = _itemName.Substring(0, _itemName.LastIndexOf('-'));
+            //    _seq = Convert.ToInt32(_itemName);
+            //}
+            return _Num;
         }
 
         private string GetLabel(string TaskName, int Version, int Sequence, string ItemType)
@@ -4614,7 +4699,7 @@ namespace MoldManager.WebUI.Controllers
             _task.ProjectID = _oldtask.ProjectID;
             _task.CADUser = _oldtask.CADUser;
             _task.CAMUser = _oldtask.CAMUser;
-            _task.Creator = _oldtask.Creator;
+            _task.Creator = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
             _task.ReleaseTime = DateTime.Now;
             _task.CreateTime = DateTime.Now;
             _task.R = _oldtask.R;
@@ -4627,14 +4712,13 @@ namespace MoldManager.WebUI.Controllers
             _task.TaskID = 0;
             _task.Raw = _oldtask.Raw;
             _task.ProcessName = _oldtask.ProcessName;
-            _task.Model = _oldtask.ProcessName;
+            _task.Model = _oldtask.Model;
             _task.HRC = _oldtask.HRC;
             _task.Material = _oldtask.Material;
             _task.Time = _oldtask.Time;
             _task.ProgramID = _oldtask.ProgramID;
-            _task.State = 0;
+            _task.State = (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.等待;
             return _task;
-
         }
 
 
@@ -5763,7 +5847,7 @@ namespace MoldManager.WebUI.Controllers
                 switch (_task.TaskType)
                 {
                     case 1:
-                        ReaddCNCTask(_taskIDs[i], _task.R, _task.F);
+                        ReaddCNCTask(_taskIDs[i], _task.R, _task.F,1);
                         break;
                     case 2:
                         EDMDetail _detail = _edmDetailRepository.QueryByTaskID(_task.TaskID);
@@ -6080,7 +6164,7 @@ namespace MoldManager.WebUI.Controllers
         /// </summary>
         /// <param name="_task">任务对象</param>
         /// <param name="RecordType">0 正常开始 1 重启 2外发</param>
-        public int CreateTaskHour(Task _task,int RecordType,string MachineCode,string wsUserName="",int Qty=0,string SemiTaskFlag="")
+        public int CreateTaskHour(Task _task,int RecordType,string MachineCode,string wsUserName="",int Qty=0,string SemiTaskFlag="",int _thStata=(int)TaskHourStatus.开始)
         {
             DateTime _iniTime = DateTime.Parse("1900/1/1");
             try
@@ -6095,7 +6179,7 @@ namespace MoldManager.WebUI.Controllers
                 _taskhour.MoldNumber = _task.MoldNumber;
                 _taskhour.Time = 0;
                 _taskhour.RecordType = RecordType;
-                _taskhour.State = (int)TaskHourStatus.开始;
+                _taskhour.State = _thStata;
                 _taskhour.Operater = _operater;
                 _taskhour.MachineCode = MachineCode ?? "";
                 _taskhour.Memo = "记录创建于：" + DateTime.Now.ToString("yyMMddHHmm") + "；操作者：" + _operater + "/r/n";
@@ -6299,7 +6383,7 @@ namespace MoldManager.WebUI.Controllers
                 {
                     try
                     {
-                        Service_StartTask(_viewmodel);
+                        Service_StartTask(_viewmodel,(int)TaskHourStatus.外发,2);
                         //Task _task = _taskRepository.QueryByTaskID(t.TaskID);
                         //CreateTaskHour(_task, 2, t.MachinesCode, t.UserName,t.Qty);
                     }

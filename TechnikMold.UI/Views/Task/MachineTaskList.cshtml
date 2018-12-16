@@ -148,7 +148,7 @@
                                 </ul>
                             </li>
                         }
-                        <li><button class="btn btn-primary" id="OutSource">任务外发</button></li>
+                        <li><button class="btn btn-primary" id="OutSource1">任务外发</button></li>
                         <li><button class="btn btn-primary" id="CancelOutSource">取消外发</button></li>
                     }
                 }
@@ -432,7 +432,6 @@
              $.debounce(100,LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()))
              //delay_till_last("MachineTask", LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()), 500);
          })
-         //LoadTaskMInfoList($('#FTaskType').val(),'false');
 
          LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, "", "@ViewBag.MoldNumber");
 
@@ -741,48 +740,66 @@
                  return;
              }
              else{
-                 //alert('success!');
-                 //提交总工时
-                 var row=$("#tb_SetupWFTaskHour").getGridParam("selrow");
-                 var rowData= $("#tb_SetupWFTaskHour").jqGrid('getRowData',row);
-                 var i=0;
-                 var name='_viewmodel';
-                 var itemData=name+'['+i+'].TaskID='+rowData.ID+'&'+
-                               //name+'['+i+'].TaskName='+rowData.TaskName+'&'+
-                               name+'['+i+'].State='+rowData.State+'&'+
-                               name+'['+i+'].MachinesCode='+rowData.MachinesCode+'&'+
-                               name+'['+i+'].MachinesName='+rowData.MachinesName+'&' +
-                               name+'['+i+'].UserID='+rowData.UserID+'&' + 
-                               name+'['+i+'].UserName='+rowData.UserName+'&' +
-                               name+'['+i+'].TotalTime='+rowData.TotalTime+'&' +
-                               name+'['+i+'].Qty='+rowData.Qty+'&'+
+                 var r = confirm('确认结束加工工时？');
+                 if(r){
+                     //提交总工时
+                     var row=$("#tb_SetupWFTaskHour").getGridParam("selrow");
+                     var rowData= $("#tb_SetupWFTaskHour").jqGrid('getRowData',row);
+                     var i=0;
+                     var name='_viewmodel';
+                     var itemData=name+'['+i+'].TaskID='+rowData.ID+'&'+
+                                   //name+'['+i+'].TaskName='+rowData.TaskName+'&'+
+                                   name+'['+i+'].State='+rowData.State+'&'+
+                                   name+'['+i+'].MachinesCode='+rowData.MachinesCode+'&'+
+                                   name+'['+i+'].MachinesName='+rowData.MachinesName+'&' +
+                                   name+'['+i+'].UserID='+rowData.UserID+'&' + 
+                                   name+'['+i+'].UserName='+rowData.UserName+'&' +
+                                   name+'['+i+'].TotalTime='+rowData.TotalTime+'&' +
+                                   name+'['+i+'].Qty='+rowData.Qty+'&'+
 
-                               name+'['+i+'].StartTime='+rowData.StartTime+'&'+
-                               name+'['+i+'].FinishTime='+rowData.FinishTime+'&'+
-                               name+'['+i+'].SemiTaskFlag='+rowData.SemiTaskFlag+'&'+
-                               name+'['+i+'].TaskHourID='+rowData.TaskHourID;
-                 //alert(itemData);
-                 $.get('/Task/SetWFTaskFinish',itemData,function(res){
-                     res=Number(res);
-                     if(res>0){
-                         //提交阶段工时
-                         $(".input_TPHType").each(function(){
-                             var code= this.id;
-                             var model={TaskHourID:res,TypeCode:code,Time:Number($(this).val())};
-                             $.get('/Task/Service_Save_TPRecords',model);
-                         });
-                         $('#SetupTaskPeriodHourModal').modal('hide');
-                     }                            
-                     else{
-                         alert('任务结束失败！');
-                     }
-                 });
+                                   name+'['+i+'].StartTime='+rowData.StartTime+'&'+
+                                   name+'['+i+'].FinishTime='+rowData.FinishTime+'&'+
+                                   name+'['+i+'].SemiTaskFlag='+rowData.SemiTaskFlag+'&'+
+                                   name+'['+i+'].TaskHourID='+rowData.TaskHourID;
+                     //alert(itemData);
+                     $.get('/Task/SetWFTaskFinish',itemData,function(res){
+                         res=Number(res);
+                         if(res>0){
+                             //提交阶段工时
+                             $(".input_TPHType").each(function(){
+                                 var code= this.id;
+                                 var model={TaskHourID:res,TypeCode:code,Time:Number($(this).val())};
+                                 $.get('/Task/Service_Save_TPRecords',model);
+                             });
+                             $('#SetupTaskPeriodHourModal').modal('hide');
+                             alert('提交成功！');
+                         }                            
+                         else{
+                             alert('任务工时结束失败！');
+                         }
+                     });
+                 }                 
              }
          });
          //结束任务重载表格
          $('#modal_btn_close_FinishTask').on('click',function(){
              location.reload();
          })
+
+         $("#OutSource1").on("click", function () {
+             var _ids = GetMultiSelectedIDs("TaskGrid");
+             if (_ids == "") {
+                 alert("请选择至少一个任务");
+                 return;
+             } else {
+                 //if (confirm("外发选中任务？")) {
+                 //    var _ids = GetMultiSelectedIDs("TaskGrid");
+                 //    //Outsource(_ids);
+                 //}
+                 var _ids = GetMultiSelectedIDs("TaskGrid");
+                 SetupTaskStart('true')
+             }
+         });
      })
 
     function addColumnlists(ids,GridTableName,row,ColName){

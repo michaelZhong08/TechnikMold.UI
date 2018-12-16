@@ -82,7 +82,7 @@
         </div>
 </div>
 
-
+@*右键菜单*@
 <div class="contextMenu dropdown" id="StockItemContext" style="display:none">
     @if ((PurchaseType == 2)&&(_DeptID==20))
     {
@@ -254,7 +254,7 @@
         </div>
     </div>
  }
- 
+ @*库位调整*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="WarehousePositionEditDialog" tabindex="-1" role="dialog" aria-labelledby="WarehousePositionEditLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -262,7 +262,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                 <h4 class="modal-title" id="WarehousePositionEditLabel">库位调整</h4>
             </div>
-            <div class="modal-body">      
+            <div class="modal-body">
                 <table>
                     <tr>
                         <td class="col-sm-2"><label>仓库</label></td>
@@ -278,21 +278,21 @@
                         </td>
                     </tr>
                 </table>
-                    <table class="table-striped">
-                        <thead>
-                            <tr>
-                                <td class="col-sm-2"><label>名称</label></td>
-                                <td class="col-sm-2"><label>物料号</label></td>
-                                <td class="col-sm-2"><label>当前仓库</label></td>
-                                <td class="col-sm-2"><label>当前库位</label></td>
-                            </tr>
-                        </thead>
-                        <tbody id="StockItems" style="font-size:12px"></tbody>                        
-                    </table>
+                <table class="table-striped">
+                    <thead>
+                        <tr>
+                            <td class="col-sm-2"><label>名称</label></td>
+                            <td class="col-sm-2"><label>物料号</label></td>
+                            <td class="col-sm-2"><label>当前仓库</label></td>
+                            <td class="col-sm-2"><label>当前库位</label></td>
+                        </tr>
+                    </thead>
+                    <tbody id="StockItems" style="font-size:12px"></tbody>
+                </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="SaveWarehousePosition" class="btn btn-primary" >保存</button>
+                <button type="button" id="SaveWarehousePosition" class="btn btn-primary">保存</button>
             </div>
         </div>
     </div>
@@ -551,7 +551,7 @@
             var _row ="";
             $.each(msg,function(i,n){
                 _row = "<tr><td>"+n.Name+"</td>"
-                        +"<td>"+n.MaterialNumber+"</td>"+
+                        +"<td>"+n.PartNum+"</td>"+
                         "<td>"+n.Warehouse+"</td>"
                         +"<td>"+n.Position+"</td></tr>";
                 $("#StockItems").append($(_row));
@@ -606,8 +606,7 @@
                     $("#MoldSelect").append($("<option/>", {value:n, text:n, selected:true}))
                 }else{
                     $("#MoldSelect").append($("<option/>", {value:n, text:n}))
-                }
-                
+                }             
             })
         })
     }

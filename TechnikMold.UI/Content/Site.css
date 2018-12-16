@@ -138,3 +138,7 @@ height:38px;
 .jqgrow:nth-child(even){
     background-color:#eeeeee;
 }
+
+h2 {
+line-height:30px;
+}

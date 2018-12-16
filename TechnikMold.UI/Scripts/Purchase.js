@@ -184,9 +184,12 @@
 
     //Display the supplier confirmation dialog
     $("#AssignSupplier").on("click", function () {
-        if ($("#TotalPrice").val() > 0) {
+        if (Number($("#TotalPrice").val()) > 0 || Number($("#TotalPriceWT").val())>0) {
             $("#SupplierName").val($("#AssignedSupplier option:selected").text());
+            console.log($("#TotalPrice").val());
             $("#Total").val($("#TotalPrice").val());
+            console.log($("#TotalPriceWT").val());
+            $("#TotalWT").val($("#TotalPriceWT").val());
             $("#AssignSupplierDialog").modal("show");
             $("#SupplierID").val($("#AssignedSupplier option:selected").val());
         } else {
@@ -204,7 +207,17 @@
 
     //Display the quotation summary page
     $("#CompareQuotation").on("click", function () {
-        location.href = "/Purchase/QuotationSummary?QuotationRequestID=" + $("#QuotationRequestID").val();
+        //判断是否已输入报价
+        $.get('/Purchase/Service_QR_ChkQuotations?quotationRequestID=' + $('#QuotationRequestID').val(), function (res) {
+            if (res>0) {
+                location.href = "/Purchase/QuotationSummary?QuotationRequestID=" + $("#QuotationRequestID").val();
+            } else {
+                alert('请先输入供应商报价！');
+                return false;
+            }
+        })
+        //
+        
     })
 
 
@@ -445,7 +458,7 @@
     })
 
     $("#SaveQRSuppliers").on("click", function () {
-        SaveQRSuppliers();
+        //SaveQRSuppliers();
     })
 
 
@@ -461,10 +474,6 @@
 
     $("#SendQR").on("click", function () {
         SendQR();
-    })
-
-    $("#QRSupplierList").on("change", function () {
-        LoadQRContacts($("#QRSupplierList option:selected").val());
     })
 
     $("#QRContactList").on("dblclick", function () {
@@ -785,12 +794,13 @@ function CreatePR(Submit) {
                     name + "[" + i + "].MoldNumber=" + rowData[i].MoldNumber + "&" +
                     name + "[" + i + "].CostCenterID=" + rowData[i].CostCenterID + "&"+
                     name + "[" + i + "].PlanQty=" + rowData[i].PlanQty + "&" +
+                    name + "[" + i + "].PurchaseTypeID=" + rowData[i].PurchaseType + "&" +
                     name + "[" + i + "].ERPPartID=" + rowData[i].ERPPartID + "&";
         }
         itemData = itemData + "PurchaseRequestID=" + ($("#PurchaseRequestID").val() == undefined ? 0 : $("#PurchaseRequestID").val()) +
             "&ProjectID=" + $("#ProjectID").val() + "&Memo=" + $("#PRMemo").val() +
             "&SupplierID=" + $("#SupplierID").val() + "&PurchaseType=" + $("#PurchaseType").val() + "&ApprovalERPUserID=" + $("#ApprovalUserID").val() +
-            "&wsUserID=" + $("#wsUserID").val();
+            "&wsUserID=" + $("#wsUserID").val() + "&selPartModal=" + $('#_selPartModal').val();
         $.ajax({
             type: "Post",
             dataType: "html",
@@ -945,6 +955,9 @@ function EditPrContent(id, row) {
                 break;
             case 2:
                 $('#HCClass').val(rowdata.MoldNumber);
+                break;
+            case 3:
+                $('#MoldNum').val(rowdata.MoldNumber);
                 break;
             case 5:
                 $('#BKClass').val(rowdata.MoldNumber);
@@ -1120,9 +1133,9 @@ function LoadBrands(BrandName) {
         case 2:
             _type = '生产耗材';
             break;
-        case 5:
+        default:
             _type = '模具材料';
-            break;
+            break;       
     }
     if (BrandName == undefined) {
         $.getJSON("/Administrator/Service_GetBrandsByType?_type=" + _type, function (msg) {
@@ -1212,13 +1225,27 @@ function ValidateNumeric() {
 //校验报价是否为0
 function ValidateQuotation() {
     for (i = 0; i < $("input[id^='UnitPrice']").length; i++) {
-        if (($("#UnitPrice\\[" + i + "\\]").val() != "") & ($("#ShipDate\\[" + i + "\\]").val() == "")) {
+        console.log($("#UnitPriceWT\\[" + i + "\\]").val());
+        console.log($("#ShipDate\\[" + i + "\\]").val());
+        if (Number($("#UnitPriceWT\\[" + i + "\\]").val()) == 0) {
+            $("#UnitPriceWT\\[" + i + "\\]").addClass("invalidefield");
+            return false;
+        } else {
+            $("#UnitPriceWT\\[" + i + "\\]").removeClass("invalidefield");
+        }
+        if ($("#ShipDate\\[" + i + "\\]").val() == '') {
             $("#ShipDate\\[" + i + "\\]").addClass("invalidefield");
-            alert("请输入报价零件的计划到货日期");
             return false;
         } else {
             $("#ShipDate\\[" + i + "\\]").removeClass("invalidefield");
         }
+        //if (($("#UnitPrice\\[" + i + "\\]").val() != "") && ($("#ShipDate\\[" + i + "\\]").val() == "")) {
+        //    $("#ShipDate\\[" + i + "\\]").addClass("invalidefield");
+        //    //alert("请输入报价零件的计划到货日期");
+        //    return false;
+        //} else {
+        //    $("#ShipDate\\[" + i + "\\]").removeClass("invalidefield");
+        //}
     }
     return true;
 }
@@ -1262,7 +1289,7 @@ function SubmitQuotation() {
         data: _data,
         success: function (msg) {
             alert("供应商报价保存成功");
-            location.href = "/Purchase/QuotationRequestList";
+            location.href = "/Purchase/QuotationInput?QuotationRequestID=" + $("#QuotationRequestID").val();
         }
     })
 }
@@ -1605,7 +1632,7 @@ function DeleteQRContent() {
 function SelectQRSupplier() {
     var _qrID = $("#QuotationRequestID").val();
     LoadSupplierGroup(_qrID);
-    setTimeout(LoadQRSupplierGroups(_qrID, "SupplierList"), 100);
+    setTimeout(LoadQRSupplierGroups(_qrID, "QGroupList"), 100);
     $("#SelectSupplierDialog").modal("show");
 }
 
@@ -1626,14 +1653,14 @@ function LoadSuppliers(QRID, ZeroLine) {
 }
 
 function LoadSupplierGroup(QRID, ZeroLine) {
-    $("#AvailableSuppliers option").remove();
+    $("#AvailableQRGroups option").remove();
     if (ZeroLine == 1) {
-        $("#AvailableSuppliers").append($("<option/>", { value: 0, text: "-" }));
+        $("#AvailableQRGroups").append($("<option/>", { value: 0, text: "-" }));
     }
 
     $.getJSON("/Purchase/Service_GetSupplierGroup?QuotationRequestID=" + QRID, function (msg) {
         $.each(msg, function (i, n) {
-            $("#AvailableSuppliers").append($("<option/>", {
+            $("#AvailableQRGroups").append($("<option/>", {
                 value: n.ID,
                 text: n.GroupName
             }))
@@ -1641,12 +1668,11 @@ function LoadSupplierGroup(QRID, ZeroLine) {
     })
 }
 
-
 function LoadQRSuppliers(QuotationRequestID, ListName, SelectedValue) {
     $("#" + ListName + " option").remove();
     var id = "";
     var _selID;
-    $.getJSON("/Purchase/JsonQRSupplier?QuotationRequestID=" + QuotationRequestID, function (msg) {
+    $.getJSON("/Purchase/Service_QR_GetQRSuppliers?quotationID=" + QuotationRequestID, function (msg) {//JsonQRSupplier
         $.each(msg, function (i, n) {
             if (i == 0) {
                 _selID = n.SupplierID;
@@ -1668,11 +1694,11 @@ function LoadQRSupplierGroups(QuotationRequestID, ListName) {
     $.getJSON("/Purchase/Service_GetQrSupplierGroup?QuotationRequestID=" + QuotationRequestID, function (msg) {
         $.each(msg, function (i, n) {
             if (i == 0) {
-                _selID = n.SupplierID;
+                _selID = n.ID;
             }
             $("#" + ListName).append($("<option/>", {
-                value: n.SupplierID,
-                text: n.SupplierName
+                value: n.ID,
+                text: n.GroupName
             }))
             id = id + "," + n.SupplierID;
         })
@@ -1716,12 +1742,45 @@ function SaveQRSuppliers() {
 }
 
 function LoadSupplierNames(QuotationRequestID) {
+    $('#ExistingSuppliers').empty();
     $.ajax({
         type: "Get",
-        dataType: "html",
-        url: "/Purchase/QRSupplierNames?QuotationRequestID=" + QuotationRequestID,
+        dataType: "json",
+        url: "/Purchase/Service_GetQrSupplierGroup?QuotationRequestID=" + QuotationRequestID,//Service_QRSuppliers
         success: function (msg) {
-            $("#ExistingSuppliers").val(msg);
+            //$("#ExistingSuppliers").val(msg);
+            //var _suppliers = msg.split(',');
+            var _fSel = '';
+            var _fval = '';
+            $.each(msg, function (i, n) {
+                _fSel = _fSel + n.GroupName + ',';
+                _fval = _fval + n.ID + '|';
+                //if (i == 0) {
+                //    _fval = n.ID;
+                //}
+            });
+            
+            _fSel = _fSel.substr(0, _fSel.length - 1);
+            _fval = _fval.substr(0, _fval.length - 1);
+            console.log(_fval);
+            $("#ExistingSuppliers").append($('<option/>', {
+                value: _fval,
+                text: _fSel,
+                //disabled: true,
+                selected:true,
+            }));
+            if (msg.length > 1) {
+                $.each(msg, function (i, n) {
+                    $("#ExistingSuppliers").append($('<option/>', {
+                        value: n.ID,
+                        text: n.GroupName,
+                    }));
+                })
+            }
+            ////
+            var _qrID = $('#QuotationRequestID').val();
+            var _html = '<a id="QREmail" class="btn btn-primary" href="' + FormatHrefStr(_fval) + '" onclick="ShowDialog()" ><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>';//href=MoldSysPlugin:'+res+_qrID +'
+            $('#td_GenerateLink').append(_html);
         }
     })
 }
@@ -1776,13 +1835,13 @@ function AddQRContent() {
 
 function CloseQR() {
     var _id = $("#QuotationRequestID").val();
-    if (confirm("确认返回询价单？")) {
+    if (confirm("确认关闭询价单？")) {
         $.ajax({
             url: "/Purchase/CloseQR?QuotationRequestID=" + _id,
             dataType: "html",
             success: function (msg) {
                 if (msg == "") {
-                    alert("询价单已返回");
+                    alert("询价单已关闭");
                 } else {
                     alert(msg);
                 }
@@ -2077,66 +2136,54 @@ function LoadMoldNumbers(Keyword) {
     })
 }
 
-function AddPOItem(itemIDs) {
-    var selr = $('#PRContentGrid').jqGrid('getGridParam', 'selarrrow');
-    var len = selr.length;
-    for (i = 0; i < len ; i++) {
-        $('#PRContentGrid').jqGrid('delRowData', selr[0]);
-    }
-
-    var _url = $("#POContentGrid").jqGrid("getGridParam", "url");
-
-    if (_url == "") {
-        _url = "/Purchase/AddPOItem?ItemIDs=" + itemIDs;
-    } else {
-        _url = _url + "," + itemIDs;
-    }
-    ////console.log(_url);
-    $("#POContentGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
-}
-
+//TODO:生成采购订单
 function CreatePO() {
     var POContents = new Object();
-
+    $("#CreatePO").attr("disabled", true);
     var itemData = "";
     var name = "POContents";
     var _url = "/Purchase/CreatePurchaseOrder";
     var validate = true;
 
-
-    for (i = 1; i <= $("#POContentGrid").jqGrid("getDataIDs").length ; i++) {
-        $('#POContentGrid').jqGrid('saveRow', i);
+    var _gridRows = $("#POContentGrid").jqGrid("getDataIDs");
+    console.log(_gridRows);
+    for (i = 0; i <= _gridRows.length ; i++) {
+        $('#POContentGrid').jqGrid('saveRow', _gridRows[i]);
     }
 
     var rowData = $("#POContentGrid").jqGrid("getRowData");
     if (rowData.length > 0) {
         if ($('#SupplierName').val() == null || $('#SupplierName').val() == '' || $('#SupplierName').val() == undefined) {
+            $("#CreatePO").removeAttr("disabled");
             alert('请选择供应商！');
             return;
         }
+        ////保存订单——
+        
+        //
         for (var i = 0; i < rowData.length; i++) {
-
-            if ((rowData[i].Quantity == 0) || (rowData[i].UnitPriceWT == 0) || (rowData[i].TotalPriceWT == 0) || (rowData[i].DeliverDate == "")) {
-                alert("请输入订单项数量/单价/总价/交付日期信息");
-                //$("#CreatePO").attr("disabled", false);
+            console.log(rowData[i]);
+            if ((rowData[i].Quantity == 0) || (rowData[i].UnitPriceWT == 0) || (rowData[i].TotalPriceWT == 0) || (rowData[i].DeliverDate == ""||rowData[i].DeliverDate == "-")) {
+                alert("请输入订单项数量/单价/总价/交付日期信息");                
                 $('#POContentGrid').jqGrid('editRow', i, true);
+                $("#CreatePO").removeAttr("disabled");
                 return false;
             } else {
                 itemData = itemData + name + "[" + i + "].PurchaseItemID=" + rowData[i].PurchaseItemID + "&" +
                     name + "[" + i + "].Quantity=" + rowData[i].Quantity + "&" +
                     name + "[" + i + "].UnitPriceWT=" + rowData[i].UnitPriceWT + "&" +
                     name + "[" + i + "].TotalPriceWT=" + rowData[i].TotalPriceWT + "&" +
-                    name + "[" + i + "].PlanTime=" + rowData[i].DeliverDate + "&";
+                    name + "[" + i + "].PlanTime=" + rowData[i].DeliverDate + "&"+
+                name + "[" + i + "].Memo=" + rowData[i].Memo + "&";
             }
-
         }
-
+        
         itemData = itemData + "&Supplier=" + $('#SupplierName').val() +//$("#Supplier option:selected").val() +
             "&Currency=" + $("#Currency").val() +
             "&TaxRate=" + $("#TaxRate").val() +
             "&PurchaseType=" + $("#PurchaseType").val() +
             "&SupplierName=" + $('#SupplierName').val();//$("#Supplier option:selected").text();
-
+        $("#CreatePO").removeAttr("disabled");
         $.ajax({
             type: "Post",
             dataType: "html",
@@ -2147,13 +2194,14 @@ function CreatePO() {
             },
             success: function (msg) {
                 if (msg == "") {
-                    alert("订单生成");
+                    //alert("订单生成");
+                    $("#CreatePO").attr("disabled", false);
                     location.href = "/Purchase/PurchaseOrderList";
                 } else {
                     alert(msg);
                 }
             }
-        })
+        });
     } else {
         alert("当前订单中不包含任何采购项");
     }
@@ -2161,11 +2209,11 @@ function CreatePO() {
 
 
 function PickSupplier() {
-    var _supID = $("#AvailableSuppliers option:selected").val();
-    var _supName = $("#AvailableSuppliers option:selected").text();
-    $("#AvailableSuppliers option:selected").remove();
+    var _supID = $("#AvailableQRGroups option:selected").val();
+    var _supName = $("#AvailableQRGroups option:selected").text();
+    $("#AvailableQRGroups option:selected").remove();
     if (_supName != "") {
-        $("#SupplierList").append($("<option/>", {
+        $("#QGroupList").append($("<option/>", {
             value: _supID,
             text: _supName
         }));
@@ -2173,11 +2221,11 @@ function PickSupplier() {
 }
 
 function RemoveSupplier() {
-    var _supID = $("#SupplierList option:selected").val();
-    var _supName = $("#SupplierList option:selected").text()
-    $("#SupplierList option:selected").remove();
+    var _supID = $("#QGroupList option:selected").val();
+    var _supName = $("#QGroupList option:selected").text()
+    $("#QGroupList option:selected").remove();
     if (_supName != "") {
-        $("#AvailableSuppliers").append($("<option/>", {
+        $("#AvailableQRGroups").append($("<option/>", {
             value: _supID,
             text: _supName
         }));
@@ -2245,7 +2293,7 @@ function getQueryString(name) {
     if (r != null) return unescape(r[2]); return null;
 }
 
-function SupplierListImport(_suplistID) {
+function SupplierListImport(_suplistID,isWF) {
     var js = '';
     $('#' + _suplistID).html('');
     $.get('/Purchase/JsonSuppliersByJS?js=' + js, function (res) {
@@ -2262,4 +2310,13 @@ function SupplierListImport(_suplistID) {
             $('#' + _suplistID).append($ohtml);
         }
     });
+}
+
+//调整采购项计划日期
+function PurItenChangePlan(purItemID, planDate) {
+    console.log(purItemID);
+    console.log(planDate);
+    if (Number(purItemID) > 0) {
+        $.get('/Purchase/Service_PurItem_ChangePlan?purchaseItemID=' + purItemID + '&planDate=' + planDate, function () { });
+    }    
 }

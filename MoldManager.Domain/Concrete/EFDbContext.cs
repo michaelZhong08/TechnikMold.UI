@@ -125,5 +125,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public DbSet<AttachFileInfo> AttachFileInfos { get; set; }
         public DbSet<WHPart> WHParts { get; set; }
         public DbSet<WHStock> WHStocks { get; set; }
+        public DbSet<PurItemChangeDateRecord> PurItemChangeDateRecords { get; set; }
     }
 }

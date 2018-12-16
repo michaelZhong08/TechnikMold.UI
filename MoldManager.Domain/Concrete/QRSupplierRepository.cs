@@ -52,7 +52,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.RequestDate = QRSupplier.RequestDate;
                     _dbEntry.TaxInclude = QRSupplier.TaxInclude;
                     _dbEntry.TaxRate = QRSupplier.TaxRate;
-                    _dbEntry.Enabled = true;
+                    _dbEntry.Enabled = QRSupplier.Enabled;
                 }
                 
             }
@@ -65,7 +65,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.SupplierID = QRSupplier.SupplierID;
                     _dbEntry.RequestDate = QRSupplier.RequestDate;
                     _dbEntry.TaxRate = QRSupplier.TaxRate;
-                    _dbEntry.Enabled = true;
+                    _dbEntry.Enabled = QRSupplier.Enabled;
                 }
             }
             _context.SaveChanges();

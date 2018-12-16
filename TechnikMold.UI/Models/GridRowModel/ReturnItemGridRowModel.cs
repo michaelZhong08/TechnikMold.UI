@@ -9,7 +9,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
     public class ReturnItemGridRowModel
     {
         public string[] cell;
-        public ReturnItemGridRowModel(ReturnItem Item, PurchaseItem POItem, WarehouseStock Stock, int RequestState)
+        public ReturnItemGridRowModel(ReturnItem Item, PurchaseItem POItem, WHStock Stock, int RequestState)
         {
             cell= new string[12];
             cell[0]= Item.ReturnItemID.ToString();
@@ -22,23 +22,23 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[7] = POItem.InStockQty.ToString();
             if (RequestState != 0)
             {
-                cell[8] = Stock.Quantity.ToString();
+                cell[8] = Stock.Qty.ToString();
             }
             else    
             {
-                cell[8] = (Stock.Quantity+Item.Quantity).ToString();
+                cell[8] = (Stock.Qty + Item.Quantity).ToString();
             }
             
             
             if (Item.Quantity == 0)
             {
-                if (Stock.Quantity > POItem.InStockQty)
+                if (Stock.Qty > POItem.InStockQty)
                 {
                     cell[9] = POItem.InStockQty.ToString();
                 }
                 else
                 {
-                    cell[9] = Stock.Quantity.ToString();
+                    cell[9] = Stock.Qty.ToString();
                 }
             }
             else

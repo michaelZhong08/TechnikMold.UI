@@ -91,9 +91,9 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
 
 
-        public IEnumerable<User> FilterUser(string UserName = "")
+        public IEnumerable<User> FilterUser(List<int> _depList,string UserName = "")
         {
-            IEnumerable<User> _users = _context.Users.Where(u => u.FullName.Contains(UserName)).Where(u=>u.Enabled==true);
+            IEnumerable<User> _users = _context.Users.Where(u => u.FullName.Contains(UserName)&& _depList.Contains(u.DepartmentID)).Where(u=>u.Enabled==true);
             return _users;
         }
 

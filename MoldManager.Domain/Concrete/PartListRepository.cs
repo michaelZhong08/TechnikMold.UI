@@ -49,8 +49,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.PrevVersion = PartList.PrevVersion;
                     _dbEntry.Latest = PartList.Latest;
                     _dbEntry.ProjectID = PartList.ProjectID;
-                    _dbEntry.CreateDate = PartList.CreateDate;
-                    _dbEntry.ReleaseDate = PartList.ReleaseDate;
+                    _dbEntry.UpdateDate = PartList.UpdateDate==null? new DateTime(1900,1,1): PartList.UpdateDate;
+                    _dbEntry.ReleaseDate = PartList.ReleaseDate == null ? new DateTime(1900, 1, 1) : PartList.ReleaseDate;
                 }
             }
             _context.SaveChanges();

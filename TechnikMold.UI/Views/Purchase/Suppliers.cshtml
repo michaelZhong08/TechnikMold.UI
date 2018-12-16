@@ -82,6 +82,9 @@
             </table>*@
         </div>
     </div>
+
+    @*<input id="inpt_email" class="form-control" />
+    <input id="btn_chk" value="ValidEmail" class="btn btn-danger" />*@
 </div>
 
 @*供应商编辑对话框*@
@@ -270,51 +273,42 @@
 @*报价组管理*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="SupplierGroupModal" tabindex="-1" role="dialog" >
     <div class="modal-dialog">
-        <div class="modal-content" style="width:800px;height:450px;">
+        <div class="modal-content" style="width:760px;height:465px;">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                 <h4 class="modal-title" >报价组管理</h4>
             </div>
             <div class="modal-body">
                 <div>
-                    <table>
-                        <tr>
+                    <table style="width:740px;">
+                        <col width="370" />
+                        <col width="370" />
+                        <tr style="height:38px;">
                             <td class="col-sm-6">
-                                <table>
-                                    <tr>
-                                        <td>
-                                            <input id="modal_GroupID" value="0" readonly hidden />
-                                            <input id="modal_GroupName" class="form-control" placeholder="报价组名" readonly />
-                                        </td>
-                                        <td><button id="modal_GroupAdd" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> </button></td>
-                                        <td><button id="modal_GroupEdit" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span> </button></td>
-                                        <td><button id="modal_GroupDel" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> </button></td>
-                                    </tr>
-                                </table>
+                                <input id="modal_GroupName" class="form-control" style="float:left;width:60%;" placeholder="报价组名" />
+                                <input id="modal_GroupID" value="0" readonly hidden />
+                                <button id="modal_GroupDel" class="btn btn-danger" style="float:right;width:12%;margin-left:3px;" disabled><span class="glyphicon glyphicon-minus"></span> </button>
+                                <button id="modal_GroupEdit" class="btn btn-primary" style="float:right;width:12%;margin-left:3px;" disabled><span class="glyphicon glyphicon-pencil"></span> </button>
+                                <button id="modal_GroupAdd" class="btn btn-success" style="float:right;width:12%;margin-left:3px;"><span class="glyphicon glyphicon-plus"></span> </button>
                             </td>
                             <td class="col-sm-6">
-                                <table>
-                                    <tr>
-                                        <td>
-                                            <input id="modal_SupplierID" value="0" readonly hidden />
-                                            <input id="modal_SupplierName" list="SupplierIDD" type="text" class="form-control" placeholder="报价供应商" readonly />
-                                            <datalist id="SupplierIDD"></datalist>
-                                        </td>
-                                        <td><button id="modal_GSupAdd" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> </button></td>
-                                        <td><button id="modal_GSupEdit" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span> </button></td>
-                                        <td><button id="modal_GSupDel" class="btn btn-danger"><span class="glyphicon glyphicon-minus"></span> </button></td>
-                                    </tr>
-                                </table>                               
+                                <input id="modal_SupplierID" value="0" readonly hidden />
+                                <input id="modal_SupplierName" list="SupplierIDD" type="text" class="form-control" style="float:left;width:60%;" placeholder="报价供应商" readonly />
+                                <datalist id="SupplierIDD"></datalist>
+                                <button id="modal_GSupDel" class="btn btn-danger" style="float:right;width:12%;margin-left:3px;" disabled><span class="glyphicon glyphicon-minus"></span> </button>                                
+                                <button id="modal_GSupEdit" class="btn btn-primary" style="float:right;width:12%;margin-left:3px;" disabled><span class="glyphicon glyphicon-pencil"></span> </button>
+                                <button id="modal_GSupAdd" class="btn btn-success" style="float:right;width:12%;margin-left:3px;" disabled><span class="glyphicon glyphicon-plus"></span> </button>
                             </td>
                         </tr>
-                        <tr>
-                            <td class="col-sm-6">
-                                <select class="form-control" id="SG_GList" size="15"></select>
+                        <tr style="height:350px;padding:0px;">
+                            <td class="col-sm-6" >
+                                <select class="form-control" id="SG_GList" size="15" style="height:350px;margin:0px;display:block!important;border-radius:0px!important;"></select>
                             </td>
-                            <td class="col-sm-6">
-                                <select class="form-control" id="SG_SList" size="15"></select>
-                                <input id="modal_supMail" class="form-control" placeholder="aaa@bbb.com(多个地址,隔开)" readonly />
-                                <input id="modal_MailList" hidden />
+                            <td class="col-sm-6" style="padding-top:0px;">
+                                <input id="modal_supMail" class="form-control" placeholder="邮箱:aaa@bbb.com(多个地址;隔开)" style="margin:0px;height:34px;margin-bottom:2px;display:block!important;" readonly />
+                                <select class="form-control" id="SG_SList" size="15" style="height:316px;border-radius:0px!important;"></select>
+                                
+                                <input id="modal_MailList"  hidden/>
                                 <input id="modal_SupplierIDs" hidden />
                             </td>
                         </tr>
@@ -458,215 +452,399 @@
         var sflag = -1;//供应商操作标记
         var gflag = -1;//报价组操作标记
 
+        //报价组添加
         $('#modal_GroupAdd').on('click', function () {
             gflag = 0;
-            var _gNameStatus = $('#modal_GroupName').attr('readonly');
-
-            //初始化
-            $('#modal_GroupName').val('');
-            $('#modal_GroupID').val('');
-            $('#modal_GroupName').removeAttr('readonly');
-            ClearSupInput();
-            $('#modal_MailList').val('');
-            $('#modal_SupplierIDs').val('');
-            $('#SG_SList').empty();
+            //var _gNameStatus = $('#modal_GroupName').attr('readonly');
+            //var r = confirm("确认添加？");
+            //重复验证
+            var _sgName = $('#modal_GroupName').val();
+            $.get('/Purchase/Service_SG_GetSGByName?_sgName=' + _sgName, function (res) {
+                if (res.ID > 0) {
+                    alert('报价组重复！');
+                    return;
+                } else {
+                    _sg.ID = 0;
+                    _sg.GroupName = $('#modal_GroupName').val();
+                    _sg.active = true;
+                    _sg.SupplierIDs = '';
+                    _sg.MailList = '';
+                    $.post('/Purchase/Service_SG_Save', _sg, function (res) {
+                        if (res == 1) {
+                            //alert('保存成功！');
+                            LoadSGGList();
+                        }
+                    });
+                    //初始化
+                    $('#modal_GroupName').val('');
+                    $('#modal_GroupID').val('');
+                    //$('#modal_GroupName').removeAttr('readonly');
+                    ClearSupInput();
+                    $('#modal_MailList').val('');
+                    $('#modal_SupplierIDs').val('');
+                    $('#SG_SList').empty();
+                }
+            });
         });
+        //供应商添加
         $('#modal_GSupAdd').on('click', function () {
             if (ChkStrNull($('#modal_GroupID').val())) {
                 alert('请先选择报价组！');
                 return;
+            }
+            if (ChkStrNull($('#modal_SupplierName').val())) {
+                alert('请先选择供应商！');
+                return;
             } else {
-                sflag = 0;
-                ClearSupInput();
-                $('#modal_SupplierName').removeAttr('readonly');
+                //sflag = 0;
+                //验证重复
+                var _supListTxt = $('#SG_SList').text();
+                var _isReAdd = false;
+
+                $("#SG_SList option").each(function () {
+                    //遍历所有option
+                    var value = $(this).val();
+                    var text = $(this).text();
+                    if (text == $('#modal_SupplierName').val()) {
+                        _isReAdd = true;
+                    }
+                });
+                if (_isReAdd) {
+                    //alert('重复供应商！');
+                    //$('#modal_SupplierName').attr('readonly', 'readonly');
+                    $('#modal_SupplierName').val('');
+                    $('#modal_supMail').val('');
+                    return;
+                }
+                //$.get('/Purchase/Service_Sup_GetsupByName?_supName=' + $('#modal_SupplierName').val(), function (res) {
+                //    $('#modal_SupplierID').val(res.SupplierID);
+                //    $('#modal_supMail').val(res.Email);
+                //});
+                //$('#modal_SupplierName').attr('readonly', 'readonly');
+                //$('#modal_supMail').removeAttr('readonly');
+                //
+                _sg.ID = $('#modal_GroupID').val();
+                _sg.GroupName = $('#modal_GroupName').val();
+                _sg.active = true;
+                var _supIDs = ChkStrNull($('#modal_SupplierID').val()) ? ' ' : $('#modal_SupplierID').val();
+                var _supMail = ChkStrNull($('#modal_supMail').val()) ? ' ' : $('#modal_supMail').val();
+                if (ischeckemail(_supMail)) {
+                    _sg.SupplierIDs = ChkStrNull($('#modal_SupplierIDs').val()) ? _supIDs : $('#modal_SupplierIDs').val() + '|' + _supIDs;
+                    _sg.MailList = ChkStrNull($('#modal_MailList').val()) ? _supMail : $('#modal_MailList').val() + '|' + _supMail;
+                    $.post('/Purchase/Service_SG_Save', _sg, function (res) {
+                        if (res == 1) {
+                            //alert('保存成功！');
+                            LoadSGSList($('#modal_GroupID').val());
+                            $('#modal_SupplierIDs').val(_sg.SupplierIDs);
+                            $('#modal_MailList').val(_sg.MailList);
+                            _sgSupplierIDsArr = (_sg.SupplierIDs).split('|');
+                            _sgMailListsArr = (_sg.MailList).split('|');
+                        }
+                    });
+                    ClearSupInput();
+                } else {
+                    alert('邮箱格式不正确，请重新输入！');
+                    $('#modal_supMail').focus();
+                    return;
+                }               
             }           
+            //$('#modal_SupplierName').removeAttr('readonly');
         });
+        //报价组编辑
         $('#modal_GroupEdit').on('click', function () {
             if (ChkStrNull($('#modal_GroupID').val())) {
                 alert('请先选择报价组！');
                 return;
             } else {
-                gflag = 1;
+                //$('#modal_GroupName').removeAttr('readonly');
+                //gflag = 1;
+                _sg.ID = $('#modal_GroupID').val();
+                _sg.GroupName = $('#modal_GroupName').val();
+                _sg.active = true;
+                _sg.SupplierIDs = $('#modal_SupplierIDs').val();
+                _sg.MailList = $('#modal_MailList').val();
+                $.post('/Purchase/Service_SG_Save', _sg, function (res) {
+                    if (res == 1) {
+                        //alert('保存成功！');
+                        LoadSGGList();
+                        $('#modal_GroupName').val('');
+                        $('#modal_GroupID').val(0);
+                        $('#modal_GroupEdit').attr('disabled', 'disabled');
+                        $('#modal_GroupDel').attr('disabled', 'disabled');
+                        $('#SG_SList').empty();
+                        ClearSupInput();
+                    }
+                });
             }
         });
+        //供应商编辑
         $('#modal_GSupEdit').on('click', function () {
             if (ChkStrNull($('#modal_SupplierID').val())) {
                 alert('请先选择供应商！');
                 return;
             } else {
-                sflag = 1;
-                $('#modal_supMail').removeAttr('readonly', 'readonly');
-            }
-        });
-
-        $('#modal_GroupName').on('blur', function () {
-            var _gNameStatus = $('#modal_GroupName').attr('readonly');
-            if (_gNameStatus != 'readonly' && $('#modal_GroupName').val() != '') {
-                var r = confirm("确认添加")
-                if (r == true) {
-                    //保存报价组
-                    //_sg.ID = $('#modal_GroupID').val();
-                    //_sg.GroupName = $('#modal_GroupName').val();
-                    //_sg.active = true;
-                    //_sg.MailList = ' ';
-                    //_sg.SupplierIDs = ' ';
-                    //$.post('/Purchase/Service_SG_Save',_sg, function (res) {
-                    //    if (res == 1) {
-                    //        alert('保存成功！');
-                    //        LoadSGGList();
-                    //    }
-                    //});
-                    SGSave(_sg, sflag, gflag);
-                    sflag = -1;
-                    gflag = -1;
-                    //
-                    $('#modal_GroupName').val('');
-                    $('#modal_GroupName').attr('readonly', 'readonly');
-                }
-                else {
-                    //获得焦点
-                    $('#modal_GroupName').focus();                    
-                }
-            } else {
-                $('#modal_GroupName').val('');
-                $('#modal_GroupName').attr('readonly', 'readonly');
-            }
-        });
-
-        $('#modal_SupplierName').on('blur', function () {
-            var _sNameStatus = $('#modal_SupplierName').attr('readonly');
-            if (_sNameStatus != 'readonly' && !ChkStrNull($('#modal_SupplierName').val())) {
-                ////var r = confirm("确认添加");
-                //if (r == true) {
-                //    //保存供应商&报价组 关系
-
-                //    //
-                //    //更新报价组邮箱地址
-
-                //    //
-                //    $('#modal_SupplierName').val('');
-                //    $('#modal_SupplierName').attr('readonly', 'readonly');
-                //}
-                //else {
-                //    //获得焦点
-                //    $('#modal_SupplierName').focus();
-                //}
-                //$('#modal_supMail').focus();
-
-                //验证重复
-                var _supListTxt = $('#SG_SList').text();
-                var _isReAdd=false;
-                console.log(_supListTxt);
-                //
-                $("#SG_SList option").each(function () {
-                    //遍历所有option  
-                    var value = $(this).val();
-                    var text = $(this).text();
-                    if (text == $('#modal_SupplierName').val()) {
-                        _isReAdd = true;
-                    }  
-                });
-                if (_isReAdd) {
-                    alert('重复供应商！');
-                    $('#modal_SupplierName').attr('readonly', 'readonly');
-                    $('#modal_SupplierName').val('');
-                    return;
-                }
-                $.get('/Purchase/Service_Sup_GetsupByName?_supName=' + $('#modal_SupplierName').val(), function (res) {
-                    $('#modal_SupplierID').val(res.SupplierID);
-                    $('#modal_supMail').val(res.Email);
-                });
-                $('#modal_SupplierName').attr('readonly', 'readonly');
-                $('#modal_supMail').removeAttr('readonly');                               
-                //
-            } else {
-                //获得焦点
-                //$('#modal_SupplierName').focus();
-                $('#modal_SupplierName').val('');
-                $('#modal_SupplierName').attr('readonly', 'readonly');
-            }
-        });
-
-        $('#modal_supMail').on('blur', function () {
-            var r = confirm("确认添加");
-            if (r) {
-                var _supID = Number($('#modal_SupplierID').val());
-                if (ChkStrNull($('#modal_supMail').val())) {
+                //sflag = 1;
+                //$('#modal_supMail').removeAttr('readonly', 'readonly');
+                var _selval = $('#modal_SupplierID').val();
+                var _mailIndex = 0;
+                var _supMail = ChkStrNull($('#modal_supMail').val()) ? ' ' : $('#modal_supMail').val();
+                if (ischeckemail(_supMail)) {
+                    $.each(_sgSupplierIDsArr, function (i, n) {
+                        if (Number(n) == Number(_selval)) {
+                            _mailIndex = i;
+                        }
+                    })
+                    $.each(_sgMailListsArr, function (i, n) {
+                        if (Number(_mailIndex) == Number(i)) {
+                            _sgMailListsArr[i] = _supMail;
+                        }
+                    });
+                    _sg.ID = $('#modal_GroupID').val();
+                    _sg.GroupName = $('#modal_GroupName').val();
+                    _sg.active = true;
+                    _sg.SupplierIDs = _sgSupplierIDsArr.join('|');
+                    _sg.MailList = _sgMailListsArr.join('|');
+                    console.log(_sg.SupplierIDs);
+                    console.log(_sg.MailList);
+                    $.post('/Purchase/Service_SG_Save', _sg, function (res) {
+                        if (res == 1) {
+                            //alert('保存成功！');
+                            _sgSupplierIDsArr = _sg.SupplierIDs.split('|');
+                            _sgMailListsArr = _sg.MailList.split('|');
+                            //$('#modal_SupplierIDs').val(_sg.SupplierIDs);
+                            $('#modal_MailList').val(_sg.MailList);
+                            $('#modal_supMail').val('');
+                            $('#modal_SupplierID').val(0);
+                            $('#modal_GSupEdit').attr('disabled', 'disabled');
+                            $('#modal_GSupDel').attr('disabled', 'disabled');
+                        }
+                    });
+                } else {
+                    alert('邮箱格式不正确，请重新输入！');
                     $('#modal_supMail').focus();
                     return;
-                } else {
-                    if (sflag == 1) {//编辑
-                        SGSave(_sg, sflag, gflag, _sgMailListsArr, _sgSupplierIDsArr);
-                    } else if (sflag == 0) {//新增
-                        if (!ChkStrNull($('#modal_supMail').val())) {
-                            SGSave(_sg, sflag, gflag);
-                            LoadSGSList($('#modal_GroupID').val());
-                        } else {
-                            $('#modal_supMail').focus();
-                            return;
-                        }
-                    }
-                    $.get('/Purchase/Service_Get_sgByID?_sgID=' + $('#modal_GroupID').val(), function (res) {
-                        $('#modal_SupplierIDs').val(res.SupplierIDs);
-                        $('#modal_MailList').val(res.MailList);
-                        _sgSupplierIDsArr = ChkStrNull(res.SupplierIDs) ? [] : res.SupplierIDs.split(';');
-                        _sgMailListsArr = ChkStrNull(res.MailList) ? [] : res.MailList.split(';');
-                    });
-                    $('#modal_supMail').attr('readonly', 'readonly');
-                    sflag = -1;
-                    gflag = -1;
-                }
-            } else {
-                $('#modal_supMail').focus();
-            }                
+                }               
+            }
         });
 
-        $('#SG_SList').on('change', function () {
-            var _sNameStatus = $('#modal_SupplierName').attr('readonly');
-            if (_sNameStatus == 'readonly') {
-                var _mailIndex = 0;
-                var _sel = $('#SG_SList option:selected')[0];
+        //$('#modal_GroupName').on('blur', function () {
+        //    var _gNameStatus = $('#modal_GroupName').attr('readonly');
+        //    if (_gNameStatus != 'readonly' && $('#modal_GroupName').val() != '') {
+        //        if (gflag == 0) {
+        //            var r = confirm("确认添加？");
+        //            if (r == true) {
+        //                SGSave(_sg, sflag, gflag);
+        //                sflag = -1;
+        //                gflag = -1;
+        //            }
+        //        }
+        //        else if (gflag == 1) {
+        //            var r = confirm("确认保存？");
+        //            if (r == true) {
+        //                SGSave(_sg, sflag, gflag);
+        //            }
+        //        }
+        //    }
+        //    $('#modal_GroupName').val('');
+        //    //$('#modal_GroupName').attr('readonly', 'readonly');
+        //});
+
+        //已注释
+        $('#modal_SupplierName').on('blur', function () {
+            //var _sNameStatus = $('#modal_SupplierName').attr('readonly');
+            //if (_sNameStatus != 'readonly' && !ChkStrNull($('#modal_SupplierName').val())) {
+            ////var r = confirm("确认添加");
+            //if (r == true) {
+            //    //保存供应商&报价组 关系
+
+            //    //
+            //    //更新报价组邮箱地址
+
+            //    //
+            //    $('#modal_SupplierName').val('');
+            //    $('#modal_SupplierName').attr('readonly', 'readonly');
+            //}
+            //else {
+            //    //获得焦点
+            //    $('#modal_SupplierName').focus();
+            //}
+            //$('#modal_supMail').focus();
+
+            //    //验证重复
+            //    var _supListTxt = $('#SG_SList').text();
+            //    var _isReAdd=false;
+
+            //    $("#SG_SList option").each(function () {
+            //        //遍历所有option
+            //        var value = $(this).val();
+            //        var text = $(this).text();
+            //        if (text == $('#modal_SupplierName').val()) {
+            //            _isReAdd = true;
+            //        }
+            //    });
+            //    if (_isReAdd) {
+            //        alert('重复供应商！');
+            //        $('#modal_SupplierName').attr('readonly', 'readonly');
+            //        $('#modal_SupplierName').val('');
+            //        return;
+            //    }
+            //    $.get('/Purchase/Service_Sup_GetsupByName?_supName=' + $('#modal_SupplierName').val(), function (res) {
+            //        $('#modal_SupplierID').val(res.SupplierID);
+            //        $('#modal_supMail').val(res.Email);
+            //    });
+            //    $('#modal_SupplierName').attr('readonly', 'readonly');
+            //    $('#modal_supMail').removeAttr('readonly');
+            //    //
+            //} else {
+            //    //获得焦点
+            //    //$('#modal_SupplierName').focus();
+            //    $('#modal_SupplierName').val('');
+            //    $('#modal_SupplierName').attr('readonly', 'readonly');
+            //}
+        });
+        //已注释
+        $('#modal_supMail').on('blur', function () {
+            //var _supID = Number($('#modal_SupplierID').val());
+            //if (sflag == 1) {//编辑
+            //    var r = confirm("确认保存？");
+            //    if (r) {
+            //        SGSave(_sg, sflag, gflag, _sgMailListsArr, _sgSupplierIDsArr);
+            //        alert('保存成功！');
+            //    }
+            //    return;
+            //} else if (sflag == 0) {//新增
+            //    var r = confirm("确认添加？");
+            //    if (r) {
+            //        SGSave(_sg, sflag, gflag);
+            //        LoadSGSList($('#modal_GroupID').val());
+            //        alert('保存成功！');
+            //    }
+            //    return;
+            //}
+            //$.get('/Purchase/Service_SG_GetSGByID?_sgID=' + $('#modal_GroupID').val(), function (res) {
+            //    $('#modal_SupplierIDs').val(res.SupplierIDs);
+            //    $('#modal_MailList').val(res.MailList);
+            //    _sgSupplierIDsArr = ChkStrNull(res.SupplierIDs) ? [] : res.SupplierIDs.split(';');
+            //    _sgMailListsArr = ChkStrNull(res.MailList) ? [] : res.MailList.split(';');
+            //});
+            //$('#modal_supMail').attr('readonly', 'readonly');
+            //sflag = -1;
+            //gflag = -1;
+        });
+
+        $('#SG_SList').on('click', function () {
+            var _sel = $('#SG_SList option:selected')[0];
+            var _supID;
+            if (!ChkStrNull(_sel)) {
                 $('#modal_SupplierID').val(_sel.value);
-                $('#modal_SupplierName').val(_sel.text);
-                $.each(_sgSupplierIDsArr, function (i, n) {
-                    if (Number(n) == Number(_sel.value)) {
-                        _mailIndex = i;
-                        return false;
-                    }
-                })
+                _supID = _sel.value;
+                $('#modal_GSupAdd').attr('disabled', 'disabled');
+                $('#modal_GSupEdit').removeAttr('disabled');
+                $('#modal_GSupDel').removeAttr('disabled');
+                $('#modal_SupplierName').removeAttr('readonly');
+                $('#modal_supMail').removeAttr('readonly');
+                $('#modal_SupplierName').val('');
+            } else {
+                $('#modal_SupplierID').val(0);
+                _supID = 0;
+            }
+            //
+            //$('#modal_GroupAdd').attr('disabled', 'disabled');
+            //$('#modal_GroupEdit').attr('disabled', 'disabled');
+            //$('#modal_GroupDel').attr('disabled', 'disabled');
+            var _mailIndex = -1;
+            console.log(_sgSupplierIDsArr);
+            console.log(_sgMailListsArr);
+            $.each(_sgSupplierIDsArr, function (i, n) {
+                if (Number(n) == Number(_supID)) {
+                    _mailIndex = i;
+                    return false;
+                }
+            })
+            if (_mailIndex >= 0) {
                 $.each(_sgMailListsArr, function (i, n) {
                     if (Number(_mailIndex) == Number(i)) {
                         $('#modal_supMail').val(n);
                     }
-                })
-            }        
+                });
+            } else {
+                $('#modal_SupplierID').val(0);
+                $('#modal_supMail').val('');
+            }
         });
 
-        $('#SG_GList').on('change', function () {
-            var _gNameStatus = $('#modal_GroupName').attr('readonly');
-            if (_gNameStatus == 'readonly') {
-                var _sel = $('#SG_GList option:selected')[0];
+        $('#SG_GList').on('click', function () {
+            //
+            //$('#modal_GroupAdd').attr('disabled', 'disabled');
+            $('#modal_GroupEdit').removeAttr('disabled');
+            $('#modal_GroupDel').removeAttr('disabled');
+            $('#modal_GSupAdd').removeAttr('disabled');
+            $('#modal_GSupEdit').attr('disabled', 'disabled');
+            $('#modal_GSupDel').attr('disabled', 'disabled');
+
+            $('#modal_SupplierName').removeAttr('readonly');
+            //
+            //var _gNameStatus = $('#modal_GroupName').attr('readonly');
+            //if (_gNameStatus == 'readonly') {
+
+            //}
+            var _sel = $('#SG_GList option:selected')[0];
+            if (!ChkStrNull(_sel)) {
                 $('#modal_GroupName').val(_sel.text);
                 $('#modal_GroupID').val(_sel.value);
-                $.get('/Purchase/Service_Get_sgByID?_sgID=' + _sel.value, function (res) {
+                $.get('/Purchase/Service_SG_GetSGByID?_sgID=' + _sel.value, function (res) {
                     $('#modal_SupplierIDs').val(res.SupplierIDs);
                     $('#modal_MailList').val(res.MailList);
-                    _sgSupplierIDsArr = ChkStrNull(res.SupplierIDs) ? [] : res.SupplierIDs.split(';');
-                    _sgMailListsArr = ChkStrNull(res.MailList) ? [] : res.MailList.split(';');
+                    _sgSupplierIDsArr = ChkStrNull(res.SupplierIDs) ? [] : res.SupplierIDs.split('|');
+                    _sgMailListsArr = ChkStrNull(res.MailList) ? [] : res.MailList.split('|');
                 });
                 //重新加载供应商列表
                 LoadSGSList(_sel.value);
-                ClearSupInput();
-            }           
-        })
+            } else {
+
+            }
+            ClearSupInput();
+        });
+
+        //$('#modal_SupplierName').on('oninput', function () {
+        //    $.get('/Purchase/Service_Sup_GetsupByName?_supName=' + $('#modal_SupplierName').val(), function (res) {
+        //        $('#modal_SupplierID').val(res.SupplierID);
+        //        $('#modal_supMail').val(res.Email);
+        //    });
+        //    $('#modal_supMail').removeAttr('readonly');
+        //});
+
+        //监听文本框输入
+        $('#modal_SupplierName').bind('input propertychange', function () {
+            $('#modal_GSupEdit').attr('disabled', 'disabled');
+            $('#modal_GSupDel').attr('disabled', 'disabled');
+            $('#modal_GSupAdd').removeAttr('disabled');
+            if (ChkStrNull($('#modal_SupplierName').val())) {
+                $('#modal_SupplierID').val(0);
+                $('#modal_supMail').val('');
+                return;
+            } else {
+                $.get('/Purchase/Service_Sup_GetsupByName?_supName=' + $('#modal_SupplierName').val(), function (res) {
+                    $('#modal_SupplierID').val(res.SupplierID);
+                    $('#modal_supMail').val(res.Email);
+                });
+                $('#modal_supMail').removeAttr('readonly');
+            }
+        });
+        //$('#SupplierIDD').on('click', function () {
+        //    var _sel = $('#SupplierIDD option:selected')[0];
+        //    console.log(_sel.text);
+        //})
 
         $('#SupplierGroup').on('click', function () {
             $('#SupplierGroupModal').modal('show');
         });
+
+        //初始化报价组模态框
         $('#SupplierGroupModal').on('shown.bs.modal', function () {
             //加载报价组列表
             LoadSGGList();
-            $('#modal_GroupName').attr('readonly', 'readonly');
+            //$('#modal_GroupName').attr('readonly', 'readonly');
             //初始化
             $('#modal_GroupName').val('');
             $('#modal_GroupID').val('');
@@ -675,16 +853,28 @@
             $('#modal_SupplierIDs').val('');
             $('#SG_SList').empty();
         });
+
         //报价组删除
         $('#modal_GroupDel').on('click', function () {
+            $.ajaxSettings.async = false;//同步
             $.get('/Purchase/Service_SG_DelSGObj?_sgID=' + $('#modal_GroupID').val(), function (res) {
-                if (res > 0) {
+                if (Number(res) > 0) {
                     alert('报价组删除成功！');
+                    $('#modal_GroupName').val('');
+                    $('#modal_GroupID').val(0);
+                    ClearSupInput();
+                    $('#SG_SList').empty();
+                    LoadSGGList();
+                    $('#modal_GroupEdit').attr('disabled', 'disabled');
+                    $('#modal_GroupDel').attr('disabled', 'disabled');
+                    $('#SG_SList').empty();
+                    ClearSupInput();
                 } else {
                     alert('报价组删除失败！');
                 }
             })
         });
+
         //供应商删除
         $('#modal_GSupDel').on('click', function () {
             var _sel = $('#SG_SList option:selected')[0];
@@ -705,20 +895,34 @@
                     _sg.ID = $('#modal_GroupID').val();
                     _sg.GroupName = $('#modal_GroupName').val();
                     _sg.active = true;
-                    _sg.MailList = _newsgMailListsArr.join(';');
-                    _sg.SupplierIDs = _newsgSupplierIDsArr.join(';');
+                    _sg.MailList = _newsgMailListsArr.join('|');
+                    _sg.SupplierIDs = _newsgSupplierIDsArr.join('|');
+                    $.ajaxSettings.async = false;//同步
                     $.post('/Purchase/Service_SG_Save', _sg, function (res) {
-                        if (res == 1) {
+                        if (Number(res) == 1) {
                             alert('删除成功！');
                             ClearSupInput();
+                            LoadSGSList($('#modal_GroupID').val());
+                            $.get('/Purchase/Service_SG_GetSGByID?_sgID=' + $('#modal_GroupID').val(), function (res) {
+                                $('#modal_SupplierIDs').val(_sg.SupplierIDs);
+                                $('#modal_MailList').val(_sg.MailList);
+                                _sgSupplierIDsArr = (_sg.SupplierIDs).split('|');
+                                _sgMailListsArr = (_sg.MailList).split('|');
+                                $('#modal_GSupEdit').attr('disabled', 'disabled');
+                                $('#modal_GSupDel').attr('disabled', 'disabled');
+                            });
                         }
                     });
-                }                
+                }
             } else {
                 alert('请先选择供应商！');
-            }            
+            }
+        });
+
+        $('#btn_chk').on('click', function () {
+            ischeckemail($('#inpt_email').val());
         })
-    })
+    });
     //报价组列表
     function LoadSGGList() {
         $('#SG_GList').empty();
@@ -750,7 +954,7 @@
     SupplierListImport('SupplierIDD');
 
     function ChkStrNull(str) {
-        if (str == '' || str == null || str == undefined || $.trim(str) == '' || str=='0') {
+        if (str == '' || str == null || str == undefined || $.trim(str) == '' || str == '0') {
             return true;
         } else {
             return false;
@@ -762,7 +966,7 @@
         _sg.ID = $('#modal_GroupID').val();
         _sg.GroupName = $('#modal_GroupName').val();
         _sg.active = true;
-        $.ajaxSettings.async = false;
+        $.ajaxSettings.async = false;//同步
         var _supIDs = ChkStrNull($('#modal_SupplierID').val()) ? ' ' : $('#modal_SupplierID').val();
         var _supMail = ChkStrNull($('#modal_supMail').val()) ? ' ' : $('#modal_supMail').val();
         if (gflag >= 0) {//报价组保存
@@ -778,7 +982,7 @@
                     //alert('保存成功！');
                 }
             });
-           
+
         } else {//供应商保存
             if (sflag == 0) {
                 _sg.SupplierIDs = ChkStrNull($('#modal_SupplierIDs').val()) ? _supIDs : $('#modal_SupplierIDs').val() + ';' + _supIDs;
@@ -796,25 +1000,46 @@
                         _sgMailListsArr[i] = _supMail;
                     }
                 })
-                console.log(_sgMailListsArr.join(';'));
-                _sg.SupplierIDs = _sgSupplierIDsArr.join(';');
-                _sg.MailList = _sgMailListsArr.join(';');
+                console.log(_sgMailListsArr.join('|'));
+                _sg.SupplierIDs = _sgSupplierIDsArr.join('|');
+                _sg.MailList = _sgMailListsArr.join('|');
             }
             $.post('/Purchase/Service_SG_Save', _sg, function (res) {
                 if (res == 1) {
                     //alert('保存成功！');
                 }
-            });            
+            });
         }
         ClearSupInput();
         LoadSGGList();
         LoadSGSList($('#modal_GroupID').val());
-    }
+    };
+
     function ClearSupInput() {
         $('#modal_SupplierID').val('0');
-        $('#modal_SupplierName').attr('readonly', 'readonly');
+        //$('#modal_SupplierName').attr('readonly', 'readonly');
         $('#modal_SupplierName').val('');
         $('#modal_supMail').attr('readonly', 'readonly');
         $('#modal_supMail').val('');
+    }
+    //邮箱格式验证
+    function ischeckemail(email) {
+        var isok = false;
+        if (!ChkStrNull(email)) {
+            //var reg = /^[_a-z0-9-]+(\.[_a-z0-9-]+)*@@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$/;
+            //isok = reg.test(email);
+            if (email.indexOf('|')<0) {
+                isok = true;
+            }
+            return isok;
+            //if (!isok) {
+            //    console.log("邮箱格式不正确，请重新输入！");
+            //    //$("#inpt_email").focus();
+            //    return false;
+            //} else {
+            //    return true;
+            //}
+        };
+        return isok;
     }
 </script>

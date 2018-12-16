@@ -101,6 +101,7 @@
                         {
                             <button class="btn btn-primary" id="RemoveCancel">移除订单取消项</button>
                         }
+                        <button class="btn btn-info" id="ShowAttachFileModal">添加附件</button>
                         <input type="button" class="btn btn-success hr" id="GetERPID" value="同步ERP料号" style="display:none;">
                         break;
                     case (int)PurchaseRequestStatus.完成:
@@ -123,7 +124,7 @@
                         <td class="col-sm-2">
                             <label>采购类型</label>
                             <input type="hidden" name="PurchaseType" id="PurchaseType" value="@ViewBag.PurchaseTypeID" />
-                            <input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" style="display:inline;float:right;width:80%" readonly />
+                            <input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" style="display:inline;float:right;width:80%" disabled />
                         </td>
 
                         <td class="col-sm-2">
@@ -131,14 +132,14 @@
                             {                               
                                 <label>推荐供应商</label>
                                 @*<select id="SupplierID" name="SupplierID" class="form-control" style="display:inline;float:right;width:70%"></select>*@
-                                <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:70%" />                              
+                                <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:80%" readonly/>                              
                                 <datalist id="SupplierIDD"></datalist>
                                 <input id="SupplierID" hidden>
                             }
                             else
                             {
                                 <label>推荐供应商</label>
-                                <input type="text" id="RecommandSupplierName" class="form-control" style="display:inline;float:right;width:70%" readonly />
+                                <input type="text" id="RecommandSupplierName" class="form-control" style="display:inline;float:right;width:80%" readonly />
                                 <input type="hidden" id="SupplierID" name="SupplierID" value="0" />
                             }
 
@@ -151,7 +152,7 @@
                             <label>申请人</label>
                             @if (Model.State == 1)
                             {
-                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
+                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:80%">
                                     <option value="0">-</option>
                                     @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
                                     {
@@ -168,7 +169,7 @@
                             }
                             else
                             {
-                                <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" style="display:inline;float:right;width:70%" readonly />
+                                <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" style="display:inline;float:right;width:80%" readonly />
                             }
                         </td>
 
@@ -223,7 +224,7 @@
                         </td>
                         <td class="col-sm-2">
                             <label style="float:left">推荐供应商</label>
-                            <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:70%" />
+                            <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:80%" disabled />
                             <datalist id="SupplierIDD"></datalist>
                             <input id="SupplierID" hidden>
                         </td>                        
@@ -232,7 +233,7 @@
                     <tr>
                         <td id="hr_ApprovalUser" class="col-sm-2 hr" style="display:none;">
                             <label>申请人</label>
-                            <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:70%">
+                            <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:80%">
                                 <option value="0">-</option>
                                 @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
                                 {
@@ -269,7 +270,7 @@
     </div>
 </div>
 <input type="hidden" id="tempID" value="-1" />
-
+<input type="hidden" id="parentPurType" value="0" />
 <input type="hidden" id="row" />
 @*手工添加/编辑采购项信息对话框*@
 <div class="modal" id="PRContentAdd" tabindex="-1" role="dialog" aria-labelledby="PRContentAddLabel">
@@ -513,8 +514,8 @@
                                 <option value="2">模具生产耗材</option>
                                 <option value="5">模具耗材备库</option>
                             </select>*@
-                            <input id="_selPartModalTxt" class="form-control" style="width:140px" readonly/>
-                            <input id="_selPartModal" hidden />
+                            <input id="_selPartModalTxt" class="form-control" style="width:140px" value="" readonly/>
+                            <input id="_selPartModal" value="0" hidden />
                         </td>
                         <td>
                             <div class="input-group" style="float:right;">
@@ -686,6 +687,12 @@
         })
 
         $("#PurchaseType").on("change", function(){
+            $('#SupplierName').attr('disabled','disabled');
+            //$('#SupplierName').val('');
+            //if(Number($('#PurchaseType').val())==0){               
+            //    $('#SupplierName').val('');
+            //}    
+            SetPurchaseType();
             $.get('/Purchase/GetPurchaseTypeInfo?PurchaseTypeID='+$('#PurchaseType').val(),function(res){
                 if(res.ParentTypeID==0){
                     $("#PurchaseType").val('');
@@ -693,6 +700,14 @@
                 else{
                     SetDefaultDate();
                 }
+                if(res.ParentTypeID>0){
+                    $('#SupplierName').removeAttr('disabled');
+                }
+                //if(res.ParentTypeID==3){
+
+                //}else{
+
+                //}
             })            
         })
 
@@ -736,19 +751,21 @@
         })
 
         $('#modal_AddPart').on('click',function(){
-            var selrows = $("#tb_PartSearch").jqGrid('getGridParam', 'selarrrow');
-            if (selrows.length==0){
-                selrows=  $('#tb_PartSearch').getDataIDs();
-            }
-            for(var i=0;i<selrows.length;i++){
-                var _partid= $("#tb_PartSearch").getCell(selrows[i], "PartID");
-                var _partnum= $("#tb_PartSearch").getCell(selrows[i], "PartNumber");
-                if(_partid>0){
-                    AddPart(_partid);
-                }else{
-                    AddPartByPartNum(_partnum);
-                }                
-            }
+            AddPartNormal();
+            //var selrows = $("#tb_PartSearch").jqGrid('getGridParam', 'selarrrow');
+            //if (selrows.length==0){
+            //    selrows=  $('#tb_PartSearch').getDataIDs();
+            //}
+            //for(var i=0;i<selrows.length;i++){
+            //    //var _partid= $("#tb_PartSearch").getCell(selrows[i], "PartID");
+            //    //var _partnum= $("#tb_PartSearch").getCell(selrows[i], "PartNumber");
+            //    AddPartNormal();
+            //    //if(_partid>0){
+            //    //    AddPart(_partid);
+            //    //}else{
+            //    //    AddPartByPartNum(_partnum);
+            //    //}                
+            //}
         });
 
         $('#JobNo').on('blur',function(){
@@ -762,8 +779,14 @@
                 case 2:
                     moldNum = $('#HCClass').val();
                     break;
+                case 3:
+                    moldNum = $('#MoldNum').val();
+                    break;
                 case 5:
                     moldNum = $('#BKClass').val();
+                    break;
+                default:
+                    moldNum = $('#MoldNum').val();
                     break;
             }
             if(_prid==0){
@@ -810,39 +833,46 @@
 
     function GetPurchaseType(){
         var _url="";
-        @if (ViewBag.PartIDs != "")
+        if ('@ViewBag.PartIDs' != "" || sessionStorage['SpecKey'] == 'hr')
         {
-            @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具直接材料&ContainParent=false&QFDep=true";
+            _url = "/Purchase/JsonPurchaseTypes?TypeName=模具直接材料&ContainParent=false&QFDep=true";
                                                                         }
-        else if (ViewBag.TaskIDs!="")
+        else if ('@ViewBag.TaskIDs' !="")
         {
-            @:_url = "/Purchase/JsonPurchaseTypes?TypeName=模具委外加工&ContainParent=false&QFDep=true";
-                                                                }
+            _url = "/Purchase/JsonPurchaseTypes?TypeName=模具委外加工&ContainParent=false&QFDep=true";
+        }
         else
         {
-            @:_url = "/Purchase/JsonPurchaseTypes?ContainParent=true&QFDep=true";
+            _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&QFDep=true";
                                                         }
         if (_url!=""){
+            
             $.getJSON(_url, function(msg){
                 $("#PurchaseType").append($("<option/>", {value:0,text:"-"}))
                 $.each(msg, function(i,n){
                     if (@ViewBag.TaskType==n.TaskType && @ViewBag.TaskType!=0){
-                        $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID,text:n.Name, selected:true}))
+                        $("#PurchaseType").append($("<option/>", {value:n.PurchaseTypeID,text:n.Name, selected:true}));
+                        $('#PurchaseType').attr('disabled','disabled');
+                        console.log('采购类型 ' +$('#PurchaseType').val());
                     }else{
                         if(n.ParentTypeID==0){
                             $("#PurchaseType").append(
-                                $("<option/>", {
-                                    value:0,text:'----'+n.Name+'----'
-                                }));
+                                //$("<option/>", {
+                                //    value:0,
+                                //    text:'----'+n.Name+'----',
+                                //})
+                                '<option value=0 disabled>----'+n.Name+'----</option>'
+                                );
                         }
                         else{
                             $("#PurchaseType").append(
                                 $("<option/>", {
-                                    value:n.PurchaseTypeID,text:n.Name
+                                    value:n.PurchaseTypeID,
+                                    text:n.Name
                                 }));
                         }
                     }
-                })
+                });
             })
         }
     }
@@ -1005,6 +1035,38 @@
         })
     }
 
+    function AddPartNormal(){
+        //var rowData=$('#').
+        var selr = $('#tb_PartSearch').jqGrid('getGridParam', 'selarrrow');
+        console.log(selr);
+        for (var i = 0; i < selr.length; i++) {
+            var rowData = $("#tb_PartSearch").jqGrid('getRowData', selr[i]);
+            console.log(rowData);
+            var _tempID = Number($("#tempID").val())- 1;
+            $("#tempID").val(_tempID);
+            data = {
+                ID: "",
+                PartID:rowData.PartID,
+                Name: rowData.Name,
+                Quantity: rowData.Quantity,
+                PartNumber: rowData.PartNumber,
+                Material:  rowData.MaterialName,
+                Hardness: rowData.Hardness,
+                Specification: rowData.Specification,
+                BrandName: rowData.BrandName,
+                SupplierName: '',
+                JobNo:rowData.JobNo,
+                Memo: rowData.Memo,
+                State:"",
+                RequireTime: "",
+                MoldNumber:rowData.MoldNum,
+                ERPPartID:rowData.ERPPartID,
+                PlanQty:rowData.PlanQty
+            };
+            $("#PRContentGrid").addRowData(_tempID, data, 0, 0);
+        }       
+    }
+
     function NewPart(){
         $("#PartSearch").modal("hide");
         $("#PRContentAdd input").val("");
@@ -1094,7 +1156,19 @@
         }
         //$("#CostCenterModal").modal('hide')
     }
-    
+    function SetPurchaseType(){
+        var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
+        if (selrows.length==0){
+            selrows=  $('#PRContentGrid').getDataIDs();
+        }
+        //var _text = $("#CostCenterID option:selected").text();
+        var _val = $("#PurchaseType option:selected").val();
+        //_text=_text=='-'?' ':_text;
+        for (i=0;i<selrows.length;i++){
+            //$("#PRContentGrid").setCell(selrows[i], "CostCenterName", _text);
+            $("#PRContentGrid").setCell(selrows[i], "PurchaseType", _val);
+        }
+    }
     function SetSupplier(){
         var selrows = $("#PRContentGrid").jqGrid('getGridParam', 'selarrrow');
         if (selrows.length==0){
@@ -1161,8 +1235,8 @@
     function _wfViewConfig(type){
         if(type>0){
             //表格列头
-            $("#PRContentGrid").setGridParam().showHideCol("Operater");
-            $("#PRContentGrid").setGridParam().showHideCol("MachineName");
+            //$("#PRContentGrid").setGridParam().showHideCol("Operater");
+            //$("#PRContentGrid").setGridParam().showHideCol("MachineName");
             //返回相应按钮
             $('#AddContent').hide();
             $('#brandtr').hide();
@@ -1273,47 +1347,13 @@
     $(function() {
         $(document).tooltip();       
 
-        $('#PRContentAdd').on('shown.bs.modal',function(){     
-            //var row=$("#row").val();
-            //if (row == 0) {//新增
-            //    $('#tr_PlanQty').show();
-            //}else{//编辑
-            //    $('#tr_PlanQty').hide();
-            //}
-            //var _selPartModal=Number($('#_selPartModal').val());
-            //$('#modal_HCClassList').empty();
-            //$('#modal_BKClassList').empty();
-            //switch(_selPartModal){
-            //    case 1://直接材料
-            //        $('._selPart1').show();
-            //        $('._selPart2').hide();
-            //        $('._selPart5').hide();
-            //        $('#JobNo').removeAttr('readonly');
-            //        break;
-            //    case 2://耗材
-            //        $('._selPart1').hide();
-            //        $('._selPart2').show();
-            //        $('._selPart5').hide();   
-            //        $('#JobNo').removeAttr('readonly');
-            //        HCClassImport();
-            //        break;
-            //    case 5://备库
-            //        $('._selPart1').hide();
-            //        $('._selPart2').hide();
-            //        $('._selPart5').show(); 
-            //        $('#JobNo').attr('readonly','readonly');
-            //        BKClassImport();
-            //        break;
-            //}           
-        });
-
         $('#BKClass').on('blur',function(){
             $.get('/Purchase/Service_GetBKJonNo?_bkClass='+$('#BKClass').val(),function(res){
                 $('#JobNo').val(res);
             });
         });
 
-        $('#PurchaseType').on('change',function(){
+        $('#PurchaseType').on('click',function(){
             var _selpurTypetxt=$('#PurchaseType option:selected').text();
             $('#PurchaseTypeName').val(_selpurTypetxt);
             if($('#PurchaseType').val()>0){
@@ -1324,22 +1364,12 @@
             _webPurTypeIntialConfig();
         });
 
-        $('#PRContentAdd').on('shown.bs.modal',function(){
-            //var _partNum= $('#PartNumber').val();
-            //if(_partNum!=null && _partNum!='' && _partNum!=undefined){//编辑零件               
-            //    $('#JobNo').attr('readonly','readonly');
-            //    $('#Specification').attr('readonly','readonly');      
-            //}else{//新增零件
-            //    $('#JobNo').removeAttr('readonly');
-            //    $('#Specification').removeAttr('readonly');                
-            //}            
+        $('#PRContentAdd').on('shown.bs.modal',function(){        
             var row=$("#row").val();
-            if (row == 0) {//新增
-                $('#tr_PlanQty').show();
+            if (row == 0) {//新增               
                 $('#JobNo').removeAttr('readonly');
                 $('#Specification').removeAttr('readonly');   
-            }else{//编辑
-                $('#tr_PlanQty').hide();
+            }else{//编辑                
                 $('#JobNo').attr('readonly','readonly');
                 $('#Specification').attr('readonly','readonly');  
             }
@@ -1348,19 +1378,33 @@
             $('#modal_BKClassList').empty();
             switch(_selPartModal){
                 case 1://直接材料
+                    $('#tr_PlanQty').hide();
                     $('._selPart1').show();
                     $('._selPart2').hide();
                     $('._selPart5').hide();
                     $('#JobNo').removeAttr('readonly');
                     break;
                 case 2://耗材
+                    $('#tr_PlanQty').show();
+                    if (row == 0){
+                        $('#tr_PlanQty').removeAttr('readonly');
+                    }else{
+                        $('#tr_PlanQty').attr('readonly','readonly');
+                    }
+                    $('#JobNo').attr('readonly','readonly');
                     $('._selPart1').hide();
                     $('._selPart2').show();
                     $('._selPart5').hide();   
-                    $('#JobNo').removeAttr('readonly');
                     HCClassImport();
                     break;
                 case 5://备库
+                    $('#tr_PlanQty').show();
+                    if (row == 0){
+                        $('#tr_PlanQty').removeAttr('readonly');
+                    }else{
+                        $('#tr_PlanQty').attr('readonly','readonly');
+                    }
+
                     $('._selPart1').hide();
                     $('._selPart2').hide();
                     $('._selPart5').show(); 
@@ -1414,19 +1458,38 @@
     function _webPurTypeIntialConfig(){
         var _purtype = Number($('#PurchaseType').val());
         var _purtypeName = $('#PurchaseTypeName').val();
-        if (_purtypeName == "生产耗材") {
-            $('#_selPartModal').val('2');
-            $('#_selPartModalTxt').val('生产耗材');
-            $('#JobNo').attr('readonly','readonly');
-        } else if (_purtypeName == "模具耗材备库") {
-            $('#_selPartModal').val('5');
-            $('#_selPartModalTxt').val('耗材备库');
-            $('#JobNo').attr('readonly','readonly');
-        } else {
-            $('#_selPartModal').val('1');
-            $('#_selPartModalTxt').val('直接材料');
-            $('#JobNo').removeAttr('readonly');
-        }
+        var _selPartModal=0;
+        var _selPartModalTxt='';
+
+        $.ajaxSettings.async=false;
+        $.get('/Purchase/GetParentPurchaseTypeInfo?PurchaseTypeID='+_purtype,function(res){
+            switch(res.Name){
+                case '模具直接材料':
+                    _selPartModal=1;
+                    _selPartModalTxt='模具直接材料';
+                    $('#NewPart').removeAttr('disabled');
+                    break;
+                case '模具委外加工':
+                    _selPartModal=3;
+                    _selPartModalTxt='模具委外加工';
+                    $('#NewPart').attr('disabled','disabled');
+                    break;
+                case '模具耗材':
+                    if (_purtypeName == "生产耗材") {
+                        _selPartModal=2;
+                        _selPartModalTxt='生产耗材';
+                        $('#NewPart').removeAttr('disabled');
+                    }else{ //if(_purtypeName == "模具耗材备库"){
+                        _selPartModal=5;
+                        _selPartModalTxt='耗材备库';
+                        $('#NewPart').removeAttr('disabled');
+                    }                
+                    break;
+            };            
+        });
+        $('#_selPartModal').val(_selPartModal);
+        $('#_selPartModalTxt').val(_selPartModalTxt);
+        $('#JobNo').removeAttr('readonly');
     }
 
     function GetJobNo(){

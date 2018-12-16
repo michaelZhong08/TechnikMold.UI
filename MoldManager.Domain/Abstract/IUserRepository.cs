@@ -28,10 +28,10 @@ namespace TechnikSys.MoldManager.Domain.Abstract
 
         User GetUserByName(string UserName);
 
-        IEnumerable<User> FilterUser(string UserName="");
+        //IEnumerable<User> FilterUser(string UserName="");
 
         NetworkCredential MailCredential(int UserID);
-
+        IEnumerable<User> FilterUser(List<int> _depList, string UserName = "");
 
     }
 }

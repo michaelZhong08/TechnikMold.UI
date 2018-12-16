@@ -8,19 +8,21 @@ namespace MoldManager.WebUI.Models.EditModel
 {
     public class WarehousePositionEditModel
     {
-        public int WarehouseStockID { get; set; }
+        public int StockID { get; set; }
         public string Name { get; set; }
+        public string PartNum { get; set; }
         public string MaterialNumber { get; set; }
         public string Warehouse { get; set; }
         public string Position { get; set; }
         public int WarehouseID { get; set; }
         public int WarehousePositionID { get; set; }
 
-        public WarehousePositionEditModel(WarehouseStock StockItem, string WarehouseName, string WarehousePositionName)
+        public WarehousePositionEditModel(WHStock StockItem,string name, string WarehouseName, string WarehousePositionName)
         {
-            WarehouseStockID = StockItem.WarehouseStockID;
-            Name = StockItem.Name;
-            MaterialNumber = StockItem.MaterialNumber;
+            StockID = StockItem.ID;
+            Name = name;
+            PartNum = StockItem.PartNum;
+            //MaterialNumber = StockItem.MaterialNumber;
             WarehouseID = StockItem.WarehouseID;
             WarehousePositionID = StockItem.WarehousePositionID;
             Warehouse = WarehouseName;

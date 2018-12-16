@@ -11,14 +11,14 @@
 }
 
 <h2>POContentList</h2>
-    <div class="col-sm-11">   
+    <div class="col-sm-11" style="margin-top:30px">   
         
         <div class="col-sm-12" style="float:left;">
             <h2>订单号:@ViewBag.PONumber</h2>
             <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
             <input type="hidden" id="ReturnRequestID" value="@ViewBag.ReturnRequestID" />
             <ul class="nav nav-pills">
-                <li><button class="btn btn-primary" id="ClosePO">返回</button> </li>
+                <li><button class="btn btn-primary" id="ClosePO">关闭</button> </li>
                 @if (DeptID == 20)
                 {
                     @*if (ViewBag.State < (int)PurchaseOrderStatus.完成)
@@ -173,8 +173,7 @@
                 +"&ReturnRequestID="+$("#ReturnRequestID").val();
             } else {
                 alert("请先选择要退货的内容");
-            }
-            
+            }       
         })
 
         $("#ReceiveQty").on("change", function () {
@@ -218,7 +217,7 @@
         $("#WarehousePositionList option").remove();
         $.getJSON(_url, function (msg) {
             $.each(msg, function (i, n) {
-                if (PositionID == n.PositionID) {
+                if (PositionID == n.WarehousePositionID) {
                     $("#WarehousePositionList").append($("<option/>", {value:n.WarehousePositionID, text:n.Name, selected:true}))
                 } else {
                     $("#WarehousePositionList").append($("<option/>", { value: n.WarehousePositionID, text: n.Name}))

@@ -19,7 +19,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             {
                 ProjectRows[i] = new ProjectGridRowModel(Phases.Count, i + 1);
                 ProjectRows[i].cell[0] = Project.ProjectID.ToString();
-                ProjectRows[i].cell[1] = Project.ProjectNumber + "<br>"+ _mainProJName + "<br>" + Project.CustomerName;
+                ProjectRows[i].cell[1] = "<label>"+Project.ProjectNumber+ "</label>" + "<br>"+ _mainProJName + "<br>" + Project.CustomerName;
                 if ((Project.ProjectStatus < 0) && (Project.ParentID == 0))
                 {
                     ProjectRows[i].cell[1] = "<p style='background-color:#ff0000'>" + ProjectRows[i].cell[1] + "</p>";
@@ -117,7 +117,9 @@ namespace MoldManager.WebUI.Models.GridRowModel
             {
                 string _version = Project.Version < 10 ? "0" + Project.Version.ToString() : Project.Version.ToString();
                 string _title = "";
-                for(var i = 1; i <= Flitter.Count; i++)
+                _title = "模具号："+Project.MoldNumber + "(" +"版本："+ _version + ")" + "&#10;";
+                _title = _title + "模具名："+ Project.Name + "&#10;";
+                for (var i = 1; i <= Flitter.Count; i++)
                 {
                     string _name = "";
                     if (i == 1)
@@ -128,11 +130,17 @@ namespace MoldManager.WebUI.Models.GridRowModel
                         _name = "钳工：";
                     _title = _title+ _name + Flitter[i - 1].UserName + "&#10;";
                 }
-                _cellContent = Project.MoldNumber + "(" + _version + ")" + "<br>" + Project.Name + "<br><p title='"+_title+"'>钳工:" + Flitter.Where(p=>p.RoleID==3).FirstOrDefault().UserName+ "</p>";
+                //样式备注：文字块占上方64% 与上方留余10px空间; button占下方34% 并贴底;
+                _cellContent = "<div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;;'><div style='top:5px;height:62%!important;'title='" + _title + "'><label>" + Project.MoldNumber + "(" + _version + ")" + "</label>" + "<br>" + "<label>" + Project.Name + "</label>" + "<br><label >钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</label></div>";//" < div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;;'><div style='top:5px;height:62%!important;'title='" + _title + "'>" + Project.MoldNumber + "(" + _version + ")" + "<br>" + Project.Name + "<br>钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</div>";
+                //<div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;;'><div style='top:5px;height:62%!important;'><label>" + Project.MoldNumber + "(" + _version + ")" + "</label>" + "<br>" + "<label>" + Project.Name + "</label>" + "<br><label title='" + _title + "'>钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</label></div>
+                //_cellContent = "<table class='qrtb' style=\"padding: 0px; margin: 0px; height: 30px; font - size:5px; \"><tr><td style=\"padding: 0px; \"><label style=\"margin: 0px; \">" + Project.MoldNumber + "(" + _version + ")" + "</label></td></tr>";
+                //_cellContent = _cellContent + "<tr><td style=\"padding: 0px; \"><label style=\"margin: 0px; \">" + Project.Name + "</label></td></tr>";
+                //_cellContent= _cellContent+ "<tr><td style=\"padding: 0px; \"><label style=\"margin: 0px; \" title='" + _title + "'>钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</label></td></tr></table>";
             }
             else
             {
-                _cellContent = Project.MoldNumber;//+ "(" + Project.Version + ")";
+                string _version = Project.Version < 10 ? "0" + Project.Version.ToString() : Project.Version.ToString();
+                _cellContent = "<div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;;'><div style='top:5px;height:62%!important;'>"+ Project.MoldNumber+"(" + _version + ")"+" </div>";//Project.MoldNumber;//+ "(" + Project.Version + ")";
             }
             #region region
             //string button = Project.Attachment;
@@ -181,30 +189,31 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //    button = "<br><a href='/Project/ProjectFile?ProjectID=" + Project.ProjectID + "'><img src='/Images/"+_icon+".png'></a>";
             //}
             #endregion
-            string btnColor;
+            string btnColor="";
             if (attQty == 0)
-            {
-                btnColor = "btn-danger";
-            }
-            else
             {
                 btnColor = "btn-warning";
             }
-
-            string button = "<br><button id='" + Project.ProjectID.ToString() + "' class='attachbtn " + btnColor + "' style='width: 65px; height: 48px;' onclick='ShowProjectFile(" + Project.ProjectID.ToString() + ")'><span class='glyphicon glyphicon-paperclip'></span><br>附件(" + attQty.ToString() + ")</button>";
-            if (Project.ProjectStatus == 1)
-            {
-                _cellContent = "<font color='#ff0000'>" + _cellContent + "</font>" + button;
-            }
             else
             {
-                _cellContent = _cellContent + button;
-                if (Project.MainPhaseChange)
-                {
-                    _cellContent = "<font color='#ff6a00'>" + _cellContent + "</font>";
-                }
-
+                btnColor = "btn-success";
             }
+
+            string button = "<button  id='" + Project.ProjectID.ToString() + "' class='attachbtn  " + btnColor + "'  style='font-size:10px;width: 100%; height: auto;float:right!important;height:38%!important;' onclick='ShowProjectFile(" + Project.ProjectID.ToString() + ")'><span class='glyphicon glyphicon-paperclip'></span> 附件(" + attQty.ToString() + ")</button></div>";
+            //if (Project.ProjectStatus == 1)
+            //{
+            //    _cellContent = "<font color='#ff0000'>" + _cellContent + "</font>" + button;
+            //}
+            //else
+            //{
+            //    _cellContent = _cellContent + button;
+            //    if (Project.MainPhaseChange)
+            //    {
+            //        _cellContent = "<font color='#ff6a00'>" + _cellContent + "</font>";
+            //    }
+
+            //}
+            _cellContent = _cellContent + button;
             return _cellContent;
         }
 

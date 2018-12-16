@@ -23,7 +23,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             List<Phase> Phases, 
             int TotalProjects=0, 
             int PageNo=1, 
-            int PageCount=20)
+            int PageCount=30)
         {
             page = PageNo;
             total = TotalProjects / PageCount + 1;

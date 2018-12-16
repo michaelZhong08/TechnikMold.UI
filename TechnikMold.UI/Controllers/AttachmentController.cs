@@ -226,5 +226,10 @@ namespace TechnikMold.UI.Controllers
             #endregion
             return Json(new { Code = -99 });
         }
+
+        public int Service_Att_GetObjAttNum(string ObjID,string ObjName="")
+        {
+            return _attachFileInfoRepository.GetAttachByObj(ObjID, ObjName).Count();
+        }
     }
 }

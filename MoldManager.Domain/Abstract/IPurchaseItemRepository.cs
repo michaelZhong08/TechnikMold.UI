@@ -30,5 +30,8 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         IEnumerable<PurchaseItem> QueryByQuotationRequestID(int QuotationRequestID);
 
         IEnumerable<PurchaseItem> QueryByPurchaseOrderID(int PurchaseOrderID);
+        void PlanDateAdjust(int purchaseitemID, DateTime planDate);
+        void PlanDateAdjustRecordSave(PurItemChangeDateRecord model);
+        List<PurItemChangeDateRecord> GetPurItemChangeDateRecords(int PurchaseRequestID);
     }
 }

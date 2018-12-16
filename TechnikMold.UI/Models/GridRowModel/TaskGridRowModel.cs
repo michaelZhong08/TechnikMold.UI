@@ -179,5 +179,22 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //操作人员
             cell[41] = _setupTask.UserName;
         }
+
+        public TaskGridRowModel(Task Task, string FilePath, string Creator)
+        {
+            cell = new string[5];
+            //图纸
+            if (Task.DrawingFile != "")
+            {
+                cell[0] = "<a href='/File" + FilePath + Task.MoldNumber + "/" + Task.DrawingFile + ".pdf" + "' target='_blank'>Open</a>";
+            }
+            //任务名
+            cell[1] = Task.TaskName;
+            //版本
+            string _version = Task.Version.ToString();
+            cell[2] = _version.Length == 1 ? "V0" + _version : "V" + _version;
+            cell[3] = string.IsNullOrEmpty(Creator) ? "-" : Creator;
+            cell[4] = Task.TaskID.ToString();
+        }
     }
 }

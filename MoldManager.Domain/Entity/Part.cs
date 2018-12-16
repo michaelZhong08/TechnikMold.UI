@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TechnikSys.MoldManager.Domain.Entity
 {
@@ -98,5 +99,11 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public bool Latest { get; set; }
 
         public string ERPPartID { get; set; }
+        [NotMapped]
+        public decimal PlanQty { get; set; }
+        [NotMapped]
+        public int PurchaseType { get; set; }
+        [NotMapped]
+        public string MoldNumber { get; set; }
     }
 }

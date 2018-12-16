@@ -56,7 +56,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 _purchaseTypes.Add(ParentType);
             }
 
-            _purchaseTypes.AddRange(PurchaseTypes.Where(p => p.ParentTypeID == ParentType.PurchaseTypeID).OrderBy(p=>p.Name));
+            _purchaseTypes.AddRange(PurchaseTypes.Where(p => p.ParentTypeID == ParentType.PurchaseTypeID && p.Enabled==true).OrderBy(p=>p.Name));
             
             
             return _purchaseTypes;

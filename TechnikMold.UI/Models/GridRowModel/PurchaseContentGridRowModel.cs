@@ -45,11 +45,11 @@ namespace MoldManager.WebUI.Models.GridRowModel
         }
         //外发任务
         public PurchaseContentGridRowModel(Task Task, SetupTaskStart _setuptaskStart,string mrPurDate, IProjectPhaseRepository ProjectPhaseRepository, ISteelCAMDrawingRepository SteelDrawingRepo
-            ,IWHPartRepository WHPartRepository)
+            ,IWHPartRepository WHPartRepository,IPurchaseTypeRepository PurchaseTypeRepository)
         {
             int _phaseID = 0;
             string _partNum = WHPartRepository.GetwfTaskPartNum(Task.TaskID);
-            cell = new string[26];
+            cell = new string[27];
             cell[0] = "";
             cell[1] = "0";
             cell[2] = Task.TaskID.ToString();
@@ -92,6 +92,33 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[23] = _setuptaskStart.MachinesName ?? "";
             cell[24] = _setuptaskStart.MachinesCode ?? "";
             cell[25] = Task.Quantity.ToString();
+            int _purchaseType=0;
+            if (Task.TaskType == 6)
+            {
+                switch (Task.OldID)//0 铣/1 磨/4 全加工/3 车
+                {
+                    case 0:
+                        _purchaseType = PurchaseTypeRepository.QueryByName("铣床外发").PurchaseTypeID;
+                        break;
+                    case 1:
+                        _purchaseType = PurchaseTypeRepository.QueryByName("磨床外发").PurchaseTypeID;
+                        break;
+                    case 3:
+                        _purchaseType = PurchaseTypeRepository.QueryByName("车外发").PurchaseTypeID;
+                        break;
+                    case 4:
+                        _purchaseType = PurchaseTypeRepository.QueryByName("全加工外发").PurchaseTypeID;
+                        break;
+                    default:
+                        _purchaseType = PurchaseTypeRepository.QueryByName("铣磨外发").PurchaseTypeID;
+                        break;
+                }
+            }
+            else
+            {
+                _purchaseType = PurchaseTypeRepository.PurchaseTypes.ToList().Where(t => Task.TaskType.Equals(Convert.ToInt32(t.TaskType))).FirstOrDefault().PurchaseTypeID;
+            }           
+            cell[26] = _purchaseType.ToString();
         }
         //库存新增
         public PurchaseContentGridRowModel(string mrPurDate, WarehouseStock StockItem)
@@ -130,7 +157,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
         //编辑PR单
         public PurchaseContentGridRowModel(PRContent PRContent, string State, string CostCenter, string ERPNo,SetupTaskStart _setupTask)
         {
-            cell = new string[26];
+            cell = new string[27];
             cell[0] = PRContent.PRContentID.ToString();
             cell[1] = PRContent.PartID.ToString();
             cell[2] = PRContent.TaskID.ToString();
@@ -163,6 +190,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[23] = _setupTask.MachinesName ?? "";
             cell[24] = _setupTask.MachinesCode ?? "";
             cell[25] = PRContent.Quantity.ToString();
+            cell[26] = PRContent.PurchaseTypeID.ToString();
         }        
     }
 }

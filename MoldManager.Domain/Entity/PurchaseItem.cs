@@ -44,7 +44,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int ProcedureType { get; set; }
         public string AttachObjID { get; set; }
         public string unit { get; set; }
-
+        public DateTime PlanAJTime { get; set; }
 
         public PurchaseItem()
         {
@@ -81,6 +81,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             TaxRate = 0;
             CostCenterID = 0;
             ProcedureType = 0;
+            PlanAJTime= new DateTime(1900, 1, 1);
         }
 
         public PurchaseItem(PRContent PRContent)
@@ -106,6 +107,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             TotalPrice = 0;
             Memo = PRContent.Memo;
             RequireTime = PRContent.RequireTime == new DateTime() ? new DateTime(1900, 1, 1) : PRContent.RequireTime;
+            PlanTime = PRContent.RequireTime == new DateTime() ? new DateTime(1900, 1, 1) : PRContent.RequireTime;
             PurchaseUserID = 0;
             InStockQty = 0;
             OutStockQty = 0;
@@ -118,6 +120,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             TaxRate = 0;
             CostCenterID = 0;
             ProcedureType = 0;
+            PlanAJTime = new DateTime(1900, 1, 1);
         }
 
         public PurchaseItem(QRContent QRContent)
@@ -154,6 +157,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             TaxRate = 0;
             CostCenterID = 0;
             ProcedureType = 0;
+            PlanAJTime = new DateTime(1900, 1, 1);
         }
     }
 }

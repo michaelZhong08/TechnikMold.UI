@@ -19,50 +19,40 @@
         <select class="form-control" id="MoldSelect" size="20"></select>
     </div>
     <div class="col-sm-10">
-        @*<div>
-            <table class="col-sm-7">
-                <tr>
-                    <td class="col-sm-1"><label>外发类型</label></td>
-                    <td class="col-sm-2"><select id="OutSourceType" class="form-control"></select></td>
-                    <td class="col-sm-2">
-                        <input type="text" class="form-control" id="ItemKeyword" placeholder="外发项关键字" />
-                        <input type="hidden" id="MoldNumber" />
-                    </td>
-                    <td class="col-sm-1">
-                        <button class="btn btn-primary" id="Query">查询</button>
-                    </td>
-                </tr>
-            </table>
-        </div>*@
-
-        <div class="col-sm-2">
-            <select id="OutSourceType" class="form-control"></select>
+        <table style="margin-right:20px!important;">
+            <tr>
+                <td style="width:200px!important;">
+                    <select id="ChargePurType" class="form-control" style="width:200px;">
+                        <option value="3">模具委外加工</option>
+                    </select>
+                </td>
+                <td style="width:200px!important;">
+                    <select id="OutSourceType" class="form-control" style="width:200px;"></select>
+                </td>
+                <td style="width:200px!important;">
+                    <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;" />
+                </td>
+                <td style="width:400px!important;">
+                    <button class="btn btn-primary" id="Query">查询</button>
+                    @if ((ViewBag.State == 30) && (DeptID == 4))
+                    {
+                        <button class="btn btn-primary" id="Quotation">开始询价</button>
+                        <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
+                    }
+                </td>
+            </tr>
+        </table>
+        <div style="float:left;margin-right:20px!important;">
+            <table id="PurchaseItemGrid"></table>
+            <div id="jqGridPager"></div>
         </div>
 
         <div class="col-sm-3">
             <input type="hidden" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID" />
             <input type="hidden" id="PurchaseTypeName" value="@ViewBag.PurchaseTypeName" />
-            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" />
-        </div>
-        
-        
+        </div>       
         <input type="hidden" id="MoldNumber" />
 
-        <button class="btn btn-primary" id="Query">查询</button>
-
-        @if  (DeptID == 4)
-        {
-
-            <button class="btn btn-primary" id="Quotation">开始询价</button>
-
-
-            <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
-
-        }
-        <div class="col-sm-11" style="float:left;">
-            <table id="PurchaseItemGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
     </div>
 </div>
 <script src="~/Scripts/JqGridTemplate.js"></script>
@@ -140,19 +130,34 @@
     })
 
     function LoadOutSourceType() {
-        var _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&TypeName=" + $('#PurchaseTypeName').val();
-        $("#OutSourceType option").remove();
-        //$("#OutSourceType").append($("<option/>", { value: 3, text: "外发任务", selected:true }));
-        $.getJSON(_url, function (msg) {
-            $.each(msg, function (i, n) {
-                var _name = n.Name;
-                var _html;
-                if (n.ParentTypeID > 0) {
-                    _name = '&nbsp;&nbsp;&nbsp;&nbsp;' + _name;
-                }
-                _html = '<option value="' + n.PurchaseTypeID + '">' + _name + '</option>';
-                $('#OutSourceType').append(_html);
-                //$("#OutSourceType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+        //var _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&TypeName=" + $('#PurchaseTypeName').val();
+        //$("#OutSourceType option").remove();
+        ////$("#OutSourceType").append($("<option/>", { value: 3, text: "外发任务", selected:true }));
+        //$.getJSON(_url, function (msg) {
+        //    $.each(msg, function (i, n) {
+        //        var _name = n.Name;
+        //        var _html;
+        //        if (n.ParentTypeID > 0) {
+        //            _name = '&nbsp;&nbsp;&nbsp;&nbsp;' + _name;
+        //        }
+        //        _html = '<option value="' + n.PurchaseTypeID + '">' + _name + '</option>';
+        //        $('#OutSourceType').append(_html);
+        //        //$("#OutSourceType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+        //    })
+        //})
+        $("#OutSourceType").empty();
+        var _mainType = $('#ChargePurType').val();
+        $.ajaxSettings.async = false;
+        $.get('/Purchase/JsonPurchaseTypeLevel?ParentID=' + _mainType, function (res) {
+            $('#OutSourceType').append($('<option/>', {
+                value: _mainType,
+                text: '-'
+            }))
+            $.each(res, function (i, n) {
+                $('#OutSourceType').append($('<option/>', {
+                    value: n.PurchaseTypeID,
+                    text: n.Name
+                }))
             })
         })
     }

@@ -1102,6 +1102,7 @@ namespace MoldManager.WebUI.Controllers
                         partlist.Latest = true;
                         partlist.ProjectID = _project.ProjectID;
                         partlist.CreateDate = DateTime.Now;
+                        partlist.UpdateDate = new DateTime(1900, 1, 1);
                         //r => partlistID
                         int r = _partListRepository.Save(partlist);
                         if (r > 0)
@@ -1122,6 +1123,10 @@ namespace MoldManager.WebUI.Controllers
                     #endregion
                     else
                     {
+                        #region pl更新日期保存 18/11/30
+                        newpl.UpdateDate = DateTime.Now;
+                        _partListRepository.Save(newpl);
+                        #endregion
                         foreach (var _part in _parts)
                         {
                             _part.PartListID = newpl.PartListID;
@@ -1905,7 +1910,7 @@ namespace MoldManager.WebUI.Controllers
         }
         #endregion
         /// <summary>
-        /// 根据关键字查询零件
+        /// TODO:根据关键字查询零件
         /// </summary>
         /// <param name="sel">1:零件短名 2:物料编号 3:规格</param>
         /// <param name="Keywords"></param>
@@ -1913,25 +1918,59 @@ namespace MoldManager.WebUI.Controllers
         /// <returns></returns>
         public JsonResult Service_Json_GetPartByKeys(int sel=0,string Keywords="",int _selPartModal=1)
         {
-            List<PurchaseItem> _items = new List<PurchaseItem>();
+            //List<PurchaseItem> _items = new List<PurchaseItem>();
+            List<Part> _items = new List<Part>();
             List<WHPart> _whparts;
+            int _take = 20;
             switch (_selPartModal)
             {
                 case 1:
-                    IQueryable<Part> _parts = _partRepository.GetLatestVerParts();
-                    foreach(var p in _parts)
+                    List<Part> _parts = _partRepository.GetLatestVerParts().ToList();
+                    #region 筛选
+                    if (!string.IsNullOrEmpty(Keywords) && Keywords!="undefined")
                     {
+                        Keywords = Keywords.ToUpper();
+                        switch (sel)
+                        {
+                            case 1:
+                                _parts = _parts.Where(p => p.Name.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Name.Contains(Keywords));
+                                break;
+                            case 2:
+                                _parts = _parts.Where(p => p.PartNumber.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.PartNumber.Contains(Keywords));
+                                break;
+                            default:
+                                _parts = _parts.Where(p => p.Specification.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Specification.Contains(Keywords));
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        _parts = _parts.Take(_take).ToList();
+                    }
+                    #endregion
+                    foreach (var p in _parts)
+                    {
+                        PartList pList = _partListRepository.Query(p.PartListID) ?? new PartList();
                         int _stockQty = Convert.ToInt32( _whStockRepository.GetStockQtyByPart(p.PartNumber, p.PartID));
-                        PurchaseItem _item = new PurchaseItem()
+                        Part _item = new Part()
                         {
                             PartID = p.PartID,
                             Name = p.Name,
                             PartNumber = p.PartNumber,
                             Specification = p.Specification,
-                            Material = p.MaterialName,
+                            MaterialName = p.MaterialName,
                             SupplierName = p.BrandName,
                             PurchaseType = 0,
                             Quantity= p.TotalQty-_stockQty,
+
+                            Hardness=p.Hardness,
+                            JobNo=p.JobNo,
+                            MoldNumber= pList.MoldNumber,
+                            ERPPartID=p.ERPPartID,
+                            PlanQty= p.TotalQty,
                         };
                         _items.Add(_item);
                     }
@@ -1940,20 +1979,103 @@ namespace MoldManager.WebUI.Controllers
                     //模具耗材 不属于 直接材料、外发项、备库项
                     //_items = _purchaseItemRepository.PurchaseItems.Where(p => p.State >= 0 && p.TaskID == 0 && p.PartID == 0 && p.WarehouseStockID == 0).ToList();                    
                     _whparts = _whPartRepository.GetPartsByType("生产耗材");
-                    foreach(var w in _whparts)
+                    #region 筛选
+                    if (!string.IsNullOrEmpty(Keywords) && Keywords != "undefined")
+                    {
+                        Keywords = Keywords.ToUpper();
+                        switch (sel)
+                        {
+                            case 1:
+                                _whparts = _whparts.Where(p => p.PartName.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Name.Contains(Keywords));
+                                break;
+                            case 2:
+                                _whparts = _whparts.Where(p => p.PartNum.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.PartNumber.Contains(Keywords));
+                                break;
+                            default:
+                                _whparts = _whparts.Where(p => p.Specification.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Specification.Contains(Keywords));
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        _whparts = _whparts.Take(_take).ToList();
+                    }
+                    #endregion
+                    foreach (var w in _whparts)
                     {
                         int _stockQty = Convert.ToInt32(_whStockRepository.GetStockQtyByPart(w.PartNum, w.PartID));
-                        PurchaseItem _item = new PurchaseItem()
+                        Part _item = new Part()
                         {
                             PartID = 0,
                             Name = w.PartName,
                             PartNumber = w.PartNum,
                             Specification = w.Specification,
-                            Material = w.Materials,
+                            MaterialName = w.Materials,
                             SupplierName = "",
                             MoldNumber=w.MoldNumber,
                             PurchaseType = 0,
                             Quantity=Convert.ToInt32(w.PlanQty)- _stockQty,
+
+                            Hardness = "",
+                            JobNo = w.PartNum.Split('-')[1] ,
+                            ERPPartID = "",
+                            PlanQty = w.PlanQty,
+                        };
+                        _items.Add(_item);
+                    }
+                    break;
+                case 3:
+                    List<Part> _parts3 = _partRepository.GetLatestVerParts().ToList();
+                    #region 筛选
+                    if (!string.IsNullOrEmpty(Keywords) && Keywords != "undefined")
+                    {
+                        Keywords = Keywords.ToUpper();
+                        switch (sel)
+                        {
+                            case 1:
+                                _parts3 = _parts3.Where(p => p.Name.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Name.Contains(Keywords));
+                                break;
+                            case 2:
+                                _parts3 = _parts3.Where(p => p.PartNumber.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.PartNumber.Contains(Keywords));
+                                break;
+                            default:
+                                _parts3 = _parts3.Where(p => p.Specification.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Specification.Contains(Keywords));
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        _parts3 = _parts3.Take(_take).ToList();
+                    }
+                    #endregion
+                    foreach (var p in _parts3)
+                    {
+                        PartList pList = _partListRepository.Query(p.PartListID) ?? new PartList();                      
+                        //string _partNum = _whPartRepository.GetwfTaskPartNum(pList.MoldNumber) ?? "";
+                        int _stockQty = Convert.ToInt32(_whStockRepository.GetStockQtyByPart(p.PartNumber, p.PartID));
+                        Part _item = new Part()
+                        {
+                            PartID = p.PartID,
+                            Name = p.Name,
+                            PartNumber = p.PartNumber,
+                            Specification = p.Specification,
+                            MaterialName = p.MaterialName,
+                            SupplierName = p.BrandName,
+                            PurchaseType = 0,
+                            Quantity = p.TotalQty - _stockQty,
+
+                            Hardness = p.Hardness,
+                            JobNo = p.JobNo,
+                            MoldNumber = pList.MoldNumber,
+                            ERPPartID = p.ERPPartID,
+                            PlanQty = p.TotalQty,
+                            Memo="外发项:"+p.PartNumber,
                         };
                         _items.Add(_item);
                     }
@@ -1961,20 +2083,50 @@ namespace MoldManager.WebUI.Controllers
                 case 5:
                     //IQueryable<WarehouseStock> _whStocks = _warehouseStockRepository.WarehouseStocks.Where(w => w.Enabled == true);
                     _whparts = _whPartRepository.GetPartsByType("模具耗材备库");
+                    #region 筛选
+                    if (!string.IsNullOrEmpty(Keywords) && Keywords != "undefined")
+                    {
+                        Keywords = Keywords.ToUpper();
+                        switch (sel)
+                        {
+                            case 1:
+                                _whparts = _whparts.Where(p => p.PartName.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Name.Contains(Keywords));
+                                break;
+                            case 2:
+                                _whparts = _whparts.Where(p => p.PartNum.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.PartNumber.Contains(Keywords));
+                                break;
+                            default:
+                                _whparts = _whparts.Where(p => p.Specification.ToUpper().Contains(Keywords)).ToList();
+                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Specification.Contains(Keywords));
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        _whparts = _whparts.Take(_take).ToList();
+                    }
+                    #endregion
                     foreach (var w in _whparts)
                     {
                         int _stockQty = Convert.ToInt32(_whStockRepository.GetStockQtyByPart(w.PartNum, w.PartID));
-                        PurchaseItem _item = new PurchaseItem()
+                        Part _item = new Part()
                         {
                             PartID = 0,
                             Name = w.PartName,
                             PartNumber = w.PartNum,
                             Specification = w.Specification,
-                            Material = w.Materials,
+                            MaterialName = w.Materials,
                             SupplierName = "",
                             MoldNumber = w.MoldNumber,
                             PurchaseType = 0,
                             Quantity = Convert.ToInt32(w.PlanQty) - _stockQty,
+
+                            Hardness = "",
+                            JobNo = w.PartNum.Split('-')[1],
+                            ERPPartID = "",
+                            PlanQty = w.PlanQty,
                         };
                         _items.Add(_item);
                     }
@@ -1985,29 +2137,11 @@ namespace MoldManager.WebUI.Controllers
             {
                 //_kwexp = p => p.Enabled == true;
                 try
-                {
-                    if (!string.IsNullOrEmpty(Keywords))
-                    {
-                        Keywords = Keywords.ToUpper();
-                        switch (sel)
-                        {
-                            case 1:
-                                _items = _items.Where(p => p.Name.ToUpper().Contains(Keywords)).ToList();
-                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Name.Contains(Keywords));
-                                break;
-                            case 2:
-                                _items = _items.Where(p => p.PartNumber.ToUpper().Contains(Keywords)).ToList();
-                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.PartNumber.Contains(Keywords));
-                                break;
-                            default:
-                                _items = _items.Where(p => p.Specification.ToUpper().Contains(Keywords)).ToList();
-                                //_kwexp = PredicateBuilder.And(_kwexp, p => p.Specification.Contains(Keywords));
-                                break;
-                        }
-                    }                                    
+                {                                                     
                     if (_items.Count>0)
                     {
                         //_items = _items.Where(_kwexp);
+                        //_items = _items.Take(20).ToList();
                         PartSearchGridViewModel _viewmodel = new PartSearchGridViewModel(_items);
                         return Json(_viewmodel, JsonRequestBehavior.AllowGet);
                     }

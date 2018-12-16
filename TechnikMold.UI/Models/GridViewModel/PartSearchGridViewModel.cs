@@ -15,7 +15,7 @@ namespace TechnikMold.UI.Models.GridViewModel
         public int Page;
         public int Total;
         public int Records;
-        public PartSearchGridViewModel(List<PurchaseItem> _items)
+        public PartSearchGridViewModel(List<Part> _items)
         {
             foreach(var p in _items)
             {

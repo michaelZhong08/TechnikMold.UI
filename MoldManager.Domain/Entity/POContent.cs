@@ -68,7 +68,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             UnitPrice = PurchaseItem.UnitPriceWT;
             SubTotal = PurchaseItem.TotalPriceWT;
             BrandName ="";
-            Memo = "";
+            Memo = PurchaseItem.Memo;
             ReceivedQty = 0;
             State = 0;
             Enabled = true;

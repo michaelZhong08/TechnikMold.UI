@@ -91,19 +91,19 @@ namespace TechnikSys.MoldManager.NX.Common
             }
             StreamReader readStream = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
             _result = readStream.ReadToEnd();
-            #region 异常写入
-            string filePath = Directory.GetCurrentDirectory() + "\\" + "WebEx.txt";
-            if (File.Exists(filePath))
-                File.Delete(filePath);
-            FileStream fs = new FileStream(filePath, FileMode.Create);
-            string str = JsonConvert.SerializeObject(_result);
-            byte[] data = System.Text.Encoding.Default.GetBytes(str);
-            //开始写入
-            fs.Write(data, 0, data.Length);
-            //清空缓冲区、关闭流
-            fs.Flush();
-            fs.Close();
-            #endregion
+            //#region 异常写入
+            //string filePath = Directory.GetCurrentDirectory() + "\\" + "WebEx.txt";
+            //if (File.Exists(filePath))
+            //    File.Delete(filePath);
+            //FileStream fs = new FileStream(filePath, FileMode.Create);
+            //string str = JsonConvert.SerializeObject(_result);
+            //byte[] data = System.Text.Encoding.Default.GetBytes(str);
+            ////开始写入
+            //fs.Write(data, 0, data.Length);
+            ////清空缓冲区、关闭流
+            //fs.Flush();
+            //fs.Close();
+            //#endregion
 
             return _result;
         }
@@ -125,19 +125,19 @@ namespace TechnikSys.MoldManager.NX.Common
             #region Ping IP地址
             try
             {
-
-                Ping ping = new Ping();
-                int timeout = 500;
-                string data = "sendData:123";
-                byte[] buffer = Encoding.ASCII.GetBytes(data);
-                PingReply pingReply = ping.Send(_serverName, timeout, buffer);
-                if (pingReply.Status == IPStatus.Success)
+                //循环遍历 Ping程序
+                for(int i = 1; i < 5; i++)
                 {
-                    online = true;
+                    if (NetPing())
+                    {
+                        online = true;
+                        break;
+                    }
                 }
-                else
-                    res = "地址:"+ _serverName + " 不通，请检查网络连接或WebServer.txt配置！";
-
+                if (!online)
+                {
+                    res = "地址:" + _serverName + " 不通，请检查网络连接或WebServer.txt配置！";
+                }
             }
             catch (Exception ex)
             {
@@ -178,6 +178,22 @@ namespace TechnikSys.MoldManager.NX.Common
                 #endregion
             }
             return res;
+        }
+        public bool NetPing()
+        {
+            bool online = false;
+            #region Ping
+            Ping ping = new Ping();
+            int timeout = 1000;
+            string data = "sendData:123";
+            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            PingReply pingReply = ping.Send(_serverName, timeout, buffer);
+            #endregion
+            if (pingReply.Status == IPStatus.Success)
+            {
+                online = true;
+            }
+            return online;
         }
     }
 }

@@ -18,6 +18,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int PrevVersion { get; set; }
         public bool Latest { get; set; }
         public int ProjectID { get; set; }
+        public DateTime UpdateDate { get; set; }
         /// <summary>
         /// 创建时间
         /// </summary>

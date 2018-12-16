@@ -27,7 +27,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[8] = PRContent.PurchaseDrawing.ToString();
             cell[9] = PRContent.PRContentID.ToString();
             cell[10] = PRContent.PurchaseItemID.ToString();
-            cell[11] = prMemo;
+            cell[11] = PRContent.Memo;
             cell[12] = "";
             //cell[13] = PRContent.RequireTime == new DateTime(1900, 1, 1) ? "-" : PRContent.RequireTime.ToString("yyyy-MM-dd");
         }

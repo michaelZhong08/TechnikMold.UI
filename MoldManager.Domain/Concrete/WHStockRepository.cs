@@ -14,30 +14,37 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public IQueryable<WHStock> WHStocks { get { return _context.WHStocks; } }
         public int Save(WHStock model)
         {
-            //WHStock _stock = _context.WHStocks.Where(s =>s.PartID==model.PartID && s.PartNum == model.PartNum && s.WarehouseID == model.WarehouseID && s.WarehousePositionID==model.WarehousePositionID && s.PurchaseType==model.PurchaseType).FirstOrDefault();
-            
-            if (model.ID == 0)
+            WHStock _stock = _context.WHStocks.Where(s => s.PartID == model.PartID && s.PartNum == model.PartNum && s.WarehouseID == model.WarehouseID && s.WarehousePositionID == model.WarehousePositionID).FirstOrDefault();
+
+            if (_stock == null)
             {
+                _stock.PartNum = model.PartNum;
+                _stock.WarehouseID = model.WarehouseID;
+                _stock.WarehousePositionID = model.WarehousePositionID;
+                _stock.Qty = model.Qty;
+                _stock.PurchaseType = model.PurchaseType;
+                _stock.StockType = model.StockType;
+                _stock.PartID = model.PartID;
+                _stock.TaskID = model.TaskID;
+                _stock.InStockQty = model.InStockQty;
+                _stock.OutStockQty = model.OutStockQty;
+                _stock.FInStockDate = model.FInStockDate;
+                _stock.LInStockDate = model.LInStockDate;
+                _stock.MoldNumber = model.MoldNumber;
                 model.Enable = true;
                 _context.WHStocks.Add(model);
             }
             else
             {
-                WHStock _stock = _context.WHStocks.Where(s => s.ID == model.ID).FirstOrDefault();
                 _stock.LInStockDate = model.LInStockDate;
             }
             _context.SaveChanges();
-            return 1;
-            //else
-            //{
-
-            //    _stock.Qty = model.Qty;
-            //}
+            return _stock.ID;
         }
-        public int StockIncrease(WHStock model,decimal _qty)
+        public int StockIncrease(int stockID,decimal _qty)
         {
             //WHStock _stock = _context.WHStocks.Where(s =>s.PartID == model.PartID && s.PartNum == model.PartNum && s.WarehouseID == model.WarehouseID && s.WarehousePositionID == model.WarehousePositionID && s.PurchaseType == model.PurchaseType).FirstOrDefault();
-            WHStock _stock = _context.WHStocks.Where(s => s.ID == model.ID).FirstOrDefault();
+            WHStock _stock = _context.WHStocks.Where(s => s.ID == stockID).FirstOrDefault();
             if (_stock != null)
             {
                 _stock.Qty = _stock.Qty + _qty;
@@ -47,15 +54,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 }
                 else//出
                 {
-                    _stock.OutStockQty = _stock.OutStockQty + _qty;
+                    _stock.OutStockQty = _stock.OutStockQty +(-_qty);
                 }
                 _context.SaveChanges();
                 return 1;               
-            }
-            else
-            {
-                Save(model);
-                StockIncrease(model, _qty);
             }
             return -99;
         }
@@ -95,6 +97,45 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 return _stock.Qty;
             }
             return 0;
+        }
+        public WHStock QueryByID(int stockID)
+        {
+            return _context.WHStocks.Where(s => s.ID == stockID).FirstOrDefault();
+        }
+        /// <summary>
+        /// 库位调整
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public int ChangeWHPosition(WHStock model)
+        {
+            WHStock _stock = _context.WHStocks.Where(s => s.ID== model.ID).FirstOrDefault();
+            if (_stock != null)
+            {
+                _stock.WarehouseID = model.WarehouseID;
+                _stock.WarehousePositionID = model.WarehousePositionID;
+                _context.SaveChanges();
+                return 0;
+            }
+            return -99;
+        }
+        /// <summary>
+        /// 退货
+        /// </summary>
+        /// <param name="stockID"></param>
+        /// <param name="_qty"></param>
+        /// <returns></returns>
+        public int StockReturn(int stockID, decimal _qty)
+        {
+            WHStock _stock = _context.WHStocks.Where(s => s.ID == stockID).FirstOrDefault();
+            if (_stock != null)
+            {
+                _stock.Qty = _stock.Qty - _qty;
+                _stock.InStockQty = _stock.InStockQty - _qty;
+                _context.SaveChanges();
+                return 1;
+            }
+            return -99;
         }
     }
 }

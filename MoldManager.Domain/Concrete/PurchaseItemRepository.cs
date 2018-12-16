@@ -169,5 +169,22 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             }
             _context.SaveChanges();
         }
+        public void PlanDateAdjust(int purchaseitemID,DateTime planDate)
+        {
+            PurchaseItem dbEntry = _context.PurchaseItems.Where(p => p.PurchaseItemID == purchaseitemID && p.State < (int)PurchaseItemStatus.完成).FirstOrDefault();
+            dbEntry.PlanAJTime = planDate;
+            _context.SaveChanges();
+        }
+        public void PlanDateAdjustRecordSave(PurItemChangeDateRecord model)
+        {
+            //PurchaseItem dbEntry = _context.PurchaseItems.Where(p => p.PurchaseItemID == purchaseitemID && p.State < (int)PurchaseItemStatus.完成).FirstOrDefault();
+            //dbEntry.PlanAJTime = planDate;
+            _context.PurItemChangeDateRecords.Add(model);
+            _context.SaveChanges();
+        }
+        public List<PurItemChangeDateRecord> GetPurItemChangeDateRecords(int PurchaseRequestID)
+        {
+            return _context.PurItemChangeDateRecords.Where(p => p.PurchaseItemID == PurchaseRequestID).OrderByDescending(p => p.CreDate).ToList();
+        }
     }
 }

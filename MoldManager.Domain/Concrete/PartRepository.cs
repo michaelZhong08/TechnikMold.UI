@@ -517,6 +517,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     mvi.MoldNumber = partlist.MoldNumber;
                     mvi.CreateDate = partlist.CreateDate == null ? new DateTime(1900, 1, 1) : partlist.CreateDate;
                     mvi.ReleaseDate = partlist.ReleaseDate == null ? new DateTime(1900, 1, 1) : partlist.ReleaseDate;
+                    mvi.UpdateDate=partlist.UpdateDate== null ? new DateTime(1900, 1, 1) : partlist.UpdateDate;
                     list.Add(mvi);
                 }
             }

@@ -138,10 +138,27 @@ namespace MoldManager.WebUI.Controllers
             User _user = _userRepository.GetUserByName(UserName);
             return Json(_user, JsonRequestBehavior.AllowGet);
         }
-
-        public JsonResult FilterUser(string UserName = "")
+        /// <summary>
+        /// 项目编辑页面 人员编辑列表数据源
+        /// </summary>
+        /// <param name="UserName"></param>
+        /// <param name="_proJRole"></param>
+        /// <returns></returns>
+        public JsonResult FilterUser(string UserName = "",int _proJRole=1)
         {
-            IEnumerable<User> _users = _userRepository.FilterUser(UserName) ;
+            List<int> _depList = new List<int>();
+            switch(_proJRole){
+                case 1:
+                    _depList.Add(21);//项目
+                    break;
+                case 2:
+                    _depList.Add(2);//CAD
+                    break;
+                case 3:
+                    _depList.Add(24);//钳工
+                    break;
+            }
+            IEnumerable<User> _users = _userRepository.FilterUser(_depList,UserName) ;
             return Json(_users, JsonRequestBehavior.AllowGet);
         }
         [HttpPost]

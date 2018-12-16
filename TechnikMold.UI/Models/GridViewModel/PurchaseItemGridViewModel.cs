@@ -19,14 +19,15 @@ namespace MoldManager.WebUI.Models.GridViewModel
             IQuotationRequestRepository QuotationRequestRepo, 
             IPurchaseOrderRepository PurchaseOrderRepo,
             IUserRepository UserRepo, 
-            IPurchaseTypeRepository TypeRepo)
+            IPurchaseTypeRepository TypeRepo,
+            IPurchaseItemRepository PurchaseItemRepo)
         {
             rows = new List<PurchaseItemGridRowModel>();
             foreach (PurchaseItem _item in PurchaseItems)
             {
                 string _prNo, _qrNo, _poNo;
                 string _purchaseUser;
-
+                #region region
                 try
                 {
                     if (_item.PurchaseRequestID > 0)
@@ -116,9 +117,29 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 {
                     _requestUser = "";
                 }
-                PurchaseItemGridRowModel _row = new PurchaseItemGridRowModel(_item, _prNo, _qrNo, _poNo, _purchaseUser, _purchaseType, _requestUser);
-                rows.Add(_row);
+                #endregion
+                string _htmlTitle = "";
+                List<PurItemChangeDateRecord> _puritems = PurchaseItemRepo.GetPurItemChangeDateRecords(_item.PurchaseItemID);
+                if (_puritems.Count > 0)
+                {
+                    _htmlTitle = "<table><tr><th>调整后计划</th><th>调整人</th><th>调整时间</th></tr>";
+                    foreach (var r in _puritems)
+                    {
+                        _htmlTitle = _htmlTitle + "<tr>";
+                        _htmlTitle = _htmlTitle + "<td>" + ((r.PlanAJDate == new DateTime(1900, 1, 1) ? "-" : r.PlanAJDate.ToString("yyyy-MM-dd"))) + "</td>";
+                        _htmlTitle = _htmlTitle + "<td>"+r.UserName.ToString()+"</td>";                        
+                        _htmlTitle = _htmlTitle + "<td>" + ((r.CreDate == new DateTime(1900, 1, 1) ? "-" : r.CreDate.ToString("yyyy-MM-dd HH:mm"))) + "</td>";
+                        _htmlTitle = _htmlTitle + "</tr>";
+                    }
+                    _htmlTitle = _htmlTitle + "</table>";
+                }
+                else
+                {
+                    _htmlTitle = "";
+                }
                 
+                PurchaseItemGridRowModel _row = new PurchaseItemGridRowModel(_item, _prNo, _qrNo, _poNo, _purchaseUser, _purchaseType, _requestUser, _htmlTitle);
+                rows.Add(_row);                
             }
             Records = PurchaseItems.Count();
         }

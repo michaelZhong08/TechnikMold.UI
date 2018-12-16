@@ -66,19 +66,31 @@ namespace MoldManager.QC.Common
                 writeStream.Close();
             }
 
+            //string _result = string.Empty;
+
+            //using (HttpWebResponse response = (HttpWebResponse)_request.GetResponse())
+            //{
+            //    using (Stream responseStream = response.GetResponseStream())
+            //    {
+            //        using (StreamReader readStream = new StreamReader(responseStream, Encoding.UTF8))
+            //        {
+            //            _result = readStream.ReadToEnd();
+            //        }
+            //    }
+            //}
             string _result = string.Empty;
 
-            using (HttpWebResponse response = (HttpWebResponse)_request.GetResponse())
+            HttpWebResponse response;
+            try
             {
-                using (Stream responseStream = response.GetResponseStream())
-                {
-                    using (StreamReader readStream = new StreamReader(responseStream, Encoding.UTF8))
-                    {
-                        _result = readStream.ReadToEnd();
-                    }
-                }
+                response = (HttpWebResponse)_request.GetResponse();
             }
-
+            catch (WebException ex)
+            {
+                response = (HttpWebResponse)ex.Response;
+            }
+            StreamReader readStream = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
+            _result = readStream.ReadToEnd();
 
             return _result;
         }

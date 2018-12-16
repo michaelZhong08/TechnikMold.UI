@@ -313,6 +313,7 @@
     <Compile Include="Entity\PRProcess.cs" />
     <Compile Include="Entity\PurchaseItem.cs" />
     <Compile Include="Entity\PurchaseType.cs" />
+    <Compile Include="Entity\PurItemChangeDateRecord.cs" />
     <Compile Include="Entity\QCCmmFileSetting.cs" />
     <Compile Include="Entity\QCCmmReport.cs" />
     <Compile Include="Entity\QCPointProgram.cs" />

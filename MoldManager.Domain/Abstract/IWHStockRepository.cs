@@ -11,9 +11,12 @@ namespace TechnikSys.MoldManager.Domain.Abstract
     {
         IQueryable<WHStock> WHStocks { get; }
         int Save(WHStock model);
-        int StockIncrease(WHStock model, decimal _qty);
+        int StockIncrease(int stockID, decimal _qty);
         List<WHStock> GetWHStocks();
         List<WHStock> GetWHStocksByType(string _type);
         decimal GetStockQtyByPart(string PartNum, int PartID = 0);
+        WHStock QueryByID(int stockID);
+        int ChangeWHPosition(WHStock model);
+        int StockReturn(int stockID, decimal _qty);
     }
 }

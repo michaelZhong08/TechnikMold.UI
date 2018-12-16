@@ -16,10 +16,10 @@
 
         <div class="col-sm-8">
             <ul class="nav nav-pills">
-                @*<li class="col-sm-4">
-                    <input type="text" id="WKeyword" class="form-control" value="@ViewBag.Keyword" placeholder="库存关键字" />
+                <li class="col-sm-4">
+                    <input type="text" id="WKeyword" class="form-control" value="@ViewBag.Keyword" placeholder="零件名/物料编号/规格" />
                 </li>
-                <li><button class="btn btn-primary" id="StockQuery">查询</button></li>*@
+                <li><button class="btn btn-primary" id="StockQuery">查询</button></li>
                 <li><button class="btn btn-primary" id="OutSourceStart">外发出库</button>
             </ul>
             <table id="PurchaseItemGrid"></table>
@@ -33,7 +33,7 @@
         LoadPurchaseTypes();
         OutSourceItem();
 
-        var _listsize = Math.round((document.documentElement.clientHeight - 210) / 17);
+        var _listsize = Math.round((document.documentElement.clientHeight - 210) / 20);
         $("#PurchaseOrders").attr("size", _listsize);
         
         $("#RefreshPO").on("click", function () {
@@ -44,7 +44,7 @@
             LoadPurchaseOrders();
         })
 
-        $("#PurchaseOrders").on("change", function () {
+        $("#PurchaseOrders").on("click", function () {
             LoadOutSourceItems();
         });
 
@@ -93,10 +93,9 @@
 
     function LoadOutSourceItems() {
         if ($("#PurchaseOrders").val() != null) {
-            var _url = "/Purchase/JsonOutSourceItems?PurchaseOrderID=" + $("#PurchaseOrders").val();
+            var _url = "/Purchase/JsonOutSourceItems?PurchaseOrderID=" + $("#PurchaseOrders").val() + '&PurchaseType=0';
             $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
-        }
-        
+        }       
     }
 
     function StartOutSource() {
@@ -116,5 +115,18 @@
             }
         })
     }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#StockQuery').on('click', function () {
+            var _purID = $("#PurchaseOrders").val();
+            if (_purID == null) {
+                _purID=0
+            }
+            var _url = "/Purchase/JsonOutSourceItems?PurchaseOrderID=" + _purID + '&PurchaseType=' + $('#PurchaseTypes').val();
+            $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
+        })
+    })
 </script>
 

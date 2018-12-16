@@ -17,12 +17,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
 
         public ReturnItemGridViewModel(List<ReturnItem> ReturnItems, 
             IPurchaseItemRepository POItemRepository, 
-            IWarehouseStockRepository StockRepository, 
+            IWHStockRepository StockRepository, 
             int RequestState)
         {
             rows = new List<ReturnItemGridRowModel>();
             foreach (ReturnItem _item in ReturnItems){
-                WarehouseStock _stock =StockRepository.QueryByID(_item.WarehouseItemID);
+                WHStock _stock =StockRepository.QueryByID(_item.WarehouseItemID);
                 PurchaseItem _poItem = POItemRepository.QueryByID(_item.PurchaseItemID);
                 rows.Add(new ReturnItemGridRowModel(_item,_poItem, _stock, RequestState));
             }

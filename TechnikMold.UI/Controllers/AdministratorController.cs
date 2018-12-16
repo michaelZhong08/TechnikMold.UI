@@ -488,9 +488,10 @@ namespace MoldManager.WebUI.Controllers
         {
             string urlHost = Request.Url.Host;
             string urlPort = Request.Url.Port.ToString();
-            string ServerMapPath = Server.MapPath("~");
+            string ServerMapPath = "";//Server.MapPath("~");
             string ServiceUri = _systemConfigRepository.GetValueByName("ServiceUri");
-            string resStr = string.Format("&urlHost*{0}&urlPort*{1}&Obj*QRMail&ServiceUri*{2}&ServerMapPath*{3}&arg*", urlHost, urlPort, ServiceUri, ServerMapPath);//&ServerMapPath*{2} ServerMapPath
+            var _serviceUri= string.Format(ServiceUri, urlHost);
+            string resStr = string.Format("&urlHost*{0}&urlPort*{1}&Obj*QRMail&ServiceUri*{2}&ServerMapPath*{3}&arg*", urlHost, urlPort, _serviceUri, ServerMapPath);//&ServerMapPath*{2} ServerMapPath
             return resStr;
         }
         public ActionResult Service_FileDownLoad()

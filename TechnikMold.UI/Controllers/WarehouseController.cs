@@ -180,8 +180,8 @@ namespace MoldManager.WebUI.Controllers
 
         public string StockChange(int WarehouseStockID, int Quantity)
         {
-            WarehouseStock _stock = _warehouseStockRepository.QueryByID(WarehouseStockID);
-            if (_stock.Quantity + Quantity >=0)
+            WHStock _stock = _whStockRepository.QueryByID(WarehouseStockID);
+            if (_stock.Qty + Quantity >=0)
             {
                 _warehouseStockRepository.UpdateQuantity(WarehouseStockID, Quantity);
                 if (Quantity > 0)
@@ -454,9 +454,11 @@ namespace MoldManager.WebUI.Controllers
         public ActionResult JsonStockByPO(int PurchaseItemID)
         {
             PurchaseItem _item = _purchaseItemRepository.QueryByID(PurchaseItemID);
-            WarehouseStock _stock = _warehouseStockRepository.WarehouseStocks
-                .Where(w=>w.MaterialNumber==_item.PartNumber).Where(w=>w.Specification==_item.Specification)
-                .Where(w=>w.Material==_item.Material).Where(w=>w.SupplierID==_item.SupplierID).FirstOrDefault();
+            //WarehouseStock _stock = _warehouseStockRepository.WarehouseStocks
+            //    .Where(w=>w.MaterialNumber==_item.PartNumber).Where(w=>w.Specification==_item.Specification)
+            //    .Where(w=>w.Material==_item.Material).Where(w=>w.SupplierID==_item.SupplierID).FirstOrDefault();
+            WHStock _stock = _whStockRepository.WHStocks.Where(s => s.PartNum == _item.PartNumber && s.Qty > 0 && s.Enable == true).FirstOrDefault();
+
             return Json(_stock, JsonRequestBehavior.AllowGet);
         }
         /// <summary>
@@ -638,8 +640,8 @@ namespace MoldManager.WebUI.Controllers
                 TaskID=_purchaseItem.TaskID,
                 MoldNumber=_purchaseItem.MoldNumber,
             };
-            _whStockRepository.Save(_stock);//若没有记录，则创建
-            _whStockRepository.StockIncrease(_stock, ReceiveQty);//更新库存
+            var _id= _whStockRepository.Save(_stock);//若没有记录，则创建
+            _whStockRepository.StockIncrease(_id, ReceiveQty);//更新库存
             #endregion
 
             int _unfinishedCount = _purchaseItemRepository.QueryByPurchaseOrderID(_purchaseItem.PurchaseOrderID)
@@ -753,27 +755,27 @@ namespace MoldManager.WebUI.Controllers
             return View();
         }
 
-        public ActionResult WHStockList(string Keyword)
-        {
-            IEnumerable<WarehouseStock> _stocks;
-            if ((Keyword != "")&&(Keyword!="undefined"))
-            {
-                _stocks = _warehouseStockRepository.WarehouseStocks.Where(w => w.Name.Contains(Keyword))
-                .Union(_warehouseStockRepository.WarehouseStocks.Where(w => w.MaterialNumber.Contains(Keyword)))
-                .Union(_warehouseStockRepository.WarehouseStocks.Where(w => w.Specification.Contains(Keyword)))
-                .Where(w => w.Quantity > 0).Where(w=>w.Enabled==true).Take(100);
-            }
-            else
-            {
-                _stocks = _warehouseStockRepository.WarehouseStocks.Where(w=>w.Quantity>0).Where(w=>w.Enabled==true).Take(100);
-            }
+        //public ActionResult WHStockList(string Keyword)
+        //{
+        //    IEnumerable<WHStock> _stocks;
+        //    if ((Keyword != "")&&(Keyword!="undefined"))
+        //    {
+        //        _stocks = _whStockRepository.WarehouseStocks.Where(w => w.Name.Contains(Keyword))
+        //        .Union(_warehouseStockRepository.WarehouseStocks.Where(w => w.MaterialNumber.Contains(Keyword)))
+        //        .Union(_warehouseStockRepository.WarehouseStocks.Where(w => w.Specification.Contains(Keyword)))
+        //        .Where(w => w.Quantity > 0).Where(w=>w.Enabled==true).Take(100);
+        //    }
+        //    else
+        //    {
+        //        _stocks = _warehouseStockRepository.WarehouseStocks.Where(w=>w.Quantity>0).Where(w=>w.Enabled==true).Take(100);
+        //    }
             
-            return Json(_stocks, JsonRequestBehavior.AllowGet);
-        }
+        //    return Json(_stocks, JsonRequestBehavior.AllowGet);
+        //}
 
         public ActionResult LoadItem(int ItemID)
         {
-            WarehouseStock _item = _warehouseStockRepository.QueryByID(ItemID);
+            WHStock _item = _whStockRepository.QueryByID(ItemID);
             return Json(_item, JsonRequestBehavior.AllowGet);
         }
 
@@ -812,11 +814,11 @@ namespace MoldManager.WebUI.Controllers
         {
             string[] _ids = ItemIDs.Split(',');
             List<WarehouseRequestItem> _items = new List<WarehouseRequestItem>();
-            List<WarehouseStock> _stocks = new List<WarehouseStock>();
+            List<WHStock> _stocks = new List<WHStock>();
             for (int i = 0; i < _ids.Length; i++)
             {
                 WarehouseRequestItem _item = _warehouseRequestItemRepository.QueryByID(Convert.ToInt32(_ids[i]));
-                WarehouseStock _stock = _warehouseStockRepository.QueryByID(_item.WarehouseStockID);
+                WHStock _stock = _whStockRepository.QueryByID(_item.WarehouseStockID);
                 ViewBag.RequestID = _item.WarehouseRequestID;
                 _items.Add(_item);
                 _stocks.Add(_stock);
@@ -848,20 +850,20 @@ namespace MoldManager.WebUI.Controllers
             {
                 _warehouseStockRepository.UpdateQuantity(_item.WHStockID, -1*_item.Quantity);
                 _warehouseRequestItemRepository.Receive(_item.WHRequestID, _item.Quantity);
-                WarehouseStock _stock = _warehouseStockRepository.QueryByID(_item.WHStockID);
-                _item.PartName = _stock.Name;
-                _item.PartNumber = _stock.MaterialNumber;
-                _item.Specification = _stock.Specification;
+                WHStock _stock = _whStockRepository.QueryByID(_item.WHStockID);
+                WHPart _part =( _whPartRepository.WHParts.Where(p => p.PartNum == _stock.PartNum && p.PartID == _stock.PartID).FirstOrDefault()??new WHPart());
+                _item.PartName = _part.PartName;
+                _item.PartNumber = _part.PartNum;
+                _item.Specification = _part.Specification;
                 _item.OutStockFormID = _formID;
                 _item.MoldNumber = _stock.MoldNumber;
+                _whStockRepository.StockIncrease(_stock.ID, -_item.Quantity);
                 _outStockItemRepository.Save(_item);
             }
-
            
             int leftItemCount = _warehouseRequestItemRepository.QueryByRequestID(WarehouseRequestID).Where(w => w.ReceivedQuantity < w.Quantity).Count();
             if (leftItemCount > 0)
-            {
-                
+            {               
                 _request.State = (int)WarehouseRequestStatus.部分领料;
             }
             else
@@ -869,7 +871,6 @@ namespace MoldManager.WebUI.Controllers
                 _request.State = (int)WarehouseRequestStatus.完成;
             }
             _warehouseRequestRepository.Save(_request);
-
             return RedirectToAction("WarehouseRequestList", "Warehouse");
         }
 
@@ -1093,10 +1094,10 @@ namespace MoldManager.WebUI.Controllers
             {
                 try
                 {
-                    WarehouseStock _stock = _warehouseStockRepository.QueryByID(Convert.ToInt32(_ids[i]));
+                    WHStock _stock = _whStockRepository.QueryByID(Convert.ToInt32(_ids[i]));
                     _stock.WarehouseID = WarehouseID;
                     _stock.WarehousePositionID = WarehousePositionID;
-                    _warehouseStockRepository.Save(_stock);
+                    _whStockRepository.ChangeWHPosition(_stock);
                 }
                 catch
                 {
@@ -1198,15 +1199,16 @@ namespace MoldManager.WebUI.Controllers
             string _error = "";
             for (int i = 0; i < _ids.Length; i++)
             {
-                WarehouseStock _stock = _warehouseStockRepository.QueryByID(Convert.ToInt32(_ids[i]));
-                _stock.Enabled = false;
+                //WarehouseStock _stock = _warehouseStockRepository.QueryByID(Convert.ToInt32(_ids[i]));
+                WHStock _stock = _whStockRepository.QueryByID(Convert.ToInt32(_ids[i]));
+                _stock.Enable = false;
                 try
                 {
-                    _warehouseStockRepository.Save(_stock);
+                    _whStockRepository.Save(_stock);
                 }
                 catch
                 {
-                    _error = _error == "" ? _stock.Name : "," + _stock.Name;
+                    _error = _error == "" ? _stock.PartNum : "," + _stock.PartNum;
                 }
             }
             return _error;
@@ -1266,10 +1268,11 @@ namespace MoldManager.WebUI.Controllers
             List<WarehousePositionEditModel> _model= new List<WarehousePositionEditModel>();
             for (int i = 0; i < _ids.Length; i++)
             {
-                WarehouseStock _stock = _warehouseStockRepository.QueryByID(Convert.ToInt32(_ids[i]));
+                WHStock _stock = _whStockRepository.QueryByID(Convert.ToInt32(_ids[i]));
                 string _warehouseName = _warehouseRepository.QueryByID(_stock.WarehouseID).Name;
                 string _positionName = _warehousePositionRepository.QueryByID(_stock.WarehousePositionID).Name;
-                WarehousePositionEditModel _row = new WarehousePositionEditModel(_stock, _warehouseName, _positionName);
+                string _name = (_whPartRepository.GetPart(_stock.PartNum, _stock.PartID)??new WHPart()).PartName;
+                WarehousePositionEditModel _row = new WarehousePositionEditModel(_stock, _name, _warehouseName, _positionName);
                 _model.Add(_row);
             }
             return Json(_model, JsonRequestBehavior.AllowGet);
@@ -1388,10 +1391,11 @@ namespace MoldManager.WebUI.Controllers
             IEnumerable<ReturnItem> _items = _returnItemRepository.QueryByRequest(ReturnRequestID);
             foreach (ReturnItem _item in _items)
             {
-                WarehouseStock _stock = _warehouseStockRepository.QueryByID(_item.WarehouseItemID);
-                _stock.Quantity = _stock.Quantity - _item.Quantity;
-                _stock.InStockQty = _stock.InStockQty - _item.Quantity;
-                _warehouseStockRepository.Save(_stock);
+                //WHStock _stock = _whStockRepository.QueryByID(_item.WarehouseItemID);
+                //_stock.Quantity = _stock.Quantity - _item.Quantity;
+                //_stock.InStockQty = _stock.InStockQty - _item.Quantity;
+                //_warehouseStockRepository.Save(_stock);
+                _whStockRepository.StockReturn(_item.WarehouseItemID, _item.Quantity);
             }
             return "";
         }
@@ -1417,10 +1421,11 @@ namespace MoldManager.WebUI.Controllers
                 IEnumerable<ReturnItem> _items = _returnItemRepository.QueryByRequest(ReturnRequestID);
                 foreach (ReturnItem _item in _items)
                 {
-                    WarehouseStock _stock = _warehouseStockRepository.QueryByID(_item.WarehouseItemID);
-                    _stock.Quantity = _stock.Quantity + _item.Quantity;
-                    _stock.InStockQty = _stock.InStockQty + _item.Quantity;
-                    _warehouseStockRepository.Save(_stock);
+                    //WarehouseStock _stock = _warehouseStockRepository.QueryByID(_item.WarehouseItemID);
+                    //_stock.Quantity = _stock.Quantity + _item.Quantity;
+                    //_stock.InStockQty = _stock.InStockQty + _item.Quantity;
+                    //_warehouseStockRepository.Save(_stock);
+                    _whStockRepository.StockIncrease(_item.WarehouseItemID, _item.Quantity);
                 }
             }
             
@@ -1505,9 +1510,10 @@ namespace MoldManager.WebUI.Controllers
                         if (_count == 0)
                         {
                             PurchaseItem _purchaseItem = _purchaseItemRepository.QueryByID(Convert.ToInt32(_purchaseItems[i]));
-                            WarehouseStock _stock = _warehouseStockRepository.WarehouseStocks
-                                .Where(w => w.PurchaseItemID == _purchaseItem.PurchaseItemID).FirstOrDefault();
-                            ReturnItem _item = new ReturnItem(_purchaseItem, _stock.WarehouseStockID);
+                            //WarehouseStock _stock = _warehouseStockRepository.WarehouseStocks
+                            //    .Where(w => w.PurchaseItemID == _purchaseItem.PurchaseItemID).FirstOrDefault();
+                            WHStock _stock = _whStockRepository.WHStocks.Where(p => p.PartNum == _purchaseItem.PartNumber && p.PartID == _purchaseItem.PartID).FirstOrDefault();
+                            ReturnItem _item = new ReturnItem(_purchaseItem, _stock.ID);
                             _returnItems.Add(_item);
                         }
                     }
@@ -1521,7 +1527,7 @@ namespace MoldManager.WebUI.Controllers
             }
             ReturnItemGridViewModel _viewModel = new ReturnItemGridViewModel(_returnItems,
                 _purchaseItemRepository, 
-                _warehouseStockRepository, 
+                _whStockRepository, 
                 _state);
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
@@ -1653,37 +1659,37 @@ namespace MoldManager.WebUI.Controllers
             return Json(_moldNumbers, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult QueryStockParts(string Specification="", string Material="")
-        {
-            Expression<Func<WarehouseStock, bool>> _exp = w => w.Enabled == true;
-            if (Specification != "")
-            {
-                try
-                {
-                    _exp = PredicateBuilder.And(_exp, w => w.Specification.Contains(Specification));
-                }
-                catch
-                {
+        //public ActionResult QueryStockParts(string Specification="", string Material="")
+        //{
+        //    Expression<Func<WarehouseStock, bool>> _exp = w => w.Enabled == true;
+        //    if (Specification != "")
+        //    {
+        //        try
+        //        {
+        //            _exp = PredicateBuilder.And(_exp, w => w.Specification.Contains(Specification));
+        //        }
+        //        catch
+        //        {
 
-                }
-            }
-            if (Material != "")
-            {
-                try
-                {
-                    _exp = PredicateBuilder.And(_exp, w => w.Material.Contains(Material));
-                }
-                catch
-                {
+        //        }
+        //    }
+        //    if (Material != "")
+        //    {
+        //        try
+        //        {
+        //            _exp = PredicateBuilder.And(_exp, w => w.Material.Contains(Material));
+        //        }
+        //        catch
+        //        {
 
-                }
-            }
+        //        }
+        //    }
 
-            IEnumerable<WarehouseStock> _stocks = _warehouseStockRepository.WarehouseStocks.Where(w => w.StockType > 0)
-                .Where(_exp);
-            return Json(_stocks, JsonRequestBehavior.AllowGet);
+        //    IEnumerable<WarehouseStock> _stocks = _warehouseStockRepository.WarehouseStocks.Where(w => w.StockType > 0)
+        //        .Where(_exp);
+        //    return Json(_stocks, JsonRequestBehavior.AllowGet);
 
-        }
+        //}
 
 
         public ActionResult InStockHistory()

@@ -12,6 +12,5 @@ namespace TechnikSys.MoldManager.Domain.Status
         发出 = 2,
         完成 = 3,
         关闭 = 4
-
     }
 }

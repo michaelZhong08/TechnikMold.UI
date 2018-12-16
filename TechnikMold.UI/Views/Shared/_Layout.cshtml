@@ -16,11 +16,12 @@
     @Scripts.Render("~/bundles/GridTemplate")
     <link rel="stylesheet" href="~/Content/jAlert.css">
     <link rel="stylesheet" href="/Content/jquery-ui.css">
+    <link rel="stylesheet" href="~/Content/datepicker.css" />
     <script src="/Scripts/jquery-ui.js"></script>
     <script src="~/Scripts/jquery.form.js"></script>
     <script src="~/Scripts/MoldManager.js"></script>
     <script src="~/Scripts/jAlert.js"></script>
-    @*<script src="~/Scripts/jAlert-functions.js"></script>*@
+    <script src="~/Scripts/bootstrap-datepicker.js"></script>
     <style>
         .hrsys_a {
             display: none;
@@ -51,6 +52,36 @@
 
         .modal-body {
             padding: 10px 10px 10px 10px;
+        }
+        h2{
+            margin:0px;
+            padding:0px;
+            line-height:40px;
+            font-size:18px;
+            text-indent:10px;
+            /*font-weight:bold;*/
+        }
+    </style>
+    <style>
+        .cbox {
+            margin: 0px !important;
+            width: 60% !important;
+            height: 100% !important;
+            margin-left: 20% !important;
+            display: block !important;
+        }
+
+        .ui-row-ltr td {
+            padding: 0px !important;
+            padding-top: 8px !important;
+            text-indent: 8px !important;
+        }
+
+        .ui-row-ltr label {
+            text-indent: -2px !important;
+        }
+        .ui-row-ltr a {
+            text-indent: -2px !important;
         }
     </style>
     @RenderSection("Header", required: false)
@@ -93,6 +124,19 @@
         }
     }
     </script>
+    @*<script>
+        $( function() {
+            //$("#datepicker").datepicker();
+      
+            //日期格式改变
+            //$(".hasDatepicker").datepicker({ dateFormat: "yy-mm-dd" });
+            //星期格式汉化
+            $(".hasDatepicker").datepicker("option", "dayNamesMin", ["日", "一", "二", "三", "四", "五", "六"]);
+            //月份格式汉化
+            $(".hasDatepicker").datepicker("option", "monthNames", ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]);
+
+        });
+    </script>*@
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -112,7 +156,7 @@
                         @if (DeptID == 1)
                         {
                             <li><a href="/Project/CustomerManagement">客户管理</a></li>
-                                <li><a class="sinno" style="display:none;" href="/Project/CostSummary" >项目成本统计</a></li>
+                            <li><a class="sinno" style="display:none;" href="/Project/CostSummary">项目成本统计</a></li>
                         }
 
                     </ul>
@@ -124,7 +168,11 @@
                     <ul class="dropdown-menu">
                         <li><a href="/Part">设计清单</a></li>
                         <li><a href="/Purchase">申请单维护</a></li>
-                        <li><a href="/Administrator/MaterialManagement">材料库</a></li>                        
+                        <li><a href="/Administrator/MaterialManagement">材料库</a></li>   
+                        @if ((DeptID == 2))
+                        {
+                            <li><a href="/Administrator/BrandManagement">品牌管理</a></li>
+                        }                   
                     </ul>
                 </li>
                 <li class="dropdown dropdown-main">
@@ -152,7 +200,7 @@
                         {
                             <li><a class="sinno" style="display:none;" href="/Purchase/POReport">订单记录查询</a></li>
                         }
-                        @if ((DeptID == 2) || (DeptID == 4))
+                        @if ((DeptID == 4))
                         {
                             <li><a href="/Administrator/BrandManagement">品牌管理</a></li>
                         }                       
@@ -178,8 +226,7 @@
                         <li><a href="/Warehouse/Index?PurchaseType=6">在库材料查询</a></li>
                         <li><a href="/Warehouse/Index?PurchaseType=1">在库零件查询</a></li>
                         <li><a href="/Warehouse/Index?PurchaseType=2&Parent=生产耗材">生产耗材查询</a></li>
-                        <li><a href="/Warehouse/Index?PurchaseType=2&Parent=模具耗材备库">备库查询</a></li>
-                        
+                        <li><a href="/Warehouse/Index?PurchaseType=2&Parent=模具耗材备库">备库查询</a></li>                        
                         <li><a href="/Warehouse/ReturnRequestList">退货管理</a></li>
                         @if (DeptID == 20)
                         {

@@ -5,47 +5,228 @@
     /*.form-control {
         display: inline;
     }*/
+    #POContentGrid td {
+        margin:0px!important;
+        padding:0px!important;
+        height:30px;
+        text-align:center;
+        vertical-align:middle;
+        font-size:12px;
+        /*position:absolute;*/
+    }
+    #POContentGrid input {
+        height: 24px;
+        border-style: none;
+        outline: none;
+        font-size: 12px;
+        margin: 0px;
+        padding: 0px;
+    }
+    td{
+        text-align:center;
+        padding:0px!important;
+    }
+    td input{
+        height:30px;
+        margin-top:2px;
+        margin-left:2px;
+    }
+    td button{
+        width:90%;
+        margin-left:5%;
+        height:30px;
+        margin-top:2px;
+    }
+    td select{
+        height:30px;
+        margin-top:2px;
+        margin-left:2px;
+    }
 </style>
-<div style="margin-top:60px">
-    <h2>采购订单维护   </h2>
-    @*<table class="col-sm-12">
+<div style="position:absolute;left:10px;top:60px;bottom:10px;right:10px;border:1px rgba(0,0,0,0.1) solid;min-width:1920px;">
+    <h2>采购订单维护 </h2>
+    <div style="position:absolute;left:0px;top:40px;bottom:0px;width:43%;">
+        <div style="position:absolute;left:0px;top:0px;width:100%;height:40px;border:1px rgba(0,0,0,0.1) solid;">
+            <table>
+                <colgroup>
+                    <col width='20%' />
+                    <col width='10%' />
+                    <col width="10%" />
+
+                    <col width='10%' />
+                    <col width='20%' />                    
+                    <col width='10%' />
+                    <col width='20%' />                    
+                </colgroup>
+                <tr>
+                    <td>
+                        <input style="height:34px;" type="text" class="form-control" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword" />
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" id="Search">查询</button>
+                    </td>
+                    <td></td>
+                    <td>采购类型</td>
+                    <td>
+                        @if (ViewBag.PurchaseItemIDs == "")
+                        {
+                            <select style="height:34px;" class="form-control" id="PurchaseType"></select>
+                        }
+                        else
+                        {
+                            <select style="height:34px;" class="form-control" id="PurchaseType" disabled></select>
+                        }
+                    </td>
+                    <td>询价结果</td>   
+                    <td>
+                        <select style="height:34px;width:90%;float:right;" class="form-control" id="PurchaseState">
+                            <option value="1">有</option>
+                            <option value="2">无</option>
+                        </select>
+                    </td>                                   
+                </tr>
+            </table>
+        </div>
+
+        <div id="div_tb_left" style="position:absolute;left:0px;top:40px;width:100%;bottom:0px;">
+            <table id="PRContentGrid"></table>
+        </div>
+    </div>
+
+    <div  style="position:absolute;left:43%;top:40px;bottom:0px;width:5%;border:1px rgba(0,0,0,0.1) solid;border-style:solid none solid none;">
+        <p id="poContentAdd" style="cursor:pointer;width:80%;margin-left:10%;line-height:120px;float:left;border:1px rgba(0,0,0,0) solid;text-align:center;font-size:80px;font-weight:bold;margin-top:60px;background-color:rgba(0,0,0,0);color:rgba(220,220,220,1);text-shadow:2px 2px 8px rgba(0,0,0,1); padding:0px;"><span class="glyphicon glyphicon-arrow-right"></span></p>
+        <p id="poContentDecrease" style="cursor:pointer;width:80%;margin-left:10%;line-height:80px;float:left;border:1px rgba(0,0,0,0) solid;text-align:center;font-size:80px;font-weight:bold;margin-top:20px;background-color:rgba(0,0,0,0);color:rgba(220,220,220,1);text-shadow:2px 2px 8px rgba(0,0,0,1);padding:0px;"><span class="glyphicon glyphicon-arrow-left"></span></p>
+    </div>
+
+    <div  style="position:absolute;left:48%;top:40px;bottom:0px;width:52%;">
+        <div style="position:absolute;left:0px;top:0px;width:100%;height:40px;border:1px rgba(0,0,0,0.1) solid;">
+            <table style="width:100%;">
+                <colgroup>
+                    <col width="10%"/>
+                    <col width="30%" />
+                    <col width="10%" />
+                    <col width="15%" />
+                    <col width="10%" />
+                    <col width="15%" />
+                    <col width="10%" />
+                </colgroup>
+                <tr>
+                    <td>
+                        供应商
+                    </td>
+                    <td>
+                        <input style="height:34px;" id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" />
+                        <datalist id="SupplierIDD"></datalist>
+                    </td>
+                    <td>
+                        币种
+                    </td>
+                    <td>
+                        <select style="height:34px;" id="Currency" class="form-control">
+                            <option value="人民币">人民币</option>
+                            <option value="美元">美元</option>
+                            <option value="日元">日元</option>
+                            <option vlaue="欧元">欧元</option>
+                        </select>
+                    </td>
+                    <td>
+                        税率
+                    </td>
+                    <td>
+                        <select style="height:34px;" id="TaxRate" class="form-control">
+                            <option value="17">17%</option>
+                            <option value="6">6%</option>
+                            <option value="5">5%</option>
+                            <option value="4">4%</option>
+                            <option value="3">3%</option>
+                            <option value="0">0%</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" id="CreatePO" style="float:right;">保存订单</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="div_tb_right" style="position:absolute;left:0px;top:40px;width:100%;bottom:0px;">
+            <input type="hidden" id="ActiveCol" />
+            <table id="POContentGrid"></table>
+        </div>
+    </div>
+
+
+    @*<table id="tb_layout" style="width:100%;">
+        <colgroup>
+            <col width="200" />
+            <col width="100" />
+            <col width="100" />
+            <col width="200" />
+            <col width="100" />
+            <col width="200" />
+
+            <col width="100" />
+
+            <col width="60" />
+            <col width="200" />
+            <col width="60" />
+            <col width="200" />
+            <col width="60" />
+            <col width="200" />
+
+        </colgroup>
         <tr>
-            <td class="col-sm-2">
-                <input type="text" class="form-control" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword"/>
+            <td>
+                <input style="height:34px;" type="text" class="form-control" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword" />
             </td>
-            <td class="col-sm-1">
+            <td>
                 <button class="btn btn-primary" id="Search">查询</button>
             </td>
-            <td><label>采购类型</label></td>
-            <td class="col-sm-2">
+            <td>
+                <label>采购类型</label>
+            </td>
+            <td>
                 @if (ViewBag.PurchaseItemIDs == "")
                 {
-                    <select class="form-control" id="PurchaseType"></select>
+                    <select style="height:34px;" class="form-control" id="PurchaseType"></select>
                 }
                 else
                 {
-                    <select class="form-control" id="PurchaseType" disabled></select>
+                    <select style="height:34px;" class="form-control" id="PurchaseType" disabled></select>
                 }
-            
             </td>
-            <td><label>供应商</label></td>
-            <td class="col-sm-1">
-                <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:70%" />
+            <td>
+                <label style="float:right;">询价状态</label>
+            </td>
+            <td>
+                <select style="height:34px;width:90%;float:right;" class="form-control" id="PurchaseState">
+                    <option value="1">已选定供应商</option>
+                    <option value="2">未选定供应商</option>
+                </select>
+            </td>
+            <td></td>
+            <td>
+                <label>供应商</label>
+            </td>
+            <td>
+                <input style="height:34px;" id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" />
                 <datalist id="SupplierIDD"></datalist>
             </td>
-            <td><label>币种</label></td>
-            <td class="col-sm-1">
-            <select id="Currency" class="form-control">
-                <option value="人民币">人民币</option>
-                <option value="美元">美元</option>
-                <option value="日元">日元</option>
-                <option vlaue="欧元">欧元</option>
-            </select>
+            <td>
+                <label>币种</label>
             </td>
-            <td><label>税率</label></td>
-            <td class="col-sm-1">
-                
-                <select id="TaxRate" class="form-control">
+            <td>
+                <select style="height:34px;" id="Currency" class="form-control">
+                    <option value="人民币">人民币</option>
+                    <option value="美元">美元</option>
+                    <option value="日元">日元</option>
+                    <option vlaue="欧元">欧元</option>
+                </select>
+            </td>
+            <td>
+                <label>税率</label>
+            </td>
+            <td>
+                <select style="height:34px;" id="TaxRate" class="form-control">
                     <option value="17">17%</option>
                     <option value="6">6%</option>
                     <option value="5">5%</option>
@@ -54,78 +235,28 @@
                     <option value="0">0%</option>
                 </select>
             </td>
-            <td class="col-sm-2"><button class="btn btn-primary" id="CreatePO">保存订单</button></td>
+            <td>
+                <button class="btn btn-primary" id="CreatePO">保存订单</button>
+            </td>
         </tr>
-    </table>*@  
-    
-    <div class="col-sm-6">
-        <table style="margin-left:18px;">
-            <tr>
-                <td>
-                    <input style="height:34px;" type="text" class="form-inline" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword" />
-                    <button class="btn btn-primary" id="Search">查询</button>
-                </td>
-                <td>
-                    <label>采购类型</label>
-                    @if (ViewBag.PurchaseItemIDs == "")
-                    {
-                        <select style="height:34px;" class="form-inline" id="PurchaseType"></select>
-                    }
-                    else
-                    {
-                        <select style="height:34px;" class="form-inline" id="PurchaseType" disabled></select>
-                    }
-                </td>                
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <table id="PRContentGrid"></table>
-                </td>
-            </tr>
-        </table>       
-    </div>
-    <div class="col-sm-6">
-        <table style="margin-left:18px;">
-            <tr>
-                <td>
-                    <label>供应商</label>
-                    <input style="height:34px;" id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-inline" />
-                    <datalist id="SupplierIDD"></datalist>
-                </td>
-                <td>
-                    <label>币种</label>
-                    <select style="height:34px;" id="Currency" class="form-inline">
-                        <option value="人民币">人民币</option>
-                        <option value="美元">美元</option>
-                        <option value="日元">日元</option>
-                        <option vlaue="欧元">欧元</option>
-                    </select>
-                </td>
-                <td>
-                    <label>税率</label>
-                    <select style="height:34px;" id="TaxRate" class="form-inline">
-                        <option value="17">17%</option>
-                        <option value="6">6%</option>
-                        <option value="5">5%</option>
-                        <option value="4">4%</option>
-                        <option value="3">3%</option>
-                        <option value="0">0%</option>
-                    </select>
-                </td>
-                <td>
-                    <button class="btn btn-primary" id="CreatePO">保存订单</button>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="4">
-                    <input type="hidden" id="ActiveCol" />
-                    <table id="POContentGrid"></table>
-                </td>
-            </tr>
-        </table>
-        
-    </div>
+        <tr>
+            <td colspan="6" style="width:900px;">
+                <table id="PRContentGrid" style="width:100%;"></table>
+            </td>
+            <td style="vertical-align:top">
+                <button id="poContentAdd" type="button" class="btn btn-success" value="Add" style="height:200px;width:90%;float:left;margin-top:100px;margin-left:5%;"><span class="glyphicon glyphicon-chevron-right" style="font-size:20px;"></span></button>
+                <button id="poContentDecrease" type="button" class="btn btn-danger" value="Decrease" style="height:200px;width:90%;float:left;margin-top:100px;margin-left:5%;"><span class="glyphicon glyphicon-chevron-left" style="font-size:20px;"></span></button>
+            </td>
+            <td colspan="7">
+                <input type="hidden" id="ActiveCol" />
+                <table id="POContentGrid" ></table>
+            </td>
+        </tr>
+    </table>*@
 </div>
+<input type="number" id="pr_tempID" value="-1" hidden/>
+<input type="number" id="po_tempID" value="-1" hidden/>
+
 
 @*待采购项右键菜单*@
 <div class="contextMenu dropdown" id="PurchaseItemContextMenu" style="display:none">
@@ -235,6 +366,7 @@
 <script src="~/Scripts/Purchase.js"></script>
 <script>
     $("document").ready(function () {
+        console.log(document.body.clientWidth);
         PRContent_PO_T("",0);
         POContent_PO_T("@ViewBag.PurchaseItemIDs");
         LoadSuppliers();
@@ -267,7 +399,7 @@
         if (Exclude==undefined){
             Exclude=GetExistingPOItemIDs();
         }
-        var _url = "/Purchase/JsonPurchaseItems?Keyword=" + Keyword +"&PurchaseType="+PurchaseType+ "&State=30&ExcluedIDs="+Exclude;
+        var _url = "/Purchase/JsonPurchaseItems?Keyword=" + Keyword +"&PurchaseType="+PurchaseType+ "&State=30&ExcluedIDs="+Exclude+'&PurchaseState='+$('#PurchaseState').val();
         $("#PRContentGrid").jqGrid('setGridParam', {datatype:'json', url: _url }).trigger("reloadGrid");
     }
 
@@ -337,39 +469,23 @@
         $("#DeliveryDateDialog").modal("hide");
     }
 
-    function RemovePOItem() {
     
-        var selr = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
-        var len = selr.length;
-        for (i=0;i<len;i++){
-            $('#POContentGrid').jqGrid('delRowData', selr[0]);
-        }
-
-        LoadPRContents($("#Keyword").val(), $("#PurchaseType").val(), GetExistingPOItemIDs());
-    }
-
-    function GetExistingPOItemIDs(){
-
-
-        var ids= $("#POContentGrid").getDataIDs();
-        var _result = "";
-        for (i=0;i<ids.length;i++){
-            _result = _result==""?$("#POContentGrid").getCell(ids[i], "PurchaseItemID"):_result+","+$("#POContentGrid").getCell(ids[i], "PurchaseItemID")
-        }
-        return _result;
-
-    }
     function UpdateTotal(id){
+        console.log('更新总价——');
+        console.log('数量:'+$("#" + id + "_Quantity").val());
+        console.log('单价:'+$("#" + id + "_UnitPriceWT").val());
         $("#" + id + "_TotalPriceWT").val(Number($("#" + id + "_Quantity").val()) * Number($("#" + id + "_UnitPriceWT").val()));
     }
 
     function UpdateUnit(id){
+        console.log('更新单价：');
+        console.log($('总价:'+"#" + id + "_TotalPriceWT").val());
+        console.log($('数量:'+"#" + id + "_Quantity").val());
         $("#" + id + "_UnitPriceWT").val(Number($("#" + id + "_TotalPriceWT").val())/Number(Number($("#" + id + "_Quantity").val())));
     }
     function BindRowAction(id, iCol) {
 
-        $("#" + id + "_Quantity").on("keyup", function () {
-        
+        $("#" + id + "_Quantity").on("keyup", function () {       
             UpdateTotal(id);
         })
 
@@ -430,39 +546,44 @@
             alert("单价不能为0");
             return false;
         }else{
-            var _url = "/Purchase/OrderOutSource?PurchaseTypeID="+$("#PurchaseType").val();
+            var rowNo = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
+            for (i = 0; i < rowNo.length; i++) {                
+                var _qty ;
+                var _total;
+                //if (_outsource){
+                //    var _memo = $("#POContentGrid").getCell(rowNo[i], 'Memo');
+                //    _qty= _memo.substring(0, _memo.length-1);
+                //}else{
+                //    _qty = $("#POContentGrid").getCell(rowNo[i], 'Quantity');
+                //}
+                _qty=$("#POContentGrid").getCell(rowNo[i], 'Quantity');
+                if(_qty.indexOf('input')>=0){
+                    $("#" + rowNo[i] + "_UnitPriceWT").val($("#BatchUnitPrice").val());
+                    UpdateTotal(rowNo[i]);
+                    //$("#POContentGrid").jqGrid('setCell', rowNo[i], 'UnitPriceWT', $("#BatchUnitPrice").val());
+                }else{
+                    _total= Number(_qty)*Number($("#BatchUnitPrice").val());
+                    $("#POContentGrid").jqGrid('setCell', rowNo[i], 'UnitPriceWT', $("#BatchUnitPrice").val());
+                    $("#POContentGrid").jqGrid('setCell', rowNo[i], 'TotalPriceWT',_total);
+                }               
+            }
+            $("#DeliveryDateDialog").modal("hide");
+            $("#BatchUnitPriceDialog").modal("hide");
+            //var _url = "/Purchase/OrderOutSource?PurchaseTypeID="+$("#PurchaseType").val();
 
-            $.ajax({
-                url:_url,
-                type:"Get", 
-                success:function(msg){
-                    var _outsource;
-                    if (msg=="True"){
-                        _outsource = true;
-                    }else{
-                        _outsource = false;
-                    }
-
-                    var rowNo = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
-                    for (i = 0; i < rowNo.length; i++) {
-                        
-                        $("#POContentGrid").jqGrid('setCell', rowNo[i], 'UnitPriceWT', $("#BatchUnitPrice").val());
-
-
-                        var _qty ;
-                        if (_outsource){
-                            var _memo = $("#POContentGrid").getCell(rowNo[i], 'Memo');
-                            _qty= _memo.substring(0, _memo.length-1);
-                        }else{
-                            _qty = $("#POContentGrid").getCell(rowNo[i], 'Quantity');
-                        }
-                        var _total = Number(_qty)*Number($("#BatchUnitPrice").val());
-                        $("#POContentGrid").jqGrid('setCell', rowNo[i], 'TotalPrice',_total);
-                    }
-                    $("#DeliveryDateDialog").modal("hide");
-                    $("#BatchUnitPriceDialog").modal("hide");
-                }
-            })
+            //$.ajax({
+            //    url:_url,
+            //    type:"Get", 
+            //    success:function(msg){
+            //        var _outsource;
+            //        if (msg=="True"){
+            //            _outsource = true;
+            //        }else{
+            //            _outsource = false;
+            //        }
+            //        //
+            //    }
+            //})
             
         }
     }
@@ -487,4 +608,298 @@
         }
         
     }
+</script>
+
+<script>
+    $(document).ready(function(){
+        $('#poContentAdd').on('click',function(){
+            //var _itemIDs = GetMultiSelectedIDs("PRContentGrid");
+            //console.log(_itemIDs);
+            //AddPOItem(_itemIDs);
+            var selr = $('#PRContentGrid').jqGrid('getGridParam', 'selarrrow');
+            var itemIDs1=[];
+            itemIDs1= AddPOContent(selr);
+            RemoveContent('PRContentGrid',itemIDs1);
+        });
+        $('#poContentDecrease').on('click',function(){
+            //var _itemIDs = GetMultiSelectedIDs("POContentGrid");
+            var selr = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
+            var itemIDs1=[];
+            itemIDs1=AddPRContent(selr);
+            RemoveContent('POContentGrid',itemIDs1);
+            //RemovePOItem();
+
+            //CancelRowEdit(selr);
+        });
+        $('#PurchaseState').on('change',function(){
+            LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
+        })
+    })
+
+    function RemovePOItem() {
+    
+        var selr = $('#POContentGrid').jqGrid('getGridParam', 'selarrrow');
+        var len = selr.length;
+        for (i=0;i<len;i++){
+            $('#POContentGrid').jqGrid('delRowData', selr[0]);
+        }
+        LoadPRContents($("#Keyword").val(), $("#PurchaseType").val(), GetExistingPOItemIDs());
+    }
+    function AddPOItem(itemIDs) {
+        var selr = $('#PRContentGrid').jqGrid('getGridParam', 'selarrrow');
+        var len = selr.length;
+        for (i = 0; i < len ; i++) {
+            $('#PRContentGrid').jqGrid('delRowData', selr[0]);
+        }
+        var _url = $("#POContentGrid").jqGrid("getGridParam", "url");
+
+        if (_url == "") {
+            _url = "/Purchase/AddPOItem?ItemIDs=" + itemIDs;
+        } else {
+            _url = _url + "," + itemIDs;
+        }
+        $("#POContentGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+    function GetExistingPOItemIDs(){
+        var ids= $("#POContentGrid").getDataIDs();
+        var _result = "";
+        for (i=0;i<ids.length;i++){
+            _result = _result==""?$("#POContentGrid").getCell(ids[i], "PurchaseItemID"):_result+","+$("#POContentGrid").getCell(ids[i], "PurchaseItemID")
+        }
+        return _result;
+    }
+    //michael 181206
+    function AddPOContent(itemIDs){
+        var errorPart1='';
+        var _purState=Number($('#PurchaseState').val());
+        var supplier='';
+        var fQRPurObj=0;
+        var itemIDs1=[];
+        var z=0;
+        var obj=$("#POContentGrid").jqGrid("getRowData");
+        if(obj.length==0){
+            $('#SupplierName').val('');
+        }
+        for (var i = 0; i < itemIDs.length; i++){
+            var rowData = $("#PRContentGrid").jqGrid('getRowData', itemIDs[i]);
+            if(_purState==1){//待采购
+                if(supplier==''){
+                    if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined ||$('#SupplierName').val()==rowData.Supplier){
+                        fQRPurObj=i;
+                        supplier=rowData.Supplier;
+                        itemIDs1[z]=itemIDs[i];
+                        z++;
+
+                        $('#SupplierName').attr('readonly','readonly');
+                    }else{
+                        errorPart1=errorPart1+rowData.PartNumber+';';
+                    }                   
+                }else{
+                    if(rowData.Supplier==supplier){
+                        if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined ||$('#SupplierName').val()==rowData.Supplier){
+                            itemIDs1[z]=itemIDs[i];
+                            z++;
+                            $('#SupplierName').attr('readonly','readonly');
+                        }else{
+                            errorPart1=errorPart1+rowData.PartNumber+';';
+                        }                        
+                    }else{
+                        errorPart1=errorPart1+rowData.PartNumber+';';
+                    }
+                }
+                
+            }else{
+                if(supplier==''){
+                    fQRPurObj=i;
+                    supplier=rowData.Supplier;
+                }
+                itemIDs1[z]=itemIDs[i];
+                z++;
+                $('#SupplierName').remove('readonly');
+            }
+        }
+        if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined){
+            $('#SupplierName').val(supplier);
+        }
+               
+        //if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined){
+        //    for (var i = 0; i < itemIDs.length; i++) {
+        //        $('#POContentGrid').jqGrid('saveRow',itemIDs[i]);
+        //        var rowData = $("#PRContentGrid").jqGrid('getRowData', itemIDs[i]);
+        //        if(rowData.State=='待采购'){//已指定供应商
+        //            if(supplier==''){
+        //                fQRPurObj=i;
+        //                supplier=rowData.Supplier;
+        //            }else if(rowData.Supplier!=supplier){
+        //                //itemIDs.splice(i,1);//删除
+        //                errorPart1=errorPart1+rowData.PartNumber+';';
+        //            }else{
+
+        //            }
+        //            $('#SupplierName').attr('readonly','readonly');
+        //        }
+        //    };                       
+        //    if(supplier==''){
+        //        for (var i = 0; i < 1; i++) {
+        //            $('#POContentGrid').jqGrid('saveRow',itemIDs[i]);
+        //            var rowData = $("#PRContentGrid").jqGrid('getRowData', itemIDs[i]);
+        //            supplier=rowData.Supplier;
+        //        };
+        //        $('#SupplierName').remove('readonly');
+        //    }
+        //    $('#SupplierName').val(supplier);
+        //}else{              
+        //    for (var i = 0; i < itemIDs.length; i++) {
+        //        $('#POContentGrid').jqGrid('saveRow',itemIDs[i]);
+        //        var rowData = $("#PRContentGrid").jqGrid('getRowData', itemIDs[i]);
+        //        if(rowData.State=='待采购'){//已指定供应商
+        //            if($('#SupplierName').val()!=rowData.Supplier){
+        //                //itemIDs.splice(i,1);//删除
+        //                errorPart1=errorPart1+rowData.PartNumber+';';
+        //            }
+        //        }
+        //    }
+        //}
+        for (var i = 0; i < itemIDs1.length; i++) {
+            $('#POContentGrid').jqGrid('saveRow',itemIDs1[i]);
+            var rowData = $("#PRContentGrid").jqGrid('getRowData', itemIDs1[i]);            
+            console.log(rowData);
+            var _tempID = Number($("#pr_tempID").val())- 1;
+            $("#pr_tempID").val(_tempID);
+            
+            data = {
+                PurchaseItemID:rowData.ID,
+                Name:rowData.Name,
+                PartNumber:rowData.PartNumber,
+                Specification:rowData.Specification,
+                Quantity:rowData.Quantity,
+                PRQuantity:rowData.Quantity,
+                UnitPriceWT:rowData.UnitPriceWT,
+                TotalPriceWT:rowData.TotalPriceWT,
+                DeliverDate:rowData.DeliverDate,
+
+                State:rowData.State,
+                PurchaseType:rowData.PurchaseType,
+                PurchaseRequest:rowData.PurchaseRequest,
+                QuotationRequest:rowData.QuotationRequest,
+                PurchaseOrder:rowData.PurchaseOrder,
+                Supplier:rowData.Supplier,
+                Memo:rowData.Memo,
+                PRMemo:rowData.Memo,
+            };
+            $("#POContentGrid").addRowData(_tempID, data, 0, 0);
+        }
+        if(errorPart1!=''){
+            alert('零件['+errorPart1+']已指定供应商与页面供应商不符,请重新选择供应商！');
+        } 
+        return itemIDs1;
+    }
+
+    function AddPRContent(itemIDs){
+        var _purState=Number($('#PurchaseState').val());
+        var itemIDs1=[];
+        var z=0;
+        for (var i = 0; i < itemIDs.length; i++){
+            $('#POContentGrid').jqGrid('saveRow',itemIDs[i]);
+            var rowData = $("#POContentGrid").jqGrid('getRowData', itemIDs[i]);
+            if(_purState==1){
+                if(rowData.State=='待采购'){
+                    itemIDs1[z]= itemIDs[i];//.splice(i,1);//删除
+                    z++;
+                }
+            }else{
+                if(rowData.State!='待采购'){
+                    itemIDs1[z]=itemIDs[i];//.splice(i,1);//删除
+                    z++;
+                }
+            }
+        }
+        console.log(z+' '+itemIDs1);
+        for (var i = 0; i < itemIDs1.length; i++) {
+            $('#POContentGrid').jqGrid('saveRow',itemIDs1[i]);
+            var rowData = $("#POContentGrid").jqGrid('getRowData', itemIDs1[i]);
+            console.log(rowData);
+            var _tempID = Number($("#po_tempID").val())- 1;
+            $("#po_tempID").val(_tempID);
+            data = {
+                ID:rowData.PurchaseItemID,
+                Name:rowData.Name,
+                PartNumber:rowData.PartNumber,
+                Specification:rowData.Specification,
+                Quantity:rowData.PRQuantity,
+                UnitPriceWT:rowData.UnitPriceWT,
+                TotalPriceWT:rowData.TotalPriceWT,
+                DeliverDate:rowData.DeliverDate,
+                Memo:rowData.PRMemo,
+
+                State:rowData.State,
+                PurchaseType:rowData.PurchaseType,
+                PurchaseRequest:rowData.PurchaseRequest,
+                QuotationRequest:rowData.QuotationRequest,
+                PurchaseOrder:rowData.PurchaseOrder,
+                Supplier:rowData.Supplier,
+            };
+            $("#PRContentGrid").addRowData(_tempID, data, 0, 0);
+        }
+        return itemIDs1;
+    }
+
+    function RemoveContent(GridID,itemIDs1){
+        var selr=[];
+        var selr1=[];
+        if(GridID=='PRContentGrid'){
+            selr=itemIDs1;
+        }else{
+            selr= $('#'+GridID).jqGrid('getGridParam', 'selarrrow');
+        }
+        //if(itemIDs1==undefined){
+        //    selr= $('#'+GridID).jqGrid('getGridParam', 'selarrrow');
+        //}else{
+        //    selr=itemIDs1;
+        //}
+        
+        console.log(selr);
+        var len = selr.length;
+        for (i=0;i<selr.length;i++){
+            selr1[i]=selr[i];
+        }
+        for (i=0;i<selr1.length;i++){
+            var rowData = $("#PRContentGrid").jqGrid('getRowData', selr1[i]);
+            console.log(rowData);
+            $('#'+GridID).jqGrid('delRowData', selr1[i]);
+        }
+        $('#'+GridID).jqGrid('resetSelection');
+        if(GridID=='POContentGrid'){
+            var obj=$("#POContentGrid").jqGrid("getRowData");
+            console.log(obj);
+            var isStateValid=true;
+            for(var i=0;i<obj.length;i++){
+                var rowData = $("#PRContentGrid").jqGrid('getRowData', obj[i]);
+                if(rowData.State=='待采购'){//已指定供应商
+                    isStateValid=false;
+                }
+            }
+            if(isStateValid){
+                $('#SupplierName').removeAttr('readonly');
+            }
+        }
+    }
+
+    function CancelRowEdit(itemIDs){
+        for(var i=0;i<itemIDs.length;i++){
+            $('#POContentGrid').jqGrid('editRow', itemIDs[i], false);
+        }        
+    }
+</script>
+
+<script>
+    $(document).ready(function(){       
+        window.onresize=function(){  
+            $("#PRContentGrid").jqGrid("setGridHeight", $('#div_tb_left').height() - 42);
+            $("#POContentGrid").jqGrid("setGridHeight", $('#div_tb_right').height() - 42);
+
+            $("#PRContentGrid").jqGrid("setGridWidth", $('#div_tb_left').width() - 2);
+            $("#POContentGrid").jqGrid("setGridWidth", $('#div_tb_right').width() - 2);
+        } 
+    })
 </script>

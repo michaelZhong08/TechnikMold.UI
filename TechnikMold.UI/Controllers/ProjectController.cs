@@ -209,7 +209,7 @@ namespace MoldManager.WebUI.Controllers
         }
 
         /// <summary>
-        /// Project information save request processor
+        /// TODO:项目编辑 Project information save request processor
         /// </summary>
         /// <param name="Project"></param>
         /// <returns></returns>
@@ -222,10 +222,25 @@ namespace MoldManager.WebUI.Controllers
                 //Project.Project.ProjectStatus = 1;
                 Project.Project.Creator = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"].ToString(), Encoding.GetEncoding("UTF-8"));
                 Project.Project.Enabled = true;
-            }
-            int _projectID = _projectRepository.Save(Project.Project);
+                int Version = 0;
+                switch (Project.Project.Type)
+                {
+                    case 2:
+                        //查找历史项目最高版本
+                        Version = (_projectRepository.QueryByMoldNumber(Project.Project.MoldNumber, 2) ?? new Project()).Version + 1;
+                        //
+                        break;
+                    default:
+                        Version = 0;
+                        break;
 
-            
+                }
+                Project.Project.Version = Version;
+            }
+            #region Project Save
+            int _projectID = _projectRepository.Save(Project.Project);
+            #endregion
+
             foreach (ProjectRole _projectRole in Project.ProjectRoles)
             {
                 _projectRole.ProjectID = _projectID;
@@ -234,14 +249,22 @@ namespace MoldManager.WebUI.Controllers
             foreach (ProjectPhase _projectPhase in Project.ProjectPhases)
             {
                 _projectPhase.ProjectID = _projectID;
+                #region 同模号的修模任务，“OTS”与“PPAP”任务无论在那个修模版本填写后，其余版本同步更新“原计划”，“调整计划”和“实际完成”
+                if (Project.Project.Type == 2)
+                {
+                    switch (_projectPhase.PhaseID)
+                    {
+                        case 13://OTS交样
+                            Service_proJ_UptFixMoldPhDate("",13,1, _projectPhase.PlanFinish);
+                            break;
+                        case 14://PPAP
+                            Service_proJ_UptFixMoldPhDate("", 14, 1, _projectPhase.PlanFinish);
+                            break;
+                    }
+                }
+                #endregion
                 _projectPhaseRepository.Save(_projectPhase);
             }
-            //if (newProject)
-            //{
-            //    CostCenter _costCenter = new CostCenter();
-            //    _costCenter.ProjectID = _projectID;
-            //    _costCenter.Name = Project.Project.Name + "-" + Project.Project.MoldNumber;
-            //}
 
             if (newProject)
             {
@@ -255,7 +278,7 @@ namespace MoldManager.WebUI.Controllers
                     _userName = "";
                 }
                 string _projectType = "";
-                switch (Project.Type)
+                switch (Project.Project.Type)
                 {
                     case 0:
                         _projectType = "项目";
@@ -307,8 +330,39 @@ namespace MoldManager.WebUI.Controllers
             }
            
         }
-
-
+        /// <summary>
+        /// TODO:修模项目 OST/PPAP 计划保存时同步更新至所有
+        /// </summary>
+        /// <param name="_moldNum">模号</param>
+        /// <param name="_phType">1 原 2调整 3 完成</param>
+        /// <param name="uptDate">更新日期</param>
+        public void Service_proJ_UptFixMoldPhDate(string _moldNum,int _phID,int _phType,DateTime uptDate)
+        {
+            List<Project> _projects = _projectRepository.Projects.Where(p => p.MoldNumber == _moldNum && p.Type == 2 && p.Enabled == true).ToList();
+            if (_projects.Count > 0)
+            {
+                foreach(var p in _projects)
+                {
+                    ProjectPhase _ph = _projectPhaseRepository.GetProjectPhase(p.ProjectID, _phID);
+                    if (_ph != null)
+                    {
+                        switch (_phType)
+                        {
+                            case 1:
+                                _ph.PlanFinish = uptDate;
+                                break;
+                            case 2:
+                                _ph.PlanCFinish = uptDate;
+                                break;
+                            case 3:
+                                _ph.ActualFinish = uptDate;
+                                break;
+                        }
+                        _projectPhaseRepository.Save(_ph);
+                    }                 
+                }
+            }
+        }
 
         [HttpPost]
         public ActionResult Memo(ProjectMemoEditModel MemoEdit)
@@ -422,24 +476,50 @@ namespace MoldManager.WebUI.Controllers
         public JsonResult Service_Save_ProJPhaseCFDate(int ProJID,int PhaseID,DateTime CFDate,int Flag=0)
         {
             ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
+            Project _project = _projectRepository.GetByID(ProJID) ?? new Project();
             #region 获取当前项目主项目计划完成日期
             //Project _modifyProJ = _projectRepository.GetByID(ProJID);
             ////Project _mainProJ;
             //if (_modifyProJ.ParentID > 0)
             //{
-                //_mainProJ = _projectRepository.GetByID(_modifyProJ.ParentID);
-                //ProjectPhase _mainPhase = _projectPhaseRepository.GetProjectPhase(_mainProJ.ProjectID, PhaseID);
-                //DateTime _mainPhaseDate = Toolkits.CheckZero(_mainPhase.PlanCFinish) ? _mainPhase.PlanFinish : _mainPhase.PlanCFinish;
-                //子项目完成日期不能晚于主项目完成日期
-                //if (_mainPhaseDate< CFDate)
-                //{
-                //    return Json(new { Code = -1 }, JsonRequestBehavior.AllowGet);
-                //}
-                //else if (!Toolkits.CheckZero(_mainPhase.ActualFinish))
-                //{
-                //    return Json(new { Code = -2 }, JsonRequestBehavior.AllowGet);
-                //}
+            //_mainProJ = _projectRepository.GetByID(_modifyProJ.ParentID);
+            //ProjectPhase _mainPhase = _projectPhaseRepository.GetProjectPhase(_mainProJ.ProjectID, PhaseID);
+            //DateTime _mainPhaseDate = Toolkits.CheckZero(_mainPhase.PlanCFinish) ? _mainPhase.PlanFinish : _mainPhase.PlanCFinish;
+            //子项目完成日期不能晚于主项目完成日期
+            //if (_mainPhaseDate< CFDate)
+            //{
+            //    return Json(new { Code = -1 }, JsonRequestBehavior.AllowGet);
             //}
+            //else if (!Toolkits.CheckZero(_mainPhase.ActualFinish))
+            //{
+            //    return Json(new { Code = -2 }, JsonRequestBehavior.AllowGet);
+            //}
+            //}
+            #endregion
+            #region 同模号的修模任务，“OTS”与“PPAP”任务无论在那个修模版本填写后，其余版本同步更新“原计划”，“调整计划”和“实际完成”
+            if (_project.Type == 2)
+            {
+                int _phDateType;
+                _phDateType = Flag + 1;
+                //switch (Flag)
+                //{
+                //    case 0:
+                //        break;
+                //    case 1:
+                //        break;
+                //    case 2:
+                //        break;
+                //}
+                switch (_projectPhase.PhaseID)
+                {
+                    case 13://OTS交样
+                        Service_proJ_UptFixMoldPhDate(_project.MoldNumber, 13, _phDateType, CFDate);
+                        break;
+                    case 14://PPAP
+                        Service_proJ_UptFixMoldPhDate(_project.MoldNumber, 14, _phDateType, CFDate);
+                        break;
+                }
+            }
             #endregion
             int _prjPhaseID = 0;
             if (_projectPhase != null)
@@ -463,12 +543,11 @@ namespace MoldManager.WebUI.Controllers
                             _projectPhase.ActualFinish = CFDate;
                             _prjPhaseID = _projectPhaseRepository.Save(_projectPhase);
                         }
-                    }                        
+                    }
                     //_prjPhaseID = _projectPhaseRepository.Save(_projectPhase.ProjectPhaseID, CFDate);
                     if (_prjPhaseID > 0)
                     {
-                        #region 更新ProJ状态为1
-                        Project _project = _projectRepository.GetByID(ProJID) ?? new Project();
+                        #region 更新ProJ状态为1                        
                         if(_project.ProjectID>0 && _project.ProjectStatus == 0)
                         {
                             IEnumerable<ProjectPhase> _proJPhases = _projectPhaseRepository.GetProjectPhases(ProJID);
@@ -486,7 +565,7 @@ namespace MoldManager.WebUI.Controllers
                         }
                         #endregion
                         return Json(new { Code = 0 }, JsonRequestBehavior.AllowGet);
-                    }                        
+                    }
                 }
                 catch(Exception ex)
                 {
@@ -839,7 +918,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="isDepFinish">true 部门未结案 false 项目未结案</param>
         /// <returns></returns>
 
-        public ActionResult JsonProjects(string Keyword = "", int State = 1, int Type = 1, int DepID = 18, int PageCount = 18, int Page = 1,bool isDepFinish=true)
+        public ActionResult JsonProjects(string Keyword = "", int State = 1, int Type = 1, int DepID = 18, int PageCount = 30, int Page = 1,bool isDepFinish=true)
         {
             IQueryable<Project> _projects;
             List<Phase> _phases;

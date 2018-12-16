@@ -184,7 +184,8 @@
                             <td class="col-sm-2"><input type="text" id="QuotationRequestStatus" class="form-control" value="@status" readonly></td>
                             <td class="col-sm-1"><label>已选择报价组</label></td>
                             <td class="col-sm-2">
-                                <input type="text" id="ExistingSuppliers" class="form-control" readonly />
+                                @*<input type="text" id="ExistingSuppliers" class="form-control" readonly />*@
+                                <select id="ExistingSuppliers" class="form-control" ></select>
                             </td>
                         </tr>
                         if (Model.State >= (int)QuotationRequestStatus.发出)
@@ -313,7 +314,7 @@
     </div>
 </div>
 
-@*供应商选择对话框*@
+@*报价组选择对话框*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="SelectSupplierDialog" tabindex="-1" role="dialog" aria-labelledby="SupplierSelectLabel">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -323,7 +324,7 @@
             </div>
             <div class="modal-body" style="height:300px">
                 <div class="col-sm-5">
-                    <select id="AvailableSuppliers" class="form-control" size="10"></select>
+                    <select id="AvailableQRGroups" class="form-control" size="10"></select>
                 </div>
                 <div class="col-sm-1">
                     <button class="btn btn-primary" id="Select">></button>
@@ -331,7 +332,7 @@
                 </div>
 
                 <div class="col-sm-5">
-                    <select id="SupplierList" class="form-control" size="10"></select>
+                    <select id="QGroupList" class="form-control" size="10"></select>
                 </div>
             </div>
             <div class="modal-footer">
@@ -341,7 +342,6 @@
         </div>
     </div>
 </div>
-
 
 @*发出询价单对话框*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="SendQRDialog" tabindex="-1" role="dialog" aria-labelledby="SendQRLabel">
@@ -486,6 +486,7 @@
         })
 
         LoadMaterials();
+        LoadSupplierGroup(@ViewBag.QuotationRequestID);
         @if (ViewBag.QuotationRequestID != 0)
         {
             @:QRContentGrid("", @ViewBag.QuotationRequestID, @ViewBag.QRState);
@@ -632,33 +633,69 @@
 </script>
 
 <script>
-    $(function(){
-        //$.get('/Purchase/Service_GetMailContent?qrID='+$('#QuotationRequestID').val(),function(res){
-        //    var _html='<a class="btn btn-info" href=zrj:'+res+'><span class="glyphicon glyphicon-envelope"></span> 发送邮件12</a>'
-        //    $('#test').append(_html);
-        //})     
-        $.get('/Administrator/Service_GetServerInfo',function(res){
-            var _qrID=$('#QuotationRequestID').val();
-            var _html='<a class="btn btn-primary" onclick="ShowDialog()" href=MoldSysPlugin:'+res+_qrID +'&aaaa><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>'
-            $('#td_GenerateLink').append(_html);
-        });        
+    $(function(){        
+        $("#SaveQRSuppliers").on("click", function () {
+            var qGroupIDs=$('#QGroupList option').map(function(){
+                return this.value;
+            }).get().join(',');
+            console.log('询价单id:'+$("#QuotationRequestID").val()+' // 报价组ids:'+qGroupIDs);
+            $.get('/Purchase/Service_QR_SaveQGroups?quotationID='+$("#QuotationRequestID").val()+'&qGroupIDs='+qGroupIDs,function(res){
+                if(res=='' || res==null){
+                    alert('保存成功！');
+                    $('#SelectSupplierDialog').modal('hide');
+                    LoadSupplierNames($("#QuotationRequestID").val());
+                }else{
+                    alert('保存异常！');
+                }
+            });
+        });
+        $('#ExistingSuppliers').on('change',function(){
+            console.log('当前地址 '+$('#QREmail').attr('href'));
+            var _href='';
+            _href=FormatHrefStr($('#ExistingSuppliers').val());
+            $('#QREmail').attr('href',_href);
+            console.log('新地址 '+$('#QREmail').attr('href'));
+        })
     });
     function ShowDialog(){
-        $.jAlert({ //this is the normal usage
-            'content': '请耐心等待Outlook程序打开！<br />若无反应请<a href="/Administrator/Service_FileDownLoad">点击此处</a>下载插件',
-            'autoClose' : 5000,
-            'closeBtn':false,
-            'size': 'xsm'
-        });
         var qrID=Number($('#QuotationRequestID').val());
-        $.get('/Purchase/Service_Add_MailListenRecord?RecordID='+qrID+'&RecordType=QR',function(res){
-            res=JSON.parse(res);
-            if(res.Code==0){
-                return;
+        $.ajaxSettings.async=false;
+        $.get("/Purchase/Service_GetQrSupplierGroup?QuotationRequestID=" + qrID,function(res){
+            console.log(res.length);
+            console.log(res);
+            if(res.length>0){
+                $.jAlert({ //this is the normal usage
+                    'content': '请耐心等待Outlook程序打开！<br />若无反应请<a href="/Administrator/Service_FileDownLoad">点击此处</a>下载插件',
+                    'autoClose' : 5000,
+                    'closeBtn':false,
+                    'size': 'xsm'
+                });                            
+                $.get('/Purchase/Service_Add_MailListenRecord?RecordID='+qrID+'&RecordType=QR',function(res){
+                    res=JSON.parse(res);
+                    if(res.Code==0){
+                        return;
+                    }
+                });
+
+            }else{
+                $.jAlert({ //this is the normal usage
+                    'content': '请选择报价组后再进行操作！',
+                    'autoClose' : 2000,
+                    'closeBtn':false,
+                    'size': 'xsm'
+                });
+                return false;
             }
-            //else{
-            //    alert(res.Message);
-            //}
-        })
+        });
+        
+    }
+    function FormatHrefStr(_fval){
+        var _href='';
+        $.ajaxSettings.async=false;
+        $.get('/Administrator/Service_GetServerInfo',function(res){
+            var _qrID=$('#QuotationRequestID').val();
+            _href= 'MoldSysPlugin:'+res+_qrID+','+_fval;
+        });  
+        return _href;
     }
 </script>

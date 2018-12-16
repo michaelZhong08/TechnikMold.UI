@@ -375,6 +375,7 @@
     <Content Include="Content\bootstrap-treeview.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\datepicker.css" />
     <Content Include="Content\jAlert.css" />
     <Content Include="Content\jquery-ui.css" />
     <Content Include="Content\layui.css" />
@@ -595,6 +596,10 @@
     <ProjectReference Include="..\MoldManager.NX\MoldManager.NX.csproj">
       <Project>{7ea6dbbd-1bf5-4e33-a4ed-798bf1e9beb5}</Project>
       <Name>MoldManager.NX</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MoldManager.QC\MoldManager.QC.csproj">
+      <Project>{5d1e33c7-ff40-42f9-bb9b-0adf6f7a38fd}</Project>
+      <Name>MoldManager.QC</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

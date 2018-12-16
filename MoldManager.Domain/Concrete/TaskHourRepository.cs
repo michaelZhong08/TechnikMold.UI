@@ -111,7 +111,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             decimal TotalTiem = 0;
             List<int> _FStatelist = new List<int>
             {
-                (int)TaskHourStatus.完成,
+                (int)TaskHourStatus.任务等待,
+                (int)TaskHourStatus.完成记录,
                 (int)TaskHourStatus.暂停,
             };
             #region 获取关闭工时
@@ -144,8 +145,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             List<int> _FStatelist = new List<int>
             {
+                (int)TaskHourStatus.完成记录,
                 (int)TaskHourStatus.完成,
                 (int)TaskHourStatus.暂停,
+                (int)TaskHourStatus.任务等待,
                 (int)TaskHourStatus.开始,
                 (int)TaskHourStatus.外发,
             };
@@ -157,8 +160,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             List<int> _FStatelist = new List<int>
             {
+                (int)TaskHourStatus.完成记录,
                 (int)TaskHourStatus.完成,
                 (int)TaskHourStatus.暂停,
+                (int)TaskHourStatus.任务等待,
                 (int)TaskHourStatus.开始,
                 (int)TaskHourStatus.外发,
             };
@@ -175,8 +180,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             List<int> _FStatelist = new List<int>
             {
+                (int)TaskHourStatus.完成记录,
                 (int)TaskHourStatus.完成,
                 (int)TaskHourStatus.暂停,
+                (int)TaskHourStatus.任务等待,
                 (int)TaskHourStatus.开始,
                 (int)TaskHourStatus.外发,
             };
@@ -188,8 +195,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             List<int> _FStatelist = new List<int>
             {
+                (int)TaskHourStatus.完成记录,
                 (int)TaskHourStatus.完成,
                 (int)TaskHourStatus.暂停,
+                (int)TaskHourStatus.任务等待,
                 (int)TaskHourStatus.开始,
                 (int)TaskHourStatus.外发,
             };

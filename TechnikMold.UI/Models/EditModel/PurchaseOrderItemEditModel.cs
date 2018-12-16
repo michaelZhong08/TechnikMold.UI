@@ -12,5 +12,6 @@ namespace MoldManager.WebUI.Models.EditModel
         public double UnitPriceWT { get; set; }
         public double TotalPriceWT { get; set; }
         public DateTime PlanTime { get; set; }
+        public string Memo { get; set; }
     }
 }

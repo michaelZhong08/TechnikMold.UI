@@ -64,16 +64,13 @@ function ShowPOContentToStockDlg(PurchaseItemID) {
 
     _url = "/Warehouse/JsonStockByPO?PurchaseItemID=" + PurchaseItemID;
     $.getJSON(_url, function (msg) {
-        if (msg != ""){
-            if (msg.WarehouseID > 0) {
-                $("#WarehouseList").val(msg.WarehouseID);
-                $("#WarehouseList").attr("readonly", true)
-            }
-            if ((msg.WarehouseID > 0) && (msg.WarehousePositionID > 0)) {
-                LoadWarehousePosition(msg.WarehouseID, msg.WarehousePositionID);
-                $("#WarehousePositionList").attr("readonly", true)
-            }
-            
+        if (msg.WarehouseID > 0) {
+            $("#WarehouseList").val(msg.WarehouseID);
+            $("#WarehouseList").attr("disabled", true)
+        }
+        if ((msg.WarehouseID > 0) && (msg.WarehousePositionID > 0)) {
+            LoadWarehousePosition(msg.WarehouseID, msg.WarehousePositionID);
+            $("#WarehousePositionList").attr("disabled", true)
         }
     })
 }
@@ -115,7 +112,6 @@ function ConfirmInStock() {
 
                     },
                     success: function (msg) {
-
                         $("#POContentToStockDlg").modal("hide");
                         if (Number(msg) == 0) {
                             alert("零件入库信息已记录,订单收货完成");

@@ -21,42 +21,39 @@
         <select class="form-control" id="MoldSelect" size="20"></select>
     </div>
     <div class="col-sm-10">
-
-        <div class="col-sm-2">
-            <select id="ChargePurType" class="form-control">
-                <option value="2">模具耗材</option>
-                <option value="4">固定资产</option>
-            </select>
-        </div>
-
-        <div class="col-sm-2">
-            <select id="PurchaseType" class="form-control"></select>
-        </div>
-
-        <div class="col-sm-3">
-            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" />
-        </div>
-
+        <table style="margin-right:20px!important;">
+            <tr>
+                <td style="width:200px!important;">
+                    <select id="ChargePurType" class="form-control" style="width:200px;">
+                        <option value="2">模具耗材</option>
+                        <option value="4">固定资产</option>
+                    </select>
+                </td>
+                <td style="width:200px!important;">
+                    <select id="PurchaseType" class="form-control" style="width:200px;"></select>
+                </td>
+                <td style="width:200px!important;">
+                    <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;" />
+                </td>
+                <td style="width:400px!important;">
+                    <button class="btn btn-primary" id="Query">查询</button>
+                    @if ((ViewBag.State == 30) && (DeptID == 4))
+                    {
+                        <button class="btn btn-primary" id="Quotation">开始询价</button>
+                        <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
+                    }
+                </td>
+            </tr>
+        </table>
 
         <input type="hidden" id="MoldNumber" />
         <input type="hidden" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID"/>
         <input type="hidden" id="PurchaseTypeName" value="@ViewBag.PurchaseTypeName"/>
-
-        <button class="btn btn-primary" id="Query">查询</button>
-
-        @if (DeptID == 4)
-        {
-
-            <button class="btn btn-primary" id="Quotation">开始询价</button>
-
-
-            <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
-
-        }
-        <div class="col-sm-11" style="float:left;">
+        <div style="float:left;margin-right:20px!important;">
             <table id="PurchaseItemGrid"></table>
             <div id="jqGridPager"></div>
         </div>
+
     </div>
 </div>
 <script src="~/Scripts/JqGridTemplate.js"></script>
@@ -138,18 +135,33 @@
     })
 
     function LoadPurchaseType() {
-        var _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&TypeName="+$('#PurchaseTypeName').val();
-        $("#PurchaseType option").remove();
-        $.getJSON(_url, function (msg) {
-            $.each(msg, function (i, n) {
-                var _name = n.Name;
-                var _html;
-                if (n.ParentTypeID > 0) {
-                    _name = '&nbsp;&nbsp;&nbsp;&nbsp;' + _name;
-                }
-                _html = '<option value="' + n.PurchaseTypeID + '">' + _name + '</option>';
-                $('#PurchaseType').append(_html);
-                //$("#PurchaseType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+        //var _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&TypeName="+$('#PurchaseTypeName').val();
+        //$("#PurchaseType option").remove();
+        //$.getJSON(_url, function (msg) {
+        //    $.each(msg, function (i, n) {
+        //        var _name = n.Name;
+        //        var _html;
+        //        if (n.ParentTypeID > 0) {
+        //            _name = '&nbsp;&nbsp;&nbsp;&nbsp;' + _name;
+        //        }
+        //        _html = '<option value="' + n.PurchaseTypeID + '">' + _name + '</option>';
+        //        $('#PurchaseType').append(_html);
+        //        //$("#PurchaseType").append($("<option/>", { value: n.PurchaseTypeID, text: n.Name }));
+        //    })
+        //})
+        $("#PurchaseType").empty();
+        var _mainType = $('#ChargePurType').val();
+        $.ajaxSettings.async = false;
+        $.get('/Purchase/JsonPurchaseTypeLevel?ParentID=' + _mainType, function (res) {
+            $('#PurchaseType').append($('<option/>', {
+                value: _mainType,
+                text: '-'
+            }))
+            $.each(res, function (i, n) {
+                $('#PurchaseType').append($('<option/>', {
+                    value: n.PurchaseTypeID,
+                    text: n.Name
+                }))
             })
         })
     }

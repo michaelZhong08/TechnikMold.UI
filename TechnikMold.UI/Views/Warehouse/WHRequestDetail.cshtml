@@ -14,62 +14,85 @@
         DeptID = 0;
     }
 }
+<style>
+     #WHRequestItemGrid td {
+        margin: 0px !important;
+        padding: 0px !important;
+        height: 30px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 12px;
+        /*position:absolute;*/
+    }
 
+    #WHRequestItemGrid input {
+        height: 24px;
+        border-style: none;
+        outline: none;
+        font-size: 12px;
+        margin: 0px;
+        padding: 0px;
+    }
+</style>
 <div class="col-sm-12" style="margin-top:60px">
     <div class="col-sm-12" style="float:left;">
         <h2>领料申请单</h2>
         <div id="abc"></div>
         <input type="hidden" id="WarehouseRequestID" value="@ViewBag.WHRequestID" />
         <input type="hidden" id="RequestNumber" value="@ViewBag.RequestNumber" />
-    @if (ViewBag.WHRequestID == 0)
-    {                   
-        
-        <div class="col-sm-6">
-            <table>
-            <tr>
-                <td class="col-sm-3">
-                    <select id="PurchaseType" class="form-control"></select>
-                </td>
-                <td class="col-sm-3">
-                    <input type="text" id="Keyword" class="form-control" placeholder="库存关键字"/>
-                </td>
-                <td>
-                    <button id="Query" class="btn btn-primary">查询</button>
-                </td>
-                
-            </tr>
-            </table>
-            
-            <table id="StockItemGrid"></table>
-        </div>
-    }
-    else
-    {
-        
-        <ul class="nav nav-pills">        
-        @if (DeptID == 20)
+        @if (ViewBag.WHRequestID == 0)
         {
-            <li><button class="btn btn-primary" id="ReceiveItem">仓库发料</button></li>
+
+            <div class="col-sm-6">
+                <table>
+                    <tr>
+                        <td class="col-sm-3">
+                            <select id="PurchaseType" class="form-control"></select>
+                        </td>
+                        <td class="col-sm-3">
+                            <input type="text" id="Keyword" class="form-control" placeholder="库存关键字" />
+                        </td>
+                        <td>
+                            <button id="Query" class="btn btn-primary">查询</button>
+                        </td>
+
+                    </tr>
+                </table>
+
+                <table id="StockItemGrid"></table>
+            </div>
         }
-        </ul>
+        else
+        {
 
-    }
+            <ul class="nav nav-pills">
+                @if (DeptID == 20)
+                {
+                    <li><button class="btn btn-primary" id="ReceiveItem">仓库发料</button></li>
+                }
+            </ul>
+
+        }
 
 
-                <div class="col-sm-6">
-                    @if (ViewBag.WHRequestID == 0)
-                    {<ul class="nav nav-pills">
+        <div class="col-sm-6">
+            @if (ViewBag.WHRequestID == 0)
+            {<ul class="nav nav-pills">
                         <li><button class="btn btn-primary" id="AddStockItem">添加选中项</button></li>
                         <li><button class="btn btn-primary" id="RemoveStockItem">移除选中项</button></li>
                         <li><button class="btn btn-primary" id="SaveWHRequest">保存申请单</button> </li>
                     </ul>
-                    }
-                        <table id="WHRequestItemGrid"></table>
-</div>
-            </div>
+            }
+            <table id="WHRequestItemGrid"></table>
+        </div>
+    </div>
 
 
 </div>
+
+
+<input id="StockTmpid" value="-1" hidden />
+<input id="WHRequestTmpid" value="-1" hidden />
 
 <div class="modal" data-backdrop="static" data-keyboard="false" id="RequestQuantityDialog" tabindex="-1" role="dialog" aria-labelledby="RequestQuantityLabel">
     <div class="modal-dialog">
@@ -86,7 +109,7 @@
                             <input type="hidden" id="ItemID" />
                             <input type="hidden" id="Name" />
                             <input type="hidden" id="Specification" />
-                            <input type="hidden" id="MaterialNumber" />
+                            <input type="hidden" id="PartNum" />
                         </td>
                     </tr>
                     <tr>
@@ -131,10 +154,9 @@
                 }
 
         $("#AddStockItem").on("click", function () {
-            var _ids = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
-            
-
-            LoadItemInfo(_ids);
+            //var _ids = GetMultiSelectedCell("StockItemGrid", "ID");
+            var selr = $('#StockItemGrid').jqGrid('getGridParam', 'selarrrow');
+            LoadItemInfo(selr);
             RemoveItem();
         })
 
@@ -186,25 +208,44 @@
         })
 
         $("#RemoveStockItem").on("click", function () {
-            var targetGrid = "#WHRequestItemGrid"
-
+            var targetGrid = "#StockItemGrid"
             
-            var selrows = $(targetGrid).jqGrid('getGridParam', 'selarrrow');
-            for (var i = selrows.length + 1; i >= 0; i--) {
-                $(targetGrid).jqGrid("delRowData", selrows[i]);
+            var selrows = $('#WHRequestItemGrid').jqGrid('getGridParam', 'selarrrow');
+            for (i = 0; i < selrows.length; i++) {
+                var _tempID = Number($("#WHRequestTmpid").val())- 1;
+                $("#WHRequestTmpid").val(_tempID);
+
+                $('#WHRequestItemGrid').jqGrid('saveRow',selrows[i]);
+                var rowData = $("#WHRequestItemGrid").jqGrid('getRowData', selrows[i]);
+                var data = {
+                    ID: rowData.ID,
+                    PartName: rowData.PartName,
+                    PartNum: rowData.PartNumber,
+                    Specification: rowData.Specification,
+                    Qty: rowData.InStockQuantity,
+
+                    Materials:rowData.Materials,
+                    SafeQuantity:rowData.SafeQuantity,
+                    PurchaseType:rowData.PurchaseType,
+                    StockType:rowData.StockType,
+                }
+                $(targetGrid).addRowData(_tempID, data, 0, 0);
             }
-            var _exclude = GetAllValues("WHRequestItemGrid", "ID")
+            for (var i = selrows.length + 1; i >= 0; i--) {
+                $('#WHRequestItemGrid').jqGrid("delRowData", selrows[i]);
+            }
+            //var _exclude = GetAllValues("WHRequestItemGrid", "ID")
 
             //for (var i =0;i< selrows.length; i++) {
             //    $(targetGrid).jqGrid("delRowData", selrows[0]);
             //}
 
-            var _url ="/Warehouse/JsonWarehouseStock?keyword=" + $("#Keyword").val()
-                + "&MoldNumber=&PurchaseType=" + $("#PurchaseType").val()
-                +"&Mode=Multi&Exclude="+_exclude;
+            //var _url ="/Warehouse/JsonWarehouseStock?keyword=" + $("#Keyword").val()
+            //    + "&MoldNumber=&PurchaseType=" + $("#PurchaseType").val()
+            //    +"&Mode=Multi&Exclude="+_exclude;
             
-            console.log(_url);
-            $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json',url:_url}).trigger("reloadGrid");
+            //console.log(_url);
+            //$("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json',url:_url}).trigger("reloadGrid");
         })
 
         $("#Query").on("click", function(){
@@ -223,7 +264,7 @@
     //            $("#Parts").append($("<option/>",
     //                {
     //                    text: n.Name,
-    //                    value: n.WarehouseStockID
+    //                    value: n.ID
     //                }))
     //        })
     //    })
@@ -231,25 +272,47 @@
 
     function LoadItemInfo(ItemIDs) {
         var targetGrid = "#WHRequestItemGrid";
-        var items = ItemIDs.split(',');
+        //var items = ItemIDs.split(',');
 
-        for (i = 0; i < items.length; i++) {
-            _url = "/Warehouse/LoadItem?ItemID=" + items[i];
-            $.getJSON(_url, function (msg) {
+        for (i = 0; i < ItemIDs.length; i++) {
+            //_url = "/Warehouse/LoadItem?ItemID=" + items[i];
+            //$.getJSON(_url, function (msg) {
+            //    console.log(msg);
+            //    var data = {
+            //        ID: msg.ID,
+            //        PartName: msg.Name,
+            //        PartNumber: msg.PartNum,
+            //        Specification: msg.Specification,
+            //        InStockQuantity: msg.Quantity,
+            //        Quantity: msg.Quantity,
+            //        ReceivedQuantity: 0,
+            //    }
+            //    //console.log('添加前：'+$(targetGrid).getGridParam("reccount"));
+            //    $(targetGrid).addRowData($(targetGrid).getGridParam("reccount") + 1, data, 0, 0);
+            //    //console.log('添加后：'+$(targetGrid).getGridParam("reccount"));
 
-                var data = {
-                    ID: msg.WarehouseStockID,
-                    PartName: msg.Name,
-                    PartNumber: msg.MaterialNumber,
-                    Specification: msg.Specification,
-                    InStockQuantity: msg.Quantity,
-                    Quantity: msg.Quantity,
-                    ReceivedQuantity: 0,
-                }
-                $(targetGrid).addRowData($(targetGrid).getGridParam("reccount") + 1, data, 0, 0);
+            //    //$("#Parts option:selected").remove();
+            //})
+            var _tempID = Number($("#StockTmpid").val())- 1;
+            $("#StockTmpid").val(_tempID);
 
-                $("#Parts option:selected").remove();
-            })
+            $('#StockItemGrid').jqGrid('saveRow',ItemIDs[i]);
+            var rowData = $("#StockItemGrid").jqGrid('getRowData', ItemIDs[i]);
+            var data = {
+                ID: rowData.ID,
+                PartName: rowData.PartName,
+                PartNumber: rowData.PartNum,
+                Specification: rowData.Specification,
+                InStockQuantity: rowData.Qty,
+                Quantity: rowData.Qty,
+                ReceivedQuantity: 0,
+
+                Materials:rowData.Materials,
+                SafeQuantity:rowData.SafeQuantity,
+                PurchaseType:rowData.PurchaseType,
+                StockType:rowData.StockType,
+            }
+            $(targetGrid).addRowData(_tempID, data, 0, 0);
         }
     }
 
@@ -266,7 +329,7 @@
                                                 @:    $("#ItemID").val(msg.Quantity);
                                                 @:    $("#Name").val(msg.Name);
                                                 @:    $("#Specification").val(msg.Specification);
-                                                @:    $("#MaterialNumber").val(msg.MaterialNumber);
+                                                @:    $("#PartNum").val(msg.PartNum);
                                     @:})
 
            @:$("#RequestQuantityDialog").modal("show");
@@ -289,9 +352,16 @@
         var itemData = "RequestNumber=" + $("#RequestNumber").val() + "&";
         var name = "Items";
 
+        var _gridRows = $("#WHRequestItemGrid").jqGrid("getDataIDs");
+        for (i = 0; i <= _gridRows.length ; i++) {
+            $('#WHRequestItemGrid').jqGrid('saveRow', _gridRows[i]);
+        }
+
         var obj = $(sourceGrid).jqGrid("getRowData");
-        var i = 0;
+        var i = 0;        
+
         $(obj).each(function () {
+            console.log(this);
             itemData = itemData + name + "[" + i + "].PartName=" + this.PartName + "&" +
                 name + "[" + i + "].WarehouseStockID=" + this.ID + "&" +
                 name + "[" + i + "].PartNumber=" + this.PartNumber + "&" +
@@ -299,8 +369,6 @@
                 name + "[" + i + "].Quantity=" + this.Quantity + "&";
             i = i + 1;
         })
-
-
         $.ajax({
             type: "Post",
             dataType: "html",

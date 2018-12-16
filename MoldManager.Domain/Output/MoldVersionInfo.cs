@@ -37,5 +37,9 @@ namespace TechnikSys.MoldManager.Domain.Output
         /// 发布时间
         /// </summary>
         public DateTime ReleaseDate { get; set; }
+        /// <summary>
+        /// 更新日期
+        /// </summary>
+        public DateTime UpdateDate { get; set; }
     }
 }

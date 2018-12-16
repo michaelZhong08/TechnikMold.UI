@@ -159,7 +159,7 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
         width: document.body.clientWidth,
         rownumbers: true, // show row numbers
         rownumWidth: 25, // the width of the row numbers columns
-        rowNum: 60,
+        rowNum: 90,
         pager: "#jqGridPager",
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
         cellEdit: true,
@@ -449,6 +449,10 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
                     return menu;
                 },
             });
+            //星期格式汉化
+            $(".hasDatepicker").datepicker("option", "dayNamesMin", ["日", "一", "二", "三", "四", "五", "六"]);
+            //月份格式汉化
+            $(".hasDatepicker").datepicker("option", "monthNames", ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]);
         },
     });
 }
@@ -546,11 +550,16 @@ function WFTaskFinishGrid(_TaskIDs) {
                 label: '工时分配', name: '', width: 80,
                 formatter: function (cellvalue, options, rowObject) {
                     var _taskhour = rowObject[8];
+                    var _type = rowObject[2];
                     var _rowid = options.rowId;
                     var _col = (_rowid) * 13 + 2;
                     
                     var aList = '';
-                    aList = aList + '<a style="width: 40px; height: 35px;" onclick="ShowTaskHourPhaseForm(' + _taskhour + ',' + _col + ')" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span></a>';
+                    if (_type != '外发') {
+                        aList = aList + '<a style="width: 40px; height: 35px;" onclick="ShowTaskHourPhaseForm(' + _taskhour + ',' + _col + ')" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span></a>';
+                    } else {
+                        aList = aList + '<a style="width: 40px; height: 35px;" onclick="FinishWFTaskHour(' + _col + ')" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span></a>';
+                    }                    
                     return aList;
                 }
             },
@@ -725,23 +734,31 @@ function PartListGrid(MoldID, Height) {
 function PartSearchGrid() {
     var _url = "/Part/Service_Json_GetPartByKeys";
     $("#tb_PartSearch").jqGrid({
-        url: _url,
+        url: "",
         styleUI: 'Bootstrap',
         datatype: "json",
         width: 750,
         height:400,
         colModel: [
             { label: 'PartID', name: 'PartID', width: 80, hidden: true },
-            { label: '零件短名', name: 'ShortName', width: 80 },
+            { label: '零件短名', name: 'Name', width: 80 },
             { label: '物料编号', name: 'PartNumber', width: 80 },
             { label: '规格', name: 'Specification', width: 80},
             { label: '材料', name: 'MaterialName', width: 80 },
             { label: '品牌', name: 'BrandName', width: 120 },
             { label: '数量', name: 'Quantity', width: 60 ,},
             { label: '版本', name: 'Version', width: 60 },
+            { label: '', name: 'Hardness', width: 80, hidden: true },
+            { label: '', name: 'JobNo', width: 80, hidden: true },
+            { label: '', name: 'MoldNum', width: 80, hidden: true },
+            { label: '', name: 'ERPPartID', width: 80, hidden: true },
+            { label: '', name: 'PlanQty', width: 80, hidden: true },
+            { label: '', name: 'Memo', width: 80, hidden: true },
         ],
         autoScroll: true,
         multiselect: true,
+        rowNum: 500,
+        loadonce: true,
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
     })
 }
@@ -1186,28 +1203,18 @@ function StockItem(Keyword, MoldNumber, PurchaseType, Mode, Parent) {
         datatype: "json",
         colModel: [
             { label: "", name: "ID", hidden: true },
-            { label: '零件名', name: 'PartName', width: 180 },
-            { label: '物料号', name: 'PartNumb', width: 75 },
-            { label: '规格', name: 'Specification', width: 75 },
+            { label: '零件名', name: 'PartName', width: 120 },
+            { label: '物料号', name: 'PartNum', width: 75 },
+            { label: '规格', name: 'Specification', width: 180 },
             { label: "材料", name: "Materials", width: 50 },
-            { label: '库存', name: 'Qty', width: 60 },
-            { label: '安全库存', name: 'SafeQuantity', width: 80, hidden: true },
-            //{ label: '供应商', name: "SupplierName", width: 80, hidden: true },
+            { label: '库存', name: 'Qty', width: 40 },
+            { label: '安全库存', name: 'SafeQuantity', width: 40, },
             { label: '采购类型', name: "PurchaseType", width: 80, hidden: true },
             { label: '备库类型', name: 'StockType', width: 80, hidden: true },
-            //{ label: '计划时间', name: "PlanTime", width: 80, hidden: true },
-            //{ label: '预计时间', name: "ForecastTime", width: 80, hidden: true },
-            //{ label: '结束时间', name: "FinishTime", width: 80, hidden: true },
-            //{ label: '生成时间', name: "CreateTime", width: 80, hidden: true },
-            //{ label: '入库时间', name: "InstockTime", width: 80 },
-            //{ label: '生成人员', name: "PurchaseUser", wdith: 80, hidden: true },
-            //{ label: "状态", name: "State", width: 60, hidden: true },
-            { label: "到库", name: "ReceiveQty", width: 60, hidden: true },
-            { label: "领出", name: "OutQty", width: 60, hidden: true },
-            //{ label: '计划数量', name: 'PlanQty', width: 80, hidden: true },
-            { label: "仓库", name: "Warehouse", width: 80 },
-            { label: "库位", name: "WarehousePosition", width: 80 },
-
+            { label: "到库", name: "ReceiveQty", width: 40, hidden: true },
+            { label: "领出", name: "OutQty", width: 40, hidden: true },
+            { label: "仓库", name: "Warehouse", width: 40 },
+            { label: "库位", name: "WarehousePosition", width: 40 },
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 220,
@@ -1215,23 +1222,23 @@ function StockItem(Keyword, MoldNumber, PurchaseType, Mode, Parent) {
         rowNum: 500,
         multiselect: _multi,
         loadonce: true,
-        shrinkToFit: false,
+        shrinkToFit: true,
         autoScroll: true,
         loadComplete: function () {
             $(".jqgrow", this).contextMenu("StockItemContext", {
                 bindings: {
 
                     "StockEdit": function () {
-                        var _ids = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
+                        var _ids = GetMultiSelectedCell("StockItemGrid", "ID");//WarehouseStockID
                         var _id = _ids.split(',');
                         EditStockItem(_id[0]);
                     },
                     "StockPurchase": function () {
-                        var _ids = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
+                        var _ids = GetMultiSelectedCell("StockItemGrid", "ID");
                         location.href = "/Purchase/PRDetail?WarehouseStockIDs=" + _ids;
                     },
                     "SafeQtyEdit": function () {
-                        var _ids = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
+                        var _ids = GetMultiSelectedCell("StockItemGrid", "ID");
                         if (_ids != "") {
                             $("#SafeStockSetting").modal("show");
                         } else {
@@ -1239,7 +1246,7 @@ function StockItem(Keyword, MoldNumber, PurchaseType, Mode, Parent) {
                         }
                     },
                     "DeleteStock": function () {
-                        var _ids = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
+                        var _ids = GetMultiSelectedCell("StockItemGrid", "ID");
                         if (_ids != "") {
                             if (confirm("确认删除选中备库零件？")) {
                                 DeleteStock(_ids);
@@ -1249,7 +1256,7 @@ function StockItem(Keyword, MoldNumber, PurchaseType, Mode, Parent) {
                         }
                     },
                     "PositionEdit": function () {
-                        var _ids = GetMultiSelectedCell("StockItemGrid", "WarehouseStockID");
+                        var _ids = GetMultiSelectedCell("StockItemGrid", "ID");
                         if (_ids != "") {
                             ShowWarehousePositionEditDialog(_ids);
                         } else {
@@ -1376,6 +1383,7 @@ function PRContentGrid(PartIDs, PRID, state, TaskIDs, WHIDs) {
             { label: '设备', name: 'MachineName', width: 150, hidden: true },
             { label: 'MachineCode', name: 'MachineCode', width: 150, hidden: true },
             { label: '计划数量', name: 'PlanQty', width: 30, hidden: true },
+            { label: '', name: 'PurchaseType', width: 30, hidden: true },//, hidden: true
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 200,
@@ -1513,14 +1521,15 @@ function POContentGrid(POID) {
             { label: '金额（含税）', name: 'TotalPriceWT', width: 75 },
             { label: '请购单号', name: 'PRNubmer', width: 50 },
             { label: '预计到货日期', name: "RequestTime", width: 50 },
-            //{ lable: '备注', name: "Memo", width: 75 }
+            { label: '备注', name: 'Memo', width: 70 },
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight - 200,
-        width: document.body.clientWidth * 0.875,
+        height: $('#tb_div').height(),//document.documentElement.clientHeight - 200,
+        width: $('#tb_div').width(),//document.body.clientWidth * 4,
         rowNum: 500,
         multiselect: true,
         loadonce: true,
+        shrinkToFit:true,
         //ondblClickRow: function (iRow) {
         //    location.href = "/Purchase/PODetail?PurchaseOrderID=" + GetCurrentID("POListGrid");
         //}
@@ -1636,7 +1645,7 @@ function QRContentGrid(PRContentIDs, QRID, state, PurchaseItemIDs) {
             { label: '附图', name: 'PurchaseDrawing', formatter: 'checkbox', width: 30 },
             { label: '', name: 'PRContentID', hidden: true },
             { label: '', name: "PurchaseItemID", hidden: true },
-            { label: 'PR备注', name: 'Memo',  width: 100 },
+            { label: 'PR明细备注', name: 'Memo',  width: 100 },
             { label: '备注', name: 'QRcMemo', width: 100, editable: true },
             //{ label: '需求日期', name: 'RequireDate', width: 75 },
         ],
@@ -1749,7 +1758,7 @@ function TaskRecreateGrid(ProjectID, TaskType, Multi) {
     if (ProjectID == 0) {
         _url = "";
     } else {
-        _url = '/Task/JsonMachineTasks?ProjectID=' + ProjectID + "&TaskType=" + TaskType + "&State=0";
+        _url = '/Task/Service_Task_GetFinishedTaskJson?ProjectID=' + ProjectID + "&TaskType=" + TaskType + "&State=0";
     }
 
     $("#TaskGrid").jqGrid({
@@ -1757,35 +1766,36 @@ function TaskRecreateGrid(ProjectID, TaskType, Multi) {
         mtype: "GET",
         styleUI: 'Bootstrap',
         datatype: "json",
-        colModel: [
-            { label: "", name: "ID", hidden: true },
+        colModel: [            
             { label: '图纸', name: 'DrawingFile', width: 40 },
             { label: '任务名', name: 'TaskName', width: 100 },
             { label: '版本', name: 'Version', width: 40 },
-            { label: '工艺名', name: 'ProcessName', width: 100, hidden: true },
-            { label: '型号', name: 'Model', width: 75, hidden: true },
-            { label: 'R', name: 'R', width: 30, hidden: true },
-            { label: 'F', name: 'F', width: 30, hidden: true },
-            { label: 'HRC', name: 'HRC', width: 75, hidden: true },
-            { label: '材料', name: 'Material', width: 75, hidden: true },
-            { label: '时间', name: 'Time', width: 40, hidden: true },
-            { label: '状态', name: 'State', width: 40, hidden: true },
-            { label: '毛坯', name: 'Raw', width: 75, hidden: true },
-            { label: '备料', name: 'Prepared', formatter: "checkbox", width: 40, hidden: true },
-            { label: '优先级', name: 'Priority', width: 40, hidden: true },
-            { label: '数量', name: 'Quantity', width: 30, hidden: true },
-            { label: '创建时间', name: 'CreateTime', width: 75 },
-            { label: '预计时间', name: 'ForecastTime', width: 75, hidden: true },
-            { label: '接收时间', name: 'AcceptTime', width: 75, hidden: true },
-            { label: '发布时间', name: 'ReleaseTime', width: 75, hidden: true },
-            { label: '计划时间', name: 'PlanTime', width: 75, hidden: true },
-            { label: '开始时间', name: 'StartTime', width: 75, hidden: true },
-            { label: '备注', name: 'Memo', width: 75 },
-            { label: '状态备注', name: 'StateMemo', width: 75, hidden: true },
-            { label: 'CAD', name: 'CAD', width: 75, hidden: true },
-            { label: 'CAM', name: 'CAM', width: 75, hidden: true },
-            { label: '加工', name: 'Workshop', width: 75, hidden: true },
-            { label: 'QC', name: 'QC', width: 75, hidden: true },
+            { label: '创建人', name: 'Creator', width: 60 },
+            { label: "任务id", name: "ID", width: 20 },
+            //{ label: '工艺名', name: 'ProcessName', width: 60, hidden: true },
+            //{ label: '型号', name: 'Model', width: 75, hidden: true },
+            //{ label: 'R', name: 'R', width: 30, hidden: true },
+            //{ label: 'F', name: 'F', width: 30, hidden: true },
+            //{ label: 'HRC', name: 'HRC', width: 75, hidden: true },
+            //{ label: '材料', name: 'Material', width: 75, hidden: true },
+            //{ label: '时间', name: 'Time', width: 40, hidden: true },
+            //{ label: '状态', name: 'State', width: 40, hidden: true },
+            //{ label: '毛坯', name: 'Raw', width: 75, hidden: true },
+            //{ label: '备料', name: 'Prepared', formatter: "checkbox", width: 40, hidden: true },
+            //{ label: '优先级', name: 'Priority', width: 40, hidden: true },
+            //{ label: '数量', name: 'Quantity', width: 30, hidden: true },
+            //{ label: '创建时间', name: 'CreateTime', width: 75 },
+            //{ label: '预计时间', name: 'ForecastTime', width: 75, hidden: true },
+            //{ label: '接收时间', name: 'AcceptTime', width: 75, hidden: true },
+            //{ label: '发布时间', name: 'ReleaseTime', width: 75, hidden: true },
+            //{ label: '计划时间', name: 'PlanTime', width: 75, hidden: true },
+            //{ label: '开始时间', name: 'StartTime', width: 75, hidden: true },
+            //{ label: '备注', name: 'Memo', width: 75, hidden: true },
+            //{ label: '状态备注', name: 'StateMemo', width: 75, hidden: true },
+            //{ label: 'CAD', name: 'CAD', width: 75, hidden: true },
+            //{ label: 'CAM', name: 'CAM', width: 75, hidden: true },
+            //{ label: '加工', name: 'Workshop', width: 75, hidden: true },
+            //{ label: 'QC', name: 'QC', width: 75, hidden: true },         
         ],
         viewrecords: true,
         height: _height, //document.documentElement.clientHeight - 220,
@@ -1795,6 +1805,7 @@ function TaskRecreateGrid(ProjectID, TaskType, Multi) {
         loadonce: true,
         onSelectRow: function (id) {
             //alert(id);
+            var rowData = $("#TaskGrid").jqGrid('getRowData', id);
             if (TaskType == 2) {
                 LoadEleDetail(GetCurrentID("TaskGrid"));
                 LoadCADDetail(GetCurrentID("TaskGrid"));
@@ -1802,7 +1813,7 @@ function TaskRecreateGrid(ProjectID, TaskType, Multi) {
             if ((TaskType == 1) || (TaskType == 4)) {
                 var _id = GetCurrentID("TaskGrid")
 
-                LoadEleDetail(_id);
+                LoadEleDetail(rowData.ID, rowData.TaskName);
             }
         }
     });
@@ -1956,7 +1967,12 @@ function WHRequestItemGrid(WHRequestID, Mode) {
                 }
 
             },
-            { label: "已领数量", name: "ReceivedQuantity", width: 50, hidden: true }
+            { label: "已领数量", name: "ReceivedQuantity", width: 50, hidden: true },
+
+            { label: "材料", name: "Materials", width: 50, hidden: true },
+            { label: '安全库存', name: 'SafeQuantity', width: 40, hidden: true },
+            { label: '采购类型', name: "PurchaseType", width: 80, hidden: true },
+            { label: '备库类型', name: 'StockType', width: 80, hidden: true },
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 220,
@@ -2155,6 +2171,7 @@ function POContentGrid_T() {
         rowNum: 500,
         multiselect: true,
         loadonce: true,
+        //shrinkToFit:false,
         ondblClickRow: function (iRow) {
 
             if (state < 2) {
@@ -2218,23 +2235,37 @@ function PRContent_PO_T(Keyword, PurchaseType) {
         datatype: "json",
         colModel: [
             { label: "", name: "ID", hidden: true },
-            { label: "零件名", name: "Name", width: 120 },
-            { label: "物料号", name: "PartNumber", width: 70 },
-            { label: "规格", name: "Specification", width: 70 },
+            { label: "零件名", name: "Name", width: 103 },
+            { label: "物料号", name: "PartNumber", width: 105 },
+            { label: "规格", name: "Specification", width: 336 },
             { label: "数量", name: "Quantity", width: 30, hidden: true },
-            { label: "状态", name: "State", width: 40, sortable: true },
-            { label: "采购类型", name: "PurchaseType", width: 60 },
+            { label: "状态", name: "State", width: 68, sortable: true },
+            { label: "采购类型", name: "PurchaseType", width: 90 },
             { label: "申请单号", name: "PurchaseRequest", width: 55, hidden: true },
             { label: "询价单号", name: "QuotationRequest", width: 55, hidden: true },
             { label: "订单号", name: "PurchaseOrder", width: 55, hidden: true },
-            { label: "供应商", name: "Supplier", width: 60 },
+            { label: "供应商", name: "Supplier", width: 88 },
+            { label: "", name: "PurchaseUser", width: 60, hidden: true },
+            { label: "单价(未税)", name: "UnitPrice", width: 60, hidden: true, },
+            { label: "", name: "TotalPrice", width: 60, hidden: true },
+            { label: "", name: "OutStockQty", width: 60, hidden: true },
+            { label: "", name: "TotalPriceWT", width: 60, hidden: true },
+            { label: "", name: "RequireTime", width: 60, hidden: true },
+            { label: "", name: "PlanTime", width: 60, hidden: true },
+            { label: "", name: "PlanAJTime", width: 60, hidden: true },
+            { label: "", name: "RequestUser", width: 60, hidden: true },
+            { label: "交货日期", name: "DeliverDate", width: 60, hidden: true },
+            { label: "", name: "InStockQty", width: 60, hidden: true },
+            { label: "单价(含税)", name: "UnitPriceWT", width: 60, hidden: true },
+            { label: "", name: "Memo", width: 60, hidden: true },
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight - 200,
-        width: document.body.clientWidth * 0.47,
+        height: $('#div_tb_left').height()-42,//document.documentElement.clientHeight - 200,
+        width: $('#div_tb_left').width()-2,//document.body.clientWidth * 0.47-100,
         rowNum: 500,
         multiselect: true,
         loadonce: true,
+        shrinkToFit: true,
         ondblClickRow: function (iRow) {
 
             if (state < 2) {
@@ -2257,8 +2288,6 @@ function PRContent_PO_T(Keyword, PurchaseType) {
                     $("#ProjectGrid").jqGrid("setSelection", $(event.target).closest("tr.jqgrow").attr("id"));
                     var item = $(event.target).closest("td");
                     $("#selPhase").val(item[0].id);
-
-
                     return true;
                 }
             });
@@ -2282,12 +2311,13 @@ function POContent_PO_T(ItemIDs) {
         datatype: "json",
         colModel: [
             { label: "", name: "PurchaseItemID", hidden: true },
-            { label: "零件名", name: "Name", width: 120 },
-            { label: "规格", name: "Specification", width: 70 },
-            { label: "数量", name: "Quantity", width: 60, editable: true, },
-            { label: "单价(含税）", name: "UnitPriceWT", width: 60, editable: true, },
+            { label: "零件名", name: "Name", width: 103 },
+            { label: "物料号", name: "PartNumber", width: 105 },
+            { label: "规格", name: "Specification", width: 336 },
+            { label: "数量", name: "Quantity", width: 45, editable: true, },
+            { label: "单价(含税)", name: "UnitPriceWT", width: 82, editable: true, },
             {
-                label: "总价(含税）", name: "TotalPriceWT", width: 60, editable: true,
+                label: "总价(含税)", name: "TotalPriceWT", width: 82, editable: true,
                 editrules: {
                     custom: true, custom_func: function () {
                         curRow = Number(curRow) + 1;
@@ -2296,18 +2326,31 @@ function POContent_PO_T(ItemIDs) {
                     }
                 }
             },
-            { label: "交货日期", name: "DeliverDate", width: 70 },
-            { label: "备注", name: "Memo", width: 60 },
+            {
+                label: "交货日期", name: "DeliverDate", width: 86, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
+                sorttype: "date",
+            },
+            { label: "备注", name: "Memo", width: 114 ,editable: true},
 
+            { label: "状态", name: "State", width: 0,hidden: true },
+            { label: "采购类型", name: "PurchaseType", width: 0, hidden: true },
+            { label: "申请单号", name: "PurchaseRequest", width: 0, hidden: true },
+            { label: "询价单号", name: "QuotationRequest", width: 0, hidden: true },
+            { label: "订单号", name: "PurchaseOrder", width: 0, hidden: true },
+            { label: "供应商", name: "Supplier", width: 0, hidden: true },
+            { label: "PR数量", name: "PRQuantity", width: 0, hidden: true, },
+            { label: "PR备注", name: "PRMemo", width: 0, hidden: true },
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight - 200,
-        width: document.body.clientWidth * 0.47,
+        height: $('#div_tb_right').height() - 42,//document.documentElement.clientHeight - 200,
+        width: $('#div_tb_right').width() - 2,//document.body.clientWidth -1010,
         rowNum: 500,
         multiselect: true,
         loadonce: true,
         editurl: "",
         cellsubmit: "clientArray",
+        shrinkToFit: true,
         loadComplete: function () {
             $(".jqgrow", this).contextMenu("POItemContextMenu", {
                 bindings: {
@@ -2407,24 +2450,43 @@ function PurchaseItem(Keyword, MoldNumber, State, PurchaseType, InPage) {
             { label: "", name: "ID", hidden: true },
             { label: "零件名", name: "Name", width: 100 },
             { label: "物料号", name: "PartNumber", width: 80 },
-            { label: "规格", name: "Specification", width: 200 },
-            { label: "订单数量", name: "Quantity", width: 100 },
-            { label: "状态", name: "State", width: 80 },
-            { label: "采购类型", name: "PurchaseType", width: 100 },
-            { label: "申请单号", name: "PurchaseRequest", width: 100 },
+            { label: "规格", name: "Specification", width: 300 },
+            { label: "订单数量", name: "Quantity", width: 40 },
+            { label: "状态", name: "State", width: 40 },
+            { label: "采购类型", name: "PurchaseType", width: 40 },
+            { label: "申请单号", name: "PurchaseRequest", width: 40 },
             { label: "询价单号", name: "QuotationRequest", width: 100, hidden: true },
             { label: "订单号", name: "PurchaseOrder", width: 100, hidden: true },
             { label: "供应商", name: "Supplier", width: 100, hidden: true },
             { label: "采购人员", name: 'PurchaseUser', width: 100, hidden: true },
-            { label: "单价", name: "UnitPrice", width: 60, hidden: true },
-            { label: "总价", name: "TotalPrice", width: 80, hidden: true, sorttype: 'integer' },
-            { label: "到库数", name: "InStockQty", width: 60, hidden: true },
-            { label: "领用数", name: "OutStockQty", width: 60, hidden: true },
-            { label: "生成人员", name: "RequestUser", width: 100 },
-            { label: "总价", name: "TotalPriceWT", width: 60, hidden: true, sorttype: 'integer' },
+            { label: "单价(未税)", name: "UnitPrice", width: 60, hidden: true },
+            { label: "总价(未税)", name: "TotalPrice", width: 80, hidden: true, sorttype: 'integer' },
+            
+            { label: "领用数", name: "OutStockQty", width: 60, hidden: true },            
+            { label: "总价(含税)", name: "TotalPriceWT", width: 60, hidden: true, sorttype: 'integer' },
             { label: "需求日期", name: "ShipDate", width: 80, hidden: true },
             { label: "计划到货日期", name: "PlanDate", width: 150, hidden: true },
+            {
+                label: "调整后到货日期", name: "PlanAJDate", width: 150, hidden: true, editable: true,
+                editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
+                sorttype: "date",
+                //formatter: function (cellvalue, options, rowObject) {
+                //    $.get('/Purchase/Service_GetPurItemChangeDateRecords?PurchaseRequestID=' + rowObject[0], function (res) {
+                //        if (res.length>0) {
+                //            var _str = '';
+                //            $.each(res, function (i, n) {
+                //                _str = _str + n.UserName + ' ' + n.CreDate + ' ' + n.PlanAJDate + '<br>';
+                //            });
+                //            return "<span title='" + _str + "' class='autotip'>" + cellvalue + "</span>";
+                //        } else {
+                //            return cellvalue;
+                //        }
+                //    })                    
+                //},
+            },
+            { label: "生成人员", name: "RequestUser", width: 100 },
             { label: "到货日期", name: "DeliveryDate", width: 100, hidden: true },
+            { label: "到库数", name: "InStockQty", width: 60, hidden: true },
         ],
         viewrecords: true,
         height: _height,
@@ -2432,11 +2494,67 @@ function PurchaseItem(Keyword, MoldNumber, State, PurchaseType, InPage) {
         rowNum: 500,
         loadonce: true,
         multiselect: true,
-        //autoScroll: true,
-        //scroll: true,
-        shrinkToFit: false,
-        ondblClickRow: function (iRow) {
-        }
+        shrinkToFit: true,
+        cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
+        cellEdit: true,
+        formatCell: function (rowid, cellname, value, iRow, iCol) {
+            //var _inptID = rowid + '_' + cellname;
+            //var _index1 = value.indexOf('>');
+            //var _index2 = value.lastIndexOf('<');
+            //if (_index1 > 0)
+            //    value = value.substring(_index1 + 1, _index2);
+            if (cellname == 'PlanAJDate') {
+                var _purItemID = $("#PurchaseItemGrid").getCell(rowid, 'ID');
+                $.ajaxSettings.async = false;
+                $.get('/Purchase/Service_PurItem_GetPlanAJDate?purItemID=' + _purItemID, function (res) {
+                    value = res;
+                })
+            }
+            return value;
+        },
+        onCellSelect: function (rowid, iCol, cellcontent, event) {
+            var _depID = $('#depID').val();
+            console.log(_depID);
+            if (_depID == 4) {
+                $("#PurchaseItemGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+            }
+            else {               
+                $("#PurchaseItemGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+            }
+        },
+        //保存单元格内容至服务器
+        beforeSaveCell: function (rowid, cellname, value, iRow, iCol) {
+            if (cellname == 'PlanAJDate') {
+                var _purItemID = $("#PurchaseItemGrid").getCell(rowid, 'ID');
+                PurItenChangePlan(_purItemID, value);
+            }
+        },
+        //gridComplete: function (data) {//加上此处
+        //    $(".autotip").tooltip();
+        //}
+        //onRightClickRow: function (rowid, iRow, iCol, e) {
+        //    var _purItemID = $("#PurchaseItemGrid").getCell(rowid, 'ID');
+        //    ReLoadPlanChangeRecordGrid(_purItemID);
+        //},
+        loadComplete: function () {
+            $('.Lab_PlanAJDate').tooltip({
+                content: function () { return $(this).attr("title") },
+            });
+        },
+        afterSaveCell: function (rowid, cellname, value, iRow, iCol) {
+            if (cellname == 'PlanAJDate') {
+                var _purItemID = $("#PurchaseItemGrid").getCell(rowid, 'ID');
+                $.ajaxSettings.async = false;
+                $.get('/Purchase/Service_PurItem_GetGridPlanAJDateContent?purItemID=' + _purItemID, function (res) {
+                    value = res;
+                });
+            }
+            $("#PurchaseItemGrid").jqGrid('setCell', rowid, cellname, value);
+            //return value;
+            $('.Lab_PlanAJDate').tooltip({
+                content: function () { return $(this).attr("title") },
+            });
+        },
     })
 }
 
@@ -2451,7 +2569,7 @@ function OutSourceItem() {
         colModel: [
             { label: "", name: "ID", hidden: true },
             { label: "零件名", name: "Name", width: 100 },
-            { label: "物料号", name: "PartNumber", width: 60 },
+            { label: "物料编号", name: "PartNumber", width: 60 },
             { label: "规格", name: "Specification", width: 100 },
             { label: "数量", name: "Quantity", width: 30 },
             { label: "状态", name: "State", width: 60 },
@@ -2534,15 +2652,15 @@ function ReturnRequestGrid(State) {
         datatype: "json",
         colModel: [
                 { label: "", name: "ID", hidden: true },
-                { label: "退货单号", name: "Name", width: 100 },
+                { label: "退货单号", name: "ReturnRequestNumber", width: 100 },
                 { label: "订单号", name: "PurchaseOrderNumber", width: 100 },
-                { label: "供应商", name: "MaterialNumber", width: 60 },
+                { label: "供应商", name: "SupplierNam", width: 60 },
                 { label: "状态", name: "State", width: 60 },
                 { label: "创建时间", name: "Specification", width: 60 },
                 { label: "创建人", name: "PurchaseQuantity", width: 60 },
                 { label: "审批时间", name: "InStockQuantity", width: 60 },
                 { label: "审批人", name: "InStockQuantity", width: 60 },
-                { label: "返回时间", name: "ReturnDate", width: 60 },
+                { label: "关闭时间", name: "ReturnDate", width: 60 },
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 200,
@@ -2572,7 +2690,7 @@ function ReturnItemGrid(ReturnRequestID, PurchaseItemIDs) {
                 { label: "", name: "WarehouseStockID", hidden: true },
 
                 { label: "零件名", name: "Name", width: 100 },
-                { label: "物料号", name: "MaterialNumber", width: 60 },
+                { label: "物料号", name: "PartNum", width: 60 },//MaterialNumber
                 { label: "规格", name: "Specification", width: 100 },
                 { label: "订单数量", name: "PurchaseQuantity", width: 60 },
                 { label: "到货数量", name: "InStockQuantity", width: 60 },
@@ -2674,7 +2792,7 @@ function AttachFiles(){
                     rowObject[3] = rowObject[3].replace(/\+/g, '%2B');
                     aList = aList + '<table style="width:100%"><tr>'
                     aList = aList + '<td style="border:2px white solid;border-style:none solid none none;"><a style="width: 40px; height: 35px;" href="/Attachment/Service_FileDownLoad?ObjID=' + rowObject[0] + '&ObjType=' + rowObject[1] + '&FileName=' + rowObject[3] + '&FileType=' + rowObject[4] + '" class="btn btn-primary"><span class="glyphicon glyphicon-download-alt"></span></a></td>';
-                    aList = aList + '<td> <p class="btn btn-danger" style="width: 40px; height: 35px;" value="" onclick="DeleteAttach(' + "'" + rowObject[0] + "','" + rowObject[1] + "','" + rowObject[3] + "','" + rowObject[4] + "'" + ')"><span class="glyphicon glyphicon-trash"></span></p></td>';
+                    aList = aList + '<td> <label class="btn btn-danger" style="width: 40px; height: 35px;text-indent: -2px;" value="" onclick="DeleteAttach(' + "'" + rowObject[0] + "','" + rowObject[1] + "','" + rowObject[3] + "','" + rowObject[4] + "'" + ')"><span class="glyphicon glyphicon-trash"></span></label></td>';
                     aList = aList + '</tr></table>';
                     return aList;
                 }
@@ -2717,10 +2835,15 @@ function PurchaseItemAttachFileGird() {
                 label: '操作', name: '', width: 120,
                 formatter: function (cellvalue, options, rowObject) {
                     var aList = '';
+                    var btnStatus = '';
+                    console.log(rowObject);
+                    if (rowObject[8]=='' || rowObject[8]==null){
+                        btnStatus='disabled';
+                    }
                     rowObject[3] = rowObject[3].replace(/\+/g, '%2B');
                     aList = aList + '<table style="width:100%"><tr>'
-                    aList = aList + '<td style="border:2px white solid;border-style:none solid none none;"><a style="width: 40px; height: 35px;" href="/Attachment/Service_FileDownLoad?ObjID=' + rowObject[0] + '&ObjType=' + rowObject[1] + '&FileName=' + rowObject[8] + '&FileType=' + rowObject[9] + '" class="btn btn-primary"><span class="glyphicon glyphicon-download-alt"></span></a></td>';
-                    aList = aList + '<td> <p class="btn btn-danger" style="width: 40px; height: 35px;" value="" onclick="DeleteAttach(' + "'" + rowObject[0] + "','" + rowObject[1] + "','" + rowObject[8] + "','" + rowObject[9] + "'" + ')"><span class="glyphicon glyphicon-trash"></span></p></td>';
+                    aList = aList + '<td style="border:2px white solid;border-style:none solid none none;"><a style="width: 40px; height: 35px;" href="/Attachment/Service_FileDownLoad?ObjID=' + rowObject[0] + '&ObjType=' + rowObject[1] + '&FileName=' + rowObject[8] + '&FileType=' + rowObject[9] + '" class="btn btn-primary" ' + btnStatus + '><span class="glyphicon glyphicon-download-alt"></span></a></td>';
+                    aList = aList + '<td> <p class="btn btn-danger" style="width: 40px; height: 35px;text-indent: -2px;" value="" onclick="DeleteAttach(' + "'" + rowObject[0] + "','" + rowObject[1] + "','" + rowObject[8] + "','" + rowObject[9] + "'" + ')" ' + btnStatus + '><span class="glyphicon glyphicon-trash"></span></p></td>';
                     aList = aList + '</tr></table>';
                     return aList;
                 }
@@ -2733,7 +2856,26 @@ function PurchaseItemAttachFileGird() {
 }
 
 
+function PlanChangeRecordGrid() {
+    $("#tb_PlanChangeRecord").jqGrid({
+        url: '',
+        styleUI: 'Bootstrap',
+        datatype: "json",
+        colModel: [
+            { label: '', name: 'ID', width: 30 ,hidden:true},
+            { label: '提交人', name: 'UserName', width: 100 },
+            { label: '调整计划日期', name: 'PlanAJDateStr', width: 140 },
+            { label: '调整时间', name: 'CreDateStr', width: 130 },
+        ],
+        height:190,
+        viewrecords: true,
+        loadonce: true,
+        multiselect: false,
+        shrinkToFit: true,
+        cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
 
+    })
+}
 
 
 

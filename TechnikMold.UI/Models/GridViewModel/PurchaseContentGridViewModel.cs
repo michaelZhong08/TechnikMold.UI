@@ -49,6 +49,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             ISteelCAMDrawingRepository SteelDrawingRepo,
             ITaskRepository TaskRepository,
             IWHPartRepository WHPartRepository,
+            IPurchaseTypeRepository PurchaseTypeRepository,
             string mrPurDate = ""
             )
         {
@@ -56,7 +57,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             foreach (var m in _viewmodel)
             {
                 Task _task = TaskRepository.QueryByTaskID(m.TaskID) ?? new Task();
-                rows.Add(new PurchaseContentGridRowModel(_task, m, mrPurDate, ProjectPhaseRepository, SteelDrawingRepo, WHPartRepository));
+                rows.Add(new PurchaseContentGridRowModel(_task, m, mrPurDate, ProjectPhaseRepository, SteelDrawingRepo, WHPartRepository, PurchaseTypeRepository));
             }
             Page=1;
             Total=Tasks.Count();

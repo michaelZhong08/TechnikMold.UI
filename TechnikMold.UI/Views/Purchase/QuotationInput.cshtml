@@ -27,6 +27,7 @@
                     <td class="col-sm-2">
                         <select id="QRSupplierList" class="form-control"></select>
                         <input type="hidden" id="ValidDate" name="ValidDate" value="0001-01-01">
+                        <input id="QRSupplierID" value="0" hidden/>
                     </td>
                     <td class="col-sm-2"><label>报价日期</label></td>
                     <td class="col-sm-2"><input type="date" id="QuotationDate" name="QuotationDate" class="form-control required" value="@DateTime.Now.ToString("yyyy-MM-dd")"></td>
@@ -71,8 +72,8 @@
 
                     @if (DeptID == 4)
                     {
-                        <td class="col-sm-2"></td>
-                        <td class="col-sm-2"></td>
+                        <td class="col-sm-2"><label>附件</label></td>
+                        <td class="col-sm-2"><input id="QShowRFileModal" class="btn btn-primary" value="报价单附件(0)" style="width:100%;" /></td>
                         <td >
                             <button class="btn btn-primary" id="SaveQuotation" style="float:right;">保存报价</button>
                         </td>
@@ -83,7 +84,6 @@
 
             </table>
         </div>
-
 
         <div class="col-sm-12">
             <input type="hidden" id="SupplierID" name="SupplierID" value="" />
@@ -122,20 +122,20 @@
                             <td class="col-sm-1">@_content.Quantity</td>
                             <td>
                                 @*<input type="hidden" id="QuotationID" name="Quotations[@i].PRQuotationID" value="@_content.QRQuotationID" />*@
-                                <input type="number" class="form-control WOT" id="UnitPrice[@i]" name="Quotations[@i].UnitPrice" value="@_unitPrice" min="0" readonly />
+                                <input type="number" class="form-control WOT" id="UnitPrice[@i]" name="Quotations[@i].UnitPrice" value="0" min="0" readonly />
                                 <input type="hidden" id="QRContentID[@i]" name="Quotations[@i].QRContentID" value="@_content.QRContentID" />
 
                                 <input type="hidden" id="Quantity[@i]" name="Quotations[@i].Quantity" value="@_content.Quantity" />
 
                             </td>
                             <td class="col-sm-1">
-                                <input type="number" class="form-control WOT" id="TotalPrice[@i]" name="Quotations[@i].TotalPrice" readonly />
+                                <input type="number" class="form-control WOT" id="TotalPrice[@i]" name="Quotations[@i].TotalPrice" min="0" value="0" readonly />
                             </td>
                             <td class="col-sm-1">
-                                <input type="number" class="form-control WT" id="UnitPriceWT[@i]" name="Quotations[@i].UnitPriceWT" />
+                                <input type="number" class="form-control WT" id="UnitPriceWT[@i]" name="Quotations[@i].UnitPriceWT" min="0" value="0" />
                             </td>
                             <td class="col-sm-1">
-                                <input type="number" class="form-control WT" id="TotalPriceWT[@i]" name="Quotations[@i].TotalPriceWT" />
+                                <input type="number" class="form-control WT" id="TotalPriceWT[@i]" name="Quotations[@i].TotalPriceWT" min="0" value="0" />
                             </td>
 
                             <td class="col-sm-1"><input type="date" class="form-control" id="ShipDate[@i]" name="Quotations[@i].ShipDate" value="" /></td>
@@ -151,9 +151,6 @@
     </div>
 </div>
 
-
-
-
 @*交付日期设置对话框*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="DeliveryDateDialog" tabindex="-1" role="dialog" aria-labelledby="DeliveryDateLabel" aria-hidden="true">
     <div class="modal-dialog" style="width:350px">
@@ -168,6 +165,33 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SaveDeliveryDate" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+@*附件保存*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="QRFileDialog" tabindex="-1" role="dialog" aria-labelledby="ProjectFileLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:700px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title" >报价文件</h4>
+            </div>
+            <div class="modal-body">
+                <form id="modal_QRAttachForm" name="modal_ProJAttachForm" method="post" enctype="multipart/form-data">
+                    <div id="modal_fileInputGroup" class="input-group">
+                        <input id="ObjID" name="ObjID" hidden />
+                        <input id="ObjType" name="ObjType" value="QRQotations" hidden />
+                        <input id="Files" name="Files" type="file" class="form-control" placeholder="选择文件..." multiple="multiple">
+                        <span class="input-group-btn">
+                            <button id="modal_QRAttachSubmitbtn" class="btn btn-warning" type="button" style="width: 72px;"><span class="glyphicon glyphicon-upload"></span> 提交</button>
+                        </span>
+                    </div>
+                    <table id="modal_tb_ProJFiles"></table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
             </div>
         </div>
     </div>
@@ -257,6 +281,7 @@
     function GetSelectedID(){
         var _supplierID=($("#QRSupplierList").val())
         LoadQuotation(_supplierID);
+        
         //LoadContacts(_supplierID);
         //LoadTaxRate(_supplierID);
     }
@@ -359,10 +384,10 @@
             $("#TotalPrice\\["+Sequence+"\\]").val(_totalWOT);
             $("#TotalPriceWT\\["+Sequence+"\\]").val(_totalWT);
         }else{
-            $("#UnitPrice\\["+Sequence+"\\]").val("");
-            $("#UnitPriceWT\\["+Sequence+"\\]").val("");
-            $("#TotalPrice\\["+Sequence+"\\]").val("");
-            $("#TotalPriceWT\\["+Sequence+"\\]").val("");
+            $("#UnitPrice\\["+Sequence+"\\]").val("0");
+            $("#UnitPriceWT\\["+Sequence+"\\]").val("0");
+            $("#TotalPrice\\["+Sequence+"\\]").val("0");
+            $("#TotalPriceWT\\["+Sequence+"\\]").val("0");
         }
         UpdateQuotationTotal();
     }
@@ -420,20 +445,20 @@
                             $("input[name='Quotations\\["+_seq+"\\].UnitPriceWT']").val(n.UnitPriceWT);
                             $("input[name='Quotations\\["+_seq+"\\].TotalPriceWT']").val(n.TotalPriceWT);
                         }else{
-                            $("input[name='Quotations\\["+_seq+"\\].UnitPrice']").val("");
-                            $("input[name='Quotations\\["+_seq+"\\].TotalPrice']").val("");
-                            $("input[name='Quotations\\["+_seq+"\\].ShipDate']").val("");
-                            $("input[name='Quotations\\["+_seq+"\\].UnitPriceWT']").val("");
-                            $("input[name='Quotations\\["+_seq+"\\].TotalPriceWT']").val("");
+                            $("input[name='Quotations\\["+_seq+"\\].UnitPrice']").val("0");
+                            $("input[name='Quotations\\["+_seq+"\\].TotalPrice']").val("0");
+                            $("input[name='Quotations\\["+_seq+"\\].ShipDate']").val("0");
+                            $("input[name='Quotations\\["+_seq+"\\].UnitPriceWT']").val("0");
+                            $("input[name='Quotations\\["+_seq+"\\].TotalPriceWT']").val("0");
                         }
 
                     })
                 }else{
                     //$("input[name$='\\].PRQuotationID']").val(0);
-                    $("input[name$='\\].UnitPrice']").val("");
-                    $("input[name$='\\].TotalPrice']").val("");
-                    $("input[name$='\\].UnitPriceWT']").val("");
-                    $("input[name$='\\].TotalPriceWT']").val("");
+                    $("input[name$='\\].UnitPrice']").val("0");
+                    $("input[name$='\\].TotalPrice']").val("0");
+                    $("input[name$='\\].UnitPriceWT']").val("0");
+                    $("input[name$='\\].TotalPriceWT']").val("0");
                     $("input[name$='\\].ShipDate']").val("");
                 }
                 UpdateQuotationTotal();
@@ -451,9 +476,17 @@
                 _TaxRate=msg.TaxRate;
                 if (_TaxRate<0){
                     LoadTaxRate(SupplierID);
+                }else{
+                    $('#TaxRate').val(_TaxRate);
+                    //$('#TaxRate option').map(function(){
+                    //    if(_TaxRate==this.value){
+                    //        return 
+                    //    }
+                    //});
                 }
-
                 $("#ContactID").val(msg.ContactID);
+                $('#QRSupplierID').val(msg.QRSupplierID);
+                LoadAttNum();
             })
         }else{
             $("input[name$='\\].PRQuotationID']").val(0);
@@ -461,9 +494,6 @@
             $("input[name$='\\].TotalPrice']").val(0);
             $("input[name$='\\].ShipDate']").val("");
         }
-
-
-
     }
 
     function UpdateQuotationTotal(){
@@ -521,5 +551,66 @@
             _allRows[i].checked=$("#SelAll").is(':checked');
         }
 
+    }
+</script>
+<script>
+    $(document).ready(function(){        
+        AttachFiles();
+        $('#QShowRFileModal').on('click',function(){
+            var qrSupplierID=$('#QRSupplierID').val();
+            $('#ObjID').val(qrSupplierID);
+            $('#QRFileDialog').modal('show');
+            ReloadFileGrid(qrSupplierID);
+        });
+        $("#QRSupplierList").on("change", function () {
+            $.ajaxSettings.async=false;
+            //LoadQRContacts($("#QRSupplierList option:selected").val());
+            $.get('/Purchase/Service_QR_GetQRSupplier?quotationID='+$('#QuotationRequestID').val()+'&supplierID='+$('#QRSupplierList').val(),function(res){
+                $('#QRSupplierID').val(res.QRSupplierID);
+            });
+            LoadAttNum();
+        });
+        $('#modal_QRAttachSubmitbtn').on('click',function(){
+            if ($('#Files').val() == '') {
+                alert('请选择上传表单！');
+                $('#Files').val('');
+                return false;
+            }
+            $('#modal_QRAttachForm').ajaxSubmit({
+                url: '/Attachment/Service_FileUpload/',
+                type: 'post',
+                async:false,
+                dataType: 'json',
+                success: function (msg) {
+                    if (msg.Code == 1) {
+                        $('#Files').val("");
+                        ReloadFileGrid($("#ObjID").val());
+                    }
+                    else
+                        alert(msg.Message);
+                }
+            })
+        });        
+    })
+    //重载列表
+    function ReloadFileGrid(qrSupplierID){
+        var _url = "/Attachment/Service_GetFilesByObj?ObjID=" + qrSupplierID +"&ObjType="+$('#ObjType').val();
+        $("#modal_tb_ProJFiles").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");        
+    }
+    function DeleteAttach(ObjID,ObjType,FileName,FileType){
+        $.ajaxSettings.async = false;//同步请求
+        $.get('/Attachment/Service_DelAttach?ObjID='+ObjID+'&ObjType='+ObjType+'&FileName='+FileName+'&FileType='+FileType,function(res){
+            if(res.Code==-1){
+                alert('只允许上传附件本人删除！');
+                return false;
+            }
+            else
+                ReloadFileGrid(ObjID);           
+        })
+    }
+    function LoadAttNum(){
+        $.get('/Attachment/Service_Att_GetObjAttNum?ObjID='+$('#QRSupplierID').val()+'&ObjName='+$('#ObjType').val(),function(res){
+            $('#QShowRFileModal').val('报价单附件('+res+')');
+        });
     }
 </script>
