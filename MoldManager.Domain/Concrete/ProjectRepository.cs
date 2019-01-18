@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using TechnikSys.MoldManager.Domain.Abstract;
 using TechnikSys.MoldManager.Domain.Entity;
 using TechnikSys.MoldManager.Domain.Output;
+using TechnikSys.MoldManager.Domain.Status;
 
 namespace TechnikSys.MoldManager.Domain.Concrete
 {
@@ -173,14 +174,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public int CloseProject(int ProjectID)
         {
             Project _project = QueryByID(ProjectID);
-            _project.ProjectStatus = 90;
+            _project.ProjectStatus = (int)ProjectStatus.完成;
             _context.SaveChanges();
             return ProjectID;
         }
 
         public IEnumerable<Project> QueryByMainProject(int ProjectID)
         {
-            IEnumerable<Project> _subProjects = _context.Projects.Where(p => p.ParentID == ProjectID).Where(p=>p.Enabled);
+            IEnumerable<Project> _subProjects = _context.Projects.Where(p => p.ParentID == ProjectID && p.Enabled==true);
             return  _subProjects;
         }
 
@@ -191,6 +192,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             if (_project != null)
             {
                 _project.Enabled = false;
+                _project.ProjectStatus= (int)ProjectStatus.删除;
                 _project.Memo = Memo;
             }
             _context.SaveChanges();
@@ -293,10 +295,15 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             return _project;
         }
 
-        public IQueryable<Project> GetProjectsByDep(int Department)
+        public IQueryable<Project> GetProjectsByDep(int Department,bool isDepFinished)
         {
             DateTime iniDate = new DateTime(1, 1, 1);
             DateTime iniDate1 = new DateTime(1900, 1, 1);
+            List<string> depNames = new List<string> { "管理", "项目" };
+            IEnumerable<int> _proJIDList;
+            List<int> _proJIDList1=new List<int>();
+            IQueryable<Project> _projects;
+            List<int> depIds = _context.Departments.Where(d => depNames.Contains(d.Name) && d.Enabled==true).Select(d => d.DepartmentID).ToList();
             //var _projects = from pj in _context.Projects
             //                 join ph in _context.ProjectPhases on pj.ProjectID equals ph.ProjectID into _p1
             //                where pj.ProjectNumber != "Sinnotech" && pj.ProjectStatus >= 0 && pj.Enabled == true
@@ -305,11 +312,64 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             //                from _p4 in _p3.DefaultIfEmpty()
             //                where ((_p4.DepId == Department && iniDate.Equals(_p2.ActualFinish)) || Department == 1) 
             //                select pj;
-            var _proJIDList = (from _p1 in _context.ProjectPhases
+            if (!isDepFinished)
+            {
+                _proJIDList = (from _p1 in _context.ProjectPhases
                                join _p2 in _context.Base_DepPhases on _p1.PhaseID equals _p2.PhaseId
-                               where (_p2.DepId == Department && _p2.Enable==true && (iniDate.Equals(_p1.ActualFinish) || iniDate1.Equals(_p1.ActualFinish))) || Department == 1
+                               where (_p2.DepId == Department && _p2.Enable == true && (iniDate.Equals(_p1.ActualFinish) || iniDate1.Equals(_p1.ActualFinish))) || depIds.Contains(Department)
                                select _p1.ProjectID).Distinct();
-            var _projects = _context.Projects.Where(p => p.ProjectNumber != "Sinnotech" && p.ProjectStatus >= 0 && p.Enabled == true && _proJIDList.Contains(p.ProjectID));
+                _proJIDList1.AddRange(_proJIDList);
+            }
+            else
+            {
+                //_proJIDList = _context.Projects.Where(p => p.Enabled).Select(p => p.ProjectID).Distinct();
+                //_proJIDList = (from _p1 in _context.ProjectPhases
+                //               join _p2 in _context.Base_DepPhases on _p1.PhaseID equals _p2.PhaseId
+                //               where (_p2.DepId == Department && _p2.Enable == true && (!iniDate.Equals(_p1.ActualFinish) && !iniDate1.Equals(_p1.ActualFinish))) || depIds.Contains(Department)
+                //               select _p1.ProjectID).Distinct();
+                List<int> _phaseList1 = _context.Base_DepPhases.Where(d => d.DepId == Department && d.Enable).Select(d => d.PhaseId).ToList();
+                //筛选 当且仅当部门所涉及的所有阶段均结束的项目
+                foreach (var _p in _context.Projects)
+                {
+                    bool isFinished = true;
+                    foreach (var _ph in _context.ProjectPhases.Where(p => p.ProjectID == _p.ProjectID))
+                    {
+                        if (_phaseList1.Contains(_ph.PhaseID))
+                        {
+                            if(iniDate.Equals(_ph.ActualFinish) || iniDate1.Equals(_ph.ActualFinish))
+                            {
+                                isFinished = false;
+                            }
+                        }
+                    }
+                    if (isFinished)
+                    {
+                        _proJIDList1.Add(_p.ProjectID);
+                    }
+                }
+
+                //筛选 项目状态已完成
+                _proJIDList = _context.Projects.Where(p => p.ProjectStatus == 4 && p.Enabled).Select(p => p.ProjectID);
+                _proJIDList1.AddRange(_proJIDList);
+                _proJIDList1 = _proJIDList1.Distinct().ToList();
+            }
+
+            if (!isDepFinished)
+            {
+                _projects = _context.Projects.Where(p => (p.ProjectStatus >= (int)ProjectStatus.CAD新建 && p.ProjectStatus < (int)ProjectStatus.完成) && p.Enabled == true && _proJIDList1.Contains(p.ProjectID));
+            }
+            else
+            {
+                if (depIds.Contains(Department))
+                {
+                    _projects = _context.Projects.Where(p => p.ProjectStatus == 4 && p.Enabled);
+                }
+                else
+                {
+                    _projects = _context.Projects.Where(p => (p.ProjectStatus >= (int)ProjectStatus.CAD新建 && p.ProjectStatus <= (int)ProjectStatus.完成) && p.Enabled == true && _proJIDList1.Contains(p.ProjectID));
+                }
+                
+            }   
             return _projects.Distinct();
         }
     }

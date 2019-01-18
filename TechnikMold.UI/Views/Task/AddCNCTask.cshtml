@@ -127,14 +127,14 @@
         </table>*@
     </div>
     <div id="div_mid" class="col-sm-7">
-        <div style="height:70%">
+        <div style="height:60%">
             <table id="TaskGrid"></table>  
         </div>
               
 
         <input id="PD_CNum" value="0" hidden />
         @*加工对象信息*@
-        <div style="height:30%;">
+        <div style="height:40%;">
             <div style="height:10%;">
                 <label>加工对象信息</label>
             </div>
@@ -214,6 +214,7 @@
 
         $("#MoldList").on("change", function () {
             LoadTasks();
+            ClearJGObjTb();
             $("#EleList option").remove();
         })
 
@@ -245,6 +246,7 @@
                 $('.Spec_DJTaskReAdd').hide();
             }
             //
+            ClearJGObjTb();
         })        
     })
     function LoadMolds(Keyword, CurrentVal) {
@@ -282,7 +284,6 @@
     }
 
     function LoadTasks() {
-
         var _moldnumber = $("#MoldList option:selected").val();
         var _taskType = $("#TaskType option:selected").val();
         //$("#TaskGrid").jqGrid("setGridParam", { url: "" }).trigger('reloadGrid');
@@ -291,43 +292,52 @@
     }
 
     function LoadEleDetail(TaskID, TaskName) {
-        //PD_CNum
-        var _num = Number($('#PD_CNum').val());
-        if (TaskID != undefined) {
-            //操作判断
-            var _tid = TaskName + 'T';
-            var _cid = TaskName + 'C';
-            var Nwidth = 306;
-            var _dom = document.getElementById(_tid);
-            var _width;
-            if (_dom == null || _dom == undefined) {
-                _num = _num + 1;
-                //更新外部 Div 宽度
-                $('#PD_DivT').width(Nwidth * _num);
-                $('#PD_DivC').width(Nwidth * _num);
-                //填充内容
-                var _thtml = '<p id=' + _tid + '>' + TaskName + '</p>';
-                $('#PD_DivT').append(_thtml);
-                var _chtml = '<div id=' + _cid + '>';
-                $.getJSON("/Task/JsonCNCItems?TaskID=" + TaskID, function (msg) {
-                    $.each(msg, function (i, n) {
-                        _chtml = _chtml + '<p>' + n.LabelName + '</p>'
+        var _tasktype = Number($('#TaskType').val());
+        if (_tasktype == 1) {
+            //PD_CNum
+            var _num = Number($('#PD_CNum').val());
+            if (TaskID != undefined) {
+                //操作判断
+                var _tid = TaskName + 'T';
+                var _cid = TaskName + 'C';
+                var Nwidth = 306;
+                var _dom = document.getElementById(_tid);
+                var _width;
+                if (_dom == null || _dom == undefined) {
+                    _num = _num + 1;
+                    //更新外部 Div 宽度
+                    $('#PD_DivT').width(Nwidth * _num);
+                    $('#PD_DivC').width(Nwidth * _num);
+                    //填充内容
+                    var _thtml = '<p id=' + _tid + '>' + TaskName + '</p>';
+                    $('#PD_DivT').append(_thtml);
+                    var _chtml = '<div id=' + _cid + '>';
+                    $.getJSON("/Task/JsonCNCItems?TaskID=" + TaskID, function (msg) {
+                        $.each(msg, function (i, n) {
+                            _chtml = _chtml + '<p>' + n.LabelName + '</p>'
+                        });
+                        _chtml = _chtml + '</div>';
                     });
-                    _chtml = _chtml + '</div>';
-                });
-                $('#PD_DivC').append(_chtml);
-            } else {
-                //更新外部 Div 宽度
-                //更新外部 Div 宽度
-                $('#PD_DivT').width(Nwidth * _num);
-                $('#PD_DivC').width(Nwidth * _num);
-                //移除内容
-                $('#' + _tid).remove();
-                $('#' + _cid).remove();
-                _num = _num - 1;
+                    $('#PD_DivC').append(_chtml);
+                } else {
+                    //更新外部 Div 宽度
+                    //更新外部 Div 宽度
+                    $('#PD_DivT').width(Nwidth * _num);
+                    $('#PD_DivC').width(Nwidth * _num);
+                    //移除内容
+                    $('#' + _tid).remove();
+                    $('#' + _cid).remove();
+                    _num = _num - 1;
+                }
+                $('#PD_CNum').val(_num);
             }
-            $('#PD_CNum').val(_num);
         }
+        
+    }
+
+    function ClearJGObjTb() {
+        $('#PD_DivT').empty();
+        $('#PD_DivC').empty();
     }
 </script>
 <script>
@@ -358,19 +368,27 @@
                         _AddtaskObj.RZero = false;
                         _AddtaskObj.FZero = false;
                         $.ajaxSettings.async = false;
-                        $.get('/Task/JsonTaskBasic?TaskID=' + _ID[i], function (res) {
-                            //RCount FCount
-                            if (res.TaskType == 1) {
-                                _AddtaskObj.R = res.R;
-                                if (res.R == 0) {
-                                    _AddtaskObj.RZero = true;
+
+                        var _taskType = Number($('#TaskType').val());
+                        if (_taskType == 1) {
+                            $.get('/Task/JsonTaskBasic?TaskID=' + _ID[i], function (res) {
+                                //RCount FCount
+                                if (res.TaskType == 1) {
+                                    _AddtaskObj.R = res.R;
+                                    if (res.R == 0) {
+                                        _AddtaskObj.RZero = true;
+                                    }
+                                    _AddtaskObj.F = res.F;
+                                    if (res.F == 0) {
+                                        _AddtaskObj.FZero = true;
+                                    }
                                 }
-                                _AddtaskObj.F = res.F;
-                                if (res.F == 0) {
-                                    _AddtaskObj.FZero = true;
-                                }
-                            }
-                        });
+                            });
+                        } else{
+                            _AddtaskObj.R = 0;
+                            _AddtaskObj.F = 0;
+                        }
+                        
                         console.log(_taskObjArry.length);
                         console.log(_AddtaskObj);
                         _taskObjArry[_taskObjArry.length] = _AddtaskObj;

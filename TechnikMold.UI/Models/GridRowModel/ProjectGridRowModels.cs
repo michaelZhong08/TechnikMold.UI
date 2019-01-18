@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using TechnikSys.MoldManager.Domain.Entity;
-
+using TechnikSys.MoldManager.Domain.Status;
 
 namespace MoldManager.WebUI.Models.GridRowModel
 {
@@ -14,7 +14,38 @@ namespace MoldManager.WebUI.Models.GridRowModel
         public ProjectGridRowModels(Project Project, IQueryable<ProjectPhase> ProjectPhase, List<ProjectRole> Flitter, List<Phase> Phases, int attQty,string _mainProJName)
         {
             ProjectRows = new ProjectGridRowModel[3];
-            string _cell2 = BuildCell2(Project, Flitter, attQty);
+            #region 遍历项目各阶段判断是否可以被关闭
+            bool Closed = true;
+            List<ProjectPhase> _proJh1 = ProjectPhase.ToList().Where(p => p.ProjectID == Project.ProjectID).ToList();
+            foreach(var h in _proJh1)
+            {
+                //源计划存在 实际结束不存在
+                if(!CheckZero(h.PlanFinish) && CheckZero(h.ActualFinish))
+                {
+                    Closed = false;
+                }
+            }
+            //List<ProjectPhase> _proJh1 = ProjectPhase.ToList().Where(p => p.ProjectID == Project.ProjectID && !CheckZero(p.PlanFinish)).ToList();
+            //if (_proJh1.Count > 0)
+            //{
+            //    foreach (var p in Phases)
+            //    {
+            //        ProjectPhase _proJh = ProjectPhase.ToList().Where(h => h.ProjectID == Project.ProjectID && !CheckZero(h.PlanFinish)).FirstOrDefault();
+            //        if (_proJh != null)
+            //        {
+            //            if (CheckZero(_proJh.ActualFinish))
+            //            {
+            //                Closed = false;
+            //            }
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    Closed = false;
+            //}
+            #endregion
+            string _cell2 = BuildCell2(Project, Flitter, attQty, Closed);
             for (int i = 0; i < 3; i++)
             {
                 ProjectRows[i] = new ProjectGridRowModel(Phases.Count, i + 1);
@@ -110,7 +141,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             }
         }
 
-        private string BuildCell2(Project Project, List<ProjectRole> Flitter, int attQty)
+        private string BuildCell2(Project Project, List<ProjectRole> Flitter, int attQty,bool Closed)
         {
             string _cellContent = "";
             if (Project.MoldNumber != "---")
@@ -200,20 +231,25 @@ namespace MoldManager.WebUI.Models.GridRowModel
             }
 
             string button = "<button  id='" + Project.ProjectID.ToString() + "' class='attachbtn  " + btnColor + "'  style='font-size:10px;width: 100%; height: auto;float:right!important;height:38%!important;' onclick='ShowProjectFile(" + Project.ProjectID.ToString() + ")'><span class='glyphicon glyphicon-paperclip'></span> 附件(" + attQty.ToString() + ")</button></div>";
-            //if (Project.ProjectStatus == 1)
-            //{
-            //    _cellContent = "<font color='#ff0000'>" + _cellContent + "</font>" + button;
-            //}
-            //else
-            //{
-            //    _cellContent = _cellContent + button;
-            //    if (Project.MainPhaseChange)
-            //    {
-            //        _cellContent = "<font color='#ff6a00'>" + _cellContent + "</font>";
-            //    }
 
-            //}
-            _cellContent = _cellContent + button;
+            #region 颜色设置
+            if (Project.ProjectStatus == (int)ProjectStatus.完成)
+            {
+                _cellContent = "<font color='#0080FF'>" + _cellContent + "</font>" + button;
+            }
+            else
+            {
+                if (Closed)
+                {
+                    _cellContent = "<font color='#00BB00'>" + _cellContent + "</font>" + button;
+                }
+                else
+                {
+                    _cellContent = _cellContent + button;
+                }
+            }
+            #endregion
+            
             return _cellContent;
         }
 

@@ -19,6 +19,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public DateTime ReceiveDate { get; set; }
         public bool Received { get; set; }
         public int WarehouseStockID { get; set; }
+        public double ShortQty { get; set; }
 
 
         public WarehouseRequestItem()
@@ -34,6 +35,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             ReceiveDate = new DateTime(1900, 1, 1);
             Received = false;
             WarehouseStockID = 0;
+            ShortQty = 0;
         }
     }
 }

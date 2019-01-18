@@ -15,6 +15,8 @@ using System.Linq.Expressions;
 using TechnikSys.MoldManager.UI.Models.ViewModel;
 using TechnikSys.MoldManager.Domain.Output;
 using TechnikMold.UI.Models;
+using MoldManager.WebUI.Models.Helpers;
+using TechnikSys.MoldManager.Domain.Status;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -39,13 +41,13 @@ namespace MoldManager.WebUI.Controllers
         private IAttachFileInfoRepository _attachFileInfoRepository;
 
         public ProjectController(IProjectRepository ProjectRepository,
-            IProjectPhaseRepository ProjectPhaseRepository, 
+            IProjectPhaseRepository ProjectPhaseRepository,
             IPhaseRepository PhaseRepository,
-            IRoleRepository RoleRepository, 
-            IProjectRoleRepository ProjectRoleRepository, 
-            ICustomerRepository CustomerRepository, 
+            IRoleRepository RoleRepository,
+            IProjectRoleRepository ProjectRoleRepository,
+            ICustomerRepository CustomerRepository,
             IPhaseModificationRepository PhaseModificationRepository,
-            ICostCenterRepository CostCenterRepository, 
+            ICostCenterRepository CostCenterRepository,
             IDepartmentRepository DepartmentRepository,
             IPartListRepository PartListRepository,
             IProjectRecordRepository ProjectRecordRepository,
@@ -73,7 +75,7 @@ namespace MoldManager.WebUI.Controllers
         }
         #endregion
         // GET: Project
-        public ActionResult Index(string Keyword = "", int State = 1, int Type=1,bool IsDepFinish=true)
+        public ActionResult Index(string Keyword = "", int State = 1, int Type = 1, bool IsDepFinish = true)
         {
             ViewBag.Keyword = Keyword;
             ViewBag.State = State;
@@ -142,15 +144,15 @@ namespace MoldManager.WebUI.Controllers
             ProjectViewModel _viewModel;
             IEnumerable<Phase> _phases = _phasesRepository.Phases.Where(p => p.Enabled == true).OrderBy(p => p.Sequence);
             IEnumerable<Role> _roles = _roleRepository.Roles.Where(r => r.ProjectBased == true).OrderBy(r => r.Name);
-            Project _project=new Project();
-            IEnumerable<ProjectPhase> _projectPhases=null;
-            IEnumerable<ProjectRole> _projectRoles=null;
+            Project _project = new Project();
+            IEnumerable<ProjectPhase> _projectPhases = null;
+            IEnumerable<ProjectRole> _projectRoles = null;
 
             if (ProjectID > 0)
             {
                 _project = _projectRepository.GetByID(ProjectID);
             }
-            else if (ParentID>0)
+            else if (ParentID > 0)
             {
                 _project = _projectRepository.GetByID(ParentID);
                 _project.ParentID = _project.ProjectID;
@@ -173,14 +175,14 @@ namespace MoldManager.WebUI.Controllers
                         break;
                 }
             }
-            
 
-            if (_project.ProjectID>0)
+
+            if (_project.ProjectID > 0)
             {
-                _projectPhases = _projectPhaseRepository.GetProjectPhases(_project.ProjectID).OrderBy(p=>p.PhaseID);
+                _projectPhases = _projectPhaseRepository.GetProjectPhases(_project.ProjectID).OrderBy(p => p.PhaseID);
                 _projectRoles = _projectRoleRepository.QueryByProjectID(_project.ProjectID);
             }
-            else if (_project.ParentID>0)
+            else if (_project.ParentID > 0)
             {
                 _projectPhases = _projectPhaseRepository.GetProjectPhases(_project.ParentID);
                 _projectRoles = _projectRoleRepository.QueryByProjectID(_project.ParentID);
@@ -195,9 +197,9 @@ namespace MoldManager.WebUI.Controllers
 
         public int GetFixVersion(string MoldNumber)
         {
-            IEnumerable<Project> _projects = _projectRepository.Projects.Where(p=>p.Type==2).Where(p => p.MoldNumber == MoldNumber);
+            IEnumerable<Project> _projects = _projectRepository.Projects.Where(p => p.Type == 2).Where(p => p.MoldNumber == MoldNumber);
             int _count = _projects.Count();
-            if (_projects.Count()==0)
+            if (_projects.Count() == 0)
             {
                 return 1;
             }
@@ -213,7 +215,7 @@ namespace MoldManager.WebUI.Controllers
         /// </summary>
         /// <param name="Project"></param>
         /// <returns></returns>
-        [HttpPost] 
+        [HttpPost]
         public ActionResult Edit(ProjectEditModel Project)
         {
             bool newProject = Project.Project.ProjectID == 0 ? true : false;
@@ -255,7 +257,7 @@ namespace MoldManager.WebUI.Controllers
                     switch (_projectPhase.PhaseID)
                     {
                         case 13://OTS交样
-                            Service_proJ_UptFixMoldPhDate("",13,1, _projectPhase.PlanFinish);
+                            Service_proJ_UptFixMoldPhDate("", 13, 1, _projectPhase.PlanFinish);
                             break;
                         case 14://PPAP
                             Service_proJ_UptFixMoldPhDate("", 14, 1, _projectPhase.PlanFinish);
@@ -284,7 +286,7 @@ namespace MoldManager.WebUI.Controllers
                         _projectType = "项目";
                         break;
                     case 1:
-                        _projectType = "模具项目";                       
+                        _projectType = "模具项目";
                         break;
                     case 2:
                         _projectType = "修模项目";
@@ -328,7 +330,7 @@ namespace MoldManager.WebUI.Controllers
             {
                 return RedirectToAction("Index", "Project");
             }
-           
+
         }
         /// <summary>
         /// TODO:修模项目 OST/PPAP 计划保存时同步更新至所有
@@ -336,12 +338,12 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="_moldNum">模号</param>
         /// <param name="_phType">1 原 2调整 3 完成</param>
         /// <param name="uptDate">更新日期</param>
-        public void Service_proJ_UptFixMoldPhDate(string _moldNum,int _phID,int _phType,DateTime uptDate)
+        public void Service_proJ_UptFixMoldPhDate(string _moldNum, int _phID, int _phType, DateTime uptDate)
         {
             List<Project> _projects = _projectRepository.Projects.Where(p => p.MoldNumber == _moldNum && p.Type == 2 && p.Enabled == true).ToList();
             if (_projects.Count > 0)
             {
-                foreach(var p in _projects)
+                foreach (var p in _projects)
                 {
                     ProjectPhase _ph = _projectPhaseRepository.GetProjectPhase(p.ProjectID, _phID);
                     if (_ph != null)
@@ -359,7 +361,7 @@ namespace MoldManager.WebUI.Controllers
                                 break;
                         }
                         _projectPhaseRepository.Save(_ph);
-                    }                 
+                    }
                 }
             }
         }
@@ -369,8 +371,8 @@ namespace MoldManager.WebUI.Controllers
         {
             string UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], Encoding.GetEncoding("UTF-8"));
 
-            string _memo = UserName +"添加备注:"+ MemoEdit.Memo;
-            MemoEdit.Memo = UserName+ "<br>" + DateTime.Now.ToString("yyyy-MM-dd") +"<br>"+ MemoEdit.Memo; 
+            //string _memo = UserName +"添加备注:"+ MemoEdit.Memo;
+            string _memo = UserName + "<br>" + DateTime.Now.ToString("yyyy-MM-dd") + "<br>" + MemoEdit.Memo;
 
 
 
@@ -390,7 +392,7 @@ namespace MoldManager.WebUI.Controllers
                 return "只能基于模具项目创建修模项目";
             }
 
-           
+
             if (!CheckProjectFOT(ProjectID))
             {
                 return "模具项目FOT结束前不能创建修模项目";
@@ -400,7 +402,7 @@ namespace MoldManager.WebUI.Controllers
                 IEnumerable<Project> _fixPrjs = _projectRepository.Projects
                     .Where(p => p.MoldNumber == _project.MoldNumber)
                     .Where(p => p.Type == 2)
-                    .OrderByDescending(p=>p.ProjectID);
+                    .OrderByDescending(p => p.ProjectID);
 
                 if (_fixPrjs.Count() > 0)
                 {
@@ -420,7 +422,7 @@ namespace MoldManager.WebUI.Controllers
                     //No fix mold project exist
                     return "";
                 }
-                
+
             }
         }
         /// <summary>
@@ -449,17 +451,15 @@ namespace MoldManager.WebUI.Controllers
 
                     }
                 }
-                
+
                 return false;
             }
             else
             {
                 return true;
             }
-            
+
         }
-
-
         #endregion
 
         #region MilestoneModification
@@ -473,7 +473,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="CFDate"></param>
         /// <param name="Flag">0 原计划 1 调整计划 2 实际完成</param>
         /// <returns></returns>
-        public JsonResult Service_Save_ProJPhaseCFDate(int ProJID,int PhaseID,DateTime CFDate,int Flag=0)
+        public JsonResult Service_Save_ProJPhaseCFDate(int ProJID, int PhaseID, DateTime CFDate, int Flag = 0)
         {
             ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
             Project _project = _projectRepository.GetByID(ProJID) ?? new Project();
@@ -501,15 +501,6 @@ namespace MoldManager.WebUI.Controllers
             {
                 int _phDateType;
                 _phDateType = Flag + 1;
-                //switch (Flag)
-                //{
-                //    case 0:
-                //        break;
-                //    case 1:
-                //        break;
-                //    case 2:
-                //        break;
-                //}
                 switch (_projectPhase.PhaseID)
                 {
                     case 13://OTS交样
@@ -531,12 +522,12 @@ namespace MoldManager.WebUI.Controllers
                         if (Flag == 0)
                         {
                             _projectPhase.PlanFinish = CFDate;
-                            _prjPhaseID=_projectPhaseRepository.Save(_projectPhase);
+                            _prjPhaseID = _projectPhaseRepository.Save(_projectPhase);
                         }
                         else if (Flag == 1)
                         {
                             _projectPhase.PlanCFinish = CFDate;
-                            _prjPhaseID=_projectPhaseRepository.Save(_projectPhase);
+                            _prjPhaseID = _projectPhaseRepository.Save(_projectPhase);
                         }
                         else if (Flag == 2)
                         {
@@ -544,22 +535,21 @@ namespace MoldManager.WebUI.Controllers
                             _prjPhaseID = _projectPhaseRepository.Save(_projectPhase);
                         }
                     }
-                    //_prjPhaseID = _projectPhaseRepository.Save(_projectPhase.ProjectPhaseID, CFDate);
                     if (_prjPhaseID > 0)
                     {
                         #region 更新ProJ状态为1                        
-                        if(_project.ProjectID>0 && _project.ProjectStatus == 0)
+                        if (_project.ProjectID > 0 && _project.ProjectStatus == (int)ProjectStatus.CAD新建)
                         {
                             IEnumerable<ProjectPhase> _proJPhases = _projectPhaseRepository.GetProjectPhases(ProJID);
                             var _isSetupAllPlan = true;
-                            foreach(var p in _proJPhases)
+                            foreach (var p in _proJPhases)
                             {
                                 if (Toolkits.CheckZero(p.PlanFinish))
                                     _isSetupAllPlan = false;
                             }
                             if (_isSetupAllPlan)
                             {
-                                _project.ProjectStatus = 1;
+                                _project.ProjectStatus = (int)ProjectStatus.新建;
                                 _projectRepository.Save(_project);
                             }
                         }
@@ -567,7 +557,7 @@ namespace MoldManager.WebUI.Controllers
                         return Json(new { Code = 0 }, JsonRequestBehavior.AllowGet);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _prjPhaseID = _projectPhaseRepository.Save(0, CFDate, ProJID, PhaseID);
                 }
@@ -582,64 +572,50 @@ namespace MoldManager.WebUI.Controllers
         /// <returns></returns>
         public string Service_Get_ProJPhaseAcDate(int ProJID, int PhaseID)
         {
-            ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
-            if (_projectPhase != null)
+            Project proJect = _projectRepository.QueryByID(ProJID);
+            if(proJect.ProjectStatus>=(int)ProjectStatus.CAD新建 && proJect.ProjectStatus < (int)ProjectStatus.完成)
             {
-                //判断是否存在原计划
-                if (Toolkits.CheckZero(_projectPhase.PlanFinish))
+                ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
+                if (_projectPhase != null)
                 {
-                    return "当前项目未设置原计划";
+                    //判断是否存在原计划
+                    if (Toolkits.CheckZero(_projectPhase.PlanFinish))
+                    {
+                        return "当前项目未设置原计划";
+                    }
+                    if (!Toolkits.CheckZero(_projectPhase.ActualFinish))
+                    {
+                        return _projectPhase.ActualFinish.ToString("yyyy-MM-dd");
+                    }
+                    int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+                    Base_DepPhase _depphase = _depphaseRepository.DepPhases.Where(d => d.PhaseId == PhaseID && d.DepId == _depid && d.Enable == true).FirstOrDefault();
+                    if (_depphase != null)
+                    {
+                        if (Toolkits.CheckZero(_projectPhase.ActualFinish))
+                            return "";
+                    }
+                    else
+                        return "只能调整本部门计划";
+                    return _projectPhase.ActualFinish.ToString("yy/MM/dd");
                 }
-                if (!Toolkits.CheckZero(_projectPhase.ActualFinish))
-                {
-                    return _projectPhase.ActualFinish.ToString("yyyy-MM-dd");
-                }
-                int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
-                Base_DepPhase _depphase = _depphaseRepository.DepPhases.Where(d => d.PhaseId == PhaseID && d.DepId == _depid && d.Enable == true).FirstOrDefault();
-                if (_depphase != null)
-                {
-                    if (Toolkits.CheckZero(_projectPhase.ActualFinish))
-                        return "";
-                }
-                else
-                    return "只能调整本部门计划";         
-                return _projectPhase.ActualFinish.ToString("yy/MM/dd");
-            }
-            #region 获取当前项目主项目并判断
-            Project _modifyProJ = _projectRepository.GetByID(ProJID);
-            Project _mainProJ;
-            //新模计划
-            //if (_modifyProJ.Type == 1)
-            //{
+                #region 获取当前项目主项目并判断
+                Project _modifyProJ = _projectRepository.GetByID(ProJID);
+                Project _mainProJ;
+                //新模计划
                 if (_modifyProJ.ParentID > 0)
                 {
-                //主项目异常判断
+                    //主项目异常判断
                     _mainProJ = _projectRepository.GetByID(_modifyProJ.ParentID);
                     ProjectPhase _mainPhase = _projectPhaseRepository.GetProjectPhase(_mainProJ.ProjectID, PhaseID);
-                    if(_mainPhase==null)
+                    if (_mainPhase == null)
                         return "主项目数据异常！";
                     DateTime _mainPhaseDate = Toolkits.CheckZero(_mainPhase.PlanCFinish) ? _mainPhase.PlanFinish : _mainPhase.PlanCFinish;
-                    //if (!Toolkits.CheckZero(_mainPhase.ActualFinish))
-                    //{
-                    //    return "主项目阶段已结束";
-                    //}
-                    //if (Toolkits.CheckZero(_mainPhase.PlanFinish))
-                    //{
-                    //    return "主项目未设置原计划";
-                    //}
                 }
-            //    else
-            //    {
-            //        return "该项目无对应主项目";
-            //    }
-            //}
-            //else
-            //{
-            //    return "不允许在此更新主项目计划";
-            //}
-            #endregion
-                     
-            return "不存在项目阶段";
+                #endregion
+
+                return "不存在项目阶段";
+            }
+            return "项目已完成！";
         }
         /// <summary>
         /// 单元格选择控制器：原计划
@@ -649,45 +625,58 @@ namespace MoldManager.WebUI.Controllers
         /// <returns></returns>
         public string Service_Get_ProJPhaseYDate(int ProJID, int PhaseID)
         {
-            ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
-            if (_projectPhase != null)
+            Project proJect = _projectRepository.QueryByID(ProJID);
+            if (proJect.ProjectStatus >= (int)ProjectStatus.CAD新建 && proJect.ProjectStatus < (int)ProjectStatus.完成)
             {
-                int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
-                List<int> _camPhases = new List<int> { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
-                if (!Toolkits.CheckZero(_projectPhase.ActualFinish))
+                ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
+                if (_projectPhase != null)
                 {
-                    return "当前项目阶段已结束";
-                }
-                if ( _camPhases.Contains(PhaseID))
-                {
-                    //CAM创建原计划
-                    if (new List<int> { 3 }.Contains(_depid) && Toolkits.CheckZero(_projectPhase.PlanFinish))
+                    int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+                    List<int> _camPhases = new List<int> { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+                    if (!Toolkits.CheckZero(_projectPhase.ActualFinish))
                     {
-                        return "";
-                    }//管理修改原计划
-                    else if (new List<int> { 1 }.Contains(_depid) && !Toolkits.CheckZero(_projectPhase.PlanFinish))
-                    {
-                        return "";
+                        return "当前项目阶段已结束";
                     }
-                }
-                else if (!_camPhases.Contains(PhaseID))
-                {
-                    if (new List<int> { 2 }.Contains(_depid) && Toolkits.CheckZero(_projectPhase.PlanFinish))
+                    if (_camPhases.Contains(PhaseID))
                     {
-                        return "";
+                        List<string> _depNames = new List<string>() { "CAM", "项目" };
+                        List<int> _depIds = _deptRepository.Departments.Where(d => _depNames.Contains(d.Name) && d.Enabled == true).Select(d => d.DepartmentID).ToList();
+                        List<string> _depNames1 = new List<string>() { "管理" };
+                        List<int> _depIds1 = _deptRepository.Departments.Where(d => _depNames1.Contains(d.Name) && d.Enabled == true).Select(d => d.DepartmentID).ToList();
+                        //CAM创建原计划                    
+                        if (_depIds.Contains(_depid) && Toolkits.CheckZero(_projectPhase.PlanFinish))
+                        {
+                            return "";
+                        }//管理修改原计划
+                        else if (_depIds1.Contains(_depid) && !Toolkits.CheckZero(_projectPhase.PlanFinish))
+                        {
+                            return "";
+                        }
                     }
-                    else if(new List<int> { 1 }.Contains(_depid) && !Toolkits.CheckZero(_projectPhase.PlanFinish))
+                    else if (!_camPhases.Contains(PhaseID))
                     {
-                        return "";
+                        List<string> _depNames = new List<string>() { "CAD", "项目" };
+                        List<int> _depIds = _deptRepository.Departments.Where(d => _depNames.Contains(d.Name) && d.Enabled == true).Select(d => d.DepartmentID).ToList();
+                        List<string> _depNames1 = new List<string>() { "管理" };
+                        List<int> _depIds1 = _deptRepository.Departments.Where(d => _depNames1.Contains(d.Name) && d.Enabled == true).Select(d => d.DepartmentID).ToList();
+                        if (_depIds.Contains(_depid) && Toolkits.CheckZero(_projectPhase.PlanFinish))
+                        {
+                            return "";
+                        }
+                        else if (_depIds1.Contains(_depid) && !Toolkits.CheckZero(_projectPhase.PlanFinish))
+                        {
+                            return "";
+                        }
                     }
+                    else
+                    {
+                        return "非计划部门禁止修改原计划";
+                    }
+                    return _projectPhase.PlanFinish.ToString("yyyyMMdd");
                 }
-                else
-                {
-                    return "非计划部门禁止修改原计划";
-                }
-                return _projectPhase.PlanFinish.ToString("yyyyMMdd");
+                return "项目阶段数据不存在";
             }
-            return "项目阶段数据不存在";
+            return "项目已完成！";  
         }
         /// <summary>
         /// 单元格选择控制器：实际完成
@@ -695,29 +684,35 @@ namespace MoldManager.WebUI.Controllers
         /// <returns></returns>
         public string Service_Get_ProJPhaseAcManualFinish(int ProJID, int PhaseID)
         {
-            ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
-            
-            if (_projectPhase != null)
+            Project proJect = _projectRepository.QueryByID(ProJID);
+            if(proJect.ProjectStatus>=(int)ProjectStatus.CAD新建 && proJect.ProjectStatus < (int)ProjectStatus.完成)
             {
-                if (Toolkits.CheckZero(_projectPhase.PlanFinish))
+                ProjectPhase _projectPhase = _projectPhaseRepository.GetProjectPhase(ProJID, PhaseID);
+                if (_projectPhase != null)
                 {
-                    return "当前项目未设置原计划";
-                }
-                List<int> _camPhases = new List<int> {  3, 4, 5, 6, 7, 8, 9, 10};
-                int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
-                //List<int> _depList = new List<int> { 1, 2, 21 , 23 }; //Mag CAD Project
-                Base_DepPhase _depphase = _depphaseRepository.DepPhases.Where(d => (d.PhaseId == PhaseID && d.DepId == _depid && d.Enable == true)|| _depid==1).FirstOrDefault();
-                if (_depphase != null)
-                {
-                    if (!_camPhases.Contains(PhaseID) && Toolkits.CheckZero(_projectPhase.ActualFinish))
-                        return "";
+                    if (Toolkits.CheckZero(_projectPhase.PlanFinish))
+                    {
+                        return "当前项目未设置原计划";
+                    }
+                    List<int> _camPhases = new List<int> { 3, 4, 5, 6, 7, 8, 9, 10 };
+                    int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+                    List<string> _depNames = new List<string>() { "管理", "项目" };
+                    List<int> _depIds = _deptRepository.Departments.Where(d => _depNames.Contains(d.Name) && d.Enabled == true).Select(d => d.DepartmentID).ToList();
+
+                    Base_DepPhase _depphase = _depphaseRepository.DepPhases.Where(d => (d.PhaseId == PhaseID && d.DepId == _depid && d.Enable == true) || _depIds.Contains(_depid)).FirstOrDefault();
+                    if (_depphase != null)
+                    {
+                        if (!_camPhases.Contains(PhaseID) && Toolkits.CheckZero(_projectPhase.ActualFinish))
+                            return "";
+                        else
+                            return "其它阶段/该阶段已结束";
+                    }
                     else
-                        return "其它阶段/该阶段已结束";
+                        return "只能结束与部门相关的阶段";
                 }
-                else
-                    return "只能结束与部门相关的阶段";
+                return "项目阶段不存在！";
             }
-            return "项目阶段不存在！";
+            return "项目已完成！";
         }
         /// <summary>
         /// 计划日期
@@ -816,18 +811,18 @@ namespace MoldManager.WebUI.Controllers
             {
                 return RedirectToAction("Index", "Project", new { Type = _project.Type });
             }
-            
+
         }
 
         /// <summary>
         /// When modify phases of main project, set the phase change tag for sub projects
         /// </summary>
         /// <param name="ProjectID"></param>
-        public  void SetPhaseModifyTag(int ProjectID, int PhaseID)
+        public void SetPhaseModifyTag(int ProjectID, int PhaseID)
         {
             IEnumerable<int> _subs = _projectRepository.QueryByMainProject(ProjectID)
-                .Where(p=>p.Type==1).Select(p=>p.ProjectID);
-            
+                .Where(p => p.Type == 1).Select(p => p.ProjectID);
+
             //foreach (Project _sub in _subs)
             //{
             //    _sub.MainPhaseChange = true;
@@ -844,14 +839,14 @@ namespace MoldManager.WebUI.Controllers
 
         #endregion
 
-
         #region JSON
         /// <summary>
         /// Create Json data of existing customers
         /// </summary>
         /// <returns></returns>
-        public JsonResult JsonCustomers(){
-            IEnumerable<Customer> _customers = _customerRepository.Customers.Where(c=>c.Enabled==true);
+        public JsonResult JsonCustomers()
+        {
+            IEnumerable<Customer> _customers = _customerRepository.Customers.Where(c => c.Enabled == true);
             return Json(_customers, JsonRequestBehavior.AllowGet);
         }
 
@@ -860,7 +855,7 @@ namespace MoldManager.WebUI.Controllers
         /// Retrives json format project list
         /// </summary>
         /// <returns></returns>
-        public JsonResult JsonProjects1(string Keyword="", int State=1, int Type=1)
+        public JsonResult JsonProjects1(string Keyword = "", int State = 1, int Type = 1)
         {
             IQueryable<Project> _projects;
             if (Type == 1)
@@ -868,7 +863,7 @@ namespace MoldManager.WebUI.Controllers
                 _projects = _projectRepository.Projects
                .Where(p => p.Enabled == true)
                .Where(p => (p.Type == Type) || (p.Type == 0))
-               .Where(p=>p.Version==0)
+               .Where(p => p.Version == 0)
                .OrderBy(p => p.ProjectNumber)
                .ThenBy(p => p.MoldNumber);
             }
@@ -899,11 +894,11 @@ namespace MoldManager.WebUI.Controllers
                 else
                 {
                     _projects = _projects.Where(p => p.ProjectStatus == State);
-                }          
+                }
             }
             List<Phase> _phases = _phasesRepository.Phases.OrderBy(p => p.Sequence).ToList();
-          
-            ProjectGridViewModel _gridViewModel = new ProjectGridViewModel(_projects, _projectPhaseRepository, _projectRoleRepository,_attachFileInfoRepository,_projectRepository, _phases);
+
+            ProjectGridViewModel _gridViewModel = new ProjectGridViewModel(_projects, _projectPhaseRepository, _projectRoleRepository, _attachFileInfoRepository, _projectRepository, _phases);
             return Json(_gridViewModel, JsonRequestBehavior.AllowGet);
         }
         /// <summary>
@@ -918,7 +913,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="isDepFinish">true 部门未结案 false 项目未结案</param>
         /// <returns></returns>
 
-        public ActionResult JsonProjects(string Keyword = "", int State = 1, int Type = 1, int DepID = 18, int PageCount = 30, int Page = 1,bool isDepFinish=true)
+        public ActionResult JsonProjects(string Keyword = "", int State = 1, int Type = 1, int DepID = 18, int PageCount = 30, int Page = 1, bool isDepFinish = false)
         {
             IQueryable<Project> _projects;
             List<Phase> _phases;
@@ -933,7 +928,7 @@ namespace MoldManager.WebUI.Controllers
             if (Type == 1)
             {
                 _typeexp = p => p.Type == 1;
-                _typeexp = PredicateBuilder.Or(_typeexp, p => p.Type == 0);
+                _typeexp = PredicateBuilder.Or(_typeexp, p => p.Type == 0);//主项目 or 模具项目
                 _typeexp = PredicateBuilder.And(_typeexp, p => p.Version == 0);
             }
             else
@@ -950,36 +945,33 @@ namespace MoldManager.WebUI.Controllers
             }
             else
             {
-                if (State == 1)
-                {
-                    _kwexp = p => p.ProjectStatus <= State;
-                }
-                else
-                {
-                    _kwexp = p => p.ProjectStatus == State;
-                }
+                //if (State == 1)
+                //{
+                //    _kwexp = p => p.ProjectStatus <= State;
+                //}
+                //else
+                //{
+                //    _kwexp = p => p.ProjectStatus == State;
+                //}
+                _kwexp = p => p.ProjectStatus >= (int)ProjectStatus.CAD新建;
             }
             #endregion
             int _takeCount = PageCount / 3;
             int _skipcount = (Page - 1) * _takeCount;
-            _projects = _projectRepository.Projects
-             .Where(_typeexp)
-             .Where(_kwexp)
-             .OrderBy(p => p.ProjectNumber).ThenBy(p => p.MoldNumber);
-
             int _totalprojects = 0;
             _phases = _phasesRepository.Phases.OrderBy(p => p.Sequence).ToList();
             if (Keyword == "")
             {
-                if (isDepFinish)
-                {
-                    //_projectsByDep = GetProjectsByDep(_projects, DepID, _skipcount, _takeCount).ToList();
-                    _projectsByDep = _projectRepository.GetProjectsByDep(DepID).Where(_kwexp).Where(_typeexp).OrderBy(p => p.ProjectNumber).ThenBy(p => p.MoldNumber).ToList();
-                }
-                else
-                {
-                    _projectsByDep = _projects.Where(p => p.Enabled == true && p.ProjectNumber != "Sinnotech").Where(p => p.ProjectStatus < 3).ToList();//新建 启动
-                }
+                //if (isDepFinish)
+                //{
+                //    //_projectsByDep = GetProjectsByDep(_projects, DepID, _skipcount, _takeCount).ToList();
+                //    _projectsByDep = _projectRepository.GetProjectsByDep(DepID).Where(_kwexp).Where(_typeexp).OrderBy(p => p.ProjectNumber).ThenBy(p => p.CreateTime).ToList();
+                //}
+                //else
+                //{
+                //    _projectsByDep = _projects.Where(p => p.Enabled == true).Where(p => p.ProjectStatus >= (int)ProjectStatus.CAD新建 && p.ProjectStatus <= (int)ProjectStatus.完成).ToList();//新建 启动
+                //}
+                _projectsByDep = _projectRepository.GetProjectsByDep(DepID,isDepFinish).Where(_kwexp).Where(_typeexp).OrderBy(p => p.ProjectNumber).ThenBy(p => p.CreateTime).ToList();
                 //_projectsByDep = _projects.Where(p => p.ProjectNumber != "Sinnotech" && p.ProjectStatus >= 0);
                 #region 分页   
                 _totalprojects = _projectsByDep.Count();
@@ -988,14 +980,18 @@ namespace MoldManager.WebUI.Controllers
             }
             else
             {
+                _projects = _projectRepository.Projects
+                            .Where(_typeexp)
+                            .Where(_kwexp)
+                            .OrderBy(p => p.ProjectNumber).ThenBy(p => p.CreateTime);
                 _projectsByDep = _projects.ToList();
                 _totalprojects = _projects.Count();
                 _projectsByDep = _projects.Skip(_skipcount).Take(_takeCount).ToList();
             }
             //_projects = GetProjectsByDep(_projects, DepID, _skipcount, _takeCount).OrderBy(p => p.ProjectNumber).ThenBy(p => p.MoldNumber).ToList();
             //IEnumerable<Project> _projectsByDepNow = _projectsByDep.Skip(_skipcount).Take(_takeCount);
-                       
-            
+
+
 
             _gridViewModel = new ProjectGridViewModel(_projectsByDep,
                 _projectPhaseRepository,
@@ -1014,17 +1010,17 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="Projects"></param>
         /// <param name="DepartmentID"></param>
         /// <returns></returns>
-        public IEnumerable<Project> GetProjectsByDep(IEnumerable<Project> Projects, int DepartmentID,int skipcount,int takeCount)
+        public IEnumerable<Project> GetProjectsByDep(IEnumerable<Project> Projects, int DepartmentID, int skipcount, int takeCount)
         {
             IEnumerable<Project> ProjectList;
             DateTime _datezero = new DateTime(1, 1, 1);
             List<ProJPHViewModel> lst = new List<ProJPHViewModel>();
-            List<int> ProJIDList = new List<int>();            
+            List<int> ProJIDList = new List<int>();
             Projects = Projects.Where(p => p.ProjectNumber != "Sinnotech" && p.ProjectStatus >= 0);
             foreach (var Project in Projects)
             {
                 var ProJPHList = from pp in _projectPhaseRepository.ProjectPhases
-                                 where pp.ProjectID== Project.ProjectID
+                                 where pp.ProjectID == Project.ProjectID
                                  select pp;
                 foreach (var item in ProJPHList)
                 {
@@ -1044,7 +1040,7 @@ namespace MoldManager.WebUI.Controllers
                         ActualFinish = item.ActualFinish
                     });
                 }
-            }                      
+            }
             try
             {
                 #region 部门-项目阶段控制
@@ -1114,7 +1110,7 @@ namespace MoldManager.WebUI.Controllers
                 //        Projects = new List<Project>();
                 //        break;
                 //}
-                IEnumerable<Base_DepPhase> depPhases = _depphaseRepository.QueryByDepID(DepartmentID).Where(d=>d.DepId!=1);//管理部门可以看到所有项目
+                IEnumerable<Base_DepPhase> depPhases = _depphaseRepository.QueryByDepID(DepartmentID).Where(d => d.DepId != 1);//管理部门可以看到所有项目
                 List<int?> phaseIds = new List<int?>();
                 if (DepartmentID != 1)
                 {
@@ -1134,7 +1130,7 @@ namespace MoldManager.WebUI.Controllers
             {
 
             }
-            
+
             ProjectList = Projects.Where(p => ProJIDList.Contains(p.ProjectID)); //.Skip(skipcount).Take(takeCount)
             return ProjectList;
         }
@@ -1150,42 +1146,46 @@ namespace MoldManager.WebUI.Controllers
 
         public JsonResult JsonProjectPhase(int ProjectID, int PhaseID)
         {
-            ProjectPhaseViewModel _phase =new ProjectPhaseViewModel();
+            ProjectPhaseViewModel _phase = new ProjectPhaseViewModel();
             //s _mainPhase, _subPhase;
-            int _mainProjectID = _projectRepository.Projects.Where(p=>p.ProjectID==ProjectID).Select(p=>p.ParentID).FirstOrDefault();
-            if (_mainProjectID>0)
+            int _mainProjectID = _projectRepository.Projects.Where(p => p.ProjectID == ProjectID).Select(p => p.ParentID).FirstOrDefault();
+            if (_mainProjectID > 0)
             {
                 _phase.MainPhase = _projectPhaseRepository.GetCurrentPlan(_mainProjectID, PhaseID).ToString("yyyy-MM-dd");
                 //_phase.MainPhase = _projectRepository
             }
             _phase.ProjectPhase = _projectPhaseRepository.GetCurrentPlan(ProjectID, PhaseID).ToString("yyyy-MM-dd");
-            
+
             return Json(_phase, JsonRequestBehavior.AllowGet);
         }
 
-        public JsonResult JsonMoldNumber(string Keyword="", bool TakeAll=false)
+        public JsonResult JsonMoldNumber(string Keyword = "", bool TakeAll = false)
         {
 
 
             IEnumerable<Project> _moldProjects;
             if (Keyword != "")
             {
-                _moldProjects =_projectRepository.Projects
-                .Where(p=>p.Name!="")
-                .Where(p=>p.Enabled==true)
+                _moldProjects = _projectRepository.Projects
+                .Where(p => p.Name != "")
+                .Where(p => p.Enabled == true)
                 .Where(p => p.ParentID > 0)
+                .Where(p => p.ProjectStatus >= (int)ProjectStatus.CAD新建)
                 .Where(p => p.MoldNumber.Contains(Keyword));
-            }else{
-                _moldProjects=_projectRepository.Projects
-                .Where(p=>p.Name!="")
+            }
+            else
+            {
+                _moldProjects = _projectRepository.Projects
+                .Where(p => p.Name != "")
                 .Where(p => p.ParentID > 0)
-                .Where(p=>p.Enabled==true);
+                .Where(p => p.ProjectStatus >= (int)ProjectStatus.CAD新建)
+                .Where(p => p.Enabled == true);
             }
             if (TakeAll != true)
             {
-                _moldProjects = _moldProjects.Where(p => p.ProjectStatus <2);
+                _moldProjects = _moldProjects.Where(p => p.ProjectStatus < (int)ProjectStatus.完成);
             }
-            IEnumerable<string> _moldNumbers = _moldProjects.OrderBy(p=>p.MoldNumber).Select(p => p.MoldNumber).Distinct();
+            IEnumerable<string> _moldNumbers = _moldProjects.OrderBy(p => p.MoldNumber).Select(p => p.MoldNumber).Distinct();
             return Json(_moldNumbers, JsonRequestBehavior.AllowGet);
         }
 
@@ -1222,10 +1222,9 @@ namespace MoldManager.WebUI.Controllers
             return Json(_project, JsonRequestBehavior.AllowGet);
         }
 
-       
+
 
         #endregion
-
 
         #region CommonMethods
         public int PauseProject(int ProjectID, string Memo, bool PauseSubs)
@@ -1244,38 +1243,56 @@ namespace MoldManager.WebUI.Controllers
             string _userName;
             try
             {
-                _userName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], Encoding.GetEncoding("UTF-8")); 
+                _userName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], Encoding.GetEncoding("UTF-8"));
             }
             catch
             {
                 _userName = "";
             }
-            _memo = _userName+"<br>"+  _memo;
+            _memo = _userName + "<br>" + _memo;
             int state = _projectRepository.PauseProject(ProjectID, _memo, PauseSubs);
 
-            if (state==1){
+            if (state == 1)
+            {
                 _recordMemo = "暂停";
-            }else{
+            }
+            else
+            {
                 _recordMemo = "继续";
             }
 
-            _recordMemo = _userName+"设置项目"+_recordMemo+"。";
-            if (Memo!=""){
+            _recordMemo = _userName + "设置项目" + _recordMemo + "。";
+            if (Memo != "")
+            {
                 _recordMemo = _recordMemo + "备注信息:" + Memo;
             }
             AddProjectRecord(ProjectID, _recordMemo);
-            
+
             return state;
         }
-
+        /// <summary>
+        /// TODO:删除项目
+        /// </summary>
+        /// <param name="ProjectID"></param>
+        /// <param name="Memo"></param>
+        /// <returns></returns>
         public int DeleteProject(int ProjectID, string Memo)
         {
             try
             {
                 int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
                 string _username = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], Encoding.GetEncoding("UTF-8"));
+
+                List<string> _depNames1 = new List<string>() { "管理" };
+                List<int> _depIds1 = _deptRepository.Departments.Where(d => _depNames1.Contains(d.Name) && d.Enabled == true).Select(d => d.DepartmentID).ToList();
+
                 Project _project = _projectRepository.GetByID(ProjectID);
-                if (_depid == 1 || _username == _project.Creator)
+                List<Project> _childProjects = _projectRepository.Projects.Where(p => p.Enabled == true && p.ParentID == _project.ProjectID).ToList();
+                if (_childProjects.Count > 0)
+                {
+                    return -100;
+                }
+                if ((_depIds1.Contains(_depid) || _username == _project.Creator) && _project.ProjectStatus != (int)ProjectStatus.完成)
                 {
                     _projectRepository.DeleteProject(ProjectID, Memo);
                     return 1;
@@ -1307,16 +1324,15 @@ namespace MoldManager.WebUI.Controllers
             catch
             {
                 return 1;
-            }            
+            }
         }
 
         public int SubProjectCount(int ProjectID)
         {
-            int subCount = _projectRepository.Projects.Where(p => p.ParentID == ProjectID).Where(p=>p.Enabled==true).Count();
+            int subCount = _projectRepository.Projects.Where(p => p.ParentID == ProjectID).Where(p => p.Enabled == true).Count();
             return subCount;
         }
         #endregion
-
 
         public ActionResult CustomerManagement()
         {
@@ -1337,7 +1353,7 @@ namespace MoldManager.WebUI.Controllers
             return RedirectToAction("CustomerManagement", "Project");
         }
 
-        public string  DeleteCustomer(int CustomerID)
+        public string DeleteCustomer(int CustomerID)
         {
             string msg = "";
             int _projectCount = _projectRepository.Projects.Where(p => p.CustomerID == CustomerID).Count();
@@ -1354,7 +1370,7 @@ namespace MoldManager.WebUI.Controllers
 
         public int UniqueCustomer(string Name)
         {
-            int _count = _customerRepository.Customers.Where(c =>c.Name.ToLower() == Name.ToLower())
+            int _count = _customerRepository.Customers.Where(c => c.Name.ToLower() == Name.ToLower())
                 .Where(c => c.Enabled == true).Count();
             return _count;
         }
@@ -1364,7 +1380,7 @@ namespace MoldManager.WebUI.Controllers
             //string _phase = _phasesRepository.Phases.Where(p => p.PhaseID == PhaseID).Select(p=>p.Name).FirstOrDefault();
             string _dept = _deptRepository.GetByID(DepartmentID).Name;
             Base_DepPhase depPhase = _depphaseRepository.QueryByDepID(DepartmentID).Where(d => d.PhaseId == PhaseID).FirstOrDefault() ?? new Base_DepPhase();
-            if ((depPhase.Id>0) ||(_dept=="管理"))
+            if ((depPhase.Id > 0) || (_dept == "管理"))
             {
                 return true;
             }
@@ -1392,7 +1408,7 @@ namespace MoldManager.WebUI.Controllers
             //    Directory.CreateDirectory(filePhysicalPath);//创建文件夹
             //}
 
-            var physicsFileName = Server.MapPath(GetUploadPath(_project.MoldNumber)+Attachment.FileName);
+            var physicsFileName = Server.MapPath(GetUploadPath(_project.MoldNumber) + Attachment.FileName);
 
             try
             {
@@ -1405,7 +1421,7 @@ namespace MoldManager.WebUI.Controllers
             {
                 return "保存失败";
             }
-            
+
         }
 
         private string GetUploadPath(string MoldNumber)
@@ -1429,7 +1445,7 @@ namespace MoldManager.WebUI.Controllers
             string _fullPath = _path + _fileName;
 
             return File(_fullPath, "application/vnd.ms-powerpoint", _fileName);
-            
+
         }
 
         public string GetMoldName(string MoldNumber)
@@ -1443,7 +1459,7 @@ namespace MoldManager.WebUI.Controllers
             {
                 return "";
             }
-            
+
         }
 
 
@@ -1462,7 +1478,7 @@ namespace MoldManager.WebUI.Controllers
 
         public int GetProjectID(string MoldNumber)
         {
-            
+
             Project _project = _projectRepository.GetLatestActiveProject(MoldNumber);
             if (_project != null)
             {
@@ -1471,7 +1487,7 @@ namespace MoldManager.WebUI.Controllers
             else
             {
                 return 0;
-            }           
+            }
         }
 
         public void AddProjectRecord(int ProjectID, string RecordContent)
@@ -1499,7 +1515,7 @@ namespace MoldManager.WebUI.Controllers
             ProjectPhase _ppap = _projectPhaseRepository.GetProjectPhases(ProjectID).Where(p => p.PhaseID == 14).FirstOrDefault();
             DateTime _otsDate = _ots.PlanCFinish == new DateTime(1, 1, 1) ? _ots.PlanFinish : _ots.PlanCFinish;
             DateTime _ppapDate = _ppap.PlanCFinish == new DateTime(1, 1, 1) ? _ppap.PlanFinish : _ppap.PlanCFinish;
-            if(PhaseID<13)
+            if (PhaseID < 13)
             {
                 if (PlanCFinish > _otsDate)
                 {
@@ -1527,7 +1543,7 @@ namespace MoldManager.WebUI.Controllers
             else
             {
                 return "";
-            }            
+            }
         }
 
         public ActionResult CostSummary(string MoldNumber)
@@ -1655,7 +1671,7 @@ namespace MoldManager.WebUI.Controllers
         #region added by michael 180708
         public bool IsMainPJ(string pjID)
         {
-            if (!string.IsNullOrEmpty(pjID) && pjID!="undefined")
+            if (!string.IsNullOrEmpty(pjID) && pjID != "undefined")
             {
                 int pjIDint = Convert.ToInt32(pjID);
                 Project pj = _projectRepository.GetByID(pjIDint);
@@ -1672,20 +1688,20 @@ namespace MoldManager.WebUI.Controllers
         public string Service_GetMoldNoByProID(int projectid)
         {
             Project _project = _projectRepository.GetByID(projectid);
-            if(_project.MoldNumber == "---")
+            if (_project.MoldNumber == "---")
             {
                 List<Project> _projects = _projectRepository.Projects.Where(p => p.ParentID == _project.ProjectID).ToList();
                 string _moldNos = "";
                 if (_projects != null)
                 {
-                    foreach(var p in _projects)
+                    foreach (var p in _projects)
                     {
-                        _moldNos = _moldNos + p.MoldNumber+",";
+                        _moldNos = _moldNos + p.MoldNumber + ",";
                     }
                 }
                 if (!string.IsNullOrEmpty(_moldNos))
                 {
-                    return _moldNos.Substring(0, _moldNos.Length-1);
+                    return _moldNos.Substring(0, _moldNos.Length - 1);
                 }
                 return null;
             }
@@ -1700,9 +1716,9 @@ namespace MoldManager.WebUI.Controllers
             List<TaskType> _tasktypes = new List<TaskType>();
             if (_phaseTasktypes != null)
             {
-                foreach(var p in _phaseTasktypes)
+                foreach (var p in _phaseTasktypes)
                 {
-                    TaskType _type = _taskTypeRepository.TaskTypes.Where(t => t.TaskID == p.TaskTypeID && t.Enable==true).FirstOrDefault();
+                    TaskType _type = _taskTypeRepository.TaskTypes.Where(t => t.TaskID == p.TaskTypeID && t.Enable == true).FirstOrDefault();
                     if (_type != null)
                         _tasktypes.Add(_type);
                 }
@@ -1711,5 +1727,36 @@ namespace MoldManager.WebUI.Controllers
             return null;
         }
         #endregion
+
+        public JsonResult Service_ProJ_GetByID(int proJectID)
+        {
+            Project _proj = _projectRepository.QueryByID(proJectID);
+            return Json(_proj, JsonRequestBehavior.AllowGet);
+        }
+        public int Service_PJ_ClosedProject(int proJectID)
+        {
+            int res = _projectRepository.CloseProject(proJectID);
+            Project _proj = _projectRepository.QueryByID(proJectID);
+            #region 关闭主项目
+            if (_proj.Type == 1)
+            {
+                List<Project> _projects = _projectRepository.QueryByMainProject(_proj.ParentID).ToList();
+                bool isAllClosed = true;
+                foreach (var p in _projects)
+                {
+                    if (p.ProjectStatus != (int)ProjectStatus.完成)
+                    {
+                        isAllClosed = false;
+                    }
+                }
+                if (isAllClosed)
+                {
+                    _projectRepository.CloseProject(_proj.ParentID);
+                }
+            }
+            #endregion
+
+            return res;
+        }
     }
 }

@@ -20,5 +20,6 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public string Dep { get; set; }
         public decimal Cost { get; set; }
         public bool Enabled { get; set; }
+        public bool ContainEmp { get; set; }
     }
 }

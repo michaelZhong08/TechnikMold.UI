@@ -25,6 +25,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -199,6 +200,10 @@
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
+    <Reference Include="TechnikMold.Domain, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Bin\TechnikMold.Domain.dll</HintPath>
+    </Reference>
     <Reference Include="WebActivatorEx">
       <HintPath>D:\BaiduNetdiskDownload\moldmanager0425\moldmanager\MoldManager.WebUI\bin\WebActivatorEx.dll</HintPath>
     </Reference>
@@ -278,6 +283,7 @@
     <Compile Include="Models\GridRowModel\WarehouseStockGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\WHPOContentGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\WHPOListGridRowModel.cs" />
+    <Compile Include="Models\GridRowModel\WHReportRowModelA.cs" />
     <Compile Include="Models\GridRowModel\WHRequestGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\WHRequestItemGridRowModel.cs" />
     <Compile Include="Models\GridViewModel\AttachGridViewModel.cs" />
@@ -314,9 +320,9 @@
     <Compile Include="Models\GridViewModel\WarehouseStockGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\WHPOContentGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\WHPOListGridViewModel.cs" />
+    <Compile Include="Models\GridViewModel\WHReportViewModelA.cs" />
     <Compile Include="Models\GridViewModel\WHRequestGridViewModel.cs" />
     <Compile Include="Models\GridViewModel\WHRequestItemGridViewModel.cs" />
-    <Compile Include="Models\Helpers\ProjectStatus.cs" />
     <Compile Include="Models\Helpers\PurchaseOrderStatus.cs" />
     <Compile Include="Models\Helpers\PurchaseRequestStatus.cs" />
     <Compile Include="Models\Helpers\__QuotationRequestStatus.cs" />
@@ -325,6 +331,7 @@
     <Compile Include="Models\Helpers\TaskTypeModelHelper.cs" />
     <Compile Include="Models\Toolkits.cs" />
     <Compile Include="Models\ViewModel\EDMItemViewModel.cs" />
+    <Compile Include="Models\ViewModel\EleInfoViewModel.cs" />
     <Compile Include="Models\ViewModel\MGTaskUptVerViewModel.cs" />
     <Compile Include="Models\ViewModel\PartViewForExport.cs" />
     <Compile Include="Models\ViewModel\PDReportViewModel.cs" />
@@ -335,6 +342,7 @@
     <Compile Include="Models\ViewModel\Purchase2ViewForExport.cs" />
     <Compile Include="Models\ViewModel\PurchaseTypePOViewModel.cs" />
     <Compile Include="Models\ViewModel\PurchaseViewForExport.cs" />
+    <Compile Include="Models\ViewModel\WHReportViewModelA.cs" />
     <Compile Include="Models\ViewModel\__QRMailModel.cs" />
     <Compile Include="Models\ViewModel\QRMailTable.cs" />
     <Compile Include="Models\ViewModel\QRQuotationSummaryViewModel.cs" />
@@ -371,12 +379,17 @@
     <Content Include="App_Start\Content\ui.jqgrid-bootstrap-ui.css" />
     <Content Include="App_Start\Content\ui.jqgrid-bootstrap.css" />
     <Content Include="App_Start\Content\ui.jqgrid.css" />
+    <Content Include="Content\bootstrap-datetimepicker-standalone.css" />
+    <Content Include="Content\bootstrap-datetimepicker.css" />
+    <Content Include="Content\bootstrap-datetimepicker.min.css" />
     <Content Include="Content\bootstrap-switch.css" />
+    <Content Include="Content\bootstrap-switch1.css" />
     <Content Include="Content\bootstrap-treeview.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\datepicker.css" />
     <Content Include="Content\jAlert.css" />
+    <Content Include="Content\jquery-ui-timepicker-addon.css" />
     <Content Include="Content\jquery-ui.css" />
     <Content Include="Content\layui.css" />
     <Content Include="Content\Site.css" />
@@ -423,7 +436,10 @@
     <Content Include="Scripts\ai.0.22.9-build00167.js" />
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\bootstrap-datepicker.js" />
+    <Content Include="Scripts\bootstrap-datetimepicker.min.js" />
+    <Content Include="Scripts\bootstrap-datetimepicker.zh-CN.js" />
     <Content Include="Scripts\bootstrap-switch.js" />
+    <Content Include="Scripts\bootstrap-switch1.js" />
     <Content Include="Scripts\bootstrap-treeview.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -445,6 +461,9 @@
     <Content Include="Scripts\JqGridTemplate.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
+    <Content Include="Scripts\jquery-ui-sliderAccess.js" />
+    <Content Include="Scripts\jquery-ui-timepicker-addon-i18n.min.js" />
+    <Content Include="Scripts\jquery-ui-timepicker-addon.js" />
     <Content Include="Scripts\jquery.form.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery-ui.js" />
@@ -467,11 +486,14 @@
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\Task.js" />
     <Content Include="Scripts\test.js" />
+    <Content Include="Scripts\TimeFormat.js" />
     <Content Include="Scripts\User.js" />
     <Content Include="Scripts\Warehouse.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="sysicon.ico" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -573,12 +595,18 @@
     <Content Include="Views\Warehouse\WHRequestDetail.cshtml" />
     <Content Include="Views\Task\AddMGTask.cshtml" />
     <Content Include="Views\Purchase\OtherPurItemList.cshtml" />
+    <Content Include="Views\Purchase\POReportForQuery.cshtml" />
+    <Content Include="Views\Task\TaskTimeView.cshtml" />
+    <Content Include="Views\WorkHour\WHReportWithMachine.cshtml" />
+    <Content Include="Views\Purchase\QuotationSummary1.cshtml" />
+    <Content Include="Views\WorkHour\EmpWorkHourSubmit.cshtml" />
+    <Content Include="Views\WorkHour\EmpWorkHourSubmitA.cshtml" />
+    <Content Include="Views\WorkHour\EmpWorkHourRecord.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="SysPDFFile\" />
     <Folder Include="Views\Attach\" />
-    <Folder Include="Views\WorkHour\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
@@ -589,6 +617,14 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ClassLibrary1\Common.csproj">
+      <Project>{e401a16e-2412-4478-9051-0d842ea0992f}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DAL\DAL.csproj">
+      <Project>{17e8e433-cf3b-4def-bd51-5d0a23565822}</Project>
+      <Name>DAL</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MoldManager.Domain\MoldManager.Domain.csproj">
       <Project>{7f9c42e5-4e81-46e3-9d20-83c19948eae1}</Project>
       <Name>MoldManager.Domain</Name>
@@ -596,10 +632,6 @@
     <ProjectReference Include="..\MoldManager.NX\MoldManager.NX.csproj">
       <Project>{7ea6dbbd-1bf5-4e33-a4ed-798bf1e9beb5}</Project>
       <Name>MoldManager.NX</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MoldManager.QC\MoldManager.QC.csproj">
-      <Project>{5d1e33c7-ff40-42f9-bb9b-0adf6f7a38fd}</Project>
-      <Name>MoldManager.QC</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

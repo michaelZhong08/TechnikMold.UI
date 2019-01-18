@@ -1,0 +1,431 @@
+﻿
+@{
+    ViewBag.Title = "机器工时报表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .tb_WHReportWithMachineA td {
+        border: 1px solid rgba(0,0,0,0.1);
+        text-align: center;
+        vertical-align: central;
+        font-size: 12px;
+        font-family:"微软雅黑"!important;
+    }
+
+    .th_WHReportWithMachineA td {
+        margin-bottom: 0;
+        table-layout: fixed;
+        background-color: rgba(0,0,0,0.8);
+        color: rgba(255,255,255,1);
+        font-size: 14px!important;
+        font-weight:bold!important;
+        height: 36.53px;
+
+        border:1px solid rgba(255,255,255,0.5)!important;
+        border-style:solid solid solid solid!important;
+    }
+
+    #tb_WHReportWithMachineA td span {
+        cursor:pointer;
+        float: left;
+    }
+</style>
+@section Header{
+    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
+    <link rel="stylesheet" href="~/Content/datepicker.css" />
+    <script src="~/Scripts/bootstrap-switch.js"></script>
+    <script src="~/Scripts/bootstrap-datepicker.js"></script>
+}
+
+<h2 style="margin-top:60px;">机器工时报表</h2>
+<div class="FatherDiv">
+    <div class="LeftDiv">
+        <button class="btn btn-primary  LeftDiv_Btn" id="RefreshSel">刷新列表</button>
+        <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="机器关键字" />
+        <select class="form-control LeftDiv_Sel" id="Sel_Machine" size="3"></select>
+    </div>
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
+                <tr>
+                    <td style="font-weight:bold;">工艺类型</td>
+                    <td>
+                        <select id="Sel_taskType" class="form-control">
+                            <option value="0">All</option>
+                            <option value="1">电极任务</option>
+                            <option value="2">EDM任务</option>
+                            <option value="3">WEDM任务</option>
+                            <option value="4">铣铁任务</option>
+                            <option value="6">铣磨任务</option>
+                        </select>
+                    </td>
+                    <td style="font-weight:bold;">时间范围</td>
+                    <td>
+                        <select id="Sel_dateType" class="form-control">
+                            <option value="0">-</option>
+                            <option value="1">本周</option>
+                            <option value="2">本月</option>
+                            <option value="-1">上周</option>
+                            <option value="-2">上月</option>
+                        </select>
+                    </td>
+                    <td style="font-weight:bold;">开始时间</td>
+                    <td>
+                        
+                        <div class="input-daterange input-group" id="datepicker">
+                            <input type="text" class="form-control" id="startTimeFr" style="width:120px;"/>
+                            <span class="input-group-addon">至</span>
+                            <input type="text" class="form-control" id="startTimeTo" style="width:120px;"/>
+                        </div>
+                    </td>
+                    <td style="font-weight:bold;">结束时间</td>
+                    <td>
+
+                        <div class="input-daterange input-group" id="datepicker">
+                            <input type="text" class="form-control" id="finishTimeFr" style="width:120px;" />
+                            <span class="input-group-addon">至</span>
+                            <input type="text" class="form-control" id="finishTimeTo" style="width:120px;" />
+                        </div>
+                    </td>
+                    <td><button id="btn_Search" class="btn btn-info"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+                </tr>
+            </table>
+        </div>
+        <div class="RightDiv_BottomDiv" style="border:1px rgba(0,0,0,0.1) solid;overflow:hidden;">
+            @*<table id="tb_WHReportWithMachine"></table>*@
+            <div class="hdiv" style="overflow:hidden;">
+                <table id="htb_WHReportWithMachineA" class="tb_WHReportWithMachineA">
+                    <colgroup><col width="12%" /><col width="10%" /><col width="20%" /><col width="7%" /><col width="10%" /><col width="10%" /> <col width="4%" /><col width="4%" /><col width="4%" /><col width="6%" /><col width="7%" /><col width="6%" /></colgroup>
+                    <tr class="th_WHReportWithMachineA"><td>机器名称</td><td>模号</td><td>任务名</td><td>工艺类型</td><td>开始时间</td><td>结束时间</td><td>A0</td><td>A1</td><td>A2</td><td>总工时</td><td>工时特征</td><td>操作人</td></tr>
+                </table>
+            </div>
+            <div class="bdiv" style="overflow:hidden;overflow-y:auto;">
+                <table id="tb_WHReportWithMachineA" class="tb_WHReportWithMachineA" style="width:100%;">
+                </table>
+            </div> 
+        </div>
+    </div>
+</div>
+
+<script>
+    var plus='plus';//加号标志
+    var minus = 'minus';//减号标志
+    var plusSpan = 'plus';//glyphicon glyphicon-plus
+    var minusSpan = 'minus';//glyphicon glyphicon-minus
+    $(document).ready(function () {
+        LoadMachInfo('');
+        //
+        $('.bdiv').css('height', $('.RightDiv_BottomDiv').height() - 37);
+        $('#htb_WHReportWithMachineA').css('width', $('.RightDiv_BottomDiv').width() - 14);
+        $('#tb_WHReportWithMachineA').css('width', $('.RightDiv_BottomDiv').width() - 14);
+        $(window).resize(function () {
+            $('.bdiv').css('height', $('.RightDiv_BottomDiv').height() - 37);
+            $('#htb_WHReportWithMachineA').css('width', $('.RightDiv_BottomDiv').width() - 14);
+            $('#tb_WHReportWithMachineA').css('width', $('.RightDiv_BottomDiv').width() - 14);
+        })
+        //
+        $('#Keyword').on('keyup', function () {
+            $.debounce(100, LoadMachInfo($('#Keyword').val()));
+        });
+        $('#RefreshSel').on('click', function () {
+            LoadMachInfo('');
+        });
+        $('#Sel_Machine').on('change', function () {
+            ReloadWHTable();
+            trBColorReSet();
+        });
+        $('#Sel_taskType').on('change', function () {
+            ReloadWHTable();
+            trBColorReSet();
+        });
+        $('#btn_Search').on('click', function () {
+            console.log($('#startTimeFr').val());
+            ReloadWHTable();
+            trBColorReSet();
+        });
+    })
+    function LoadMachInfo(kw) {
+        $('#Sel_Machine').empty();
+        $.get('/WorkHour/Service_WH_GetMachineInfoList?keyword=' + kw, function (res) {
+            $.each(res, function (i, n) {
+                if (n.MachineName != '-') {
+                    $('#Sel_Machine').append('<option value="' + n.MachineCode + '">' + n.MachineCode + '_' + n.MachineName + '</option>');
+                } else {
+                    $('#Sel_Machine').append('<option value="' + n.MachineCode + '">' + n.MachineCode + '</option>');
+                }
+                
+            })  
+        })
+    }
+
+    function ReloadWHGrid() {
+        var _url = '/WorkHour/Service_WH_GetWHReportWithMachJson?mCode=' + $('#Sel_Machine').val();
+        $('#tb_WHReportWithMachine').jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger('reloadGrid');
+    }
+
+    //重载表格
+    function ReloadWHTable() {
+        var _mCode = $('#Sel_Machine').val();
+        var _taskType = $('#Sel_taskType').val();
+        var _url = '/WorkHour/Service_WH_GetWHReportDataAByProc?mCode=' + _mCode + '&taskType=' + _taskType + '&startTimeFr=' + $('#startTimeFr').val() + '&startTimeTo=' + $('#startTimeTo').val() + '&finishTimeFr=' + $('#finishTimeFr').val() + '&finishTimeTo=' + $('#finishTimeTo').val();
+        $.ajaxSettings.async = false;
+        $.get(_url, function (res) {
+            $('#tb_WHReportWithMachineA').empty();
+            var _json = JSON.parse(res);//Json对象 数组
+            var _html = '';
+            console.log(_json);
+            _html = '<colgroup><col width="12%" /><col width="10%" /><col width="20%" /><col width="7%" /><col width="10%" /><col width="10%" /> <col width="4%" /><col width="4%" /><col width="4%" /><col width="6%" /><col width="7%" /><col width="6%" /></colgroup>';
+            //_html = _html + '<tr class="th_WHReportWithMachineA"><td>机器名称</td><td>模号</td><td>任务名</td><td>工艺类型</td><td>开始时间</td><td>结束时间</td><td>A0</td><td>A1</td><td>A2</td><td>总工时</td><td>工时特征</td><td>操作人</td></tr>';
+            for (var i = 0; i < _json.length; i++) {
+                var _obj = _json[i];
+                if (_obj.Flag == 1) {
+                    _html = _html + '<tr class="' + _obj.Flag + '_' + _obj.机器代码 + '_' + _obj.模号 + '"><td style="font-size:13px;font-weight:bold;"><span style="color:green;" id="' + _obj.Flag + '_' + _obj.机器代码 + '_-_plus" class="' + plusSpan + '" onclick="SpanClick(this)">+</span><span id="' + _obj.Flag + '_' + _obj.机器代码 + '_-_minus" class="' + minusSpan + '" onclick="SpanClick(this)" style="display:none;color:red;">-</span>' + _obj.机器名称 + '</td><td>' + _obj.模号 + '</td><td>' + _obj.任务名 + '</td><td>' + _obj.工艺类型 + '</td><td>' + _obj.开始时间 + '</td><td>' + _obj.结束时间 + '</td><td style="font-weight:bold;">' + _obj.A0 + '</td><td style="font-weight:bold;">' + _obj.A1 + '</td><td style="font-weight:bold;">' + _obj.A2 + '</td><td style="font-weight:bold;">' + _obj.总工时 + '</td><td>' + _obj.工时特征 + '</td><td>' + _obj.操作人 + '</td></tr>';
+                } else if (_obj.Flag == 2) {
+                    _html = _html + '<tr class="' + _obj.Flag + '_' + _obj.机器代码 + '_' + _obj.模号 + '"><td>' + _obj.机器名称 + '</td><td style="font-size:13px;font-weight:bold;"><span style="color:green;" id="' + _obj.Flag + '_' + _obj.机器代码 + '_' + _obj.模号 + '_plus" class="' + plusSpan + '" onclick="SpanClick(this)">+</span><span id="' + _obj.Flag + '_' + _obj.机器代码 + '_' + _obj.模号 + '_minus" class="' + minusSpan + '" onclick="SpanClick(this)" style="display:none;color:red;">-</span>' + _obj.模号 + '</td><td>' + _obj.任务名 + '</td><td>' + _obj.工艺类型 + '</td><td>' + _obj.开始时间 + '</td><td>' + _obj.结束时间 + '</td><td style="font-weight:bold;">' + _obj.A0 + '</td><td style="font-weight:bold;">' + _obj.A1 + '</td><td style="font-weight:bold;">' + _obj.A2 + '</td><td style="font-weight:bold;">' + _obj.总工时 + '</td><td>' + _obj.工时特征 + '</td><td>' + _obj.操作人 + '</td></tr>';
+                } else if (_obj.Flag == 3) {
+                    _html = _html + '<tr class="' + _obj.Flag + '_' + _obj.机器代码 + '_' + _obj.模号 + '"><td>' + _obj.机器名称 + '</td><td></td><td>' + _obj.任务名 + '</td><td>' + _obj.工艺类型 + '</td><td>' + _obj.开始时间 + '</td><td>' + _obj.结束时间 + '</td><td>' + _obj.A0 + '</td><td>' + _obj.A1 + '</td><td>' + _obj.A2 + '</td><td>' + _obj.总工时 + '</td><td>' + _obj.工时特征 + '</td><td>' + _obj.操作人 + '</td></tr>';
+                } else {
+                    _html = _html + '<tr class="' + _obj.Flag + '_' + _obj.机器代码 + '_' + _obj.模号 + '"><td>' + _obj.机器名称 + '</td><td>' + _obj.模号 + '</td><td>' + _obj.任务名 + '</td><td>' + _obj.工艺类型 + '</td><td>' + _obj.开始时间 + '</td><td>' + _obj.结束时间 + '</td><td style="font-weight:bold;font-size: 14px!important;">' + _obj.A0 + '</td><td style="font-weight:bold;font-size: 14px!important;">' + _obj.A1 + '</td><td style="font-weight:bold;font-size: 14px!important;">' + _obj.A2 + '</td><td style="font-weight:bold;font-size: 14px!important;height:36px;">' + _obj.总工时 + '</td><td>' + _obj.工时特征 + '</td><td>' + _obj.操作人 + '</td></tr>';
+                }
+            }
+            $('#tb_WHReportWithMachineA').append(_html);
+        });
+        //默认隐藏
+        $("#tb_WHReportWithMachineA tr").each(function (i, n) {
+            var _class = $(this).attr('class');
+            if (_class != 'th_WHReportWithMachineA') {
+                var _classArry = _class.split('_');
+                //console.log(_class);
+                if (_classArry[0] != '1' && _classArry[0] != '0') {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            }
+        })
+    }
+
+    function TRshowOrhide(e, flag) {
+        var _thisClass = $(e).attr('class');
+        var _thisClassArry = _thisClass.split('_');
+        $("#tb_WHReportWithMachineA tr").each(function (i, n) {
+            var _class = $(this).attr('class');
+            if (_class != 'th_WHReportWithMachineA') {
+                var _classArry = _class.split('_');
+                if (_classArry[0] == flag && _classArry[1] == _thisClassArry[1]) {
+                    var _display = $(this).css('display');
+                    if (_display == 'none') {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                }
+            }
+        })
+    }
+    function ReportRowClick(e) {
+        var _thisClass = $(e).attr('class');
+        var _thisClassArry = _thisClass.split('_');
+        if (_thisClassArry[0] == '1') {
+            TRshowOrhide('3');
+            TRshowOrhide('2');
+        } else if (_thisClassArry[0] == '2') {
+            TRshowOrhide('3');
+        }
+    }
+    //控制 加号/减号 显示/隐藏
+    function SpanClick(e) {
+        var _id = $(e).attr('id');
+        var _idArry = _id.split('_');
+        $(e).hide();
+        if (_idArry[3] == plus) {
+            $('#' + _idArry[0] + '_' + _idArry[1]+ '_' + _idArry[2] + '_'+minus).show();
+            plusBandFun(e);
+        } else if (_idArry[3] == minus) {
+            $('#' + _idArry[0] + '_' + _idArry[1]+ '_' + _idArry[2] + '_'+plus).show();
+            minusBandFun(e);
+        }
+        trBColorReSet();
+    }
+    //加号方法
+    function plusBandFun(e) {//加号方法
+        var _id = $(e).attr('id');
+        //console.log(_id);
+        var _idArry = _id.split('_');
+        if (_idArry[0] == '1') {
+            $("#tb_WHReportWithMachineA tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                if (_class != 'th_WHReportWithMachineA') {
+                    var _classArry = _class.split('_');
+                    if (_classArry[0] == '2' && _classArry[1] == _idArry[1]) {
+                        $(this).show();
+                    }
+                }
+            })
+        } else if (_idArry[0] == '2') {
+            $("#tb_WHReportWithMachineA tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                if (_class != 'th_WHReportWithMachineA') {
+                    var _classArry = _class.split('_');
+                    if (_classArry[0] == '3' && _classArry[1] == _idArry[1] && _classArry[2] == _idArry[2]) {
+                        $(this).show();
+                    }
+                }
+            })
+        }
+    }
+    //减号方法
+    function minusBandFun(e) {//减号方法
+        var _id = $(e).attr('id');
+        //console.log(_id);
+        var _idArry = _id.split('_');
+        if (_idArry[0] == '1') {
+            $("#tb_WHReportWithMachineA tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                if (_class != 'th_WHReportWithMachineA') {
+                    var _classArry = _class.split('_');
+                    if (_classArry[0] == '3' && _classArry[1] == _idArry[1]) {
+                        $(this).hide();
+                    }
+                }
+            });
+            $("#tb_WHReportWithMachineA tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                if (_class != 'th_WHReportWithMachineA') {
+                    var _classArry = _class.split('_');
+                    if (_classArry[0] == '2' && _classArry[1] == _idArry[1]) {
+                        $(this).hide();
+                    }
+                }
+            });
+            //所有第二层减号需要变成加号
+            $('span').each(function (i, n) {
+                var _class1=$(this).attr('class');
+                var _id1=this.id;
+                var _idArry1=_id1.split('_');
+                if (_class1 == 'plus' && _idArry1[0] == '2' && _idArry1[1] == _idArry[1]) {
+                    $(this).show();
+                }
+                if (_class1 == 'minus' && _idArry1[0] == '2' && _idArry1[1] == _idArry[1]) {
+                    $(this).hide();
+                }
+            })
+        } else if (_idArry[0] == '2') {
+            $("#tb_WHReportWithMachineA tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                if (_class != 'th_WHReportWithMachineA') {
+                    var _classArry = _class.split('_');
+                    if (_classArry[0] == '3' && _classArry[1] == _idArry[1] && _classArry[2] == _idArry[2]) {
+                        $(this).hide();
+                    }
+                }
+            })
+        }
+    }
+    //表格背景色设置
+    function trBColorReSet() {
+        var z = 1;//用来记录显示行的序号
+        $("#tb_WHReportWithMachineA tr").each(function (i, n) {
+            var _class = $(this).attr('class');
+            if (_class != 'th_WHReportWithMachineA') {
+                var _display = $(this).css('display');
+                if (_display != 'none') {
+                    if (z % 2 == 0) {
+                        $(this).css('background', '#eeeeee');
+                    } else {
+                        $(this).css('background', 'white');
+                    }
+                    z = z + 1;
+                }
+            }
+        })
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        //开始时间
+        $('#startTimeFr').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            todayHighlight: true,
+            //startDate : new Date()
+        });
+        //结束时间
+        $('#startTimeTo').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            todayHighlight: true,
+            //startDate : new Date()
+        });
+        //开始时间
+        $('#finishTimeFr').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            todayHighlight: true,
+            //startDate : new Date()
+        });
+        //结束时间
+        $('#finishTimeTo').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            todayHighlight: true,
+            //startDate : new Date()
+        });
+
+        $('#Sel_dateType').on('change', function () {
+            switch (Number($('#Sel_dateType').val())) {
+                case 1://本周
+                    $('#startTimeFr').val(getWeekStartDate());
+                    $('#startTimeTo').val(getWeekEndDate());
+                    $('#finishTimeFr').val(getWeekStartDate());
+                    $('#finishTimeTo').val(getWeekEndDate());
+                    break;
+                case 2://本月
+                    $('#startTimeFr').val(getMonthStartDate());
+                    $('#startTimeTo').val(getMonthEndDate());
+                    $('#finishTimeFr').val(getMonthStartDate());
+                    $('#finishTimeTo').val(getMonthEndDate());
+                    break;
+                case 3://本季
+                    $('#startTimeFr').val(getQuarterStartDate());
+                    $('#startTimeTo').val(getQuarterEndDate());
+                    $('#finishTimeFr').val(getQuarterStartDate());
+                    $('#finishTimeTo').val(getQuarterEndDate());
+                    break;
+                case 4://本年
+                    $('#startTimeFr').val(getWeekStartDate());
+                    $('#startTimeTo').val(getWeekEndDate());
+                    $('#finishTimeFr').val(getWeekStartDate());
+                    $('#finishTimeTo').val(getWeekEndDate());
+                    break;
+                case -1://上周
+                    $('#startTimeFr').val(getLastWeekStartDate());
+                    $('#startTimeTo').val(getLastWeekEndDate());
+                    $('#finishTimeFr').val(getLastWeekStartDate());
+                    $('#finishTimeTo').val(getLastWeekEndDate());
+                    break;
+                case -2://上月
+                    $('#startTimeFr').val(getLastMonthStartDate());
+                    $('#startTimeTo').val(getLastMonthEndDate());
+                    $('#finishTimeFr').val(getLastMonthStartDate());
+                    $('#finishTimeTo').val(getLastMonthEndDate());
+                    break;
+                case 0:
+                    $('#startTimeFr').val('');
+                    $('#startTimeTo').val('');
+                    $('#finishTimeFr').val('');
+                    $('#finishTimeTo').val('');
+                    break;
+            }
+        })
+    })
+</script>

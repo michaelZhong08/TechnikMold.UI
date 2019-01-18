@@ -32,6 +32,7 @@ namespace TechnikSys.MoldManager.Domain.Abstract
 
         NetworkCredential MailCredential(int UserID);
         IEnumerable<User> FilterUser(List<int> _depList, string UserName = "");
+        User GetUserByCode(string UserCode);
 
     }
 }

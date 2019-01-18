@@ -1,5 +1,4 @@
-﻿
-//用户列表
+﻿//用户列表
 function UserGrid(Keyword) {
 
     $("#UserGrid").jqGrid({
@@ -155,7 +154,7 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
             }
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight - 175,
+        height: document.documentElement.clientHeight - 180,
         width: document.body.clientWidth,
         rownumbers: true, // show row numbers
         rownumWidth: 25, // the width of the row numbers columns
@@ -169,16 +168,10 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
             Merger(gridName, 'ProjectNo');
             MergerSpecifiedLines(gridName, "MoldNo", 3);
             MergerSpecifiedLines(gridName, "Memo", 3);
-            //for (var i = $("#ProjectGrid").rows.length - 1; i > 0; i--) {
-            //    $("#ProjectGrid").getcell()
-            //}
         },
         //双击行事件改为显示加工历史模态框
         ondblClickRow: function (rowid, iRow, iCol, e) {
-            //if (dept == 1) {
-            //    var id = $("#ProjectGrid").getCell($("#ProjectGrid").getGridParam("selrow"), "ID");
-            //    location.href = "/Project/Edit?ProjectID=" + id;
-            //}
+
             var item = $(e.target).closest("td");
             var _phaseID = item[0].id;
             //alert(rowid + '_' + iRow + '_' + iCol + '_' + _phaseID)
@@ -187,14 +180,8 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
         },
         //点击单元格事件
         onCellSelect: function (rowid, iCol, cellcontent, event) {
-            //var colModel = $("#ProjectGrid").jqGrid('getGridParam', 'colModel');//列名
-            //if (1) {
-            //    console.log(GetCurrentID("ProjectGrid"));
-            //    console.log($("#ProjectGrid").getCell(rowid, 'ID'));
-            //    return;
-            //}
 
-            //列 TotalTime            
+            //列 TotalTime
             if (iCol >= 5 && iCol <= 19) {
                 var rowType = $("#ProjectGrid").getCell(rowid, "Type");
                 var item = $(event.target).closest("td");
@@ -202,13 +189,6 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
                 var _projID = $("#ProjectGrid").getCell(rowid, 'ID');
                 $("#selPhase").val(item[0].id);
                 if (rowType == '调整计划') {
-                    //var _r1 = Number(rowid) + 1;
-                    //var _c1 = colModel[iCol].name
-                    //var _acDate = $("#ProjectGrid").getCell(_r1, _c1);
-                    //if (_acDate.length == 8 || _acDate.length == 10)
-                    //    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
-                    //else
-                    //    $("#ProjectGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
 
                     $.ajaxSettings.async = false;//同步请求
                     $.get('/Project/Service_Get_ProJPhaseAcDate?ProJID=' + _projID + '&PhaseID=' + _phaseID, function (res) {
@@ -255,6 +235,12 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
             var _index2 = value.lastIndexOf('<');
             if (_index1 > 0)
                 value = value.substring(_index1 + 1, _index2);
+            if (value.indexOf('/') > 0) {
+                var strList = value.split('/');
+                console.log(strList);
+                var timeStr = '20' + strList[0] + '-' + strList[1] + '-' + strList[2];
+                return timeStr;
+            }           
             return value;
         },
         //保存旧的单元格值
@@ -391,8 +377,8 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
                         var row = GetCurrentID("ProjectGrid");
                         ShowPauseProject(row);
                     },
-                    //'DeleteProject': function () {
-                    //},
+                    'DeleteProject': function () {
+                    },
                     //'SetFile': function (irow) {
                     //    var row = GetCurrentID("ProjectGrid");
                     //    ShowProjectFile(row);
@@ -413,6 +399,15 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
                         var pjID = GetCurrentID("ProjectGrid");
                         location.href = "/Project/Edit?ProjectID=" + pjID;
                     },
+                    'CloseProject': function () {
+                        var pjID = GetCurrentID("ProjectGrid");
+                        if (confirm('确认完成模具项目？')) {
+                            $.get('/Project/Service_PJ_ClosedProject?proJectID=' + pjID, function (res) {
+                                alert('项目已完成！');
+                                $("#ProjectGrid").jqGrid().trigger("reloadGrid");
+                            },'html')
+                        }
+                    },
                 },
                 onContextMenu: function (event/*, menu*/) {
                     $("#ProjectGrid").jqGrid("setSelection", $(event.target).closest("tr.jqgrow").attr("id"));
@@ -426,19 +421,14 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
                         async: false,
                         success: function (res) {
                             if (res == 'True') {
-                                //$('#AddProject').css('height', '28px');
-                                //$('#AddProject').css('display', 'inline');
-                                //$('#AddProject span').css({ 'height': '15px', 'font-size': '12px' });
-                                //$('#AddProject img').css('height', '20px');
                                 $('#jqContextMenu').css('display', 'block');
                                 $('#AddProject').css('pointer-events', 'auto');
+                                $('#CloseProject').css('pointer-events', 'none');
                             }
                             else {
                                 $('#jqContextMenu').css('display', 'block');
                                 $('#AddProject').css('pointer-events', 'none');
-                                //$('#AddProject').css('display', 'none');
-                                //$('#AddProject span').css({ 'height': '0px', 'font-size': '0px' });
-                                //$('#AddProject img').css('height', '0px');
+                                $('#CloseProject').css('pointer-events', 'auto');
                             }
 
                         }
@@ -449,10 +439,6 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
                     return menu;
                 },
             });
-            //星期格式汉化
-            $(".hasDatepicker").datepicker("option", "dayNamesMin", ["日", "一", "二", "三", "四", "五", "六"]);
-            //月份格式汉化
-            $(".hasDatepicker").datepicker("option", "monthNames", ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]);
         },
     });
 }
@@ -556,7 +542,7 @@ function WFTaskFinishGrid(_TaskIDs) {
                     
                     var aList = '';
                     if (_type != '外发') {
-                        aList = aList + '<a style="width: 40px; height: 35px;" onclick="ShowTaskHourPhaseForm(' + _taskhour + ',' + _col + ')" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span></a>';
+                        aList = aList + '<a style="width: 40px; height: 35px;" onclick="ShowTaskHourPhaseForm(' + _taskhour + ',' + _col + ',' + _rowid + ')" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span></a>';
                     } else {
                         aList = aList + '<a style="width: 40px; height: 35px;" onclick="FinishWFTaskHour(' + _col + ')" class="btn btn-primary"><span class="glyphicon glyphicon-pencil"></span></a>';
                     }                    
@@ -772,64 +758,66 @@ function CAMTaskList(MoldNumber, TaskType, State, CAM) {
         datatype: "json",
         colModel: [
             { label: "", name: "ID", hidden: true },
-            { label: '图纸', name: 'DrawingFile', width: 40 },
-            { label: '任务名', name: 'TaskName', width: 150, sorttype: 'string' },
-            { label: '版本', name: 'Version', width: 40 },
-            { label: 'CAD文档', name: 'CADPartName', width: 120, hidden: true },//WEDM图纸历史
-            { label: 'CAD', name: 'CAD', width: 60, hidden: true },
-            { label: '备注', name: 'Memo', width: 75 },
+            { label: '图纸', name: 'DrawingFile', width: 68 },
+            { label: '任务名', name: 'TaskName', width: 160, sorttype: 'string' },
+            { label: '版本', name: 'Version', width: 45 },
+            { label: 'CAD文档', name: 'CADPartName', width: 160, hidden: true },//WEDM图纸历史
+            { label: 'CAD', name: 'CAD', width: 3, hidden: true },
+            { label: '备注', name: 'Memo', width: 132 },
             //WEDM图纸历史
-            { label: '加工精度', name: 'Preciston', width: 120, hidden: true },
-            { label: '特征数量', name: 'FeatureCount', width: 120, hidden: true },
-            { label: '长度', name: 'Length', width: 75, hidden: true },
-            { label: '厚度', name: 'Thickness', width: 75, hidden: true },
+            { label: '加工精度', name: 'Preciston', width: 81, hidden: true },
+            { label: '特征数量', name: 'FeatureCount', width: 81, hidden: true },
+            { label: '长度', name: 'Length', width: 57, hidden: true },
+            { label: '厚度', name: 'Thickness', width: 57, hidden: true },
             //----
-            { label: '预计工时', name: 'Time', width: 40, hidden: true },
-            { label: '状态', name: 'State', width: 75, hidden: true },
-            { label: '状态备注', name: 'StateMemo', width: 75, hidden: true },
+            { label: '预计总工时(分)', name: 'Time', width: 76, hidden: true },
+            { label: '状态', name: 'State', width: 73, hidden: true },
+            { label: '状态备注', name: 'StateMemo', width: 113, hidden: true },
             //CNC
-            { label: '毛坯', name: 'Raw', width: 75, hidden: true },
-            { label: '型号', name: 'Model', width: 75, hidden: true },
-            { label: "表面", name: "Surface", width: 75, hidden: true },
-            { label: "平动", name: "Obit", width: 60, hidden: true },
-            { label: "电极位置", name: "ELEPos", width: 300, hidden: true },
-            { label: 'R', name: 'R', width: 30, hidden: true },
-            { label: 'F', name: 'F', width: 30, hidden: true },
+            { label: '毛坯', name: 'Raw', width: 128, hidden: true },
+            { label: '型号', name: 'Model', width: 72, hidden: true },
+            { label: "表面", name: "Surface", width: 72, hidden: true },
+            { label: "平动", name: "Obit", width: 72, hidden: true },
+            { label: "电极位置", name: "ELEPos", width: 165, hidden: true },
+            { label: 'R', name: 'R', width: 38, hidden: true },
+            { label: 'F', name: 'F', width: 38, hidden: true },
             //----
-            { label: '数量', name: 'Quantity', width: 30, hidden: true },
-            { label: '备料', name: 'Prepared', formatter: "checkbox", width: 40, hidden: true },
+            { label: '数量', name: 'Quantity', width: 44, hidden: true },
+            { label: '备料', name: 'Prepared', formatter: "checkbox", width: 0, hidden: true },
             //MG
-            { label: '材料', name: 'Material', width: 75, hidden: true },
-            { label: 'HRC', name: 'HRC', width: 75, hidden: true },
+            { label: '材料', name: 'Material', width: 64, hidden: true },
+            { label: 'HRC', name: 'HRC', width: 80, hidden: true },
             //----
-            { label: '工艺', name: 'ProcessName', width: 100, hidden: true },
-            { label: '实际工时', name: 'ActualTime', width: 120, hidden: true, formatter: "number" },
+            { label: '工艺', name: 'ProcessName', width: 73, hidden: true },
+            { label: '实际工时(分)', name: 'ActualTime', width: 78, hidden: true, formatter: "number" },
             { label: '优先', name: 'Priority', width: 40, hidden: true },
             //日期
-            { label: '创建日期', name: 'CreateTime', width: 75, hidden: true },
-            { label: '计划日期', name: 'PlanTime', width: 75, hidden: true },
-            { label: '接收日期', name: 'AcceptTime', width: 75, hidden: true },
-            { label: '发布日期', name: 'ReleaseTime', width: 75, hidden: true },//图纸历史
-            { label: '开始日期', name: 'StartTime', width: 75, hidden: true },
-            { label: '结束日期', name: 'FinishTime', width: 120, hidden: true },
-            { label: '预计日期', name: 'ForecastTime', width: 75, hidden: true },
+            { label: '创建日期', name: 'CreateTime', width: 132, hidden: true },
+            { label: '计划日期', name: 'PlanTime', width: 132, hidden: true },
+            { label: '接收日期', name: 'AcceptTime', width: 132, hidden: true },
+            { label: '发布日期', name: 'ReleaseTime', width: 132, hidden: true },//图纸历史
+            { label: '开始日期', name: 'StartTime', width: 132, hidden: true },
+            { label: '结束日期', name: 'FinishTime', width: 132, hidden: true },
+            { label: '预计日期', name: 'ForecastTime', width: 132, hidden: true },
             //----
             //WEDM图纸历史
-            { label: 'CAM', name: 'CAM', width: 60, hidden: true },
-            { label: "QC点", name: "QCPoints", width: 40, formatter: "checkbox", hidden: true },
-            { label: '跑位检查', name: "PosCheck", width: 40, formatter: "checkbox", hidden: true },
-            { label: 'QC', name: 'QC', width: 60, hidden: true },
+            { label: 'CAM', name: 'CAM', width: 94, hidden: true },
+            { label: "QC点", name: "QCPoints", width: 115, formatter: "checkbox", hidden: true },
+            { label: '跑位检查', name: "PosCheck", width: 70, formatter: "checkbox", hidden: true },
+            { label: 'QC', name: 'QC', width: 62, hidden: true },
             //----                     
-            { label: '加工', name: 'Workshop', width: 60, hidden: true },
-            { label: '机器号', name: 'Machine', width: 75, hidden: true },
-            { label: '操作人员', name: 'Operater', width: 120, hidden: true },
+            { label: '加工', name: 'Workshop', width: 0, hidden: true },
+            { label: '机器号', name: 'Machine', width: 115, hidden: true },
+            { label: '操作人员', name: 'Operater', width: 78, hidden: true },
         ],
         viewrecords: true,
         multiselect: true,
-        height: document.documentElement.clientHeight - 203,
-        width: document.body.clientWidth * 0.8,
+        //height: document.documentElement.clientHeight - 203,
+        //width: document.body.clientWidth * 0.8,
+        height:$('.RightDiv_BottomDiv').eq(0).height()-40,
+        width: $('.RightDiv_BottomDiv').eq(0).width(),
         rowNum: 500,
-        //shrinkToFit: false,
+        shrinkToFit: false,
         loadonce: true,
         ondblClickRow: function (iRow) {
             EditTask(iRow);
@@ -837,10 +825,10 @@ function CAMTaskList(MoldNumber, TaskType, State, CAM) {
         loadComplete: function () {
             $(".jqgrow", this).contextMenu("CAMTaskContextMenu", {
                 bindings: {
-                    'TaskInfo': function () {
-                        var _id = GetCurrentID("TaskGrid");
-                        EditTaskInfo(_id);
-                    },
+                    //'TaskInfo': function () {
+                    //    var _id = GetCurrentID("TaskGrid");
+                    //    EditTaskInfo(_id);
+                    //},
                     'ReleaseCAMTask': function () {
                         var ids = GetMultiSelectedIDs("TaskGrid");
                         if (ids.length <= 0) {
@@ -850,9 +838,9 @@ function CAMTaskList(MoldNumber, TaskType, State, CAM) {
                         ReleaseCAMTask(ids);
                     },
 
-                    'DisableCAMTask': function () {
+                    'DisableCAMSetting': function () {
                         if (confirm("确认删除任务？")) {
-                            DeleteTask(GetCurrentID("TaskGrid"));
+                            DeleteCAMSetting(GetCurrentID("TaskGrid"));
                         }
                     },
                     //'PauseTask': function () {
@@ -861,15 +849,13 @@ function CAMTaskList(MoldNumber, TaskType, State, CAM) {
                     //        PauseTask(_id);
                     //    }
                     //},
-                    //'DeleteTask': function () {
-                    //    if (confirm("确认取消任务？")) {
-                    //        var _id = GetCurrentID("TaskGrid");
-                    //        DeleteTaskByCAM(_id);
-                    //    }
-                    //},
-                    //'NewTask': function () {
+                    'DeleteTask': function () {
+                        var _id = GetCurrentID("TaskGrid");
+                        DeleteReleasedTask(_id);
+                    },
+                    'NewTask': function () {
                         
-                    //}
+                    }
                 },
             });
         },
@@ -905,7 +891,7 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
     var _width;
     var _url;
     if (InPage == undefined) {
-        _height = document.documentElement.clientHeight - 203;
+        _height = $('.RightDiv_BottomDiv').eq(0).height() - 40;//document.documentElement.clientHeight - 203;
         //_width = document.body.clientWidth * 0.875
     } else {
         _height = (document.documentElement.clientHeight - 220) * 0.385;
@@ -916,6 +902,11 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
     } else {
         _url = '/Task/JsonMachineTasks?MoldNumber=' + MoldNumber + "&TaskType=" + TaskType + "&State=" + State;
     }
+    if (TaskType == 2) {//放电
+        _width = $('.RightDiv_BottomDiv').eq(0).width() - 370;
+    } else {
+        _width = $('.RightDiv_BottomDiv').eq(0).width();
+    }
 
     $("#TaskGrid").jqGrid({
         url: _url,
@@ -923,63 +914,117 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
         styleUI: 'Bootstrap',
         datatype: "json",
         colModel: [
+            //{ label: "", name: "ID", hidden: true },
+            //{ label: '图纸', name: 'DrawingFile', width: 0 },
+            //{ label: '任务名', name: 'TaskName', width: 0, sorttype: 'string' },
+            //{ label: '版本', name: 'Version', width: 0 },
+            //{ label: 'CAD文档', name: 'CADPartName', width: 0, hidden: true },//WEDM图纸历史
+            //{ label: 'CAD', name: 'CAD', width: 0, hidden: true },
+            //{ label: '备注', name: 'Memo', width: 0 },            
+            ////WEDM图纸历史
+            //{ label: '加工精度', name: 'Preciston', width: 0, hidden: true },
+            //{ label: '特征数量', name: 'FeatureCount', width: 0, hidden: true },
+            //{ label: '长度', name: 'Length', width: 0, hidden: true },
+            //{ label: '厚度', name: 'Thickness', width: 0, hidden: true },
+            ////----
+            //{ label: '预计工时', name: 'Time', width: 0, hidden: true },
+            //{ label: '状态', name: 'State', width: 0, hidden: true },
+            //{ label: '状态备注', name: 'StateMemo', width: 0, hidden: true },
+            ////CNC
+            //{ label: '毛坯', name: 'Raw', width: 0, hidden: true },
+            //{ label: '型号', name: 'Model', width: 0, hidden: true },
+
+            //{ label: "表面", name: "Surface", width: 0, hidden: true },
+            //{ label: "平动", name: "Obit", width: 0, hidden: true },
+            //{ label: "电极位置", name: "ELEPos", width: 0, hidden: true },
+
+            //{ label: 'R', name: 'R', width: 0, hidden: true },
+            //{ label: 'F', name: 'F', width: 0, hidden: true },
+            ////----
+            //{ label: '数量', name: 'Quantity', width: 0, hidden: true },
+            //{ label: '备料', name: 'Prepared', formatter: "checkbox", width: 0, hidden: true },
+            ////MG
+            //{ label: '材料', name: 'Material', width: 0, hidden: true },
+            //{ label: 'HRC', name: 'HRC', width: 0, hidden: true },
+            ////----
+            //{ label: '工艺', name: 'ProcessName', width: 0, hidden: true },
+            //{ label: '实际工时(min)', name: 'ActualTime', width: 0, hidden: true, formatter: "integer" },
+            //{ label: '优先', name: 'Priority', width: 0, hidden: true },
+            ////日期
+            //{ label: '创建日期', name: 'CreateTime', width: 0, hidden: true },
+            //{ label: '计划日期', name: 'PlanTime', width: 0, hidden: true },
+            //{ label: '接收日期', name: 'AcceptTime', width: 0, hidden: true },
+            //{ label: '发布日期', name: 'ReleaseTime', width: 0, hidden: true },//图纸历史
+            //{ label: '开始日期', name: 'StartTime', width: 0, hidden: true },
+            //{ label: '结束日期', name: 'FinishTime', width: 0, hidden: true },
+            //{ label: '预计日期', name: 'ForecastTime', width: 0, hidden: true },
+            ////----
+            ////WEDM图纸历史
+            //{ label: 'CAM', name: 'CAM', width: 0, hidden: true },
+            //{ label: "QC点", name: "QCPoints", width: 0, formatter: "checkbox", hidden: true },
+            //{ label: '跑位检查', name: "PosCheck", width: 0, formatter: "checkbox", hidden: true },
+            //{ label: 'QC', name: 'QC', width: 0, hidden: true },
+            ////----                     
+            //{ label: '加工', name: 'Workshop', width: 0, hidden: true },
+            //{ label: '机器号', name: 'Machine', width: 0, hidden: true },
+            //{ label: '操作人员', name: 'Operater', width: 0, hidden: true },
             { label: "", name: "ID", hidden: true },
-            { label: '图纸', name: 'DrawingFile', width: 60 },
-            { label: '任务名', name: 'TaskName', width: 200, sorttype: 'string' },
-            { label: '版本', name: 'Version', width: 60 },
-            { label: 'CAD文档', name: 'CADPartName', width: 80, hidden: true },//WEDM图纸历史
-            { label: 'CAD', name: 'CAD', width: 60, hidden: true },
-            { label: '备注', name: 'Memo', width: 120 },            
+            { label: '图纸', name: 'DrawingFile', width: 42 },
+            { label: '任务名', name: 'TaskName', width: 168, sorttype: 'string' },
+            { label: '版本', name: 'Version', width: 45 },
+            { label: 'CAD文档', name: 'CADPartName', width: 160, hidden: true },//WEDM图纸历史
+            { label: 'CAD', name: 'CAD', width: 3, hidden: true },
+            { label: '备注', name: 'Memo', width: 158 },
             //WEDM图纸历史
-            { label: '加工精度', name: 'Preciston', width: 120, hidden: true },
-            { label: '特征数量', name: 'FeatureCount', width: 120, hidden: true },
-            { label: '长度', name: 'Length', width: 60, hidden: true },
-            { label: '厚度', name: 'Thickness', width: 60, hidden: true },
+            { label: '加工精度', name: 'Preciston', width: 81, hidden: true },
+            { label: '特征数量', name: 'FeatureCount', width: 81, hidden: true },
+            { label: '长度', name: 'Length', width: 57, hidden: true },
+            { label: '厚度', name: 'Thickness', width: 57, hidden: true },
             //----
-            { label: '预计工时', name: 'Time', width: 60, hidden: true },
-            { label: '状态', name: 'State', width: 60, hidden: true },
-            { label: '状态备注', name: 'StateMemo', width: 120, hidden: true },
+            { label: '预计总工时(分)', name: 'Time', width: 70, hidden: true },
+            { label: '状态', name: 'State', width: 73, hidden: true },
+            { label: '状态备注', name: 'StateMemo', width: 113, hidden: true },
             //CNC
-            { label: '毛坯', name: 'Raw', width: 60, hidden: true },
-            { label: '型号', name: 'Model', width: 60, hidden: true },
-
-            { label: "表面", name: "Surface", width: 60, hidden: true },
-            { label: "平动", name: "Obit", width: 60, hidden: true },
-            { label: "电极位置", name: "ELEPos", width: 100, hidden: true },
-
-            { label: 'R', name: 'R', width: 40, hidden: true },
-            { label: 'F', name: 'F', width: 40, hidden: true },
+            { label: '毛坯', name: 'Raw', width: 128, hidden: true },
+            { label: '型号', name: 'Model', width: 72, hidden: true },
+            { label: "表面", name: "Surface", width: 72, hidden: true },
+            { label: "平动", name: "Obit", width: 72, hidden: true },
+            { label: "电极位置", name: "ELEPos", width: 165, hidden: true },
+            { label: 'R', name: 'R', width: 38, hidden: true },
+            { label: 'F', name: 'F', width: 38, hidden: true },
             //----
-            { label: '数量', name: 'Quantity', width: 40, hidden: true },
-            { label: '备料', name: 'Prepared', formatter: "checkbox", width: 40, hidden: true },
+            { label: '数量', name: 'Quantity', width: 44, hidden: true },
+            { label: '备料', name: 'Prepared', formatter: "checkbox", width: 0, hidden: true },
             //MG
-            { label: '材料', name: 'Material', width: 100, hidden: true },
-            { label: 'HRC', name: 'HRC', width: 40, hidden: true },
+            { label: '材料', name: 'Material', width: 64, hidden: true },
+            { label: 'HRC', name: 'HRC', width: 80, hidden: true },
             //----
-            { label: '工艺', name: 'ProcessName', width: 60, hidden: true },
-            { label: '实际工时(min)', name: 'ActualTime', width: 80, hidden: true, formatter: "integer" },
+            { label: '工艺', name: 'ProcessName', width: 73, hidden: true },
+            { label: '实际工时(分)', name: 'ActualTime', width: 78, hidden: true, formatter: "number" },
             { label: '优先', name: 'Priority', width: 40, hidden: true },
             //日期
-            { label: '创建日期', name: 'CreateTime', width: 80, hidden: true },
-            { label: '计划日期', name: 'PlanTime', width: 80, hidden: true },
-            { label: '接收日期', name: 'AcceptTime', width: 80, hidden: true },
-            { label: '发布日期', name: 'ReleaseTime', width: 80, hidden: true },//图纸历史
-            { label: '开始日期', name: 'StartTime', width: 80, hidden: true },
-            { label: '结束日期', name: 'FinishTime', width: 80, hidden: true },
-            { label: '预计日期', name: 'ForecastTime', width: 80, hidden: true },
+            { label: '创建日期', name: 'CreateTime', width: 118, hidden: true },
+            { label: '计划日期', name: 'PlanTime', width: 118, hidden: true },
+            { label: '接收日期', name: 'AcceptTime', width: 118, hidden: true },
+            { label: '发布日期', name: 'ReleaseTime', width: 118, hidden: true },//图纸历史
+            { label: '开始日期', name: 'StartTime', width: 118, hidden: true },
+            { label: '结束日期', name: 'FinishTime', width: 118, hidden: true },
+            { label: '预计日期', name: 'ForecastTime', width: 118, hidden: true },
             //----
             //WEDM图纸历史
-            { label: 'CAM', name: 'CAM', width: 60, hidden: true },
-            { label: "QC点", name: "QCPoints", width: 60, formatter: "checkbox", hidden: true },
-            { label: '跑位检查', name: "PosCheck", width: 60, formatter: "checkbox", hidden: true },
-            { label: 'QC', name: 'QC', width: 80, hidden: true },
+            { label: 'CAM', name: 'CAM', width: 62, hidden: true },
+            { label: "QC点", name: "QCPoints", width: 43, formatter: "checkbox", hidden: true },
+            { label: '跑位检查', name: "PosCheck", width: 70, formatter: "checkbox", hidden: true },
+            { label: 'QC', name: 'QC', width: 62, hidden: true },
             //----                     
-            { label: '加工', name: 'Workshop', width: 60, hidden: true },
-            { label: '机器号', name: 'Machine', width: 60, hidden: true },
-            { label: '操作人员', name: 'Operater', width: 80, hidden: true },
+            { label: '加工', name: 'Workshop', width: 0, hidden: true },
+            { label: '机器号', name: 'Machine', width: 115, hidden: true },
+            { label: '操作人员', name: 'Operater', width: 78, hidden: true },
         ],
         viewrecords: true,
-        height: _height, //document.documentElement.clientHeight - 220,
+        height: _height,
+        width: _width,
+        //height: _height, //document.documentElement.clientHeight - 220,
         //width: _width, //document.body.clientWidth * 0.875,
         rowNum: 500,
         autoScroll: true,
@@ -995,8 +1040,9 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
                 bindings: {
                     //Go to the create new mold project page
                     'SetAccept': function () {
-                        var _id = GetCurrentID("TaskGrid");
-                        AcceptCAMTask(_id);
+                        var _ids = GetMultiSelectedIDs("TaskGrid");
+                        //console.log(_ids);
+                        AcceptCAMTask(_ids);
                     },
                     //'ReleaseCAMTask': function () {
                     //    var _id = GetCurrentID("TaskGrid");
@@ -1025,7 +1071,15 @@ function TaskList(MoldNumber, TaskType, State, InPage) {
                 },
             });
         },
-
+        onSelectRow: function (rowid, status) {
+            if (status == true) {
+                if (TaskType == 2) {
+                    var rowData = $("#TaskGrid").jqGrid('getRowData', rowid);
+                    console.log(rowData.ID);
+                    GetEleInfo(rowData.ID);
+                }                
+            }
+        }
     });
 }
 
@@ -1215,6 +1269,7 @@ function StockItem(Keyword, MoldNumber, PurchaseType, Mode, Parent) {
             { label: "领出", name: "OutQty", width: 40, hidden: true },
             { label: "仓库", name: "Warehouse", width: 40 },
             { label: "库位", name: "WarehousePosition", width: 40 },
+            { label: '', name: 'PartID', hidden: true },
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 220,
@@ -1302,15 +1357,16 @@ function PRListGrid(Department, State) {
             { label: '状态', name: 'Status', width: 75 },
             { label: "备注", name: "Memo", width: 100 },
             { label: '申请人', name: 'ApprovalUser', width: 75 },
-            {label: 'ERP料号同步', name: 'ERPPartStatus', width: 75, hidden:true,
-            formatter: function (cellvalue, options, rowObject) {
-                var status;
-                if (cellvalue == 'True')
-                    status='已同步'
-                else
-                    status = '未同步'
-                return status;
-            }            
+            {
+                label: 'ERP料号同步', name: 'ERPPartStatus', width: 75, hidden: true,
+                formatter: function (cellvalue, options, rowObject) {
+                    var status;
+                    if (cellvalue == 'True')
+                        status = '已同步'
+                    else
+                        status = '未同步'
+                    return status;
+                }
             },
         ],
         viewrecords: true,
@@ -1384,6 +1440,7 @@ function PRContentGrid(PartIDs, PRID, state, TaskIDs, WHIDs) {
             { label: 'MachineCode', name: 'MachineCode', width: 150, hidden: true },
             { label: '计划数量', name: 'PlanQty', width: 30, hidden: true },
             { label: '', name: 'PurchaseType', width: 30, hidden: true },//, hidden: true
+            { label: '', name: 'Time', width: 30, hidden: true },
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 200,
@@ -1503,8 +1560,11 @@ function POListGrid(MoldNumber, Keyword, StartDate, EndDate, Supplier, State, Pu
 }
 
 //订单内容列表
-function POContentGrid(POID) {
+function POContentGrid(POID,purItemIDs) {
     var _url = "/Purchase/JosnPOContents?PurchaseOrderID=" + POID;
+    if (purItemIDs != null) {
+        _url = _url + "&purItemIds=" + purItemIDs;
+    }
 
     $("#POContentGrid").jqGrid({
         url: _url,
@@ -1513,29 +1573,70 @@ function POContentGrid(POID) {
         datatype: "json",
         colModel: [
             { label: "", name: "POContentID", hidden: true },
-            { label: "名称", name: "Name", width: 100 },
-            { label: '物料编号', name: 'PartNumber', width: 75 },
-            { label: '规格', name: 'Specification', width: 75 },
-            { label: '数量', name: 'Quantity', width: 40 },
-            { label: '单价（含税）', name: 'UnitPriceWT', width: 75 },
-            { label: '金额（含税）', name: 'TotalPriceWT', width: 75 },
-            { label: '请购单号', name: 'PRNubmer', width: 50 },
-            { label: '预计到货日期', name: "RequestTime", width: 50 },
-            { label: '备注', name: 'Memo', width: 70 },
+            { label: "名称", name: "Name", width: 80 },
+            { label: '物料编号', name: 'PartNumber', width: 60 },
+            { label: '规格', name: 'Specification', width: 300 },
+            { label: '数量', name: 'Quantity', width: 40, editable: true, },
+            { label: '时间(小时)', name: 'Time', width: 50, editable: true, hidden: true },
+            { label: '单价（未税）', name: 'UnitPrice', width: 75, editable: true, },
+            { label: '金额（未税）', name: 'TotalPrice', width: 75, editable: true, },
+            { label: '单价（含税）', name: 'UnitPriceWT', width: 75, editable: true, },
+            { label: '金额（含税）', name: 'TotalPriceWT', width: 75, editable: true, },            
+            {
+                label: '预计到货日期', name: "RequestTime", width: 80
+                , editable: true
+                , editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } }
+                ,sorttype: "date",
+
+            },
+            { label: '备注', name: 'Memo', width: 80, editable: true },
+            { label: '请购单号', name: 'PRNubmer', width: 80 },
+            { label: '', name: 'PurchaseItemID', width: 50, hidden: true },
         ],
+        cellEdit:true,
         viewrecords: true,
         height: $('#tb_div').height(),//document.documentElement.clientHeight - 200,
         width: $('#tb_div').width(),//document.body.clientWidth * 4,
         rowNum: 500,
         multiselect: true,
         loadonce: true,
-        shrinkToFit:true,
-        //ondblClickRow: function (iRow) {
-        //    location.href = "/Purchase/PODetail?PurchaseOrderID=" + GetCurrentID("POListGrid");
-        //}
+        shrinkToFit: true,
+        cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
+        onCellSelect: function (rowid, iCol, cellcontent, e) {
+            for (i = 1; i <= $("#POContentGrid").jqGrid("getDataIDs").length ; i++) {
+                $('#POContentGrid').jqGrid('saveRow', i);
+            }
+            //
+            var _total = 0;
+            var _totalwt = 0;
+            for (i = 0; i < $("#POContentGrid").jqGrid("getDataIDs").length ; i++) {
+                var rowData = $('#POContentGrid').jqGrid('getRowData', $("#POContentGrid").jqGrid("getDataIDs")[i]);
+                _total = Number(Number(_total) + Number(rowData.TotalPrice)).toFixed(2);
+                _totalwt = Number(Number(_totalwt) + Number(rowData.TotalPriceWT)).toFixed(2);
+            }
+            $('#TotalPrice').val(_total);
+            $('#TotalPriceWT').val(_totalwt);
+            //
+            var rowData1 = $('#POContentGrid').jqGrid('getRowData', rowid);
+            if (Number(rowData1.POContentID) == 0) {
+                $('#POContentGrid').jqGrid('editRow', rowid, true);
+                BindRowAction(rowid, iCol);
+            } else {
+                $("#POContentGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+            }
+        },
+        afterSaveCell: function (rowid, cellname, value, iRow, iCol) {
+            //if (cellname == 'TotalPriceWT') {
+            //    var _total = 0;
+            //    for (i = 1; i <= $("#POContentGrid").jqGrid("getDataIDs").length ; i++) {
+            //        var rowData = $('#').jqGrid('getRowData', rowid);
+            //        _total = _total + Number(rowData.TotalPriceWT);
+            //    }
+            //    $('#TotalPrice').val(_total);
+            //}
+        },
     })
 }
-
 
 //仓库收货订单内容列表
 function WarehouseAcceptGrid(POID) {
@@ -1550,22 +1651,48 @@ function WarehouseAcceptGrid(POID) {
             { label: "", name: "PurchaseItemID", hidden: true },
             { label: '零件名', name: 'Name', width: 75 },
             { label: '零件号', name: 'PartNumber', width: 75 },
-            { label: '规格', name: 'Specification', width: 75 },
-            { label: '应收数量', name: 'Quantity', width: 60 },
+            { label: '规格', name: 'Specification', width: 200 },
+            { label: '订单数量', name: 'Quantity', width: 60 },
             { label: '到货数量', name: 'InStockQty', width: 60 },
-            { label: '预计到货日期', name: 'PlanTime', width: 100, formatter: 'date' },
-            { label: '备注', name: 'Memo', width: 75 },
+            { label: '本次收货数量', name: 'AcceptQty', width: 80, editable: true, },
+            { label: '仓库', name: 'WareHouse', width: 60, editable: true, },
+            { label: '库位', name: 'WHPosition', width: 60, editable: true, },
+            {
+                label: '预计到货日期', name: 'PlanTime', width: 80
+                //,editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yyyy-mm-dd', changeMonth: true, changeYear: true }) } }
+            },
+            { label: '备注', name: 'Memo', width: 175, editable: true, },
+            { label: '', name: 'WHStockID', hidden: true, },
         ],
+        cellEdit: true,
+        onSelectRow: function (rowid) {
+            //$("#POContentGrid").jqGrid('editRow', rowid, { keys: true, focusField: 1 });
+            //console.log(rowid);
+        },
         viewrecords: true,
         height: document.documentElement.clientHeight - 200,
-        width: document.body.clientWidth * 0.875,
+        width: document.body.clientWidth * 0.95,
         rowNum: 500,
         multiselect: true,
         loadonce: true,
-        ondblClickRow: function () {
-            var _id = GetDblClickCell("POContentGrid", "PurchaseItemID");
-            ShowPOContentToStockDlg(_id);
-        }
+        cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
+        ondblClickRow: function (rowid) {
+            //var _id = GetDblClickCell("POContentGrid", "PurchaseItemID");
+            //ShowPOContentToStockDlg(_id);
+            //$("#POContentGrid").jqGrid('editRow', rowid, { keys: true, focusField: 1 });
+        },
+        onCellSelect: function (rowid, iCol, cellcontent, event) {
+            //列 TotalTime
+            if (iCol >= 8 && iCol <= 9) {
+                //var _inStockQty = $("#POContentGrid").getCell(rowid, "InStockQty");
+                var _stockID = $("#POContentGrid").getCell(rowid, "WHStockID");
+                if (Number(_stockID) > 0) {
+                    $("#POContentGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+                } else {
+                    $("#POContentGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                }
+            }
+        },
     })
 }
 
@@ -1675,15 +1802,15 @@ function SupplierGrid(Mode) {
         datatype: "json",
         colModel: [
             { label: '', name: 'SupplierID', hidden: true },
-            { label: '代码', name: 'Code', width: 50 },
+            { label: '代码', name: 'Code', width: 35 },
             { label: '名称', name: 'Name', width: 50 },
-            { label: '全名', name: 'FullName', width: 100 },
+            { label: '全名', name: 'FullName', width: 120 },
             { label: '地址', name: 'Address', width: 100 },
             { label: '开户行', name: 'Bank', width: 75, hidden: true },
             { label: '账号', name: 'Account', width: 75, hidden: true },
             { label: '税号', name: 'TaxNo', width: 75, hidden: true },
-            { label: '税率', name: 'TaxRate', width: 30, hidden: true },
-            { label: '结算方式', name: 'Settlement', width: 50, hidden: true }
+            { label: '税率', name: 'TaxRate', width: 25, hidden: true },
+            { label: '结算方式', name: 'Settlement', width: 40, hidden: true }
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 250,
@@ -1771,31 +1898,7 @@ function TaskRecreateGrid(ProjectID, TaskType, Multi) {
             { label: '任务名', name: 'TaskName', width: 100 },
             { label: '版本', name: 'Version', width: 40 },
             { label: '创建人', name: 'Creator', width: 60 },
-            { label: "任务id", name: "ID", width: 20 },
-            //{ label: '工艺名', name: 'ProcessName', width: 60, hidden: true },
-            //{ label: '型号', name: 'Model', width: 75, hidden: true },
-            //{ label: 'R', name: 'R', width: 30, hidden: true },
-            //{ label: 'F', name: 'F', width: 30, hidden: true },
-            //{ label: 'HRC', name: 'HRC', width: 75, hidden: true },
-            //{ label: '材料', name: 'Material', width: 75, hidden: true },
-            //{ label: '时间', name: 'Time', width: 40, hidden: true },
-            //{ label: '状态', name: 'State', width: 40, hidden: true },
-            //{ label: '毛坯', name: 'Raw', width: 75, hidden: true },
-            //{ label: '备料', name: 'Prepared', formatter: "checkbox", width: 40, hidden: true },
-            //{ label: '优先级', name: 'Priority', width: 40, hidden: true },
-            //{ label: '数量', name: 'Quantity', width: 30, hidden: true },
-            //{ label: '创建时间', name: 'CreateTime', width: 75 },
-            //{ label: '预计时间', name: 'ForecastTime', width: 75, hidden: true },
-            //{ label: '接收时间', name: 'AcceptTime', width: 75, hidden: true },
-            //{ label: '发布时间', name: 'ReleaseTime', width: 75, hidden: true },
-            //{ label: '计划时间', name: 'PlanTime', width: 75, hidden: true },
-            //{ label: '开始时间', name: 'StartTime', width: 75, hidden: true },
-            //{ label: '备注', name: 'Memo', width: 75, hidden: true },
-            //{ label: '状态备注', name: 'StateMemo', width: 75, hidden: true },
-            //{ label: 'CAD', name: 'CAD', width: 75, hidden: true },
-            //{ label: 'CAM', name: 'CAM', width: 75, hidden: true },
-            //{ label: '加工', name: 'Workshop', width: 75, hidden: true },
-            //{ label: 'QC', name: 'QC', width: 75, hidden: true },         
+            { label: "任务id", name: "ID", width: 20 },   
         ],
         viewrecords: true,
         height: _height, //document.documentElement.clientHeight - 220,
@@ -1806,14 +1909,18 @@ function TaskRecreateGrid(ProjectID, TaskType, Multi) {
         onSelectRow: function (id) {
             //alert(id);
             var rowData = $("#TaskGrid").jqGrid('getRowData', id);
-            if (TaskType == 2) {
-                LoadEleDetail(GetCurrentID("TaskGrid"));
-                LoadCADDetail(GetCurrentID("TaskGrid"));
-            }
-            if ((TaskType == 1) || (TaskType == 4)) {
-                var _id = GetCurrentID("TaskGrid")
-
-                LoadEleDetail(rowData.ID, rowData.TaskName);
+            switch (TaskType) {
+                case 2:
+                    LoadEleDetail(GetCurrentID("TaskGrid"));
+                    LoadCADDetail(GetCurrentID("TaskGrid"));
+                    break;
+                case 1:
+                    var _id = GetCurrentID("TaskGrid");
+                    LoadEleDetail(rowData.ID, rowData.TaskName);
+                    break;
+                case 4:
+                    var _id = GetCurrentID("TaskGrid");
+                    break;
             }
         }
     });
@@ -1826,19 +1933,18 @@ function ElectrodeQCResult(Status, Keyword) {
         _url = _url + "&Keyword=" + Keyword;
     }
     $("#ElectrodeGrid").jqGrid({
-
         url: _url,
         mtype: "GET",
         styleUI: "Bootstrap",
         datatype: "Json",
         colModel: [
             { label: '', name: 'ID', hidden: true },
-            { label: "电极标签名", name: "LabelName", width: 150 },
-            { label: "火花间隙补偿", name: "GapCompensation", width: 50 },
-            { label: "高度补偿", name: "ZCompensation", width: 50 },
-            { label: "电极名", name: "EleName", width: 150 },
-            { label: "QC完成时间", name: "QCFinsihTime", width: 75 },
-            { label: "火花间隙", name: "Gap", width: 50 }
+            { label: "电极名", name: "EleName", width: 100 },
+            { label: "电极标签名", name: "LabelName", width: 100 },
+            { label: "火花间隙", name: "Gap", width: 80 },
+            { label: "火花间隙补偿", name: "GapCompensation", width: 80 },
+            { label: "高度补偿", name: "ZCompensation", width: 80 },
+            { label: "QC完成时间", name: "QCFinsihTime", width: 100 },
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight * 0.75,
@@ -1846,8 +1952,9 @@ function ElectrodeQCResult(Status, Keyword) {
         //multiselect: true,
         rowNum: 500,
         loadonce: true,
+        cellsubmit: "clientArray",
+        shrinkToFit:true,
         ondblClickRow: function (iRow) {
-            //var id = $("#ElectrodeGrid").getCell(iRow, "ID");
             LoadElectrode();
         },
     })
@@ -1871,14 +1978,19 @@ function ElectrodeInStockRecord(MoldNumber) {
             { label: "电极标签名", name: "LabelName", width: 150 },
             { label: "材料", name: "Material", width: 50 },
             { label: "创建时间", name: "CreateTime", width: 50 },
-            { label: "状态", name: "Status", width: 50 }
+            { label: "状态", name: "Status", width: 50 },
+            { label: "", name: "EleIndexCode", width: 50,hidden:true }
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight * 0.72,
-        width: document.body.clientWidth * 0.75,
+        //height: document.documentElement.clientHeight * 0.72,
+        //width: document.body.clientWidth * 0.75,
+        height: $('.RightDiv_BottomDiv').eq(0).height() - 40,
+        width: $('.RightDiv_BottomDiv').eq(0).width(),
         multiselect: true,
         rowNum: 500,
         loadonce: true,
+        cellsubmit: "clientArray",
+        shrinkToFit: true,
         ondblClickRow: function (iRow) {
             //var id = $("#ElectrodeGrid").getCell(iRow, "ID");
             LoadElectrode();
@@ -1886,8 +1998,8 @@ function ElectrodeInStockRecord(MoldNumber) {
     })
 }
 
-function WHRequestGrid() {
-    var _url = "/Warehouse/JsonWarehouseRequests?Keyword=&StartDate=&EndDate=&RequestKeyword=";
+function WHRequestGrid(state) {
+    var _url = "/Warehouse/JsonWarehouseRequests?Keyword=&StartDate=&EndDate=&RequestKeyword=&State=" + state;
 
     $("#WHRequestGrid").jqGrid({
         url: _url,
@@ -1896,10 +2008,13 @@ function WHRequestGrid() {
         datatype: "Json",
         colModel: [
             { label: "", name: "ID", hidden: true },
-            { label: "申请单号", name: "RequestNumber", width: 150 },
-            { label: "申请人", name: "RequestUser", width: 100 },
-            { label: "状态", name: "State", width: 50 },
+            { label: "申请单号", name: "RequestNumber", width: 100 },
+            { label: "申请人", name: "RequestUser", width: 80 },
             { label: "申请日期", name: "RequestDate", width: 100 },
+            { label: "审核人", name: "ApprovalUser", width: 80 },
+            { label: "审核日期", name: "ApprovalDate", width: 100 },
+            { label: "状态", name: "State", width: 50 },
+            
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight * 0.72,
@@ -1933,47 +2048,26 @@ function WHRequestItemGrid(WHRequestID, Mode) {
         styleUI: "Bootstrap",
         datatype: "Json",
         colModel: [
-            { label: "", name: "ID", hidden: true },
+            { label: "", name: "WarehouseRequestItemID", hidden: true },
             { label: "零件名", name: "PartName", width: 120 },
             { label: "物料号", name: "PartNumber", width: 100 },
             { label: "规格", name: "Specification", width: 100 },
             { label: "库存", name: "InStockQuantity", width: 40, hidden: true },
             {
                 label: "领用数量", name: "Quantity", width: 60, editable: true,
-                editrules: {
-                    custom: true, number: true, custom_func: function (value, rowid) {
-                        var _col = $("#WHRequestItemGrid").getGridParam("selrow")
-
-                        var total = Number($("#WHRequestItemGrid").getCell(_col, "InStockQuantity"));
-                        if (value > total) {
-                            return [false, "领用数量不能大于库存数量"];
-                        } else {
-
-
-                            if (Number(value) <= 0) {
-                                return [false, "领用数量必须大于0"];
-                            }
-
-
-                            var _id = Number($("#WHRequestItemGrid").getGridParam("selrow"));
-
-                            $("#WHRequestItemGrid").setSelection(_id);
-                            $("#WHRequestItemGrid").setSelection(_id + 1);
-                            $('#WHRequestItemGrid').jqGrid('editRow', _id + 1, true);
-                            //alert();
-                            return [true];
-                        }
-                    }
-                }
-
             },
             { label: "已领数量", name: "ReceivedQuantity", width: 50, hidden: true },
+            { label: '缺料数量', name: 'ShortQty', width: 80, hidden: true,editable:true },
 
             { label: "材料", name: "Materials", width: 50, hidden: true },
             { label: '安全库存', name: 'SafeQuantity', width: 40, hidden: true },
             { label: '采购类型', name: "PurchaseType", width: 80, hidden: true },
             { label: '备库类型', name: 'StockType', width: 80, hidden: true },
+            { label: '', name: 'PartID', hidden: true },
+            { label: '', name: 'WarehouseStockID', hidden: true },
+            
         ],
+        cellEdit:true,
         viewrecords: true,
         height: document.documentElement.clientHeight - 220,
         width: _width,
@@ -2002,25 +2096,60 @@ function WHRequestItemGrid(WHRequestID, Mode) {
         onSelectRow: function (id) {
             var _request = Number($("#WHRequestItemGrid").getCell(id, "Quantity"));
             var _receive = Number($("#WHRequestItemGrid").getCell(id, "ReceivedQuantity"));
-            if (_request <= _receive) {
-                $("#WHRequestItemGrid").jqGrid("setSelection", id, false);
-            }
+
         },
         onSelectAll: function (rowid) { //点击全选时触发事件
             //var _rowids = rowid;
             //var _totalrows = rowid.length;
 
 
-            var rowIds = jQuery("#WHRequestItemGrid").jqGrid('getDataIDs');//获取jqgrid中所有数据行的id
-            for (i = 0; i < rowIds.length ; i++) {
-                var _request = Number($("#WHRequestItemGrid").getCell(rowIds[i], "Quantity"));
-                var _receive = Number($("#WHRequestItemGrid").getCell(rowIds[i], "ReceivedQuantity"));
-                if (_request <= _receive) {
+            //var rowIds = jQuery("#WHRequestItemGrid").jqGrid('getDataIDs');//获取jqgrid中所有数据行的id
+            //for (i = 0; i < rowIds.length ; i++) {
+            //    var _request = Number($("#WHRequestItemGrid").getCell(rowIds[i], "Quantity"));
+            //    var _receive = Number($("#WHRequestItemGrid").getCell(rowIds[i], "ReceivedQuantity"));
+            //    if (_request <= _receive) {
 
-                    $("#WHRequestItemGrid").jqGrid("setSelection", rowIds[i], false); //设置改行不能被选中。                    
+            //        $("#WHRequestItemGrid").jqGrid("setSelection", rowIds[i], false); //设置改行不能被选中。                    
+            //    }
+            //}
+        },
+        onCellSelect: function (rowid, iCol, cellcontent, event) {
+            var state=Number($('#RequestState').val());
+            //申请领料数量
+            if (iCol == 6) {
+                if (state == -99 || state == -90 || state == 0) {
+                    $("#WHRequestItemGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                } else {
+                    $("#WHRequestItemGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
+                }
+                //缺料数量
+            } else if (iCol == 8) {
+                if (state == 10) {
+                    $("#WHRequestItemGrid").jqGrid('setCell', rowid, iCol, '', 'edit-cell');
+                } else {
+                    $("#WHRequestItemGrid").jqGrid('setCell', rowid, iCol, '', 'not-editable-cell');
                 }
             }
-        }
+        },
+        beforeSaveCell: function (rowid, cellname, value, iRow, iCol) {
+            var quantity = $("#WHRequestItemGrid").getCell(rowid, "Quantity");
+            var inStockQuantity = $("#WHRequestItemGrid").getCell(rowid, "InStockQuantity");
+            if (iCol == 6) {
+                console.log(value);
+                console.log(inStockQuantity);
+                if (inStockQuantity < value) {
+                    alert('库存不足');
+                    return inStockQuantity;
+                }
+            } else if (iCol == 8) {
+                console.log(value);
+                console.log(quantity);
+                if (quantity < value) {
+                    alert('已超过申请数量！');
+                    return quantity;
+                }
+            }
+        },
     })
 }
 
@@ -2246,18 +2375,21 @@ function PRContent_PO_T(Keyword, PurchaseType) {
             { label: "订单号", name: "PurchaseOrder", width: 55, hidden: true },
             { label: "供应商", name: "Supplier", width: 88 },
             { label: "", name: "PurchaseUser", width: 60, hidden: true },
-            { label: "单价(未税)", name: "UnitPrice", width: 60, hidden: true, },
+            { label: "", name: "UnitPrice", width: 60, hidden: true, },
             { label: "", name: "TotalPrice", width: 60, hidden: true },
             { label: "", name: "OutStockQty", width: 60, hidden: true },
+            { label: "", name: "UnitPrice", width: 60, hidden: true, },
             { label: "", name: "TotalPriceWT", width: 60, hidden: true },
             { label: "", name: "RequireTime", width: 60, hidden: true },
             { label: "", name: "PlanTime", width: 60, hidden: true },
             { label: "", name: "PlanAJTime", width: 60, hidden: true },
+            { label: "", name: "POCreateDate", width: 60, hidden: true },
             { label: "", name: "RequestUser", width: 60, hidden: true },
             { label: "交货日期", name: "DeliverDate", width: 60, hidden: true },
             { label: "", name: "InStockQty", width: 60, hidden: true },
             { label: "单价(含税)", name: "UnitPriceWT", width: 60, hidden: true },
             { label: "", name: "Memo", width: 60, hidden: true },
+            { label: "", name: "PurchaseTypeID", width: 20, hidden: true },
         ],
         viewrecords: true,
         height: $('#div_tb_left').height()-42,//document.documentElement.clientHeight - 200,
@@ -2310,14 +2442,14 @@ function POContent_PO_T(ItemIDs) {
         styleUI: 'Bootstrap',
         datatype: "json",
         colModel: [
-            { label: "", name: "PurchaseItemID", hidden: true },
+            { label: "", name: "PurchaseItemID",hidden: true },
             { label: "零件名", name: "Name", width: 103 },
             { label: "物料号", name: "PartNumber", width: 105 },
             { label: "规格", name: "Specification", width: 336 },
-            { label: "数量", name: "Quantity", width: 45, editable: true, },
-            { label: "单价(含税)", name: "UnitPriceWT", width: 82, editable: true, },
+            { label: "数量", name: "Quantity", width: 45, editable: false },
+            { label: "单价(含税)", name: "UnitPriceWT", width: 82, editable: true, hidden: true },
             {
-                label: "总价(含税)", name: "TotalPriceWT", width: 82, editable: true,
+                label: "总价(含税)", name: "TotalPriceWT", width: 82, editable: true,hidden: true,
                 editrules: {
                     custom: true, custom_func: function () {
                         curRow = Number(curRow) + 1;
@@ -2327,11 +2459,11 @@ function POContent_PO_T(ItemIDs) {
                 }
             },
             {
-                label: "交货日期", name: "DeliverDate", width: 86, editable: true,
+                label: "交货日期", name: "DeliverDate", width: 86, editable: true,hidden: true,
                 editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 sorttype: "date",
             },
-            { label: "备注", name: "Memo", width: 114 ,editable: true},
+            { label: "备注", name: "Memo", width: 114, editable: true, hidden: true },
 
             { label: "状态", name: "State", width: 0,hidden: true },
             { label: "采购类型", name: "PurchaseType", width: 0, hidden: true },
@@ -2340,7 +2472,7 @@ function POContent_PO_T(ItemIDs) {
             { label: "订单号", name: "PurchaseOrder", width: 0, hidden: true },
             { label: "供应商", name: "Supplier", width: 0, hidden: true },
             { label: "PR数量", name: "PRQuantity", width: 0, hidden: true, },
-            { label: "PR备注", name: "PRMemo", width: 0, hidden: true },
+            { label: "PR备注", name: "PRMemo", width: 0, hidden: true },           
         ],
         viewrecords: true,
         height: $('#div_tb_right').height() - 42,//document.documentElement.clientHeight - 200,
@@ -2367,8 +2499,6 @@ function POContent_PO_T(ItemIDs) {
                     'HistoryPrice': function () {
                         ShowHistory();
                     }
-
-
                 },
                 onContextMenu: function (event/*, menu*/) {
                     $("#ProjectGrid").jqGrid("setSelection", $(event.target).closest("tr.jqgrow").attr("id"));
@@ -2386,7 +2516,6 @@ function POContent_PO_T(ItemIDs) {
             $('#POContentGrid').jqGrid('editRow', rowid, true);
             curRow = rowid;
             BindRowAction(rowid, iCol);
-
         }
     })
 }
@@ -2420,10 +2549,13 @@ function PurchaseItem(Keyword, MoldNumber, State, PurchaseType, InPage) {
     var _url = "/Purchase/JsonPurchaseItems";
     var _condition = "";
     var _height;
+    var _width;
     if (InPage == undefined) {
-        _height = document.documentElement.clientHeight - 200
+        _height = $('.RightDiv_BottomDiv').eq(0).height() - 40;
+        _width = $('.RightDiv_BottomDiv').eq(0).width();
     } else {
         _height = (document.documentElement.clientHeight - 220) * 0.6;//0.385
+        _width=document.documentElement.clientHeight*0.8;
     }
     if (Keyword != "") {
         _condition = "?Keyword=" + Keyword;
@@ -2448,26 +2580,28 @@ function PurchaseItem(Keyword, MoldNumber, State, PurchaseType, InPage) {
         datatype: "json",
         colModel: [
             { label: "", name: "ID", hidden: true },
-            { label: "零件名", name: "Name", width: 100 },
-            { label: "物料号", name: "PartNumber", width: 80 },
-            { label: "规格", name: "Specification", width: 300 },
-            { label: "订单数量", name: "Quantity", width: 40 },
-            { label: "状态", name: "State", width: 40 },
-            { label: "采购类型", name: "PurchaseType", width: 40 },
-            { label: "申请单号", name: "PurchaseRequest", width: 40 },
-            { label: "询价单号", name: "QuotationRequest", width: 100, hidden: true },
-            { label: "订单号", name: "PurchaseOrder", width: 100, hidden: true },
+            { label: "零件名", name: "Name", width: 118 },
+            { label: "物料号", name: "PartNumber", width: 100 },
+            { label: "规格", name: "Specification", width: 380 },
+            { label: "订单数量", name: "Quantity", width: 74 },
+            { label: "状态", name: "State", width: 73 },
+            { label: "采购类型", name: "PurchaseType", width: 75 },
+            { label: "申请单号", name: "PurchaseRequest", width: 80 },
+            { label: "询价单号", name: "QuotationRequest", width: 80, hidden: true },
+            { label: "订单号", name: "PurchaseOrder", width: 80, hidden: true },
             { label: "供应商", name: "Supplier", width: 100, hidden: true },
             { label: "采购人员", name: 'PurchaseUser', width: 100, hidden: true },
             { label: "单价(未税)", name: "UnitPrice", width: 60, hidden: true },
             { label: "总价(未税)", name: "TotalPrice", width: 80, hidden: true, sorttype: 'integer' },
             
-            { label: "领用数", name: "OutStockQty", width: 60, hidden: true },            
+            { label: "领用数", name: "OutStockQty", width: 60, hidden: true },
+
+            { label: "单价(含税)", name: "UnitPriceWT", width: 60, hidden: true, sorttype: 'integer' },
             { label: "总价(含税)", name: "TotalPriceWT", width: 60, hidden: true, sorttype: 'integer' },
             { label: "需求日期", name: "ShipDate", width: 80, hidden: true },
-            { label: "计划到货日期", name: "PlanDate", width: 150, hidden: true },
+            { label: "计划到货日期", name: "PlanDate", width: 90, hidden: true },
             {
-                label: "调整后到货日期", name: "PlanAJDate", width: 150, hidden: true, editable: true,
+                label: "调整后到货日期", name: "PlanAJDate", width: 115, hidden: true, editable: true,
                 editoptions: { size: 10, maxlengh: 10, dataInit: function (element) { $(element).datepicker({ dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true }) } },
                 sorttype: "date",
                 //formatter: function (cellvalue, options, rowObject) {
@@ -2484,17 +2618,18 @@ function PurchaseItem(Keyword, MoldNumber, State, PurchaseType, InPage) {
                 //    })                    
                 //},
             },
-            { label: "生成人员", name: "RequestUser", width: 100 },
-            { label: "到货日期", name: "DeliveryDate", width: 100, hidden: true },
+            { label: "订单生成日期", name: "CreateDate", width: 200, hidden: true },
+            { label: "请购人员", name: "RequestUser", width: 90 },
+            { label: "到货日期", name: "DeliveryDate", width: 75, hidden: true },
             { label: "到库数", name: "InStockQty", width: 60, hidden: true },
         ],
         viewrecords: true,
         height: _height,
-        width: document.body.clientWidth * 0.8,
+        width: _width,
         rowNum: 500,
         loadonce: true,
         multiselect: true,
-        shrinkToFit: true,
+        shrinkToFit: false,
         cellsubmit: "clientArray", //当单元格发生变化后不直接发送请求、"remote"默认直接发送请求
         cellEdit: true,
         formatCell: function (rowid, cellname, value, iRow, iCol) {
@@ -2624,10 +2759,11 @@ function OutStockHistory(MoldNumber, Keyword) {
         datatype: "json",
         colModel: [
             { label: "", name: "ID", hidden: true },
+            { label: "领料单号", name: "OutStockNum", width: 60 },
             { label: "零件名", name: "PartName", width: 100 },
             { label: "物料号", name: "PartNumber", width: 60 },
             { label: "规格", name: "Specification", width: 100 },
-            { label: "领用数量", name: "Quantity", width: 30 },
+            { label: "领用数量", name: "Quantity", width: 60 },
             { label: "领料人", name: "RequestUser", width: 60 },
             { label: "领用时间", name: "OutDate", width: 80 },
             { label: "发料人", name: "WarehouseUser", width: 60 },
@@ -2877,8 +3013,117 @@ function PlanChangeRecordGrid() {
     })
 }
 
+function TaskTimeList() {
+    $("#TaskTimeGrid").jqGrid({
+        url: '',
+        mtype: "GET",
+        styleUI: 'Bootstrap',
+        datatype: "json",
+        colModel: [
+            { label: "", name: "ID", hidden: true },
+            { label: '图纸', name: 'DrawingFile', width: 42 },
+            { label: '任务名', name: 'TaskName', width: 128, sorttype: 'string' },
+            { label: '版本', name: 'Version', width: 45 },
+            { label: 'CAD文档', name: 'CADPartName', width: 160, hidden: true },//WEDM图纸历史
+            { label: 'CAD', name: 'CAD', width: 3, hidden: true },
+            { label: '备注', name: 'Memo', width: 100, hidden: true },
+            //WEDM图纸历史
+            { label: '加工精度', name: 'Preciston', width: 81, hidden: true },
+            { label: '特征数量', name: 'FeatureCount', width: 81, hidden: true },
+            { label: '长度', name: 'Length', width: 57, hidden: true },
+            { label: '厚度', name: 'Thickness', width: 57, hidden: true },
+            //----
+            { label: '预计总工时(分)', name: 'Time', width: 70, editable: true },
+            { label: '状态', name: 'State', width: 73, hidden: true },
+            { label: '状态备注', name: 'StateMemo', width: 113, hidden: true },
+            //CNC
+            { label: '毛坯', name: 'Raw', width: 128, hidden: true },
+            { label: '型号', name: 'Model', width: 72, hidden: true },
+            { label: "表面", name: "Surface", width: 72, hidden: true },
+            { label: "平动", name: "Obit", width: 72, hidden: true },
+            { label: "电极位置", name: "ELEPos", width: 165, hidden: true },
+            { label: 'R', name: 'R', width: 38, hidden: true },
+            { label: 'F', name: 'F', width: 38, hidden: true },
+            //----
+            { label: '数量', name: 'Quantity', width: 44, hidden: true },
+            { label: '备料', name: 'Prepared', formatter: "checkbox", width: 0, hidden: true },
+            //MG
+            { label: '材料', name: 'Material', width: 64, hidden: true },
+            { label: 'HRC', name: 'HRC', width: 80, hidden: true },
+            //----
+            { label: '工艺', name: 'ProcessName', width: 73, hidden: true },
+            { label: '实际工时(分)', name: 'ActualTime', width: 78, hidden: true },
+            { label: '优先', name: 'Priority', width: 40},
+            //日期
+            { label: '创建日期', name: 'CreateTime', width: 118 },
+            { label: '计划日期', name: 'PlanTime', width: 118 },
+            { label: '接收日期', name: 'AcceptTime', width: 118, hidden: true },
+            { label: '发布日期', name: 'ReleaseTime', width: 118, hidden: true },//图纸历史
+            { label: '开始日期', name: 'StartTime', width: 118, hidden: true },
+            { label: '结束日期', name: 'FinishTime', width: 118, hidden: true },
+            { label: '预计日期', name: 'ForecastTime', width: 118, hidden: true },
+            //----
+            //WEDM图纸历史
+            { label: 'CAM', name: 'CAM', width: 62, hidden: true },
+            { label: "QC点", name: "QCPoints", width: 43, formatter: "checkbox", hidden: true },
+            { label: '跑位检查', name: "PosCheck", width: 70, formatter: "checkbox", hidden: true },
+            { label: 'QC', name: 'QC', width: 62, hidden: true },
+            //----                     
+            { label: '加工', name: 'Workshop', width: 0, hidden: true },
+            { label: '机器号', name: 'Machine', width: 115, hidden: true },
+            { label: '操作人员', name: 'Operater', width: 78, hidden: true },
+            { label: '任务类型', name: 'TaskType', width: 78 },
+            { label: '', name: 'Type', width: 78,hidden:true },
+        ],
+        cellEdit:true,
+        viewrecords: true,
+        height: $('.RightDiv_BottomDiv').eq(0).height() - 40,
+        width: $('.RightDiv_BottomDiv').eq(0).width(),
+        rowNum: 500,
+        autoScroll: true,
+        scroll: true,
+        multiselect: true,
+        loadonce: true,
+        shrinkToFit: true,
+        cellsubmit: "clientArray",
+    });
+}
 
+function WHReportWithMachine() {
+    $('#tb_WHReportWithMachine').jqGrid({
+        url: '',
+        mtype: "GET",
+        styleUI: 'Bootstrap',
+        datatype: "json",
+        colModel: [
+            { label: "", name: "TaskHourID", hidden: true },
+            { label: "", name: "TaskID", hidden: true },
+            { label: "任务名", name: "TaskName", },
+            { label: "模号", name: "MoldNumber", },
+            { label: "机器代码", name: "MachineCode", },
+            { label: "机器名", name: "MachineName", },
 
+            { label: "操作人员", name: "Operater", },
+            { label: "记录标识", name: "RecordType", },
+            { label: "", name: "TaskType", hidden: true },
+            { label: "加工工艺", name: "TaskTypeName", },
+            { label: "加工电极", name: "SemiTaskFlag", hidden: true },
+            { label: "实际工时(分)", name: "Time" },
+            { label: "开始时间", name: "StartTime", },
+            { label: "结束时间", name: "FinishTime", },
+        ],
+        //cellEdit: true,
+        viewrecords: true,
+        height: $('.RightDiv_BottomDiv').eq(0).height() - 40,
+        width: $('.RightDiv_BottomDiv').eq(0).width(),
+        autoScroll: true,
+        scroll: true,
+        multiselect: true,
+        loadonce: true,
+        shrinkToFit: true,
+        cellsubmit: "clientArray",
+    })
+}
 
 //合并单元格方法
 function Merger(gridName, CellName) {

@@ -1,0 +1,246 @@
+﻿@{
+    int DeptID;
+    try
+    {
+        DeptID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        DeptID = 0;
+    }
+    ViewBag.Title = "采购记录查询报表";
+}
+
+<style>
+    #PurchaseItemGrid td {
+        margin: 0px !important;
+        padding: 0px !important;
+        height: 30px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 12px;
+        /*position:absolute;*/
+    }
+
+    #PurchaseItemGrid input {
+        height: 24px;
+        border-style: none;
+        outline: none;
+        font-size: 12px;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    .ui-tooltip table {
+        border: 1px rgba(0,0,0,0.1) solid;
+        border-collapse: collapse;
+    }
+    /*.ui-tooltip tr:nth-child(odd) {
+        background-color:rgba(0,0,0,0.2);
+    }
+    .ui-tooltip tr:nth-child(even) {
+        background-color:rgba(0,0,0,0.4);
+    }*/
+    .ui-tooltip {
+        box-shadow: 5px 5px 5px rgba(0,0,0,0.1) !important;
+        border-style: none !important;
+        background-color: rgba(240,255,255,0.9) !important;
+        padding: 0px !important;
+    }
+
+        .ui-tooltip td {
+            border: 1px rgba(0,0,0,0.1) solid;
+            text-align: center;
+            width: 300px;
+            font-size: 10px;
+            height: 26px;
+        }
+
+        .ui-tooltip th {
+            border: 1px rgba(0,0,0,0.1) solid;
+            text-align: center;
+            width: 300px;
+            font-size: 10px;
+            font-weight: normal !important;
+            height: 26px;
+            background-color: rgba(0,0,0,0.1);
+        }
+
+    .Lab_PlanAJDate {
+        display: block;
+        width: 100%;
+        line-height: 100%;
+        font-weight: normal !important;
+    }
+</style>
+
+<div style="margin-top:60px">
+    <h2>采购记录查询报表</h2>
+    <div class="col-sm-2">
+        <input id="depID" value="@DeptID" hidden />
+        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
+        <select class="form-control" id="MoldSelect" size="3"></select>
+        <input type="hidden" id="MoldNumber" />
+    </div>
+    <div class="col-sm-10">
+        <table style="margin-right:20px!important;">
+            <tr>
+                <td style="width:200px!important;">
+                    创建时间(.从)
+                </td>
+                <td style="width:200px!important;">
+                    <input id="dateFr" type="date" class="form-control"/>
+                </td>
+                <td style="width:200px!important;">
+                    创建时间(.到)
+                </td>
+                <td style="width:200px!important;">
+                    <input id="dateTo" type="date" class="form-control"/>
+                </td>
+                <td style="width:20px!important;"></td>
+                <td style="width:200px!important;">
+                    <input type="text" class="form-control" id="ItemKeyword" placeholder="PO号/零件名/物料号/规格" style="width:400px;" />
+                </td>
+                <td style="width:400px!important;">
+                    <button class="btn btn-primary" id="Query">查询</button>
+                </td>
+            </tr>
+        </table>
+        <div style="float:left;margin-right:20px!important;">
+            <table id="PurchaseItemGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
+    </div>
+</div>
+
+@*采购计划调整记录*@
+<div id="dialog" title="采购计划调整记录" hidden>
+    <table id="tb_PlanChangeRecord"></table>
+</div>
+
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script src="~/Scripts/Purchase.js"></script>
+<script src="~/Scripts/jquery.ba-throttle-debounce.js"></script>
+<script>
+    $("document").ready(function () {
+
+        LoadMoldNumber("");
+
+        PurchaseItem("","", @ViewBag.State);
+        @if ((ViewBag.State==10)||(ViewBag.State==40) || (ViewBag.State == 0))
+        {
+            @:ShowPOCol();
+                }
+
+        $("#Keyword").on("keyup", function () {
+            LoadMoldNumber($("#Keyword").val());
+        })
+
+        $("#MoldSelect").on("change", function () {
+            $('#ItemKeyword').val('');
+            $("#MoldNumber").val($("#MoldSelect option:selected").val());
+            QueryPurchaseitem("", $("#MoldNumber").val(),'','');
+        })
+
+        $("#Query").on("click", function () {
+            console.log($('#dateFr').val());
+            console.log($('#dateTo').val());
+            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val(),String($('#dateFr').val()),String($('#dateTo').val()));
+        })
+
+        $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
+        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+
+    })
+
+
+    function LoadMoldNumber(Keyword) {
+        var _url = "/Purchase/Service_Json_PORepotForQuery_MoldNum";
+        if (Keyword != "") {
+            _url = _url + "?Keyword=" + Keyword;
+        }
+        $("#MoldSelect option").remove();
+        $.ajaxSettings.async=false;
+        $.getJSON(_url, function (msg) {
+            if(msg.length>0){
+                $("#MoldSelect").append($("<option/>",{
+                    value:"ALL",
+                    text:"ALL"
+                }))
+            }
+            $.each(msg, function (i, n) {
+                $("#MoldSelect").append($("<option/>",{
+                    value:n,
+                    text:n
+                }))
+            })
+        })
+    }
+
+    function ShowPOCol(){
+        $("#PurchaseItemGrid").setGridParam().showHideCol("QuotationRequest");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseOrder");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("Supplier");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("InStockQty");
+        @if (ViewBag.State == 40)
+        {
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("OutStockQty");
+                }
+
+        @if ((ViewBag.State == 10)||(ViewBag.State==40))
+        {
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
+                    @:$("#PurchaseItemGrid").setGridParam().showHideCol("DeliveryDate");
+                }
+        @if ((ViewBag.State == 0))
+        {
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("OutStockQty");
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
+                    @:$("#PurchaseItemGrid").setGridParam().showHideCol("DeliveryDate");
+                }
+
+        $("#PurchaseItemGrid").setGridParam().showHideCol("CreateDate");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("UnitPrice");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("TotalPrice");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("TotalPriceWT");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("UnitPriceWT");
+        $("#PurchaseItemGrid").setGridParam().showHideCol("CreateDate");
+
+        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+    }
+</script>
+<script>
+    $(function(){
+        PlanChangeRecordGrid();
+
+        @if (ViewBag.State == 10)
+        {
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("PlanAJDate");
+                }
+
+    })
+
+    function QueryPurchaseitem(Keyword, MoldNumber,dateFr,dateTo) {
+        var _condition='';
+        var _url = "/Purchase/Service_Json_PORepotForQuery?MoldNumber=" + $("#MoldNumber").val()
+            + "&Keyword=" + Keyword;
+
+        if(dateFr!=''){
+            _condition=_condition+'&dateFr='+dateFr;
+        }
+        if(dateTo!=''){
+            _condition=_condition+'&dateTo='+dateTo;
+        }
+        _url=_url+_condition
+        $("#PurchaseItemGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    };  
+    function ReLoadPlanChangeRecordGrid(purItemID){
+        var _url='/Purchase/Service_GetPurItemChangeDateRecords?PurchaseRequestID='+purItemID;
+        $("#tb_PlanChangeRecord").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+        $("#dialog").dialog({
+            height: 300,
+            width:400,
+        });
+    }
+</script>

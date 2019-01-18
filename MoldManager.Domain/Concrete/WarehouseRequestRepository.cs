@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechnikMold.Domain.Status;
 using TechnikSys.MoldManager.Domain.Abstract;
 using TechnikSys.MoldManager.Domain.Entity;
 
@@ -18,26 +19,19 @@ namespace TechnikSys.MoldManager.Domain.Concrete
 
         public int Save(WarehouseRequest WarehouseRequest)
         {
-            if (WarehouseRequest.WarehouseRequestID == 0)
+            WarehouseRequest _dbEntry = QueryByID(WarehouseRequest.WarehouseRequestID);
+            if (_dbEntry==null)
             {
                 _context.WarehouseRequests.Add(WarehouseRequest);
             }
             else
             {
-                WarehouseRequest _dbEntry = QueryByID(WarehouseRequest.WarehouseRequestID);
-                if (_dbEntry != null)
-                {
-                    _dbEntry.WarehouseRequestID = WarehouseRequest.WarehouseRequestID;
-                    _dbEntry.RequestNumber = WarehouseRequest.RequestNumber;
-                    _dbEntry.RequestUserID = WarehouseRequest.RequestUserID;
-                    _dbEntry.WarehouseUserID = WarehouseRequest.WarehouseUserID;
-                    _dbEntry.ApprovalUserID = WarehouseRequest.ApprovalUserID;
-                    _dbEntry.CreateDate = WarehouseRequest.CreateDate;
-                    _dbEntry.ApprovalDate = WarehouseRequest.ApprovalDate;
-                    _dbEntry.WarehouseDate = WarehouseRequest.WarehouseDate;
-                    _dbEntry.State = WarehouseRequest.State;
-                    _dbEntry.Enabled = WarehouseRequest.Enabled;
-                }
+                _dbEntry.WarehouseUserID = WarehouseRequest.WarehouseUserID;
+                _dbEntry.ApprovalUserID = WarehouseRequest.ApprovalUserID;
+                _dbEntry.ApprovalDate = WarehouseRequest.ApprovalDate;
+                _dbEntry.WarehouseDate = WarehouseRequest.WarehouseDate;
+                _dbEntry.State = WarehouseRequest.State;
+                _dbEntry.Enabled = WarehouseRequest.Enabled;
             }
             _context.SaveChanges();
             return WarehouseRequest.WarehouseRequestID;

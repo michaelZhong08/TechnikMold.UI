@@ -1,0 +1,273 @@
+﻿
+@{
+    ViewBag.Title = "预估工时";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    int depID;
+    try
+    {
+        depID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    }
+    catch
+    {
+        depID = 0;
+    }
+}
+@section Header{
+    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
+    <script src="~/Scripts/bootstrap-switch.js"></script>
+}
+<style>
+    #TaskTimeGrid td {
+        margin: 0px !important;
+        padding: 0px !important;
+        height: 30px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 12px;
+    }
+
+    #TaskTimeGrid input {
+        height: 24px;
+        border-style: none;
+        outline: none;
+        font-size: 12px;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    .tdchkBox {
+        margin: 0px !important;
+        width: 20px;
+        height: 20px;
+        /*display: block !important;*/
+    }
+
+    .td_cb{
+        padding-left:10px!important;
+    }
+</style>
+
+<script src="~/Scripts/Task.js"></script>
+
+<div class="FatherDiv">
+    <div class="LeftDiv">
+        <button class="btn btn-primary  LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
+        <select class="form-control LeftDiv_Sel" id="MoldSelect" size="3"></select>
+    </div>
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
+                <tr>
+                    <td><input type="text" class="col-sm-1 form-control" id="TaskKeyword" placeholder="任务名关键字" /></td>
+                    <td><button class="btn btn-primary" id="QueryTask">查询</button></td>
+
+                    <td style="font-weight:bold;">预估工时</td>
+                    <td>
+                        <div class="switch">
+                            <input id="TaskTimeState" type="hidden" value="true"/>
+                            <input id="TaskTimeSwitch" type="checkbox" data-on-color="primary" data-off-color="warning" />
+                        </div>
+                    </td>
+
+                    <td style="font-weight:bold;">
+                        设置优先级
+                    </td>
+                    <td>
+                        <select class="form-control" id="Sel_priority">
+                            <option value="0">-</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </td>
+
+                    <td class="td_cb" id="td_task_1" hidden><input class="tdchkBox" type="checkbox" id="task_1"/> 电极</td>
+                    <td class="td_cb" id="td_task_2" hidden><input class="tdchkBox" type="checkbox" id="task_2" /> 放电</td>
+                    <td class="td_cb" id="td_task_3" hidden><input class="tdchkBox" type="checkbox" id="task_3" /> 线切割</td>
+                    <td class="td_cb" id="td_task_4" hidden><input class="tdchkBox" type="checkbox" id="task_4" /> 铣铁</td>
+                    <td class="td_cb" id="td_task_6" hidden><input class="tdchkBox" type="checkbox" id="task_6" /> 铣磨</td>
+                    
+                    @if (ViewBag.DepList == depID)
+                    {
+                        <td><input id="SaveTaskTime" type="button" class="btn btn-success" value="调整预估工时" /></td>
+                    }   
+                    
+                </tr>
+            </table>
+        </div>
+        <div class="RightDiv_BottomDiv">
+            <table id="TaskTimeGrid"></table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        TaskTimeList();
+        //自适应
+        $(window).resize(function () {
+            $("#TaskTimeGrid").setGridWidth($('.RightDiv_BottomDiv').eq(0).width());
+            $("#TaskTimeGrid").setGridHeight($('.RightDiv_BottomDiv').eq(0).height() - 40);
+        });
+
+    })
+</script>
+<script>
+    $(document).ready(function () {
+        $("#Keyword").on("keyup", function(){
+            LoadMoldNum();
+        })
+        LoadMoldNum($('#TaskTimeState').val());
+
+        $("#MoldSelect").on("change", function () {
+            if ($("#MoldSelect").val() != null) {
+                $("#FMoldNumber").val($("#MoldSelect").val());
+                RefreshTaskGrid('', '', $('#TaskTimeState').val());
+                RefreshTaskType();
+            }
+        });
+
+        $('#QueryTask').on('click', function () {
+            RefreshTaskGrid($('#TaskKeyword').val(), '', $('#TaskTimeState').val());
+        });
+
+        $('#SaveTaskTime').on('click', function () {
+            //获取第2行(除表头)第2个单元格(第一个默认隐藏)
+            var firsttdobj = $('#TaskTimeGrid td:eq(50)');
+            //模拟单元格点击事件
+            firsttdobj.trigger("click");
+
+            if (confirm('确认调整工时？')) {
+                var rowData = $('#TaskTimeGrid').jqGrid('getRowData');
+                var data = '';
+                var name = 'tasks';
+                for (var i = 0; i < rowData.length; i++) {
+                    console.log(rowData[i]);
+                    data = data + name + '[' + i + '].TaskID=' + rowData[i].ID + '&'
+                        + name + '[' + i + '].Time=' + rowData[i].Time + '&';
+                };
+                $.get('/Task/Service_Task_UptTime', data, function () {
+                    alert('保存成功！');
+                    var types = getPickTaskType();
+                    RefreshTaskGrid('', types, $('#TaskTimeState').val());
+                });
+            }
+        });
+
+        $('#RefreshMold').on('click', function () {
+            LoadMoldNum($('#TaskTimeState').val());
+        });
+    })
+    function LoadMoldNum(TimeZero) {
+        $('#MoldSelect').empty();
+        var _url = '/Task/Service_Task_GetCurMoldNumList?TimeZero=' + TimeZero;
+        $.getJSON(_url, function (msg) {
+            $.each(msg, function (i, n) {
+                var _val = $.trim(n);
+                if (_val != "") {
+                    $("#MoldSelect").append($("<option/>", {
+                        text: _val,
+                        value: _val
+                    }));
+                }
+            })
+        })
+    }
+    function RefreshTaskGrid(Keyword, Types, TimeZero) {
+        var _MoldNumber = $("#MoldSelect").val();
+
+        if (Keyword == "") {
+            $("#Keyword").val("");
+        }
+
+        var _url = '/Task/Service_Task_GetCurTaskList?moldNum=' + _MoldNumber + '&keyWord=' + Keyword + '&types=' + Types + '&TimeZero=' + TimeZero;
+        $.ajaxSettings.async = false;
+        $("#TaskTimeGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    }
+    function RefreshTaskType() {
+        $('#td_task_1').hide();
+        $('#td_task_2').hide();
+        $('#td_task_3').hide();
+        $('#td_task_4').hide();
+        $('#td_task_6').hide();
+        $('#task_1')[0].checked = false;
+        $('#task_2')[0].checked = false;
+        $('#task_3')[0].checked = false;
+        $('#task_4')[0].checked = false;
+        $('#task_6')[0].checked = false;
+        var rowDatas = $('#TaskTimeGrid').jqGrid('getRowData');
+        for (var i = 0; i < rowDatas.length; i++) {
+            switch (Number(rowDatas[i].Type)) {
+                case 1:
+                    $('#td_task_1').show();
+                    //document.getElementById('task_1').checkWed = true;
+                    //$('#td_task_1').checked = true;
+                    break;
+                case 2:
+                    $('#td_task_2').show();
+                    //$('#task_2')[0].checked = true;
+                    break;
+                case 3:
+                    $('#td_task_3').show();
+                    //$('#td_task_3').checked = true;
+                    break;
+                case 4:
+                    $('#td_task_4').show();
+                    //$('#td_task_4').checked = true;
+                    break;
+                case 6:
+                    $('#td_task_6').show();
+                    //$('#td_task_6').checked = true;
+                    break;
+            }
+        }
+    }
+    function getPickTaskType() {
+        var boxs = $('.tdchkBox');
+        var types = '';
+        for (var i = 0; i < boxs.length; i++) {
+            if (boxs[i].checked) {
+                types = types + boxs[i].id.split('_')[1] + ',';
+            }
+        }
+        return types;
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        $('.tdchkBox').on('click', function () {
+            var types = getPickTaskType();
+            RefreshTaskGrid($("#Keyword").val(), types, $('#TaskTimeState').val());
+        });
+
+        //设置优先级
+        $("#Sel_priority").on("change", function () {
+            SetPriority(GetMultiSelectedIDs("TaskTimeGrid"), this.value);
+        });
+
+        $('#TaskTimeSwitch').bootstrapSwitch({
+            size: 'normal',
+            //state: false,
+            onText: '有',
+            offText: '无',
+            onSwitchChange: function (event, state) { switchChange(event, state) },
+        });
+    });
+    function switchChange(event, state) {
+        var types = getPickTaskType();
+        if (state) {
+            $('#TaskTimeState').val('false');
+            RefreshTaskGrid($("#Keyword").val(), types, 'false');
+            LoadMoldNum('false');
+        } else {
+            $('#TaskTimeState').val('true');
+            RefreshTaskGrid($("#Keyword").val(), types, 'true');
+            LoadMoldNum('true');
+        }
+    }
+</script>

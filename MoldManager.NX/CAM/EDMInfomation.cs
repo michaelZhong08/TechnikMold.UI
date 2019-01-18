@@ -37,7 +37,6 @@ namespace TechnikSys.MoldManager.NX.CAM
             EDMDetail.TaskID = 0;
             //EDMDetail.CreateDate = DateTime.Now;
 
-
             string _result = _server.SendObject(_url, "SettingData", EDMDetail);
 
             return Convert.ToInt16(_result);

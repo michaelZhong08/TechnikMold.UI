@@ -180,7 +180,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             ELE_IndexCode = ELE_IndexCode.Trim();
             //string ELE_IndexCode = "*EI0000018013*";
             ELE_IndexCode = ELE_IndexCode.Replace("*", "");
-            ELE_IndexCode = ELE_IndexCode.Replace("EI", "");
+            //ELE_IndexCode = ELE_IndexCode.Replace("EI", "");
+            ELE_IndexCode = ELE_IndexCode.Substring(2, ELE_IndexCode.Length - 2);
             int ELE_Index = Convert.ToInt32(ELE_IndexCode);
             CNCItem _cncItem = _context.CNCItems.Where(c => c.ELE_INDEX == ELE_Index).FirstOrDefault();
             return _cncItem;

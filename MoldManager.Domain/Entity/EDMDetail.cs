@@ -26,6 +26,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int EleCount { get; set; }
         public bool QCPoint { get; set; }
         public string ProcessName { get; set; }
+        public double Time { get; set; }
     }
 
 }

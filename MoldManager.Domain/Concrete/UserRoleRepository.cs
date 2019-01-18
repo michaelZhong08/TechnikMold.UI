@@ -82,7 +82,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
 
         public IEnumerable<UserRole> GetUserRoles(int UserID)
         {
-            return _context.UserRoles.Where(u => u.UserID == UserID).Where(u => u.Enabled == true);
+            return _context.UserRoles.Where(u => u.UserID == UserID).Where(u => u.Enabled == true).OrderBy(u=>u.UserRoleID);
         }
 
 

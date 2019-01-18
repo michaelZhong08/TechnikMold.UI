@@ -7,8 +7,8 @@ namespace TechnikSys.MoldManager.Domain.Status
 {
     public enum CNCItemStatus
     {
-        任务取消 = -201,
-        CAM取消 = -200,
+        任务取消 = -201,//已发布任务 被删除
+        CAM取消 = -200,//未发布任务 被删除(设定删除)
         CNC删除 = -100,
         未开始 = -99,
         暂停 = -1,

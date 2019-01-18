@@ -6,7 +6,8 @@
     })
     //设置系统特征值
     //hr / sinno
-    sessionStorage.setItem('SpecKey', 'sinno');
+    sessionStorage.setItem('SpecKey', 'hr');
+    sessionStorage.setItem('trClickedColor', '#80FFFF');
     SysSpecShow(sessionStorage['SpecKey']);
 })
 

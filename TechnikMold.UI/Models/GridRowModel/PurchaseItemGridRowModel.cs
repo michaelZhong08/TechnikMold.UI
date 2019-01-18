@@ -17,9 +17,10 @@ namespace MoldManager.WebUI.Models.GridRowModel
             string PurchaseUser, 
             string PurchaseType,
             string RequestUser,
-            string htmlTitle)
+            string htmlTitle,
+            string pocreateDate)
         {
-            cell = new string[24];
+            cell = new string[27];
 
             cell[0] = PurchaseItem.PurchaseItemID.ToString();
             cell[1] = PurchaseItem.Name;
@@ -61,17 +62,20 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[13] = PurchaseItem.TotalPrice.ToString();
           
             cell[14] = PurchaseItem.OutStockQty.ToString();
-            
-            cell[15] = PurchaseItem.TotalPriceWT==0?"":PurchaseItem.TotalPriceWT.ToString();
-            cell[16] = PurchaseItem.RequireTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.RequireTime.ToString("yyyy-MM-dd");
-            cell[17] = PurchaseItem.PlanTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanTime.ToString("yyyy-MM-dd");
-            cell[18] = "<label class='Lab_PlanAJDate' title='"+htmlTitle+"'>" +(PurchaseItem.PlanAJTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanAJTime.ToString("yyyy-MM-dd"))+"</label>";
 
-            cell[19] = RequestUser;
-            cell[20] = PurchaseItem.DeliveryTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.DeliveryTime.ToString("yyyy-MM-dd");
-            cell[21] = PurchaseItem.InStockQty.ToString();
-            cell[22] = PurchaseItem.UnitPriceWT.ToString();
-            cell[23] = PurchaseItem.Memo;
+            cell[15] = PurchaseItem.UnitPriceWT.ToString();
+            cell[16] = PurchaseItem.TotalPriceWT==0?"":PurchaseItem.TotalPriceWT.ToString();
+            cell[17] = PurchaseItem.RequireTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.RequireTime.ToString("yyyy-MM-dd");
+            cell[18] = PurchaseItem.PlanTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanTime.ToString("yyyy-MM-dd");
+            cell[19] = "<label class='Lab_PlanAJDate' title='"+htmlTitle+"'>" +(PurchaseItem.PlanAJTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanAJTime.ToString("yyyy-MM-dd"))+"</label>";
+
+            cell[20] = pocreateDate;
+            cell[21] = RequestUser;
+            cell[22] = PurchaseItem.DeliveryTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.DeliveryTime.ToString("yyyy-MM-dd");
+            cell[23] = PurchaseItem.InStockQty.ToString();
+            cell[24] = PurchaseItem.UnitPriceWT.ToString();
+            cell[25] = PurchaseItem.Memo;
+            cell[26] = PurchaseItem.PurchaseType.ToString();
         }
     }
 }

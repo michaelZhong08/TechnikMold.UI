@@ -1,0 +1,551 @@
+﻿
+@{
+    ViewBag.Title = "人工工时录入";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .ui-timepicker-div .ui-widget-header {
+        margin-bottom: 8px;
+    }
+
+    .ui-timepicker-div dl {
+        text-align: left;
+    }
+
+        .ui-timepicker-div dl dt {
+            height: 25px;
+            margin-bottom: -25px;
+        }
+
+        .ui-timepicker-div dl dd {
+            margin: 0 10px 10px 65px;
+        }
+
+    .ui-timepicker-div td {
+        font-size: 90%;
+    }
+
+    .ui-tpicker-grid-label {
+        background: none;
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
+</style>
+
+<style>
+    .WHFatherDiv{
+        position:absolute;
+        /*border:1px solid rgba(0,0,0,0.1);*/
+        top:100px;
+        bottom:5px;
+        left:5px;
+        right:5px;
+        width:100%-10px;
+    }
+    .WHLeftDiv{
+        position:absolute;
+        border:1px solid rgba(0,0,0,0.1);
+        left:0;
+        top:0;
+        bottom:0;
+        width:40%;
+        height:100%;
+        
+    }
+    .WHRightDiv{
+        position:absolute;
+        border:1px solid rgba(0,0,0,0.1);
+        right:0;
+        top:0;
+        bottom:0;
+        width:60%;
+        height:100%;
+        margin-left:5px;
+    }
+    .WHRight_TopDiv{
+        position:absolute;
+        top:0;
+        /*border:1px solid rgba(0,0,0,0.1);*/
+        height:40px;
+        width:100%;
+    }
+    .WHRight_BottomDiv{
+        position:absolute;
+        top:40px;
+        /*border:1px solid rgba(0,0,0,0.1);*/
+        width:100%;
+    }
+    .TopDivContent{
+        margin:0px;
+        /*padding:0px;*/
+        height:40px;
+    }
+    .WHSubmitFormDiv{
+        position:absolute;
+        /*border:1px solid blue;*/
+        width:80%;
+        height:80%;
+    }
+    #EmpWH_SubmitForm{
+        padding:0px;
+        margin:0px;
+        border:1px solid rgba(0,0,0,0.1);
+        box-shadow:rgba(0,0,0,0.1) 0px 0px 5px 5px;
+    }
+    #EmpWH_SubmitTb{
+        padding:0px;
+        margin:0px;
+        width:90%;
+    }
+    #EmpWH_SubmitTb td{
+        text-align: center;
+        vertical-align: central;
+        font-size: 12px;
+        font-family: "微软雅黑" !important;
+        /*border:1px solid rgba(0,0,0,0.1);*/
+    }
+    #modal_Save_EmpWH{
+        float:right;
+        text-align: center;
+        vertical-align:central;
+        font-size:16px!important;
+        font-weight:bold;
+    }
+    .td_label{
+        text-align: left!important;
+        font-size:14px!important;
+        font-weight:bold;
+        text-indent:10px;
+    }
+    .tb_EmpWHReportByDay{
+        width:100%;
+    }
+    .tb_EmpWHReportByDay td{
+        border: 1px solid rgba(0,0,0,0.1);
+        text-align: center;
+        vertical-align: central;
+        font-size: 12px;
+        font-family:"微软雅黑"!important;
+    }
+    #htb_EmpWHReportByDay td{
+        margin-bottom: 0;
+        table-layout: fixed;
+        background-color: rgba(0,0,0,0.8);
+        color: rgba(255,255,255,1);
+        font-size: 14px!important;
+        font-weight:bold!important;
+        height: 36.53px;
+        
+        border:1px solid rgba(255,255,255,0.5)!important;
+        border-style:solid solid solid solid!important;
+    }
+</style>
+
+<link rel="stylesheet" href="~/Content/bootstrap-datetimepicker.min.css" />
+<script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+<script src="~/Scripts/bootstrap-datetimepicker.zh-CN.js"></script>
+
+<h2 style="margin-top:60px;">人工工时录入</h2>
+
+<div class="WHFatherDiv">
+    <div class="WHLeftDiv">
+        <div class="WHSubmitFormDiv">
+            <form id="EmpWH_SubmitForm" method="post" enctype="multipart/form-data">
+                <table id="EmpWH_SubmitTb">
+                    <colgroup>
+                        <col width="20%" />
+                        <col width="80%" />
+                    </colgroup>
+                    <tr>
+                        <td class="td_label">员工工号</td>
+                        <td>
+                            <input id="EmpCodeInput" name="EmpCode" list="EmpCodeList" placeholder="请输入工号" class="form-control tdContent required" />
+                            <datalist id="EmpCodeList"></datalist>
+                            <input id="EmpId" name="Id" value="0" hidden />
+                            <input id="Enable" name="Enable" value="True" hidden />
+                            <input id="WorkType" name="WorkType"  hidden/>
+                        </td>
+                    </tr>
+                    <tr><td class="td_label">员工姓名</td><td class="td_content"><input id="EmpNameInput" name="EmpName" class="form-control tdContent required" readonly placeholder="员工姓名"/></td></tr>
+                    <tr><td class="td_label">模具号</td><td class="td_content"><input id="MoldNumber" name="MoldNumber" list="moldNumList" class="form-control tdContent" placeholder="请输入模号" /><datalist id="moldNumList"></datalist></td></tr>
+                    <tr><td class="td_label">工作类型</td><td class="td_content"><input id="WorkTypeName" name="WorkTypeName" list="workTypeList" class="form-control tdContent"><datalist id="workTypeList"></datalist></td></tr>
+                    <tr>
+                        <td class="td_label">开始时间</td>
+                        <td class="td_content">
+                            <div class="input-group date form_datetime tdContent" data-date-format="yyyy-mm-dd hh:ii" data-link-field="dtp_input1">
+                                <input type="text" class="form-control required" id="StartTime" name="StartTime" readonly />
+                                <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                                <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+                                <input type="hidden" id="dtp_input1" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="td_label">结束时间</td>
+                        <td class="td_content">
+                            <div class="input-group date form_datetime tdContent" data-date-format="yyyy-mm-dd hh:ii" data-link-field="dtp_input1">
+                                <input type="text" class="form-control" id="EndTime" name="EndTime" readonly />
+                                <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                                <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+                                <input type="hidden" id="dtp_input1" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr><td class="td_btn" colspan="2"><input id="modal_Save_EmpWH" type="button" class="btn btn-success tdBtn" value="保存记录"/></td></tr>
+                </table>
+            </form>
+        </div>
+    </div>
+    <div class="WHRightDiv" style="overflow:hidden;">
+        <div class="WHRight_TopDiv">
+            <table>
+                <tr>
+                    <td><button id="query_EmpWHReportByDay" type="button" class="btn btn-info TopDivContent"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+                    <td><button id="edit_EmpWHReportByDay" type="button" class="btn btn-primary TopDivContent"><span class="glyphicon glyphicon-pencil"></span> 编辑记录</button></td>
+                    <td><button id="submit_EmpWHReportByDay" type="button" class="btn btn-primary TopDivContent"><span class="glyphicon glyphicon-cloud"></span> 提交审核</button></td>
+                    <td><button id="del_EmpWHReportByDay" type="button" class="btn btn-danger TopDivContent"><span class="glyphicon glyphicon-trash"></span> 取消记录</button></td>
+                </tr>
+            </table>
+        </div>
+        <div class="WHRight_BottomDiv">
+            <div class="hdiv">
+                <table id="htb_EmpWHReportByDay" class="tb_EmpWHReportByDay">
+                    <colgroup><col width="25%" /><col width="25%" /><col width="10%" /><col width="10%" /><col width="20%" /><col width="10%" /></colgroup>
+                    <tr>
+                        <td>开始时间</td>
+                        <td>结束时间</td>
+                        <td>工时</td>
+                        <td>模号</td>
+                        <td>工作类型</td>
+                        <td>状态</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="bdiv" style="overflow-y:auto;">
+                <table id="tb_EmpWHReportByDay" class="tb_EmpWHReportByDay"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        ReInitalFormDiv();
+        LoadMoldNum();
+        LoadWorkType();
+
+        $(window).resize(function () {
+            ReInitalFormDiv();
+        });
+
+        $(".form_datetime").datetimepicker({
+            language: 'zh-CN',
+            todayBtn: 1,
+            autoclose: 1,
+        });
+
+        $('#modal_Save_EmpWH').on('click', function () {
+            var serializeEmpWHForm = $("#EmpWH_SubmitForm").serialize();
+            console.log(serializeEmpWHForm);
+            $.ajaxSettings.async = false;
+            if (EmpFormImputValid()) {
+                $.post('/WorkHour/Service_WH_SaveEmpWHRecords', serializeEmpWHForm, function (res) {
+                    if (!isValid(res)) {
+                        alert('保存成功！');
+                        LoadWHRecordsByDayTable();
+                        ClearWHSubmitForm();
+                    } else {
+                        alert('保存失败，' + res);
+                    }
+                }, 'html');
+            } else {
+                alert('请将表单填写完整！');
+            }
+        });
+
+        $('#EmpCodeInput').on('blur', function () {
+            var _code = $('#EmpCodeInput').val().trim();
+            if (isValid(_code)) {
+                $.get('/User/GetUserByCode?UserCode=' + _code, function (res) {
+                    if (Number(res.UserID) > 0) {
+                        $('#EmpNameInput').val(res.FullName);
+                    } else {
+                        $('#EmpCodeInput').val('');
+                        $('#EmpNameInput').val('');
+                        alert('用户不存在！');
+                        $('#EmpCodeInput').focus();
+                    }
+                })
+            }
+        });
+
+        $('#query_EmpWHReportByDay').on('click', function () {
+            LoadWHRecordsByDayTable();
+        });
+
+        $('#submit_EmpWHReportByDay').on('click', function () {
+            if (confirm('确认提交？')) {
+                var _ids = GetClickedTr();
+                if (isValid(_ids)) {
+                    $.get('/WorkHour/Service_WH_SubmitEmpWHRecord?ids=' + _ids, function (res) {
+                        LoadWHRecordsByDayTable();
+                    })
+                } else {
+                    alert('请选择行！');
+                }
+            }
+        });
+
+        $('#del_EmpWHReportByDay').on('click', function () {
+            if (confirm('确认删除？')) {
+                var _ids = GetClickedTr();
+                if (isValid(_ids)) {
+                    $.get('/WorkHour/Service_WH_CancelEmpWHRecord?ids=' + _ids, function (res) {
+                        LoadWHRecordsByDayTable();
+                    })
+                } else {
+                    alert('请选择行！');
+                }
+            }
+        });
+
+        $('#edit_EmpWHReportByDay').on('click', function () {
+            var id = GetClickedTr();
+            if (isValid(id)) {
+                if (id.indexOf(',') < 0) {
+                    FormdataImport(id);
+                } else {
+                    alert('仅允许选择1行进行操作！');
+                }
+            } else {
+                alert('请选择行！');
+            }
+        });
+
+        $('#WorkTypeName').on('blur', function () {
+            var _worktype = '';
+            $.get('/WorkHour/Service_WH_GetWorkType', function (res) {
+                $.each(res, function (i, n) {
+                    if (n.Name == $('#WorkTypeName').val()) {
+                        _worktype = n.WorkTypeCode;
+                    }
+                });
+                if (_worktype == '') {
+                    _worktype = $('#WorkTypeName').val();
+                }
+                $('#WorkType').val(_worktype);
+            });
+        });
+
+    });
+    //单击行事件
+    function trClick_EmpWHReportByDay(e) {
+        //console.log(e.id); //每行设置不同的id值，该行是获取当前行的唯一值
+        
+        //$(this).siblings("tr").find("td").removeClass("backcolor_font");
+        //$(this).find("td").addClass("backcolor_font");
+        var _class = e.className;//$(e).attr('class');
+        var trIdArry = e.id.split('_');
+        var cbId = trIdArry[0] + '_' + trIdArry[1] + '_cb';
+        var dbObj=$('#'+cbId)[0];
+        //console.log(dbObj.checked);
+        if (dbObj.checked) {
+            if (_class == 'odd') {
+                $(e).css('background', 'white');
+            } else {
+                $(e).css('background', '#eeeeee');
+            }
+            dbObj.checked = false;
+        } else {
+            var _color = sessionStorage['trClickedColor'];
+            $(e).css('background-color', _color);
+            dbObj.checked = true;
+        }
+    }
+
+    function LoadWHRecordsByDayTable() {
+        var _code = $('#EmpCodeInput').val();
+        if (isValid(_code)) {
+            $('#tb_EmpWHReportByDay').empty();
+            $.ajaxSettings.async = false;
+            $.get('/WorkHour/Service_WH_GetEmpWHRecordsByDay?EmpCode=' + $('#EmpCodeInput').val(), function (res) {
+                var _json = JSON.parse(res);
+                var _html = '';
+                _html = _html + '<colgroup><col width="25%" /><col width="25%" /><col width="10%" /><col width="10%" /><col width="20%" /><col width="10%" /></colgroup>';
+                $.each(_json, function (i, n) {
+                    var _trclass = '';
+                    if (i % 2 == 0) {
+                        _trclass = 'odd';
+                    } else {
+                        _trclass = 'even';
+                    }
+                    var _color = '';
+                    if (Number(n.INTStatus) == 100) {
+                        _color = 'green';
+                    } else if (Number(n.INTStatus) == -99) {
+                        _color = 'red';
+                    } else if (Number(n.INTStatus) == -100) {
+                        _color = 'gray';
+                    } else {
+                        _color = 'black';
+                    }
+                    _html = _html + '<tr id="' + n.Id + '_EmpWHRecordTb_tr" onclick="trClick_EmpWHReportByDay(this)" class="' + _trclass + '"><td hidden><input type="checkbox" id="' + n.Id + '_EmpWHRecordTb_cb"/></td><td hidden>' + n.Id + '</td><td>' + n.StartTime + '</td><td>' + n.EndTime + '</td><td>' + n.Time + '</td><td>' + n.MoldNumber + '</td><td>' + n.WorkTypeName + '</td><td style="color:' + _color + '">' + n.Status + '</td></tr>';
+                });
+
+                $('#tb_EmpWHReportByDay').append(_html);
+            });
+            trBColorReSet();
+        } else {
+            alert('请在左侧表单中输入员工工号！');
+            $('#EmpCodeInput').focus();
+        }
+    }
+
+    function ReInitalFormDiv() {
+        
+        var _leftDivWidth = $('.WHLeftDiv').width();
+        var _leftDivHeight = $('.WHLeftDiv').height();
+        //录入Form居中
+        $('.WHSubmitFormDiv').css('top', _leftDivHeight * 0.1);
+        $('.WHSubmitFormDiv').css('left', _leftDivWidth * 0.1);
+        $('.WHSubmitFormDiv').css('right', _leftDivWidth * 0.1);
+        var _whsubmitDivHeight = $('.WHSubmitFormDiv').height();
+        var _whsubmitDivWidth = $('.WHSubmitFormDiv').width();
+        $('.td_label').css('height', _whsubmitDivHeight * 0.125);
+        $('.td_btn').css('height', _whsubmitDivHeight * 0.125);
+        //左侧TABLE内Input宽度设置
+        $('.tdContent').css('width', _whsubmitDivWidth * 0.9 - 100);
+
+        //保存按钮宽度设置
+        //var _whsubmitTableWidth = $('#EmpWH_SubmitTb').width();
+        $('#modal_Save_EmpWH').css('width', _whsubmitDivWidth * 0.9 - 15);
+        //table高度
+        var _rightDivHeight = $('.WHRightDiv').height();
+        $('.bdiv').css('height', _rightDivHeight - 40 - 40);
+        //
+        $('#EmpCodeInput').focus();
+    }
+
+    function ClearWHSubmitForm() {
+        //var _formInput = $('#EmpWH_SubmitForm input');
+        //$.each(_formInput, function (i, n) {
+        //    $(this).val('');
+        //});
+        $('#MoldNumber').val('');
+        $('#WorkType').val('0');
+        $('#WorkTypeName').val('');
+        $('#StartTime').val('');
+        $('#EndTime').val('');
+
+        $('#EmpId').val('0');
+        $('#Enable').val('True');
+
+        $('#modal_Save_EmpWH').val('保存记录');
+    }
+
+    function EmpFormImputValid() {
+        var _id = Number($('#Id').val());
+        var _code = $('#EmpCodeInput').val();
+        var _name = $('#EmpNameInput').val();
+        var _startTime = $('#StartTime').val();
+        var _endTime = $('#EndTime').val();
+        if (isValid(_code) && isValid(_name) && isValid(_startTime) && isValid(_endTime)) {
+            if (_id == 0)
+                return true;
+            else {
+                if (isValid(_endTime))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    function isValid(str) {
+        str=str.trim();
+        if (str == '' || str == null || str == undefined) {
+            return false;
+        } else
+            return true;
+    }
+
+    function trBColorReSet() {
+        var z = 1;//用来记录显示行的序号
+        $("#tb_EmpWHReportByDay tr").each(function (i, n) {
+            var _class = $(this).attr('class');
+            if (_class != 'tb_EmpWHReportByDay') {
+                var _display = $(this).css('display');
+                if (_display != 'none') {
+                    if (_class == 'odd') {
+                        $(this).css('background', 'white');
+                    } else {
+                        $(this).css('background', '#eeeeee');
+                    }
+                    //if (z % 2 == 0) {
+                    //    $(this).css('background', '#eeeeee');
+                    //} else {
+                    //    $(this).css('background', 'white');
+                    //}
+                    //z = z + 1;
+                }
+            }
+        })
+    }
+
+    function LoadMoldNum() {
+        $('#moldNumList').html('');
+        $.get('/Part/Service_Get_MoldNumList', function (res) {
+            $.each(res, function (i, n) {
+                var ohtml = "<option value='" + n + "'>" + n + "</option>";
+                var $ohtml = $(ohtml);
+                $('#moldNumList').append($ohtml);
+            })
+        })
+    }
+
+    function LoadWorkType() {
+        $('#workTypeList').empty();
+        $.get('/WorkHour/Service_WH_GetWorkType', function (res) {
+            $.each(res, function (i, n) {
+                var _html = '<option value="' + n.Name + '">' + n.Name + '</option>';//WorkTypeCode
+                $('#workTypeList').append(_html);
+            })
+        });
+    }
+
+    function GetClickedTr() {
+        var checked = $(":checked");
+        var _ids = '';
+        $.each(checked, function (i, n) {
+            //console.log(n.id);
+            var _idArry=n.id.split('_');
+            if (_idArry[2] == 'cb') {
+                _ids = _ids + _idArry[0] + ',';
+            }
+        })
+        if (_ids.length > 0) {
+            return _ids.substr(0, _ids.length - 1);
+        }
+        return '';
+    }
+
+    function FormdataImport(id) {
+        $.get('/WorkHour/Service_WH_GetEmpWHById?id=' + id, function (res) {
+            var _obj = res;//(JSON.parse(res))[0];
+            if (_obj.Status == '新建' || _obj.Status == '拒绝') {
+                $('#MoldNumber').val(_obj.MoldNumber);
+                $('#WorkType').val(_obj.WorkType);
+                $('#WorkTypeName').val(_obj.WorkTypeName);
+                $('#StartTime').val(_obj.StartTime);
+                $('#EndTime').val(_obj.EndTime);
+                var _id = String(_obj.Id);
+                $('#EmpId').val(_id);
+                //console.log($('#EmpId').val());
+                $('#Enable').val('True');
+            } else {
+                ClearWHSubmitForm();
+                alert('仅允许编辑状态为 新建or拒绝 的记录，请重新选择！');
+            }
+        });
+    }
+</script>

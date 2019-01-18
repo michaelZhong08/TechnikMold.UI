@@ -23,21 +23,21 @@
 
 
 
-<div style="margin-top:60px">
+<div class="FatherDiv">
     <h2>@ViewBag.Title</h2>
 
-    <div class="col-sm-2">
-        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
-        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
+    <div class="LeftDiv">
+        <button class="btn btn-primary  LeftDiv_Btn" id="RefreshMold" >刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
         <input type="hidden" id="FMoldNumber" />
         <input type="hidden" id="FTaskType" value="@ViewBag.TaskType" />
         <input type="hidden" id="FState" value="@ViewBag.State" />
         <input type="hidden" id="FCAM" value="@ViewBag.CAM" />
-        <select class="form-control" id="MoldSelect" size="3"></select>
+        <select class="form-control LeftDiv_Sel" id="MoldSelect" size="3"></select>
     </div>
 
-    <div class="col-sm-10">
-        <div id="Toolbar" style="margin-left:15px">
+    <div class="RightDiv">
+        <div id="Toolbar" class="RightDiv_TopDiv">
             <input type="hidden" id="MoldList" value="@ViewBag.MoldNumber" />
             <ul class="nav nav-pills">
                 <li><button class="btn btn-info" id="UnReleaseList">图纸发布</button></li>
@@ -105,7 +105,7 @@
                 <li><button class="btn btn-primary" id="QueryTask">查询</button></li>
             </ul>
         </div>
-        <div class="col-sm-11" style="float:left;">
+        <div class="RightDiv_BottomDiv">
             <table id="TaskGrid"></table>
             <div id="jqGridPager"></div>
         </div>
@@ -118,13 +118,13 @@
 {
     <div class="contextMenu dropdown" id="CAMTaskContextMenu" style="display:none">
         <ul style="width:200px">
-            @if ((ViewBag.TaskType == 3) && (ViewBag.State == 0) && (ViewBag.CAM == 0))
+            @*@if ((ViewBag.TaskType == 3) && (ViewBag.State == 0) && (ViewBag.CAM == 0))
             {
                 <li id="TaskInfo">
                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                     <span style="font-size:12px; font-family:Verdana">任务信息编辑</span>
                 </li>
-            }
+            }*@
 
             @if (ViewBag.State == -99)
             {
@@ -132,18 +132,14 @@
                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                     <span style="font-size:12px; font-family:Verdana">发布任务</span>
                 </li>
-                <li id="DisableCAMTask">
+                <li id="DisableCAMSetting">
                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png" /></span>
-                    <span style="font-size:12px; font-family:Verdana">删除任务</span>
+                    <span style="font-size:12px; font-family:Verdana">删除图纸</span>
                 </li>
             }
             else if ((ViewBag.TaskType != 100) && (ViewBag.State == 0) && (ViewBag.CAM == 0))
             {
 
-                @*<li id="PauseTask">
-                    <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
-                    <span style="font-size:12px; font-family:Verdana">暂停/继续任务</span>
-                </li>*@
                 <li id="DeleteTask">
                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
                     <span style="font-size:12px; font-family:Verdana">取消任务</span>
@@ -154,7 +150,7 @@
             {
                 <li id="NewTask">
                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/task-new.png" /></span>
-                    <span style="font-size:12px; font-family:Verdana">生成新任务</span>
+                    <span style="font-size:12px; font-family:Verdana">MG任务升版</span>
                 </li>
             }
 
@@ -330,9 +326,10 @@
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script>
     $(document).ready(function () {
+
+        //alert($('.RightDiv_BottomDiv').eq(0).height());
+
         $("#target").val("/Task/CAMTaskList?State=@ViewBag.State&TaskType=@ViewBag.TaskType&MoldNumber=")
-
-
 
         //跳转至图纸发布(Cam任务)列表
         $("#UnReleaseList").on("click", function () {
@@ -410,7 +407,7 @@
                 $("#TaskGrid").setGridParam().showHideCol("StartTime");
             }
             $("#TaskGrid").setGridParam().showHideCol("Time");
-            $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
+            //$("#TaskGrid").setGridWidth(document.body.clientWidth * 0.8);
         }
             //加工 历史
         else{
@@ -444,7 +441,7 @@
                 $("#TaskGrid").setGridParam().showHideCol("Obit");
                 $("#TaskGrid").setGridParam().showHideCol("ELEPos");
             }
-            $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.75);
+            //$("#TaskGrid").setGridWidth(document.body.clientWidth * 0.75);
         }
 
         $("#MoldSelect").on("change", function(){
@@ -489,6 +486,14 @@
                                 }
 
     }
+</script>
+<script>
+    $(document).ready(function(){
+        $(window).resize(function(){
+            $("#TaskGrid").setGridWidth($('.RightDiv_BottomDiv').eq(0).width());
+            $("#TaskGrid").setGridHeight($('.RightDiv_BottomDiv').eq(0).height()-40);
+        })
+    })
 </script>
 
 @*@{Html.RenderAction("MoldSelect", "Dialog");}*@

@@ -2,25 +2,40 @@
 @{
     ViewBag.Title = "领料申请单";
 }
+@using TechnikSys.MoldManager.Domain.Status;
 
 <div class="col-sm-12" style="margin-top:60px">
     <div class="col-sm-11">
-
         <div class="col-sm-12" style="float:left;">
             <h2>@ViewBag.MoldNumber 领料申请单</h2>
             <input type="hidden" id="MoldNumber" value="@ViewBag.MoldNumber" />
             <ul class="nav nav-pills">
-                <li><button class="btn btn-primary" id="NewWHRequest">新建申请单</button> </li>
+                <li>
+                    <select id="ChangeState_Sel" class="form-control form-inline">
+                        @foreach (var s in (Dictionary<string, int>)ViewBag.WHRequestStates)
+                        {
+                            if (ViewBag.State == s.Value)
+                            {
+                                <option value="@(s.Value)" selected>@(s.Key)</option>
+                            }
+                            else
+                            {
+                                <option value="@(s.Value)">@(s.Key)</option>
+                            }
+
+                        }
+                    </select>
+                </li>
+                <li><button class="btn btn-success" id="NewWHRequest">新建申请单</button> </li>
                 <li><button class="btn btn-primary" id="RequestQuery">查询申请单</button></li>
             </ul>
-            <div style="margin-top:20px">
+            <div style="margin-top:10px">
                 <table id="WHRequestGrid"></table>
                 @*<div id="jqGridPager"></div>*@
             </div>                       
         </div>
     </div>
 </div>
-
 
 <div class="modal" data-backdrop="static" data-keyboard="false" id="RequestSearchDialog" tabindex="-1" role="dialog" aria-labelledby="RequestSearchLabel">
     <div class="modal-dialog">
@@ -73,18 +88,23 @@
 <script>
 
     $("document").ready(function () {
-        WHRequestGrid(@ViewBag.MoldNumber);
+        WHRequestGrid(@ViewBag.State);
+
         $("#NewWHRequest").on("click", function () {
             location.href = "/Warehouse/WHRequestDetail";
-        })
+        });
 
         $("#RequestQuery").on("click", function () {
             $("#RequestSearchDialog").modal("show")
-        })
+        });
 
         $("#QueryBtn").on("click", function () {
             WarehouseRequestQuery();
-        })
+        });
+
+        $('#ChangeState_Sel').on('change', function () {
+            WarehouseRequestQuery();
+        });
     })
 
 
@@ -94,13 +114,17 @@
 
     function WarehouseRequestQuery() {
         var _url = "/Warehouse/JsonWarehouseRequests?Keyword=" + $("#ItemKeyword").val()
-            + "&RequestKeyword=" + $("#RequestKeyword").val();
-            + "&StartDate=" + $("#StartDate").val()            
-            + "&EndDate=" + $("#EndDate").val();
-            console.log(_url);
+            + "&RequestKeyword=" + $("#RequestKeyword").val()
+        + "&StartDate=" + $("#StartDate").val()
+        + "&EndDate=" + $("#EndDate").val()
+        + "&State=" + $('#ChangeState_Sel').val();
+        console.log(_url);
         $("#WHRequestGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
         $("#RequestSearchDialog").modal("hide");
     }
 
-   
+    //function ReloadGrid() {
+    //    _url = "/Warehouse/JsonWarehouseRequests?Keyword=&StartDate=&EndDate=&RequestKeyword=";
+    //    $('#WHRequestGrid').jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+    //}
 </script>

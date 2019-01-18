@@ -78,7 +78,7 @@ namespace MoldManager.QC.QCCheck
         /// </summary>
         /// <param name="MoldNumber"></param>
         /// <returns></returns>
-        public List<CNCItem> GetFinishedTask(string MoldNumber, int State, string Keyword)
+        public List<CNCItem> GetFinishedTask(string MoldNumber, string State, string Keyword)
         {
             string _url = "/Task/GetFinishedQCTasks?MoldNumber=" + MoldNumber+"&State="+State+"&Keyword="+Keyword;
             List<CNCItem> _qcTasks = JsonConvert.DeserializeObject<List<CNCItem>>(_server.ReceiveStream(_url));
@@ -222,7 +222,7 @@ namespace MoldManager.QC.QCCheck
         {
             string _url = "/Task/GetSetting?Name=PDFDrawing";
             string _path = _server.ReceiveStream(_url);
-            return _path;
+            return _path.Trim();
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace MoldManager.QC.QCCheck
         {
             string _url = "/Task/GetSetting?Name=QC_File_Type";
             string _path = _server.ReceiveStream(_url);
-            return _path;
+            return _path.Trim();
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace MoldManager.QC.QCCheck
 
             string _url = "/Task/GetSetting?Name=QCReport";
             string _path = _server.ReceiveStream(_url);
-            return _path;
+            return _path.Trim();
         }
 
 
@@ -358,9 +358,9 @@ namespace MoldManager.QC.QCCheck
         /// 设置QC任务开始
         /// </summary>
         /// <param name="QCTaskID"></param>
-        public void SetQCTaskStart(int QCTaskID)
+        public void SetQCTaskStart(int QCTaskID,string StartTime)
         {
-            string _url = "/Task/SetQCTaskStart?QCTaskID=" + QCTaskID;
+            string _url = "/Task/SetQCTaskStart?QCTaskID=" + QCTaskID+ "&StartTime="+ StartTime;
             _server.ReceiveStream(_url);
         }
 
@@ -432,7 +432,7 @@ namespace MoldManager.QC.QCCheck
         {
             string _url = "/Task/GetSetting?Name=QCPointPath";
             string _path = _server.ReceiveStream(_url);
-            return _path;
+            return _path.Trim();
         }
 
         /// <summary>
@@ -459,7 +459,14 @@ namespace MoldManager.QC.QCCheck
             string _url = "/Task/DeleteElectrode?QCTaskID=" + QCTaskID;
             _server.ReceiveStream(_url);
         }
-
-
+        /// <summary>
+        /// 测量部门人员
+        /// </summary>
+        /// <returns></returns>
+        public List<User> GetQCUsers()
+        {
+            string _url = "/User/GetUsersByDepartment?DepartmentName=测量";
+            return JsonConvert.DeserializeObject<List<User>>(_server.ReceiveStream(_url));
+        }
     }
 }

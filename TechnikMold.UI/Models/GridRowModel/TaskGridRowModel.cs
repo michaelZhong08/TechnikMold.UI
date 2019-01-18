@@ -13,10 +13,10 @@ namespace MoldManager.WebUI.Models.GridRowModel
     {
         public string[] cell;
         string _dateVal = "";
-        public TaskGridRowModel(Task Task, string CAD, string CAM, string Workshop, string QC, string FilePath, string PlanDate, SetupTaskStart _setupTask, CNCMachInfo Machinfo,WEDMSetting wedmsetting,MGSetting mgsetting)
+        public TaskGridRowModel(Task Task, string CAD, string CAM, string Workshop, string QC, string FilePath, string PlanDate, SetupTaskStart _setupTask, CNCMachInfo Machinfo,WEDMSetting wedmsetting,MGSetting mgsetting,string taskType)
         {
             Helpers.TaskStatus _status = new Helpers.TaskStatus();
-            cell = new string[42];
+            cell = new string[44];
             //TaskID
             cell[0] = Task.TaskID.ToString();
             //图纸
@@ -74,7 +74,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             }
 
             //时间
-            cell[11] = Task.Time.ToString();
+            cell[11] = Math.Round(Task.Time,1).ToString();
             //状态
             string stateName;
             //switch (Task.TaskType)
@@ -144,21 +144,21 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[27] = Task.Priority.ToString();
 
             //创建日期
-            _dateVal = Task.CreateTime.ToString("yyyy-MM-dd HH:mm:ss");
+            _dateVal = Task.CreateTime.ToString("yyyy-MM-dd");
             cell[28] = (_dateVal == "1900-01-01"||_dateVal=="0001-01-01") ? "-" : _dateVal;
             //计划日期
             cell[29] = (PlanDate == "1900-01-01" || PlanDate == "0001-01-01") ? "-" : PlanDate;
             //接收日期
-            _dateVal = Task.AcceptTime.ToString("yyyy-MM-dd HH:mm:ss");
+            _dateVal = Task.AcceptTime.ToString("yyyy-MM-dd");
             cell[30] = (_dateVal == "1900-01-01" || _dateVal == "0001-01-01") ? "-" : _dateVal;
             //发布日期
-            _dateVal = Task.ReleaseTime.ToString("yyyy-MM-dd HH:mm:ss");
+            _dateVal = Task.ReleaseTime.ToString("yyyy-MM-dd");
             cell[31] = (_dateVal == "1900-01-01" || _dateVal == "0001-01-01") ? "-" : _dateVal;
             //开始日期
-            _dateVal = Task.StartTime.ToString("yyyy-MM-dd HH:mm:ss");
+            _dateVal = Task.StartTime.ToString("yyyy-MM-dd");
             cell[32] = (_dateVal == "1900-01-01" || _dateVal == "0001-01-01") ? "-" : _dateVal;
             //结束时间
-            _dateVal = Task.FinishTime.ToString("yyyy-MM-dd HH:mm:ss");
+            _dateVal = Task.FinishTime.ToString("yyyy-MM-dd");
             cell[33] = (_dateVal == "1900-01-01" || _dateVal == "0001-01-01") ? "-" : _dateVal;
             //预计日期
             _dateVal = Task.ForecastTime.ToString("yyyy-MM-dd"); ;
@@ -178,6 +178,9 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[40] = _setupTask.MachinesName;
             //操作人员
             cell[41] = _setupTask.UserName;
+            cell[42] = taskType;
+
+            cell[43] = Task.TaskType.ToString();
         }
 
         public TaskGridRowModel(Task Task, string FilePath, string Creator)

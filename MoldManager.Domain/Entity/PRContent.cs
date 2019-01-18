@@ -48,5 +48,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         [NotMapped]
         public decimal PlanQty { get; set; }
         public string unit { get; set; }
+        [NotMapped]
+        public double Time { get; set; }
     }
 }

@@ -15,5 +15,6 @@ namespace TechnikSys.MoldManager.Domain.Abstract
 
         int Save(string Name, string Value);
         string GetValueByName(string _configName);
+        string GetTaskDrawingPath(string type = "CAM");
     }
 }

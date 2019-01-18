@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechnikSys.MoldManager.Domain.Status;
 
 namespace TechnikSys.MoldManager.Domain.Entity
 {
@@ -32,9 +33,8 @@ namespace TechnikSys.MoldManager.Domain.Entity
             CreateDate = DateTime.Now;
             ApprovalDate = new DateTime(1900, 1,1 );
             WarehouseDate=new DateTime(1900,1, 1);
-            State=-99;
+            State=(int)WarehouseRequestStatus.编辑;
             Enabled = true;
-
         }
         
     }

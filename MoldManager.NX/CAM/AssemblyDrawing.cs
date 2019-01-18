@@ -33,15 +33,14 @@ namespace TechnikSys.MoldManager.NX.CAM
             if (type == "CAM")
             {
                 string _url = "/Task/GetSetting?Name=CAMDrawingPath";
-                _path = _server.ReceiveStream(_url);
-                return _path;
+                _path = _server.ReceiveStream(_url);                
             }
             else
             {
                 string _url = "/Task/GetSetting?Name=CADDrawingPath";
                 _path = _server.ReceiveStream(_url);
-                return _path;
             }
+            return _path.Trim();
         }
 
         /// <summary>

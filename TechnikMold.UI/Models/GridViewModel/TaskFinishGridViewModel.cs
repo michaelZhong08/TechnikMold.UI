@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using MoldManager.WebUI.Models.GridRowModel;
 using TechnikSys.MoldManager.Domain.Entity;
+using TechnikSys.MoldManager.Domain.Abstract;
 
 namespace MoldManager.WebUI.Models.GridViewModel
 {
@@ -17,16 +18,18 @@ namespace MoldManager.WebUI.Models.GridViewModel
         {
             foreach (Task _task in Tasks)
             {
+                //string machineName= _machinesinfoRepository.GetMInfoByCode(_task.)
                 TaskFinishGridRowModel _row = new TaskFinishGridRowModel(_task);
                 rows.Add(_row);
             }
         }
 
-        public TaskFinishGridViewModel(IEnumerable<CNCItem> CNCItems)
+        public TaskFinishGridViewModel(IEnumerable<CNCItem> CNCItems, IMachinesInfoRepository _machinesinfoRepository)
         {
             foreach (CNCItem _item in CNCItems)
             {
-                TaskFinishGridRowModel _row = new TaskFinishGridRowModel(_item);
+                string machineName = (_machinesinfoRepository.GetMInfoByCode(_item.CNCMachine) ?? new MachinesInfo()).MachineName;
+                TaskFinishGridRowModel _row = new TaskFinishGridRowModel(_item, machineName);
                 rows.Add(_row);
             }
         }

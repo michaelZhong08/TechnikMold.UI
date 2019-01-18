@@ -26,7 +26,9 @@ namespace MoldManager.WebUI.Models.GridViewModel
             ITaskRepository TaskRepository, IProjectPhaseRepository ProjectPhaseRepository,
             IMGSettingRepository MGSettingRepository,
             IWEDMSettingRepository WEDMSettingRepository,
-            ITaskHourRepository TaskHourRepository)
+            ITaskHourRepository TaskHourRepository
+            ,ISystemConfigRepository SystemConfigRepo
+            ,ITaskTypeRepository TasktypeRepo)
         {
             ProjectPhase _phase;
             string _cad, _cam, _workshop, _qc, _planDate;
@@ -94,7 +96,26 @@ namespace MoldManager.WebUI.Models.GridViewModel
                     UserID = 0,
                     UserName = Operater,
                 };
-                rows.Add( new TaskGridRowModel(_task, _cad, _cam, _workshop, _qc, CAMDrawingPath, _planDate, _setupTask, _machinfo,wedmsetting,mgsetting));
+                //string _camDrawingPath = string.Empty;
+                if (string.IsNullOrEmpty(CAMDrawingPath))
+                {
+                    if (_task.TaskType == 6)
+                        CAMDrawingPath = SystemConfigRepo.GetTaskDrawingPath("CAD");
+                    else
+                        CAMDrawingPath = SystemConfigRepo.GetTaskDrawingPath();
+                }
+                string taskType = string.Empty;
+                int _mgtype = (TasktypeRepo.TaskTypes.Where(t => t.ShortName == "MG" && t.Enable).FirstOrDefault() ?? new TaskType()).TaskID;//6
+                if (_task.TaskType != _mgtype)
+                {
+                    taskType = TasktypeRepo.TaskTypes.Where(t => t.TaskID == _task.TaskType).Select(t => t.Name).FirstOrDefault();
+                }
+                else
+                {
+                    string _typeID = (_mgtype.ToString() + _task.OldID.ToString());
+                    taskType = TasktypeRepo.TaskTypes.ToList().Where(t => t.TaskID == Convert.ToInt32(_typeID)).Select(t => t.Name).FirstOrDefault();
+                }
+                rows.Add( new TaskGridRowModel(_task, _cad, _cam, _workshop, _qc, CAMDrawingPath, _planDate, _setupTask, _machinfo,wedmsetting,mgsetting, taskType));
             }
         }
 

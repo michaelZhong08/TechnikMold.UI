@@ -78,7 +78,7 @@
                         {
                             <button class="btn btn-primary" id="AddContent">添加零件</button>                            
                             <button class="btn btn-primary" id="DeleteContent">删除零件</button>
-                            <button class="btn btn-info" id="ShowAttachFileModal">添加附件</button>
+                            <button class="btn btn-info sinno" id="ShowAttachFileModal" style="display:none;">添加附件</button>
                             <button class="btn btn-success" id="CreatePR">保存申请单</button>
                             <button class="btn btn-success" id="SubmitPR">提交申请单</button>
                             <button class="btn btn-warning" id="CancelPR">取消申请单</button>
@@ -94,15 +94,17 @@
                     case (int)PurchaseRequestStatus.审批通过:
                         if (DeptID == 4)
                         {
-                            <button class="btn btn-primary" id="CreateQR">生成询价单</button>
+                            <button class="btn btn-primary sinno" id="CreateQR" style="display:none;">生成询价单</button>
 
                         }
                         if (Model.DepartmentID == DeptID)
                         {
                             <button class="btn btn-primary" id="RemoveCancel">移除订单取消项</button>
                         }
-                        <button class="btn btn-info" id="ShowAttachFileModal">添加附件</button>
+                        <button class="btn btn-info sinno" id="ShowAttachFileModal" style="display:none;">添加附件</button>
+                        
                         <input type="button" class="btn btn-success hr" id="GetERPID" value="同步ERP料号" style="display:none;">
+                        <input type="button" class="btn btn-danger" id="PRSyncFlagBtn" value="已同步状态标记" style="display:none;">
                         break;
                     case (int)PurchaseRequestStatus.完成:
                         break;
@@ -188,7 +190,7 @@
                         <tr>
                             <td class="col-sm-2"></td>
                             <td class="col-sm-2">
-                                <label>成本中心</label>
+                                <label>归属部门</label>
                                 <select id="CostCenterID" class="form-control" style="display:inline;float:right;width:80%"></select>
                             </td>
 
@@ -243,7 +245,7 @@
                         </td>
 
                         <td class="col-sm-2">
-                            <label>成本中心</label>
+                            <label>归属部门</label>
                             <select id="CostCenterID" class="form-control" style="display:inline;float:right;width:80%"></select>
                         </td>
 
@@ -290,7 +292,8 @@
                         </td>
                         <td class="col-sm-8">
                             <div class="_selPart1">
-                                <input type="text" class="form-control required" name="MoldNum" id="MoldNum" min="0" value="" placeholder="请输入模号" />
+                                <input type="text" class="form-control required" name="MoldNum" id="MoldNum" min="0" value="" placeholder="请输入模号" list="modal_MoldNum"/>
+                                <datalist id="modal_MoldNum"></datalist>
                             </div>
                             <div class="_selPart2">
                                 <input type="text" list="modal_HCClassList" class="form-control required" name="HCClass" id="HCClass" />
@@ -306,7 +309,8 @@
                         <td class="col-sm-4">零件号</td>
                         <td class="col-sm-8">
                             <input type="hidden" class="form-control" name="PartNumber" id="PartNumber" min="0" value="" />
-                            <input type="text" class="form-control required" name="JobNo" id="JobNo" min="0" value="" placeholder="请输入JOB NO" readonly/>
+                            <input type="text" list="modal_JobNoList" class="form-control required" name="JobNo" id="JobNo" min="0" value="" placeholder="请输入JOB NO" readonly/>
+                            <datalist id="modal_JobNoList"></datalist>
                         </td>
                     </tr>
                     <tr>
@@ -314,7 +318,7 @@
                         <td class="col-sm-8">
                             <input type="text" class="form-control required" name="Name" id="Name" maxlength="50" placeholder="请输入零件短名" />
                             <input type="hidden" id="PRContentID" value="0" />
-                            <input type="hidden" id="PartID" value="0" />
+                            <input type="text" id="PartID" value="0" hidden/>
                             <input type="hidden" id="MoldNumber" value="" />
                             <input type="hidden" id="VerifyFail" value="0" />
                             <input type="hidden" id="State" value="" />
@@ -327,7 +331,7 @@
                     </tr>
                     <tr id="tr_PlanQty" hidden>
                         <td class="col-sm-4">计划数量</td>
-                        <td class="col-sm-8"><input type="number" class="form-control required" name="PlanQty" id="PlanQty" min="0" value="" /></td>
+                        <td class="col-sm-8"><input type="number" class="form-control required" name="PlanQty" id="PlanQty" min="0" value="" hidden/></td>
                     </tr>
                     <tr>
                         <td class="col-sm-4">规格</td>
@@ -560,6 +564,7 @@
                 <form id="modal_PurchaseItemAttachForm" name="modal_PurchaseItemAttachForm" method="post" enctype="multipart/form-data">
                     <input id="ObjID" name="ObjID" hidden />
                     <input id="ObjType" name="ObjType" value="PurchaseItems" hidden />
+                    <input id="FolderName" name="FolderName" value="@ViewBag.RequestNumber" hidden/>
                     <input id="_itemIDs" name="_itemIDs" hidden />
                     <table>
                         <tr>                          
@@ -570,14 +575,14 @@
                                 </select>
                             </td>                            
                             <td>
-                                <input id="Files" name="Files" type="file" class="form-control" placeholder="文件名格式：零件号-xxx(任意字符)">
+                                <input id="Files" name="Files" type="file" class="form-control">
                             </td>
                             <td>
                                 <button id="modal_PurchaseItemAttachSubmitbtn" class="btn btn-warning" type="button" style="width: 72px;"><span class="glyphicon glyphicon-upload"></span> 提交</button>
                             </td>
-                            <td>
-                                <a href="#" title="(多附件模式)文件名必须以'零件号(模具号-图纸号)'作为开头" class="form-control btn-info"><span id="modal_purFileHelper" class="glyphicon glyphicon-question-sign"></span></a>
-                            </td>
+                            @*<td>
+                                <a href="#" title="(多附件模式)附件名包含 '模具号'或'零件名' 即可与采购项匹配" class="form-control btn-info"><span id="modal_purFileHelper" class="glyphicon glyphicon-question-sign"></span></a>
+                            </td>*@
                         </tr>
                     </table>
                     <table id="modal_tb_PurchaseItemFiles"></table>
@@ -752,61 +757,6 @@
 
         $('#modal_AddPart').on('click',function(){
             AddPartNormal();
-            //var selrows = $("#tb_PartSearch").jqGrid('getGridParam', 'selarrrow');
-            //if (selrows.length==0){
-            //    selrows=  $('#tb_PartSearch').getDataIDs();
-            //}
-            //for(var i=0;i<selrows.length;i++){
-            //    //var _partid= $("#tb_PartSearch").getCell(selrows[i], "PartID");
-            //    //var _partnum= $("#tb_PartSearch").getCell(selrows[i], "PartNumber");
-            //    AddPartNormal();
-            //    //if(_partid>0){
-            //    //    AddPart(_partid);
-            //    //}else{
-            //    //    AddPartByPartNum(_partnum);
-            //    //}                
-            //}
-        });
-
-        $('#JobNo').on('blur',function(){
-            var _prid=$("#PRContentID").val();
-            var moldNum='';
-            var _selPartModal = Number($('#_selPartModal').val());
-            switch (_selPartModal) {
-                case 1:
-                    moldNum = $('#MoldNum').val();
-                    break;
-                case 2:
-                    moldNum = $('#HCClass').val();
-                    break;
-                case 3:
-                    moldNum = $('#MoldNum').val();
-                    break;
-                case 5:
-                    moldNum = $('#BKClass').val();
-                    break;
-                default:
-                    moldNum = $('#MoldNum').val();
-                    break;
-            }
-            if(_prid==0){
-                if(moldNum!='' && moldNum!=undefined){
-                    var _partnumber=moldNum+'-'+$('#JobNo').val();
-                    $.get('/Part/Service_Chk_Part?_partnum='+_partnumber,function(res){
-                        if(res!=''){
-                            alert(res);
-                            $('#JobNo').val('');
-                        }
-                    });
-                }
-                else{
-                    alert('请先输入模号！');
-                    $('#MoldNum').val('');
-                    $('#HCClass').val('');
-                    $('#BKClass').val('');
-                    $('#JobNo').val('');
-                }
-            }   
         });
 
         _wfViewConfig($('#TaskType').val());
@@ -1085,14 +1035,26 @@
                 value:0,
                 text:'-'
             }))
-            $.each(msg, function(i,n){
+            if(sessionStorage['SpecKey'] == 'hr'){
+                $.each(msg, function(i,n){
+                    //if(n.Name=='项目部'){
+                        $("#CostCenterID").append($("<option/>",{
+                            value:n.CostCenterID,
+                            text:n.Name
+                        }))
+                    //}
+                    
+                })
+            }else{               
+                $.each(msg, function(i,n){
 
-                //$("#CostCenterID").append($("<option/>", {value:n.CostCenterID, text:n.Name}));
-                $("#CostCenterID").append($("<option/>",{
-                    value:n.CostCenterID,
-                    text:n.Name
-                }))
-            })
+                    //$("#CostCenterID").append($("<option/>", {value:n.CostCenterID, text:n.Name}));
+                    $("#CostCenterID").append($("<option/>",{
+                        value:n.CostCenterID,
+                        text:n.Name
+                    }))
+                })
+            }           
         })
     }
 
@@ -1204,25 +1166,25 @@
     //加载workshop对应部门人员
     function LoadWSUser(type) {
         $("#wsUserID option").remove();
-        var _depid=0;
+        var _depName='';
         switch(type){
             case 1:
-                _depid=7;
+                _depName='CNC';
                 break;
             case 2:
-                _depid=8;
+                _depName='EDM';
                 break;
             case 3:
-                _depid=9;
+                _depName='WEDM';
                 break;
             case 4:
-                _depid=7;
+                _depName='CNC';
                 break;
             case 6:
-                _depid=5;
+                _depName='MG';
                 break;
         }
-        $.getJSON("/User/GetUsersByDepartment?DepartmentID="+_depid, function (msg) {
+        $.getJSON("/User/GetUsersByDepartment?DepartmentName="+_depName, function (msg) {
             $.each(msg, function (i, n) {
                 $("#wsUserID").append($("<option/>", {
                     value: n.UserID,
@@ -1319,7 +1281,7 @@
                 return false;
             }
             else
-                ReloadFileGrid(ObjID);           
+                ReloadPurchaseItemGrid(ObjID);           
         })
     }
 
@@ -1365,13 +1327,18 @@
         });
 
         $('#PRContentAdd').on('shown.bs.modal',function(){        
-            var row=$("#row").val();
-            if (row == 0) {//新增               
+            var row=$('#PRContentID').val();//$("#row").val();
+            $('#Specification').attr('readonly','readonly'); 
+            if (row == 0) {//新增  
+                $('#MoldNum').removeAttr('readonly');
+                $('#HCClass').removeAttr('readonly');
+                $('#BKClass').removeAttr('readonly');
                 $('#JobNo').removeAttr('readonly');
-                $('#Specification').removeAttr('readonly');   
-            }else{//编辑                
-                $('#JobNo').attr('readonly','readonly');
-                $('#Specification').attr('readonly','readonly');  
+            }else{//编辑
+                $('#MoldNum').attr('readonly','readonly');
+                $('#HCClass').attr('readonly','readonly');
+                $('#BKClass').attr('readonly','readonly');
+                $('#JobNo').attr('readonly','readonly');                
             }
             var _selPartModal=Number($('#_selPartModal').val());
             $('#modal_HCClassList').empty();
@@ -1379,17 +1346,18 @@
             switch(_selPartModal){
                 case 1://直接材料
                     $('#tr_PlanQty').hide();
+                    $('#PlanQty').hide();
                     $('._selPart1').show();
                     $('._selPart2').hide();
                     $('._selPart5').hide();
-                    $('#JobNo').removeAttr('readonly');
                     break;
                 case 2://耗材
                     $('#tr_PlanQty').show();
+                    $('#PlanQty').show();
                     if (row == 0){
-                        $('#tr_PlanQty').removeAttr('readonly');
+                        $('#PlanQty').removeAttr('readonly');
                     }else{
-                        $('#tr_PlanQty').attr('readonly','readonly');
+                        $('#PlanQty').attr('readonly','readonly');
                     }
                     $('#JobNo').attr('readonly','readonly');
                     $('._selPart1').hide();
@@ -1399,10 +1367,11 @@
                     break;
                 case 5://备库
                     $('#tr_PlanQty').show();
+                    $('#PlanQty').show();
                     if (row == 0){
-                        $('#tr_PlanQty').removeAttr('readonly');
+                        $('#PlanQty').removeAttr('readonly');
                     }else{
-                        $('#tr_PlanQty').attr('readonly','readonly');
+                        $('#PlanQty').attr('readonly','readonly');
                     }
 
                     $('._selPart1').hide();
@@ -1415,7 +1384,6 @@
                     $('._selPart1').show();
                     $('._selPart2').hide();
                     $('._selPart5').hide();
-                    $('#JobNo').removeAttr('readonly');
                     break;
             } 
         });
@@ -1430,6 +1398,79 @@
         $('#BKClass').on('change',function(){
             GetJobNo();
         });
+        ////
+        LoadMoldNum();
+
+        $('#MoldNum').on('blur',function(){
+            $('#MoldNumber').val($('#MoldNum').val());
+            GetMoldJobNo();
+        });
+
+        $('#JobNo').on('blur',function(){
+            var _prid=$("#PRContentID").val();
+            var moldNum='';
+            var _selPartModal = Number($('#_selPartModal').val());
+            switch (_selPartModal) {
+                case 1:
+                    moldNum = $('#MoldNum').val();
+                    break;
+                case 2:
+                    moldNum = $('#HCClass').val();
+                    break;
+                case 3:
+                    moldNum = $('#MoldNum').val();
+                    break;
+                case 5:
+                    moldNum = $('#BKClass').val();
+                    break;
+                default:
+                    moldNum = $('#MoldNum').val();
+                    break;
+            }
+            if(_prid==0){
+                if(moldNum!='' && moldNum!=undefined){
+                    var _partnumber=moldNum+'-'+$('#JobNo').val();
+                    $.get('/Part/Service_Part_GetByPartNum?_partNum='+_partnumber,function(res){
+                        if(res.PartID>0){
+                            $('#PartNumber').val(res.PartNumber);
+                            $('#Name').val(res.Name);
+                            $('#PartID').val(res.PartID);
+                            $('#Quantity').val(res.Quantity);
+                            $('#Specification').val(res.Specification);
+                            $('#MaterialID').val(res.MaterialID);
+                            $('#HardnessID').val(res.Hardness);
+                            $('#Brand').val(res.BrandID);
+                            $('#AvailableSuppliers').val(res.SupplierName);
+
+                            $('#Specification').attr('readonly','readonly');
+                        }else{
+                            //CLearPartForm();
+                            $('#PartID').val(0);
+                            $('#Quantity').val(0);
+                            $('#Specification').removeAttr('readonly');
+                        }
+                    });
+                }
+                else{
+                    alert('请先输入模号！');
+                    $('#MoldNum').val('');
+                    $('#HCClass').val('');
+                    $('#BKClass').val('');
+                    $('#JobNo').val('');
+                }
+            }  
+        });
+
+        //采购申请单同步标记
+        $('#PRSyncFlagBtn').on('click',function(){
+            var _prId=$('#PurchaseRequestID').val();
+            if(confirm('确认标记？')){
+                $.get('/Purchase/Service_PR_SyncFlag?prID='+_prId,function(){
+                    alert('操作成功！');
+                    window.location='/Purchase/Index';
+                });
+            }
+        })
     });
     function HCClassImport() {
         $.get('/Warehouse/Service_GetHCClassList', function (res) {
@@ -1519,5 +1560,39 @@
             alert('类型无效！');
             $('#SaveStockItem').attr('disabled','disabled');
         }     
+    }
+
+    function LoadMoldNum(){
+        $('#modal_MoldNum').html('');
+        $.get('/Part/Service_Get_MoldNumList',function(res){
+            $.each(res,function(i,n){
+                var ohtml = "<option value='" + n + "'>" + n + "</option>";
+                var $ohtml = $(ohtml);
+                $('#modal_MoldNum').append($ohtml);
+            })
+        })
+    }
+
+    function GetMoldJobNo(){
+        $('#modal_JobNoList').html('');
+        $.get('/Part/Service_Part_GetJobNo?MoldNum='+$('#MoldNum').val(),function(res){
+            $.each(res,function(i,n){
+                var ohtml = "<option value='" + n + "'>" + n + "</option>";
+                var $ohtml = $(ohtml);
+                $('#modal_JobNoList').append($ohtml);
+            })
+        })
+    }
+
+    function CLearPartForm(){
+        $('#PartNumber').val('');
+        $('#Name').val('');
+        $('#PartID').val(0);
+        $('#Quantity').val(0);
+        $('#Specification').val('');
+        $('#MaterialID').val('');
+        $('#HardnessID').val('');
+        $('#Brand').val('');
+        $('#AvailableSuppliers').val('');
     }
 </script>

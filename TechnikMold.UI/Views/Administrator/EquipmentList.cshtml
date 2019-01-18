@@ -2,12 +2,11 @@
 @{
     ViewBag.Title = "加工设备管理";
 }
+
 @section Header{
     <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
-    <script src="~/Scripts/bootstrap-switch.js"></script>   
-    <script>
-    </script>
-    }
+    <script src="~/Scripts/bootstrap-switch.js"></script>
+}
 <div style="margin-top:40px">
     <div class="col-sm-11 col-sm-offset-1">
         <h3 class="page-header">设备管理</h3>
@@ -26,6 +25,7 @@
             </li>
         </ul>
         <table id="tb_MachinesInfo"></table>
+        <input id="switchState" value="false" hidden/>
     </div>
 </div>
 @*设备信息编辑*@
@@ -45,9 +45,7 @@
                     <tr class="wfSwitch">
                         <td class="col-sm-4"><label>虚拟委外设备</label></td>
                         <td>
-                            <div class="switch">
-                                <input id="isWF_chkbox" type="checkbox"/>
-                            </div>
+                            <input id="isWF_chkbox" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" data-handle-width="50" />
                         </td>
                     </tr>
                     <tr class="tr_false">
@@ -140,13 +138,16 @@
             LoadStatusList('Yes');
             ClearModalForm();
             //默认状态下开关设置为off
-            $('.wfSwitch').show();            
-            $('.tr_true').hide();
-            $('.tr_false').show();
-            var _chkval = $('#isWF_chkbox')[0].checked;
-            if (_chkval) {
-                $('.switch-right').click();//模拟右侧开关点击事件 (样式是由左 span 中 label 右 span 组成的) chkbox值为 true
-            }           
+            //$('.wfSwitch').show();            
+            //$('.tr_true').hide();
+            //$('.tr_false').show();
+
+            //var _chkval = $('#isWF_chkbox')[0].checked;
+            //if (_chkval) {
+            //    $('.switch-right').click();//模拟右侧开关点击事件 (样式是由左 span 中 label 右 span 组成的) chkbox值为 true
+            //}           
+            console.log($('#switchState').val());
+            switchChange(null,$('#switchState').val());
 
             $("#MCode").attr('readonly', true);
             $("#SupplierName").attr('readonly', false);
@@ -260,35 +261,23 @@
             }          
         })
         //chkbox 控制外发
-        $('#isWF_chkbox').on('change', function () {
-            var bool = $('#isWF_chkbox')[0].checked;//true 委外 false 正常设备
-            //var _true_name = $('.tr_false')[0];
-            //var _false_name = $('.tr_true')[0];
-            //var _true_brand = $('.tr_false')[1];
-            //var _false_brand = $('.tr_true')[1];
-            if (bool) {
-                $('.tr_true').show();
-                $('.tr_false').hide();
-                $('#MName').val('');
-                $('#SupplierName').val('');
-                $('#EquipBrand').val('委外');
-                //_true_name.style.display = 'normal';
-                //_true_brand.style.display = 'normal';
-                //_false_name.style.display = 'none';
-                //_false_brand.style.display = 'none';
-            }
-            else {
-                $('.tr_true').hide();
-                $('.tr_false').show();
-                $('#MName').val('');
-                $('#SupplierName').val('');
-                $('#EquipBrand').val('');
-                //_true_name.style.display = 'none';
-                //_true_brand.style.display = 'none';
-                //_false_name.style.display = 'normal';
-                //_false_brand.style.display = 'normal';
-            }
-        })
+        //$('#isWF_chkbox').on('change', function () {
+        //    var bool = $('#isWF_chkbox')[0].checked;//true 委外 false 正常设备
+        //    if (bool) {
+        //        $('.tr_true').show();
+        //        $('.tr_false').hide();
+        //        $('#MName').val('');
+        //        $('#SupplierName').val('');
+        //        $('#EquipBrand').val('委外');
+        //    }
+        //    else {
+        //        $('.tr_true').hide();
+        //        $('.tr_false').show();
+        //        $('#MName').val('');
+        //        $('#SupplierName').val('');
+        //        $('#EquipBrand').val('');
+        //    }
+        //})
         //supplier 失去焦点
         $('#SupplierName').on('blur', function () {
             //var name = $('#MName').val() == '' ? $('#SupplierName').val() : $('#MName').val();
@@ -297,7 +286,7 @@
                 if (Number(res) == 0) {
                     alert('供应商名称不存在！');
                     $('#SupplierName').val('');
-                    $('#EquipBrand').focus(); 
+                    //$('#EquipBrand').focus(); 
                 }
             })
         })
@@ -497,14 +486,41 @@
             fo = fo.split(",");
             for (var i = 0; i < fo.length; i++) {
                 //中文
-                var v1 = fo[i].split('-')[0];
+                var v1 = fo[i].split('/')[0];
                 //英文
-                var v2 = fo[i].split('-')[1];
+                var v2 = fo[i].split('/')[1];
                 var ohtml = "<option value='" + v1 + "'>" + v2 + "</option>";
                 var $ohtml = $(ohtml);
                 $('#SupplierIDD').append($ohtml);
             }
         });
     }
+    function switchChange(event, state) {
+        $('#switchState').val(state);
+        //var bool = $('#isWF_chkbox')[0].checked;//true 委外 false 正常设备
+        if (String(state)=='true') {
+            $('.tr_true').show();
+            $('.tr_false').hide();
+            $('#MName').val('');
+            $('#SupplierName').val('');
+            $('#EquipBrand').val('委外');
+        }
+        else {
+            $('.tr_true').hide();
+            $('.tr_false').show();
+            $('#MName').val('');
+            $('#SupplierName').val('');
+            $('#EquipBrand').val('');
+        }
+    }
+</script>
+<script>
+    $(function() {
+        $('#isWF_chkbox').bootstrapSwitch({
+            onText: '是',
+            offText: '否',
+            onSwitchChange: function (event, state) { switchChange(event, state) },
+        });
+    })
 </script>
 

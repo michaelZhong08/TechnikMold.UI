@@ -68,5 +68,19 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 return _config.Value;
             return string.Empty;
         }
+        public string GetTaskDrawingPath(string type = "CAM")
+        {
+            string _pathSetting = type == "CAM" ? "CAMDrawingPath" : type == "CAD" ? "CADDrawingPath" : "CAMDrawingPath";
+            string _path = "";
+            SystemConfig _sysconfig = _context.SystemConfigs.Where(p => p.SettingName == _pathSetting).FirstOrDefault();
+            if (_sysconfig != null)
+            {
+                _path = _sysconfig.Value;
+                _path = _path.Substring(2, _path.Length - 2).Replace("\\", "/") + "/";
+                return _path;
+            }
+            else
+                return null;
+        }
     }
 }

@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -11,6 +14,9 @@ namespace TechnikMold.UI.Controllers
 {
     public class BaseController: Controller
     {
+        public static string constr = ConfigurationManager.ConnectionStrings["EFDbContext"].ToString();
+        //public DataAccess db = new DataAccess(constr, CommandType.StoredProcedure);
+
         #region 参数定义
         public ITaskRepository _taskRepository;
         public IPartRepository _partRepository;
@@ -47,6 +53,8 @@ namespace TechnikMold.UI.Controllers
         public IMachinesInfoRepository _machinesinfoRepository;
         public IAttachFileInfoRepository _attachFileInfoRepository;
         public IPurchaseItemRepository _purchaseItemRepository;
+        public ITaskTypeRepository _taskTyprRepository;
+        public IWH_WorkTypeRepository _workTyprRepository;
         #endregion
 
 

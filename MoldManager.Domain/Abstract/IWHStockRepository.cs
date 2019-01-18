@@ -18,5 +18,6 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         WHStock QueryByID(int stockID);
         int ChangeWHPosition(WHStock model);
         int StockReturn(int stockID, decimal _qty);
+        WHStock GetStockByPartNum(string partNum, int partID);
     }
 }

@@ -33,5 +33,6 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         void PlanDateAdjust(int purchaseitemID, DateTime planDate);
         void PlanDateAdjustRecordSave(PurItemChangeDateRecord model);
         List<PurItemChangeDateRecord> GetPurItemChangeDateRecords(int PurchaseRequestID);
+        int UpdateItemTime(int purItemID, double time);
     }
 }

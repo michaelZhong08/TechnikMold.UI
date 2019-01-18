@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using MoldManager.WebUI.Models.GridRowModel;
 using TechnikSys.MoldManager.Domain.Entity;
+using TechnikSys.MoldManager.Domain.Abstract;
 
 namespace MoldManager.WebUI.Models.GridViewModel
 {
@@ -14,11 +15,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Total;
         public int Records;
 
-        public PurchaseOrderItemGridViewModel(List<PurchaseItem> PurchaseItems)
+        public PurchaseOrderItemGridViewModel(List<PurchaseItem> PurchaseItems, IPurchaseTypeRepository PurchaseTypeRepo)
         {
             foreach (PurchaseItem _item in PurchaseItems)
             {
-                PurchaseOrderItemGridRowModel _row = new PurchaseOrderItemGridRowModel(_item);
+                string purType = (PurchaseTypeRepo.QueryByID(_item.PurchaseType) ?? new PurchaseType()).Name;
+                PurchaseOrderItemGridRowModel _row = new PurchaseOrderItemGridRowModel(_item, purType);
                 rows.Add(_row);
             }
         }

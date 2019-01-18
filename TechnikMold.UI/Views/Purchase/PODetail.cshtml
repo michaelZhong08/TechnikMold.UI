@@ -50,125 +50,237 @@
         font-size: 14px;
         font-weight: bold;
     }
+    #Toolbar a {
+        height: 30px;
+        width: 120px;
+        margin-top: 5px;
+        float: left;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    #POContentGrid td {
+        margin:0px!important;
+        padding:0px!important;
+        height:30px;
+        text-align:center;
+        vertical-align:middle;
+        font-size:12px;
+    }
+    #POContentGrid input {
+        height: 24px;
+        border-style: none;
+        outline: none;
+        font-size: 12px;
+        margin: 0px;
+        padding: 0px;
+    }
 </style>
+@{ 
+    var _inptState = "";
+    var _tdState = "";
+    if (Model.PurchaseOrderID > 0)
+    {
+        _inptState = "readonly";
+    }
+    else
+    {
+        _tdState = "hidden";
+    }
+}
 <div style="position:absolute;left:0px;top:60px;right:0px;bottom:0px;min-width:1920px;">
-    <h3 style="line-height:40px;font-size:24px;margin:0px;padding:0px;text-indent:10px;">订单 @Model.PurchaseOrderNumber </h3>
+    @if (Model.PurchaseOrderID > 0)
+    {
+        <h2 style="line-height:40px;font-size:24px;margin:0px;padding:0px;text-indent:10px;">订单 @Model.PurchaseOrderNumber </h2>
+    }
+    else
+    {
+        <h2>新建订单</h2>
+    }
     <div id="Toolbar" style="position:absolute;left:10px;height:40px;border:1px rgba(0,0,0,0.2) solid;border-style:none none none none;overflow:hidden;">
-        @switch (Model.State)
-        {
-            case (int)PurchaseOrderStatus.新建:
-                if (DeptID == 4)
+        <table>
+            <tr>
+                @if (Model.PurchaseOrderID > 0)
                 {
-                    <button class="btn btn-primary" id="DeletePOContent">删除零件</button>
-                    <button class="btn btn-primary" id="PurchaseTypeBatch">采购类型</button>
-                        <button class="btn btn-primary" id="SubmitPO">提交审批</button>
-                        <button class="btn btn-warning" id="CancelPO">取消订单</button>
+                    switch (Model.State)
+                    {
+                        case (int)PurchaseOrderStatus.新建:
+                            if (DeptID == 4)
+                            {
+                                <td><button class="btn btn-primary" id="DeletePOContent">删除零件</button></td>
+                                @*<td><button class="btn btn-primary" id="PurchaseTypeBatch">采购类型</button></td>*@
+                                <td><button class="btn btn-info" id="SubmitPO">提交审批</button></td>
+                                <td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>
+                            }
+                            break;
+                        case (int)PurchaseOrderStatus.待审批:
+                            if (PosID == 3)
+                            {
+                                <td><button class="btn btn-primary" id="ReviewPO">审批</button></td>
+                            }
+                            if (DeptID == 4)
+                            {
+                                <td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>
+                            }
+                            break;
+                        case (int)PurchaseOrderStatus.发布:
+                            if (DeptID == 4)
+                            {
+                                <td id="td_GenerateLink"></td>
+                                <td><button class="btn btn-primary" id="SendPO">生成订单</button></td>
+                                <td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>
+                            }
+                            break;
+                        case (int)PurchaseOrderStatus.拒绝:
+                            if (DeptID == 4)
+                            {
+                                <td><input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" /></td>
+                                <td><button class="btn btn-primary" id="QuotationAgain">重新询价</button></td>
+                                <td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>
+                            }
+                            break;
+                    }
                 }
-                break;
-            case (int)PurchaseOrderStatus.待审批:
-                if (PosID == 3)
+                else
                 {
-                    <button class="btn btn-primary" id="ReviewPO">审批</button>
+                    <td><button class="btn btn-success" id="SaveOrder">保存订单</button></td>
                 }
-                if (DeptID == 4)
-                {
-                    <button class="btn btn-warning" id="CancelPO">取消订单</button>
-                }
-                break;
-            case (int)PurchaseOrderStatus.发布:
-                if (DeptID == 4)
-                {
-                    <button class="btn btn-primary" id="SendPO">生成订单</button>
-                    <button class="btn btn-warning" id="CancelPO">取消订单</button>
-                }
-                break;
-            case (int)PurchaseOrderStatus.拒绝:
-                if (DeptID == 4)
-                {
-                    <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
-                    <button class="btn btn-primary" id="QuotationAgain">重新询价</button>
-                        <button class="btn btn-warning" id="CancelPO">取消订单</button>
-                }
-                break;
 
-        }
+            </tr>
+        </table>
     </div>
     <div id="Basic" style="position:absolute;left:10px;top:90px;right:10px;height:50px;border:1px rgba(0,0,0,0.2) solid;border-style:solid none solid none;">
         <table style="margin-top:5px;">
             <colgroup>
                 <col width="80" />
-                <col width="220" />
+                <col width="120" />
                 <col width="80" />
-                <col width="220" />
+                <col width="120" />
                 <col width="80" />
-                <col width="220" />
+                <col width="200" />
+                
+
+                <col width="40" />
+                <col width="110" />
+                <col width="40" />
+                @if (Model.PurchaseOrderID == 0)
+                {
+                    <col width="85" />
+                    <col width="85" />
+                }
+                else
+                {
+                    <col width="170" />
+                }
                 <col width="80" />
-                <col width="220" />
+                <col width="120" />
                 <col width="80" />
-                <col width="220" />
+                <col width="120" />
+
                 <col width="80" />
-                <col width="320" />
+                <col width="400" />
+
             </colgroup>
             <tr>
-                <td style="height:40px;">供应商</td>
-                <td>
-                    <input type="text" class="form-control" id="SupplierName" readonly>
-                    <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
-                </td>
                 <td>状态</td>
                 <td>
                     <input type="text" class="form-control" id="State" value="@Enum.GetName(typeof(PurchaseOrderStatus),@Model.State)" readonly>
                 </td>
                 <td>采购类型</td>
                 <td>
-                    <input type="text" class="form-control" id="PurchaseType" value="@ViewBag.PurchaseType" readonly />
+                    <input type="hidden" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID" />
+                    <input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseTypeName" readonly />
                 </td>
-                <td style="height:40px;">总价</td>
+                <td style="height:40px;">供应商</td>
                 <td>
-                    <input type="text" class="form-control" id="TotalPrice" value="@(Model.TotalPrice+"("+Model.Currency+")")" readonly>
+                    <input type="text" list="SupplierIDD" class="form-control" id="SupplierName" @_inptState>
+                    <datalist id="SupplierIDD"></datalist>
+                    <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
+                </td>
+                
+                <td>币种</td>
+                <td>
+                    @if (Model.PurchaseOrderID == 0)
+                    {
+                        <select id="Currency" class="form-control">
+                            <option value="人民币">人民币</option>
+                            <option value="美元">美元</option>
+                            <option value="日元">日元</option>
+                            <option vlaue="欧元">欧元</option>
+                        </select>
+                    }
+                    else
+                    {
+                        <input type="text" class="form-control" value="@(Model.Currency)" @_inptState />
+                    }
                 </td>
                 <td>税率</td>
+                @if (Model.PurchaseOrderID == 0)
+                {
+                    <td>
+                        <select id="taxModel" class="form-control">
+                            <option value="1">未税</option>
+                            <option value="2">含税</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select id="TaxRate" class="form-control">
+                            <option value="16">16%</option>
+                            <option value="6">6%</option>
+                            <option value="5">5%</option>
+                            <option value="4">4%</option>
+                            <option value="3">3%</option>
+                            <option value="0">0%</option>
+                        </select>
+                    </td>
+                }
+                else
+                {
+                    <td><input type="text" class="form-control" value="@(Model.TaxRate + "%")" @_inptState /></td>
+                }
+
                 <td>
-                    @{
-                        string _tax = Model.TaxRate + "%";
+                    总价(未税)
+                </td>
+                <td>
+                    @if (Model.PurchaseOrderID > 0)
+                    {
+                        <input type="text" class="form-control" id="TotalPrice" value="@(Model.TotalPrice)" readonly>
                     }
-                    <input type="text" class="form-control" value="@(Model.TaxRate + "%")" readonly />
+                    else
+                    {
+                        <input type="text" class="form-control" id="TotalPrice" value="0" readonly>
+                    }
+                </td>
+                <td>
+                    总价(含税)
+                </td>
+                <td>
+                    @if (Model.PurchaseOrderID > 0)
+                    {
+                        <input type="text" class="form-control" id="TotalPriceWT" value="@(Model.TotalPriceWT)" readonly>
+                    }
+                    else
+                    {
+                        <input type="text" class="form-control" id="TotalPriceWT" value="0" readonly>
+                    }
                 </td>
                 <td>备注</td>
                 <td>
-                    <input type="text" class="form-control" id="Memo" value="@Model.Memo" readonly />
+                    <input type="text" class="form-control" id="Memo" style="width:100%" value="@Model.Memo" @_inptState />
                 </td>
             </tr>
-            @*@if (DeptID == 4) {
-                <tr>
-                    <td style="height:40px;">总价</td>
-                    <td >
-                        <input type="text" class="form-control" id="TotalPrice" value="@(Model.TotalPrice+"("+Model.Currency+")")" readonly>
-                    </td>
-                    <td >税率</td>
-                    <td>
-                        @{
-                            string _tax = Model.TaxRate + "%";
-                        }
-                        <input type="text" class="form-control" value="@(Model.TaxRate + "%")" readonly />
-                    </td>
-                    <td>备注</td>
-                    <td colspan="3">
-                        <input type="text" class="form-control" id="Memo" value="@Model.Memo" readonly />
-                    </td>
-                </tr>
-                }*@
         </table>
+
     </div>
 
     <div id="tb_div" style="position:absolute;left:10px;top:140px;right:10px;bottom:0px;border:1px rgba(0,0,0,0.2) solid;overflow:hidden;">
+        <input type="hidden" id="ActiveCol" />
         <table id="POContentGrid"></table>
         <div id="jqGridPager"></div>
     </div>
 </div>
 
 <input type="hidden" id="tempID" value="-1" />
-
 <input type="hidden" id="row" />
 
 
@@ -281,26 +393,26 @@
         @if (ViewBag.PurchaseOrderID != 0)
         {
             @:POContentGrid(@ViewBag.PurchaseOrderID);
-            @:LoadProject(@Model.ProjectID);
-            @:LoadSupplierName("SupplierName", @Model.SupplierID);
-            @*@:LoadPO(@ViewBag.PurchaseRequestID);*@
-            if (Model.SupplierID == 0)
+                    @:LoadProject(@Model.ProjectID);
+                    @:LoadSupplierName("SupplierName", @Model.SupplierID);
+                    if (Model.SupplierID == 0)
             {
                 @:LoadSelectedSuppliersText(@ViewBag.PurchaseRequestID);
-                    }
+                            }
             else
             {
                 @:LoadAssignedSupplier(@Model.SupplierID);
-                    }
+                            }
             @:LoadUser(@Model.UserID, "UserName");
-                }
+                        }
         else
         {
-            @:PRContentGrid("@ViewBag.PartIDs", 0, 0);
+            @*@:PRContentGrid("@ViewBag.PartIDs", 0, 0);
                     if (ViewBag.ProjectID != 0)
             {
                 @:LoadProject(@ViewBag.ProjectID);
-                            }
+                            }*@
+            @:POContentGrid(@ViewBag.PurchaseOrderID,'@ViewBag.ItemIDs');
         }
 
         $("#CancelPO").on("click", function(){
@@ -393,5 +505,89 @@
         })
 
         $("#PurchaseTypeModal").modal('hide')
+    }
+</script>
+<script>
+    $(document).ready(function(){
+        SupplierListImport('SupplierIDD');
+
+        var _strHtml='<a id="POEmail" class="btn btn-primary" href="' + FormatHrefStr() + '" onclick="ShowDialog()"><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>';
+        $('#td_GenerateLink').append(_strHtml);
+
+        $('#SaveOrder').on('click',function(){
+            CreatePO();
+        });
+        $.get('/Purchase/Service_PurType_GetByName?TypeName='+$('#PurchaseTypeName').val(),function(res){
+            $.get('/Purchase/Service_PurType_GetByID?TypeID='+res.ParentTypeID,function(res){
+                if(res.Name=='模具委外加工'){
+                    $("#POContentGrid").setGridParam().showHideCol("Time");
+                }
+            })
+        });
+        $('#TaxRate').on('change',function(){
+            var _taxModel=Number($('#taxModel').val());
+            var rowIds=$("#POContentGrid").jqGrid("getDataIDs");
+            for (i = 0; i <= rowIds.length ; i++) {
+                $('#POContentGrid').jqGrid('editRow', rowIds[i], true);                
+            }
+            switch(_taxModel){
+                //更新未税
+                case 1:
+                    for(var i=0;i<rowIds.length;i++){
+                        var rowData = $('#POContentGrid').jqGrid('getRowData', rowIds[i]);
+                        UpdateUnit(rowIds[i]);
+                    }
+                    for (i = 0; i <= rowIds.length ; i++) {
+                        $('#POContentGrid').jqGrid('saveRow', rowIds[i]);                
+                    }
+                    var _total = 0;
+                    var _totalwt = 0;
+                    for (i = 0; i < rowIds.length ; i++) {
+                        var rowData = $('#POContentGrid').jqGrid('getRowData', rowIds[i]);
+                        _total = Number(Number(_total) + Number(rowData.TotalPrice)).toFixed(2);
+                        _totalwt = Number(Number(_totalwt) + Number(rowData.TotalPriceWT)).toFixed(2);
+                    }
+                    $('#TotalPrice').val(_total);
+                    $('#TotalPriceWT').val(_totalwt);
+                    break;
+                //更新含税
+                case 2:
+                    for(var i=0;i<rowIds.length;i++){
+                        var rowData = $('#POContentGrid').jqGrid('getRowData', rowIds[i]);
+                        UpdateUnitWT(rowIds[i]);
+                    }
+                    for (i = 0; i <= rowIds.length ; i++) {
+                        $('#POContentGrid').jqGrid('saveRow', rowIds[i]);                
+                    }
+                    var _totalwt = 0;
+                    for (i = 0; i < rowIds.length ; i++) {
+                        var rowData = $('#POContentGrid').jqGrid('getRowData', rowIds[i]);
+                        _total = Number(Number(_total) + Number(rowData.TotalPrice)).toFixed(2);
+                        _totalwt = Number(Number(_totalwt) + Number(rowData.TotalPriceWT)).toFixed(2);
+                    }
+                    $('#TotalPrice').val(_total);
+                    $('#TotalPriceWT').val(_totalwt);
+                    break;
+            }            
+        })
+    })
+    function ShowDialog(){
+        $.ajaxSettings.async=false;
+        $.jAlert({ //this is the normal usage
+            'content': '请耐心等待Outlook程序打开！<br />若无反应请<a href="/Administrator/Service_FileDownLoad">点击此处</a>下载插件',
+            'autoClose' : 5000,
+            'closeBtn':false,
+            'size': 'xsm'
+        });      
+    }
+
+    function FormatHrefStr(){
+        var _href='';
+        $.ajaxSettings.async=false;
+        $.get('/Administrator/Service_GetServerInfo?_type=POMail',function(res){
+            var _poID=$('#PurchaseOrderID').val();
+            _href= 'MoldSysPlugin:'+res+_poID;
+        });
+        return _href;
     }
 </script>

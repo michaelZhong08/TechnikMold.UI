@@ -8,6 +8,8 @@ using TechnikSys.MoldManager.Domain.Entity;
 using MoldManager.WebUI.Models.GridViewModel;
 using System.Text;
 using MoldManager.WebUI.Models.EditModel;
+using System.Data.SqlClient;
+using System.Configuration;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -110,9 +112,6 @@ namespace MoldManager.WebUI.Controllers
             return HttpUtility.UrlDecode(_displayName, Encoding.GetEncoding("UTF-8"));
         }
 
-
-
-
         #region 用户
         public JsonResult Users(string Keyword="")
         {
@@ -138,24 +137,46 @@ namespace MoldManager.WebUI.Controllers
             User _user = _userRepository.GetUserByName(UserName);
             return Json(_user, JsonRequestBehavior.AllowGet);
         }
+        public JsonResult GetUserByCode(string UserCode)
+        {
+            User _user = (_userRepository.GetUserByCode(UserCode) ?? new TechnikSys.MoldManager.Domain.Entity.User());
+            return Json(_user, JsonRequestBehavior.AllowGet);
+        }
         /// <summary>
-        /// 项目编辑页面 人员编辑列表数据源
+        /// TODO:项目编辑页面 人员编辑列表数据源
         /// </summary>
         /// <param name="UserName"></param>
         /// <param name="_proJRole"></param>
         /// <returns></returns>
         public JsonResult FilterUser(string UserName = "",int _proJRole=1)
         {
+            //List<int> _depList = new List<int>();
+            //switch(_proJRole){
+            //    case 1:
+            //        _depList.Add(21);//项目
+            //        break;
+            //    case 2:
+            //        _depList.Add(2);//CAD
+            //        break;
+            //    case 3:
+            //        _depList.Add(24);//钳工
+            //        break;
+            //}
             List<int> _depList = new List<int>();
-            switch(_proJRole){
+            Department _dep = new Department();
+            switch (_proJRole)
+            {
                 case 1:
-                    _depList.Add(21);//项目
+                    _dep = (_departmentRepository.Departments.Where(d => d.Name == "项目" && d.Enabled==true).FirstOrDefault() ?? new Department());
+                    _depList.Add(_dep.DepartmentID);//项目
                     break;
                 case 2:
-                    _depList.Add(2);//CAD
+                    _dep = (_departmentRepository.Departments.Where(d => d.Name == "CAD" && d.Enabled == true).FirstOrDefault() ?? new Department());
+                    _depList.Add(_dep.DepartmentID);//CAD
                     break;
                 case 3:
-                    _depList.Add(24);//钳工
+                    _dep = (_departmentRepository.Departments.Where(d => (d.Name == "装配") && d.Enabled == true).FirstOrDefault() ?? new Department());
+                    _depList.Add(_dep.DepartmentID);//钳工
                     break;
             }
             IEnumerable<User> _users = _userRepository.FilterUser(_depList,UserName) ;
@@ -253,9 +274,10 @@ namespace MoldManager.WebUI.Controllers
             }
         }
 
-        public ActionResult GetUsersByDepartment(int DepartmentID)
+        public ActionResult GetUsersByDepartment(string DepartmentName)
         {
-            IEnumerable<User> _users = _userRepository.Users.Where(u => u.Enabled == true).Where(u => u.DepartmentID == DepartmentID);
+            Department _dep = (_departmentRepository.Departments.Where(d => d.Enabled && d.Name == DepartmentName).FirstOrDefault()??new Department());
+            IEnumerable<User> _users = _userRepository.Users.Where(u => u.Enabled == true).Where(u => u.DepartmentID == _dep.DepartmentID);
             return Json(_users, JsonRequestBehavior.AllowGet);
         }
 
@@ -275,7 +297,7 @@ namespace MoldManager.WebUI.Controllers
 
                 _viewModel.Add( new UserRoleEditModel(_role.UserRoleID, DisplayName));
             }
-            return Json(_viewModel.OrderBy(u=>u.DisplayName), JsonRequestBehavior.AllowGet);
+            return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult JsonUserRole(int UserRoleID)
@@ -369,5 +391,24 @@ namespace MoldManager.WebUI.Controllers
             return View();
         }
 
+        #region 同步用户代码
+        public void Service_Usr_UptUserCodeByProc()
+        {
+            SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["EFDbContext"].ToString());
+            #region MyRegion
+            if (conn.State == System.Data.ConnectionState.Closed)
+            {
+                conn.Open();
+            }
+            string sql = "execute Proc_Upt_UserCode";
+            SqlCommand comm = new SqlCommand(sql, conn);
+            comm.ExecuteNonQuery();
+            conn.Close();
+            //SqlDataAdapter da = new SqlDataAdapter(comm);
+            //DataSet ds = new DataSet();
+            //da.Fill(ds, "test");
+            #endregion
+        }
+        #endregion
     }
 }

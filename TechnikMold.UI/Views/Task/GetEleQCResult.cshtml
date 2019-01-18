@@ -9,42 +9,41 @@
         <ul class="nav nav-pills">
             <li class="dropdown all-camera-dropdown">
                 <button class="dropdown-toggle btn btn-primary" data-toggle="dropdown" href="#">
-                    @if (ViewBag.Status == 5)
+                    @if (ViewBag.Status == 4)
                     {
                         @:CNC返修
                     }
-                    else if (ViewBag.Status == 4)
+                    else if (ViewBag.Status == 2)
                     {
                         @:合格
                     }
-                    else if(ViewBag.Status==6)
+                    else if (ViewBag.Status == 10)
                     {
                         @:有条件利用
                     }
-                    
+                    else
+                    {
+                        @:-
+                    }
                     <b class="caret"></b>
                 </button>
-                    <ul class="dropdown-menu">
-                        <li role="presentation">
-                            <a href="/Task/GetEleQCResult?Status=6">有条件利用</a>
-                        </li>
-                        <li role="presentation">
-                            <a href="/Task/GetEleQCResult?Status=4">合格</a>
-                        </li>
-                        <li role="presentation">
-                            <a href="/Task/GetEleQCResult?Status=5">CNC返修</a>
-                        </li>
-                    </ul>
+                <ul class="dropdown-menu">
+                    <li role="presentation">
+                        <a href="/Task/GetEleQCResult?Status=10">有条件利用</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="/Task/GetEleQCResult?Status=2">合格</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="/Task/GetEleQCResult?Status=4">CNC返修</a>
+                    </li>
+                </ul>
             </li>
             <li>
                 <button class="btn btn-primary" id="Search">关键字搜索</button>
             </li>
         </ul>
-            @*<select id="ItemStatus" class="form-control">
-                <option value="10">有条件利用</option>
-                <option value="5">CNC返修</option>
-            </select>*@
-</div>
+    </div>
     <div class="col-sm-12">
         <table id="ElectrodeGrid"></table>
     </div>
@@ -58,37 +57,37 @@
                 <h4 class="modal-title" id="EleCompensationLabel">电极确认</h4>
             </div>
             <div class="modal-body">
-                    <table class="table-striped col-sm-12">
-                        
-                        <tr>
-                            <td class="col-sm-4"><label>电极名称</label></td>
-                            <td>
-                                <input type="text" id="LabelName" class="form-control" readonly />
-                                <input type="hidden" id="CNCItemID" name="CNCItemID" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>结论</label></td>
-                            <td>
-                                <select id="Result" name="Result" class="form-control">
-                                    <option value="true">可以利用</option>
-                                    <option value="false">不合格</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>火花间隙</label></td>
-                            <td><input type="number" id="GapCompensation" name="GapCompensation" class="form-control" /></td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>高度间隙</label></td>
-                            <td><input type="number" id="ZCompensation" name="ZCompensation" class="form-control" /></td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>检测报告</label></td>
-                            <td><a href="" id="ReportLink" target="_blank"><img id="ReportPic" src="" style="width:400px" /></a></td>
-                        </tr>
-                    </table>
+                <table class="table-striped col-sm-12">
+
+                    <tr>
+                        <td class="col-sm-4"><label>电极名称</label></td>
+                        <td>
+                            <input type="text" id="LabelName" class="form-control" readonly />
+                            <input type="hidden" id="CNCItemID" name="CNCItemID" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>结论</label></td>
+                        <td>
+                            <select id="Result" name="Result" class="form-control">
+                                <option value="true">可以利用</option>
+                                <option value="false">不合格</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>火花间隙</label></td>
+                        <td><input type="number" id="GapCompensation" name="GapCompensation" class="form-control" /></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>高度间隙</label></td>
+                        <td><input type="number" id="ZCompensation" name="ZCompensation" class="form-control" /></td>
+                    </tr>
+                    <tr>
+                        <td class="col-sm-4"><label>检测报告</label></td>
+                        <td><a href="" id="ReportLink" target="_blank"><img id="ReportPic" src="" style="width:400px" /></a></td>
+                    </tr>
+                </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
@@ -116,7 +115,7 @@
                             <input type="hidden" id="Status" value="@ViewBag.Status" />
                         </td>
                     </tr>
-                    
+
                 </table>
             </div>
             <div class="modal-footer">
@@ -133,7 +132,6 @@
     $("document").ready(function () {
         ElectrodeQCResult(@ViewBag.Status,"@ViewBag.Keyword")
 
-
         $("#ItemStatus").on("change", function(){
             location.href = "/Task/GetEleQCResult?Status=" + $("#Status").val();
         })
@@ -146,22 +144,6 @@
             $("#SearchDialog").modal("show");
         })
 
-
-        //$("#test").on("click", function(){
-        //    //$("#ReportPic").attr("src","/Images/arrow-left.png" );
-
-        //    var _id = $("#CNCItemID").val();
-        //    var _url = "/Task/JsonQCReport?CNCItemID=" + _id
-        //    $.ajax({
-        //        url: _url,
-        //        type: "Get",
-        //        dataType: "html",
-        //        success: function (msg) {
-        //            alert(msg);
-        //        }
-
-        //    })
-        //})
     })
 </script>
 

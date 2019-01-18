@@ -14,28 +14,30 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public IQueryable<WHStock> WHStocks { get { return _context.WHStocks; } }
         public int Save(WHStock model)
         {
-            WHStock _stock = _context.WHStocks.Where(s => s.PartID == model.PartID && s.PartNum == model.PartNum && s.WarehouseID == model.WarehouseID && s.WarehousePositionID == model.WarehousePositionID).FirstOrDefault();
+            WHStock _stock = (_context.WHStocks.Where(s => s.PartID == model.PartID && s.PartNum == model.PartNum && s.WarehouseID == model.WarehouseID && s.WarehousePositionID == model.WarehousePositionID).FirstOrDefault() ?? new WHStock());
 
-            if (_stock == null)
+            if (_stock.ID ==0)
             {
                 _stock.PartNum = model.PartNum;
                 _stock.WarehouseID = model.WarehouseID;
                 _stock.WarehousePositionID = model.WarehousePositionID;
-                _stock.Qty = model.Qty;
+                //_stock.Qty = model.Qty;
                 _stock.PurchaseType = model.PurchaseType;
                 _stock.StockType = model.StockType;
                 _stock.PartID = model.PartID;
                 _stock.TaskID = model.TaskID;
-                _stock.InStockQty = model.InStockQty;
-                _stock.OutStockQty = model.OutStockQty;
+                //_stock.InStockQty = model.InStockQty;
+                //_stock.OutStockQty = model.OutStockQty;
                 _stock.FInStockDate = model.FInStockDate;
                 _stock.LInStockDate = model.LInStockDate;
                 _stock.MoldNumber = model.MoldNumber;
-                model.Enable = true;
-                _context.WHStocks.Add(model);
+                _stock.Enable = true;
+                _stock.Memo = model.Memo;
+                _context.WHStocks.Add(_stock);
             }
             else
             {
+                _stock.Memo = model.Memo;
                 _stock.LInStockDate = model.LInStockDate;
             }
             _context.SaveChanges();
@@ -136,6 +138,11 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 return 1;
             }
             return -99;
+        }
+        public WHStock GetStockByPartNum(string partNum,int partID)
+        {
+            WHStock _stockItem = (_context.WHStocks.Where(s => s.PartNum == partNum && s.PartID == partID && s.Enable == true).FirstOrDefault() ?? new WHStock());
+            return _stockItem;
         }
     }
 }

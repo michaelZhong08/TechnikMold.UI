@@ -68,81 +68,44 @@
     }
 
 </style>
-<style>
-    /*.ui-th-div{
-        width:100%!important;
-        height:100%!important;
-        float:left!important;
-        margin:0px!important;
-        padding:0px!important;
-    }
-    .ui-th-column{
-        padding:0px!important;
-        margin:0px!important;
-    }
-    .ui-th-ltr{
-        padding:0px!important;
-        margin:0px!important;
-    }*/   
-</style>
-<div style="margin-top:60px">
-    <h2 >@ViewBag.Title</h2>
-    <div class="col-sm-2">
-        <input id="depID" value="@DeptID" hidden/>
-        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
-        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
-        <select class="form-control" id="MoldSelect" size="3"></select>    
-        <input type="hidden" id="MoldNumber" />    
+
+<h2 style="margin-top:60px;">@ViewBag.Title</h2>
+<div class="FatherDiv">
+    <div class="LeftDiv">
+        <input id="depID" value="@DeptID" hidden />
+        <button class="btn btn-primary LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
+        <select class="form-control LeftDiv_Sel" id="MoldSelect" size="3"></select>
+        <input type="hidden" id="MoldNumber" />  
     </div>
-    <div class="col-sm-10">
-        <table style="margin-right:20px!important;">
-            <tr>
-                <td style="width:200px!important;">
-                    <select id="PurchaseType" class="form-control" style="width:200px;"></select>
-                </td>
-                <td style="width:200px!important;">
-                    <select id="SemiPurchaseType" class="form-control" style="width:200px;"></select>
-                </td>
-                <td style="width:200px!important;">
-                    <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;"/>
-                </td>
-                <td style="width:400px!important;">
-                    <button class="btn btn-primary" id="Query">查询</button>
-                    @if ((ViewBag.State == 30) && (DeptID == 4))
-                    {
-                        <button class="btn btn-primary" id="Quotation">开始询价</button>
-                        <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
-                    }
-                </td>
-            </tr>
-        </table>
-        <div style="float:left;margin-right:20px!important;">
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
+                <tr>
+                    <td style="width:200px!important;">
+                        <select id="PurchaseType" class="form-control" style="width:200px;"></select>
+                    </td>
+                    <td style="width:200px!important;">
+                        <select id="SemiPurchaseType" class="form-control" style="width:200px;"></select>
+                    </td>
+                    <td style="width:200px!important;">
+                        <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;" />
+                    </td>
+                    <td style="width:400px!important;">
+                        <button class="btn btn-primary" id="Query">查询</button>
+                        @if ((ViewBag.State == 30) && (DeptID == 4))
+                        {
+                            <button class="btn btn-primary" id="Quotation">开始询价</button>
+                            <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
+                        }
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="RightDiv_BottomDiv">
             <table id="PurchaseItemGrid"></table>
             <div id="jqGridPager"></div>
         </div>
-        @*@if (ViewBag.State == 30)
-        {
-            <div class="col-sm-2">
-                <select id="PurchaseType" class="form-control"></select>
-            </div>
-        }
-        <div class="col-sm-3">
-            <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" />
-        </div>
-         <input type="hidden" id="MoldNumber" />
- 
-         <button class="btn btn-primary" id="Query">查询</button>
- 
-         @if ((ViewBag.State == 30)&&(DeptID==4))
-         {     
-             <button class="btn btn-primary" id="Quotation">开始询价</button>    
-             <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
-     
-         }
-        <div class="col-sm-11" style="float:left;">
-            <table id="PurchaseItemGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>*@
     </div>
 </div>
 
@@ -155,21 +118,24 @@
 <script src="~/Scripts/Purchase.js"></script>
 <script src="~/Scripts/jquery.ba-throttle-debounce.js"></script>
 <script>
-
-
     $("document").ready(function () {
 
-        LoadMoldNumber("", "")
+        LoadMoldNumber("")
 
         @*@if (ViewBag.State == 30)
         {
             @:LoadPurchaseType();
         }*@
-        
+
         PurchaseItem("","", @ViewBag.State);
-        @if ((ViewBag.State==10)||(ViewBag.State==40)){
+        @if ((ViewBag.State==10)||(ViewBag.State==40) || (ViewBag.State == 0))
+        {
             @:ShowPOCol();
-        }
+                        }
+        else
+        {
+                    @:$("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.75);
+                }
 
         $("#Keyword").on("keyup", function () {
             LoadMoldNumber($("#Keyword").val());
@@ -206,7 +172,7 @@
 
         $("#PruchaseOrder").on("click", function(){
             var _ids = GetMultiSelectedIDs("PurchaseItemGrid");
-            
+
             var _url = "/Purchase/SelectPOContent?";
             var _condition = ""
 
@@ -219,8 +185,6 @@
 
         })
         $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
-        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
-
     })
 
 
@@ -230,7 +194,7 @@
             _url = _url + "&Keyword=" + Keyword;
         }
         $("#MoldSelect option").remove();
-
+        $.ajaxSettings.async=false;
         $.getJSON(_url, function (msg) {
             if(msg.length>0){
                 $("#MoldSelect").append($("<option/>",{
@@ -254,16 +218,21 @@
         @if (ViewBag.State == 40)
         {
             @:$("#PurchaseItemGrid").setGridParam().showHideCol("OutStockQty");
-        }
-        
+                        }
+
         @if ((ViewBag.State == 10)||(ViewBag.State==40))
         {
             @:$("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
-            @:$("#PurchaseItemGrid").setGridParam().showHideCol("DeliveryDate");
-        }
+                            @:$("#PurchaseItemGrid").setGridParam().showHideCol("DeliveryDate");
+                        }
+        @if ((ViewBag.State == 0))
+        {
+            @:$("#PurchaseItemGrid").setGridParam().showHideCol("OutStockQty");
+                    @:$("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
+                            @:$("#PurchaseItemGrid").setGridParam().showHideCol("DeliveryDate");
+                        }
 
-
-        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+        //$("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
     }
 
     function StartQuotation(){
@@ -320,10 +289,12 @@
 
     function LoadMainPurType(){
         if(@ViewBag.State==30){
-            $("#PurchaseType").append($("<option/>",{
-                value:1,
-                text:'模具直接材料'
-            }));
+            $.get('/Purchase/Service_PurType_GetByName?TypeName=模具直接材料',function(res){
+                $("#PurchaseType").append($("<option/>",{
+                    value:res.PurchaseTypeID,
+                    text:res.Name,
+                }));
+            })            
             LoadSemiPurType();
         }else{
             $.ajaxSettings.async=false;

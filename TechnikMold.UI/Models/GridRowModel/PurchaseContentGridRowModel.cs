@@ -45,11 +45,11 @@ namespace MoldManager.WebUI.Models.GridRowModel
         }
         //外发任务
         public PurchaseContentGridRowModel(Task Task, SetupTaskStart _setuptaskStart,string mrPurDate, IProjectPhaseRepository ProjectPhaseRepository, ISteelCAMDrawingRepository SteelDrawingRepo
-            ,IWHPartRepository WHPartRepository,IPurchaseTypeRepository PurchaseTypeRepository)
+            ,IWHPartRepository WHPartRepository,IPurchaseTypeRepository PurchaseTypeRepository,double time)
         {
             int _phaseID = 0;
             string _partNum = WHPartRepository.GetwfTaskPartNum(Task.TaskID);
-            cell = new string[27];
+            cell = new string[28];
             cell[0] = "";
             cell[1] = "0";
             cell[2] = Task.TaskID.ToString();
@@ -119,6 +119,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
                 _purchaseType = PurchaseTypeRepository.PurchaseTypes.ToList().Where(t => Task.TaskType.Equals(Convert.ToInt32(t.TaskType))).FirstOrDefault().PurchaseTypeID;
             }           
             cell[26] = _purchaseType.ToString();
+            cell[27] = time.ToString();
         }
         //库存新增
         public PurchaseContentGridRowModel(string mrPurDate, WarehouseStock StockItem)

@@ -158,6 +158,9 @@
 
 <script>
     $("document").ready(function(){
+        $('#CreatePO').on('click',function(){
+            CreatePO1();
+        })
         $("#QueryBtn").on('click', function () {
             QueryPO();
         })
@@ -196,7 +199,7 @@
     }
 
 
-    function CreatePO() {
+    function CreatePO1() {
         location.href = "/Purchase/SelectPOContent";
     }
 

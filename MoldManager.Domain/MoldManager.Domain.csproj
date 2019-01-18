@@ -350,6 +350,7 @@
     <Compile Include="Entity\Task.cs" />
     <Compile Include="Entity\TaskHour.cs" />
     <Compile Include="Entity\TaskHourCost.cs" />
+    <Compile Include="Entity\TaskHoursEmp.cs" />
     <Compile Include="Entity\TaskType.cs" />
     <Compile Include="Entity\User.cs" />
     <Compile Include="Entity\UserRole.cs" />
@@ -376,6 +377,7 @@
     <Compile Include="Output\WEDMTaskInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Status\CNCItemStatus.cs" />
+    <Compile Include="Status\ProjectStatus.cs" />
     <Compile Include="Status\QuotationRequestStatus.cs" />
     <Compile Include="Status\TaskStatus.cs" />
     <Compile Include="Status\EDMStatus.cs" />
@@ -390,6 +392,8 @@
     <Compile Include="Status\TaskHourStatus.cs" />
     <Compile Include="Status\WarehouseRequestStatus.cs" />
     <Compile Include="Status\WEDMStatus.cs" />
+    <Compile Include="ViewModel\TaskHourEmpViewModel.cs" />
+    <Compile Include="WebServiceModel\POMailModel.cs" />
     <Compile Include="WebServiceModel\QRMailModel.cs" />
   </ItemGroup>
   <ItemGroup>

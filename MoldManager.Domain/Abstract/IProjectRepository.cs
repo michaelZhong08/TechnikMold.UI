@@ -62,6 +62,8 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         Project GetProjectByMoldNumberVer(string MoldNumber, int ver = -1);
 
         #endregion
-        IQueryable<Project> GetProjectsByDep(int Department);
+        IQueryable<Project> GetProjectsByDep(int Department, bool isDepFinished);
+        Project QueryByID(int ProjectID);
+        int CloseProject(int ProjectID);
     }
 }

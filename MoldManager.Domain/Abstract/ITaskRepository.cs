@@ -28,7 +28,7 @@ namespace TechnikSys.MoldManager.Domain.Abstract
 
         void Release(int TaskID);
 
-        void Delete(int TaskID);
+        void DeleteByCAM(int TaskID);
 
         void Queue(int TaskID);
 
@@ -75,6 +75,8 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         IEnumerable<Task> QueryByMoldNumber(string MoldNumber, int TaskType, bool Enabled = true);
         string GetMaxVerDrawFile(string TaskName);
         int GetMaxVerMGTask(string TaskName,int ProcessType=0);
+        void UpdateTaskTime(int taskID, double time);
+        void DeleteTask(int TaskID, string StateMemo);
 
     }
 }

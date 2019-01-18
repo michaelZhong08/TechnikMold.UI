@@ -2,20 +2,70 @@
 @{
     ViewBag.Title = "领料申请单";
 }
-
+@using TechnikSys.MoldManager.Domain.Status;
 @{
-    int DeptID = 0;
+    int DeptID = 0,Position=0;
+    string ApprovalRequestBtnState = "";
+    string ApprovalBtnState = "";
+    string RejectBtnState = "";
+    string FinishBtnState = "";
+    List<int> _positioinLists = new List<int>() { 2, 3 };
     try
     {
         DeptID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+        Position = Convert.ToInt32(Request.Cookies["User"]["Position"]);
     }
     catch
     {
         DeptID = 0;
+        Position = 0;
+    }
+    switch ((int)ViewBag.State)
+    {
+        case (int)WarehouseRequestStatus.编辑:
+            ApprovalBtnState = "hidden";
+            RejectBtnState = "hidden";
+            FinishBtnState = "hidden";
+            break;
+        case (int)WarehouseRequestStatus.待审核:
+            ApprovalBtnState = "hidden";
+            RejectBtnState = "hidden";
+            FinishBtnState = "hidden";
+            break;
+        case (int)WarehouseRequestStatus.审核退回:
+            ApprovalBtnState = "hidden";
+            RejectBtnState = "hidden";
+            FinishBtnState = "hidden";
+            break;
+        case (int)WarehouseRequestStatus.审核中:
+            ApprovalRequestBtnState = "hidden";
+            FinishBtnState = "hidden";
+            RejectBtnState = "hidden";
+            break;
+        case (int)WarehouseRequestStatus.待领:
+            ApprovalRequestBtnState = "hidden";
+            ApprovalBtnState = "hidden";
+            //RejectBtnState = "hidden";
+            break;
+        case (int)WarehouseRequestStatus.完成:
+            ApprovalRequestBtnState = "hidden";
+            ApprovalBtnState = "hidden";
+            RejectBtnState = "hidden";
+            FinishBtnState = "hidden";
+            break;
+    }
+    if (DeptID != 20)
+    {
+        RejectBtnState = "hidden";
+        FinishBtnState = "hidden";
+    }
+    if(DeptID!= ViewBag.RequestDep || !_positioinLists.Contains(Position))
+    {
+        ApprovalBtnState = "hidden";
     }
 }
 <style>
-     #WHRequestItemGrid td {
+    #WHRequestItemGrid td {
         margin: 0px !important;
         padding: 0px !important;
         height: 30px;
@@ -34,15 +84,17 @@
         padding: 0px;
     }
 </style>
+
 <div class="col-sm-12" style="margin-top:60px">
     <div class="col-sm-12" style="float:left;">
-        <h2>领料申请单</h2>
-        <div id="abc"></div>
+        <h2>领料申请单@("("+ViewBag.RequestNumber+")")</h2>
+        <br />
+
         <input type="hidden" id="WarehouseRequestID" value="@ViewBag.WHRequestID" />
         <input type="hidden" id="RequestNumber" value="@ViewBag.RequestNumber" />
+        <input type="hidden" id="RequestState" value="@ViewBag.State" />
         @if (ViewBag.WHRequestID == 0)
         {
-
             <div class="col-sm-6">
                 <table>
                     <tr>
@@ -61,33 +113,55 @@
 
                 <table id="StockItemGrid"></table>
             </div>
+            <div class="col-sm-6">
+                <ul class="nav nav-pills">
+                    <li><button class="btn btn-primary" id="AddStockItem">添加选中项</button></li>
+                    <li><button class="btn btn-primary" id="RemoveStockItem">移除选中项</button></li>
+                    <li><button class="btn btn-primary" id="SaveWHRequest">保存申请单</button> </li>
+                </ul>
+                <table id="WHRequestItemGrid"></table>
+            </div>
         }
         else
         {
-
-            <ul class="nav nav-pills">
-                @if (DeptID == 20)
-                {
-                    <li><button class="btn btn-primary" id="ReceiveItem">仓库发料</button></li>
-                }
-            </ul>
-
+            @*<ul class="nav nav-pills">
+                    @if (DeptID == 20)
+                    {
+                        <li><button class="btn btn-primary" id="ReceiveItem">仓库发料</button></li>
+                    }
+                </ul>*@
+            <table style="width:100%">
+                <tr>
+                    <td>
+                        <table>
+                            <tr>
+                                <td @ApprovalRequestBtnState>
+                                    <input type="button" class="btn btn-success" id="SaveWHRequest" value="保存申请单" />
+                                </td>
+                                <td @ApprovalRequestBtnState>
+                                    <input type="button" class="btn btn-primary" id="ApprovalRequestBtn" value="提交申请单"/>
+                                </td>
+                                <td @ApprovalBtnState>
+                                    <input type="button" class="btn btn-primary" id="ApprovalBtn" value="审批"/>
+                                </td>
+                                <td @RejectBtnState>
+                                    <input type="button" class="btn btn-warning" id="RejectBtn" value="退回"/>
+                                </td>
+                                <td @FinishBtnState>
+                                    <input type="button" class="btn btn-success" id="ReceiveBtn" value="发料"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table id="WHRequestItemGrid"></table>
+                    </td>
+                </tr>
+            </table>
         }
-
-
-        <div class="col-sm-6">
-            @if (ViewBag.WHRequestID == 0)
-            {<ul class="nav nav-pills">
-                        <li><button class="btn btn-primary" id="AddStockItem">添加选中项</button></li>
-                        <li><button class="btn btn-primary" id="RemoveStockItem">移除选中项</button></li>
-                        <li><button class="btn btn-primary" id="SaveWHRequest">保存申请单</button> </li>
-                    </ul>
-            }
-            <table id="WHRequestItemGrid"></table>
-        </div>
     </div>
-
-
 </div>
 
 
@@ -126,6 +200,47 @@
     </div>
 </div>
 
+@*申请单接受/拒绝*@
+<div class="modal" id="WHRequestReviewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title">领料单审批</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <td class="col-sm-2"><label>审批结果</label></td>
+                        <td class="col-sm-4">
+                            <input type="hidden" id="rejectStatus" value="@((int)WarehouseRequestStatus.审核退回)" />
+                            <select class="form-control" id="ReviewResponse">
+                                @{
+                                    int response = (int)WarehouseRequestStatus.待领;
+                                }
+                                <option value="@response">通过</option>
+                                @{
+                                    response = (int)WarehouseRequestStatus.拒绝;
+                                }
+                                <option value="@response">拒绝</option>
+                            </select>
+                        </td>
+                    </tr>
+                    @*<tr>
+                        <td class="col-sm-2"><label>备注</label></td>
+                        <td class="col-sm-4">
+                            <textarea id="ReviewMemo" class="form-control" rows="5" style="resize:none"></textarea>
+                        </td>
+                    </tr>*@
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="WHRequestReviewButton">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/JqGridTemplate.js"></script>
@@ -134,24 +249,14 @@
     $("document").ready(function () {
         @if (ViewBag.WHRequestID == 0)
         {
-
             @:StockItem("","",0,"Multi");
-            @:SetStockItemColumn();
-            @:LoadPurchaseTypes();
+                    @:SetStockItemColumn();
+                    @:LoadPurchaseTypes();
 
         }
-        
 
-        @if (ViewBag.WHRequestID > 0)
-        {
-            @:WHRequestItemGrid(@ViewBag.WHRequestID)
-                    @:ShowHideColumn(@ViewBag.WHRequestID);
-                }
-        else
-        {
-            @:WHRequestItemGrid(@ViewBag.WHRequestID,1)
-            @:ShowHideColumn(@ViewBag.WHRequestID);
-                }
+        WHRequestItemGrid(@ViewBag.WHRequestID);
+        ShowHideColumn(@ViewBag.WHRequestID,@ViewBag.State);
 
         $("#AddStockItem").on("click", function () {
             //var _ids = GetMultiSelectedCell("StockItemGrid", "ID");
@@ -191,7 +296,7 @@
         })
 
         $("#SaveWHRequest").on("click", function () {
-            SaveRequest();
+            SaveRequest('false');
         })
 
         $("#ReceiveItem").on("click", function () {
@@ -209,7 +314,7 @@
 
         $("#RemoveStockItem").on("click", function () {
             var targetGrid = "#StockItemGrid"
-            
+
             var selrows = $('#WHRequestItemGrid').jqGrid('getGridParam', 'selarrrow');
             for (i = 0; i < selrows.length; i++) {
                 var _tempID = Number($("#WHRequestTmpid").val())- 1;
@@ -228,6 +333,7 @@
                     SafeQuantity:rowData.SafeQuantity,
                     PurchaseType:rowData.PurchaseType,
                     StockType:rowData.StockType,
+                    PartID:rowData.PartID,
                 }
                 $(targetGrid).addRowData(_tempID, data, 0, 0);
             }
@@ -243,7 +349,7 @@
             //var _url ="/Warehouse/JsonWarehouseStock?keyword=" + $("#Keyword").val()
             //    + "&MoldNumber=&PurchaseType=" + $("#PurchaseType").val()
             //    +"&Mode=Multi&Exclude="+_exclude;
-            
+
             //console.log(_url);
             //$("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json',url:_url}).trigger("reloadGrid");
         })
@@ -257,17 +363,17 @@
     })
 
     function LoadStocks(Keyword) {
-    //    var _url = "/Warehouse/WHStockList?Keyword=" + Keyword;
-    //    $("#Parts option").remove();
-    //    $.getJSON(_url, function (msg) {
-    //        $.each(msg, function (i, n) {
-    //            $("#Parts").append($("<option/>",
-    //                {
-    //                    text: n.Name,
-    //                    value: n.ID
-    //                }))
-    //        })
-    //    })
+        //    var _url = "/Warehouse/WHStockList?Keyword=" + Keyword;
+        //    $("#Parts option").remove();
+        //    $.getJSON(_url, function (msg) {
+        //        $.each(msg, function (i, n) {
+        //            $("#Parts").append($("<option/>",
+        //                {
+        //                    text: n.Name,
+        //                    value: n.ID
+        //                }))
+        //        })
+        //    })
     }
 
     function LoadItemInfo(ItemIDs) {
@@ -311,6 +417,7 @@
                 SafeQuantity:rowData.SafeQuantity,
                 PurchaseType:rowData.PurchaseType,
                 StockType:rowData.StockType,
+                PartID:rowData.PartID,
             }
             $(targetGrid).addRowData(_tempID, data, 0, 0);
         }
@@ -320,22 +427,22 @@
     function ShowQtyChange(iRow) {
         @if (ViewBag.WHRequestID == 0) {
             @:var _id = $("#WHRequestItemGrid").getCell(iRow, "ID");
-                                    @:var _qty = $("#WHRequestItemGrid").getCell(iRow, "Quantity");
-                                    @:var _url = "/Warehouse/LoadItem?ItemID=" + _id;
-                                    @:$.getJSON(_url, function (msg) {
-                                                @:    $("#ItemID").val(ItemID);
-                                                @:    $("#current").html(msg.Quantity);
-                                                @:    $("#Quantity").val(_qty);
-                                                @:    $("#ItemID").val(msg.Quantity);
-                                                @:    $("#Name").val(msg.Name);
-                                                @:    $("#Specification").val(msg.Specification);
-                                                @:    $("#PartNum").val(msg.PartNum);
-                                    @:})
+                                            @:var _qty = $("#WHRequestItemGrid").getCell(iRow, "Quantity");
+                                            @:var _url = "/Warehouse/LoadItem?ItemID=" + _id;
+                                            @:$.getJSON(_url, function (msg) {
+                                                            @:    $("#ItemID").val(ItemID);
+                                                            @:    $("#current").html(msg.Quantity);
+                                                            @:    $("#Quantity").val(_qty);
+                                                            @:    $("#ItemID").val(msg.Quantity);
+                                                            @:    $("#Name").val(msg.Name);
+                                                            @:    $("#Specification").val(msg.Specification);
+                                                            @:    $("#PartNum").val(msg.PartNum);
+                                                @:})
 
            @:$("#RequestQuantityDialog").modal("show");
-           }
+                   }
 
-        }
+    }
 
     function CheckStock() {
         var _stock = Number($("#current").html());
@@ -347,9 +454,14 @@
         }
     }
 
-    function SaveRequest() {
+    function SaveRequest(isSubmit) {
+        //获取第2行(除表头)第2个单元格(第一个默认隐藏)
+        var firsttdobj= $('#WHRequestItemGrid td:eq(16)');
+        //模拟单元格点击事件
+        firsttdobj.trigger("click");
+
         var sourceGrid = "#WHRequestItemGrid";
-        var itemData = "RequestNumber=" + $("#RequestNumber").val() + "&";
+        var itemData ="WarehouseRequestID=" + $("#WarehouseRequestID").val() + "&RequestNumber=" + $("#RequestNumber").val() + "&";
         var name = "Items";
 
         var _gridRows = $("#WHRequestItemGrid").jqGrid("getDataIDs");
@@ -358,33 +470,38 @@
         }
 
         var obj = $(sourceGrid).jqGrid("getRowData");
-        var i = 0;        
+        var i = 0;
 
         $(obj).each(function () {
             console.log(this);
             itemData = itemData + name + "[" + i + "].PartName=" + this.PartName + "&" +
-                name + "[" + i + "].WarehouseStockID=" + this.ID + "&" +
+                name + "[" + i + "].WarehouseStockID=" + this.WarehouseStockID + "&" +
+                name + "[" + i + "].WarehouseRequestItemID=" + this.WarehouseRequestItemID + "&" +
                 name + "[" + i + "].PartNumber=" + this.PartNumber + "&" +
                 name + "[" + i + "].Specification=" + this.Specification + "&" +
-                name + "[" + i + "].Quantity=" + this.Quantity + "&";
+                name + "[" + i + "].ShortQty=" + this.ShortQty + "&" +
+                name + "[" + i + "].PartID=" + this.PartID + "&" +
+                name + "[" + i + "].Quantity=" + Number(this.Quantity) + "&";
             i = i + 1;
-        })
+        });
+
+        itemData=itemData+'isSubmit='+isSubmit;
+
         $.ajax({
             type: "Post",
             dataType: "html",
             url: "/Warehouse/SaveWHRequest",
             data: itemData,
             error: function () {
-
             },
             success: function (msg) {
-                if (msg == "") {
-                    alert("领料申请单保存成功");
-                    location.href = "/Warehouse/WarehouseRequestList"
+                if (Number(msg)>0 ) {
+                    //alert("领料申请单保存成功");
+                    //location.href = "/Warehouse/WarehouseRequestList"
+                    location.href='/Warehouse/WHRequestDetail?WHRequestID='+msg;
                 } else {
                     alert("保存出错，请重试");
                 }
-
             }
         });
     }
@@ -394,7 +511,7 @@
 
     }
 
-    function ShowHideColumn(RequestID) {
+    function ShowHideColumn(RequestID,State) {
         if (RequestID == 0) {
             $("#WHRequestItemGrid").showHideCol("InStockQuantity");
         } else {
@@ -408,7 +525,12 @@
         {
             $("#WHRequestItemGrid").setGridWidth(document.body.clientWidth * 0.45);
         }
-        
+        if(State==-90 || State==10 ){//审核退回、审核中
+            $("#WHRequestItemGrid").showHideCol("ShortQty");
+        }
+        if(State=-90 || State==0){
+            $("#WHRequestItemGrid").showHideCol("InStockQuantity");
+        }
     }
 
     function SetStockItemColumn(){
@@ -441,10 +563,53 @@
         //for (i = 0;i<selr.length ; i++) {
         //    console.log(selr.length);
         //    $('#StockItemGrid').jqGrid('delRowData',0);
-            
+
         //}
 
     }
 
 </script>
-
+<script>
+    $(document).ready(function(){
+        //提交表单
+        $('#ApprovalRequestBtn').on('click',function(){
+            if(confirm('确认提交申请单？')){
+                SaveRequest('true');
+            }
+        });
+        //审核
+        $('#ApprovalBtn').on('click',function(){
+            $('#WHRequestReviewModal').modal('show');
+        });
+        $('#WHRequestReviewButton').on('click',function(){
+            var arg={whRequestID:$('#WarehouseRequestID').val(),isAllowed:$('#ReviewResponse').val()};
+            $.ajaxSettings.async=false;
+            $.get('/Warehouse/Service_WHRequest_Review',arg,function(res){ 
+                location.href='/Warehouse/WarehouseRequestList';
+                //location.href='/Warehouse/WHRequestDetail?WHRequestID='+$('#WarehouseRequestID').val();
+            })
+        });
+        $('#RejectBtn').on('click',function(res){
+            if(confirm('确认退回？')){
+                var arg={whRequestID:$('#WarehouseRequestID').val(),isAllowed:$('#rejectStatus').val()};
+                $.ajaxSettings.async=false;
+                $.get('/Warehouse/Service_WHRequest_Review',arg,function(res){
+                    SaveRequest('false');
+                    location.href='/Warehouse/WarehouseRequestList';
+                })
+            }
+        });
+        $('#ReceiveBtn').on('click',function(){
+            if(confirm('确认发料？')){
+                $.get('/Warehouse/Service_WHRequest_RecevieItem?whRequestID='+$('#WarehouseRequestID').val(),function(res){
+                    if(res==''){
+                        alert('发料成功！');
+                        location.href='/Warehouse/WarehouseRequestList';
+                    }else{
+                        alert('失败：零件['+res+']库存不足，请退回申请！');
+                    }
+                },'html');
+            }  
+        })
+    })
+</script>

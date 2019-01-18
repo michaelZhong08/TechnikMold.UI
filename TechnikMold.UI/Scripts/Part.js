@@ -611,10 +611,7 @@ function LoadMoldList(Keyword, MoldNumber) {
     if (Keyword != undefined) {
         _url = _url + "?Keyword=" + Keyword;
     }
-
-
     $("#MoldSelect option").remove();
-
 
     $.getJSON(_url, function (msg) {
         $.each(msg, function (i, n) {

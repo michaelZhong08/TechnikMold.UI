@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using TechnikSys.MoldManager.Domain.Entity;
 using MoldManager.WebUI.Models.GridRowModel;
-
+using TechnikSys.MoldManager.Domain.Abstract;
 
 namespace MoldManager.WebUI.Models.GridViewModel
 {
@@ -15,11 +15,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Total;
         public int Records;
 
-        public WHRequestItemGridViewModel(IEnumerable<WarehouseRequestItem> Items)
+        public WHRequestItemGridViewModel(IEnumerable<WarehouseRequestItem> Items,IWHStockRepository WHStockRepo)
         {
             foreach (WarehouseRequestItem _item in Items)
             {
-                rows.Add(new WHRequestItemGridRowModel(_item));
+                WHStock _stockItem = WHStockRepo.GetStockByPartNum(_item.PartNumber, _item.PartID);
+                rows.Add(new WHRequestItemGridRowModel(_item, _stockItem));
             }
         }
     }

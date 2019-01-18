@@ -29,12 +29,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 _dbentry.Dep = model.Dep;
                 _dbentry.Cost = model.Cost;
                 _dbentry.Enabled = true;
+                _dbentry.ContainEmp = model.ContainEmp;
                 _context.WH_TaskPeriodType.Add(_dbentry);
             }
             else
             {
                 _dbentry.Dep = model.Dep;
                 _dbentry.Cost = model.Cost;
+                _dbentry.ContainEmp = model.ContainEmp;
                 _dbentry.Enabled = model.Enabled;
             }
             _context.SaveChanges();

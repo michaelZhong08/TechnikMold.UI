@@ -6,17 +6,26 @@
         var YJHEditedCellList=[];
     </script>
 }
+@section Header{
+    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
+    <link rel="stylesheet" href="~/Content/datepicker.css" />
+    <script src="~/Scripts/bootstrap-switch.js"></script>
+    <script src="~/Scripts/bootstrap-datepicker.js"></script>
+}
 @{
     int DeptID;
     int PosID;
+    string DepName;
     //string UserName;
     try
     {
         DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+        DepName = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]);
     }
     catch
     {
         DeptID = 0;
+        DepName = "";
     }
 
     try
@@ -25,7 +34,7 @@
     }
     catch
     {
-        
+
     }
 }
 <style>
@@ -79,32 +88,46 @@
 
 <div style="margin-top:60px">
     <div class="col-sm-12">
-        @*<button style="position:absolute;top:0;bottom:0px;"></button>*@
-        @*<table style="padding:0px;margin:0px;height:30px;font-size:5px;"><tr><td style="padding:0px;"><label style="margin:0px;">1</label></td></tr><tr><td style="padding:0px;"><label style="margin:0px;">2</label></td></tr><tr><td style="padding:0px;"><label style="margin:0px;">3</label></td></tr></table>*@
-        @*<label style="margin:0px;font-size:5px;">4</label>
-        <label style="margin:0px;font-size:5px;">5</label><br />
-        <label style="margin:0px;font-size:5px;">6</label><br />*@
-        @*<button id='123' class='attachbtn btn btn-success' style='width: 100px; height: 24px; text-align:center;padding:0px; margin:0px;' onclick='ShowProjectFile()'><span class='glyphicon glyphicon-paperclip'></span>  附件(5)</button>*@
         <table>
             <tr>
                 <td>
-                    <ul class="nav nav-pills">
-                        @if (DeptID == 2)
-            {
-                            <li><button class="btn btn-success" id="CreateProject"><span class="glyphicon glyphicon-plus-sign"></span> 创建项目</button></li>
-                        }
-                        <li style="float: right;"><button class="btn btn-primary" id="YJHCellSave" disabled><span class="glyphicon glyphicon-pencil"></span> 保存计划 </button></li>
-                        <li><button class="btn btn-default" id="SearchProject"><span class="glyphicon glyphicon-search"></span> 查找项目</button></li>
-
-                        @if (ViewBag.Type == 1)
-            {
-                            <li><button class="btn btn-default" id="FixMoldProject"><span class="glyphicon glyphicon-wrench"></span> 修模项目 </button></li>
-                        }
-                        else if (ViewBag.Type == 2)
-                        {
-                            <li><button class="btn btn-default" id="MoldProject"><span class="glyphicon glyphicon-tower"></span> 新模项目 </button></li>
-                        }
-                    </ul>
+                    <table>
+                        <tr>
+                            <td>
+                                <div class="switch">
+                                    <input type="hidden" id="ProjectState" value="false"/>
+                                    <input id="ProjectStateSwitch" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" />
+                                </div>
+                            </td>
+                            <td class="td_CreateProject">
+                                <button class="btn btn-success" id="CreateProject" hidden><span class="glyphicon glyphicon-plus-sign"></span> 创建主项目</button>
+                            </td>
+                            <td class="td_SaveProjectDate">
+                                <button class="btn btn-primary" id="YJHCellSave" disabled><span class="glyphicon glyphicon-pencil"></span> 保存计划 </button>
+                            </td>
+                            @*<td>
+                                <button class="btn btn-default" id="SearchProject"><span class="glyphicon glyphicon-search"></span> 查找项目</button>
+                            </td>*@
+                            @if (ViewBag.Type == 1)
+                            {
+                                <td>
+                                    <button class="btn btn-default" id="FixMoldProject"><span class="glyphicon glyphicon-wrench"></span> 修模项目 </button>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    <button class="btn btn-default" id="MoldProject"><span class="glyphicon glyphicon-tower"></span> 新模项目 </button>
+                                </td>
+                            }
+                            <td>
+                                <input type="text" class="form-control" id="keyword" placeholder="项目号/模具号"/>
+                            </td>
+                            <td>
+                                <button type="button" id="ProjectSearchBtn" class="btn btn-default">查询</button>
+                            </td>
+                        </tr>
+                    </table>
                     <table id="ProjectGrid"></table>
                     <div id="jqGridPager"></div>
                     <input id="_oldPhaseID" hidden />
@@ -112,18 +135,24 @@
                 </td>
             </tr>
         </table>
-        
     </div>
 </div>
 
 @*右键菜单*@
 <div class="contextMenu dropdown" id="ProjectContextMenu" style="display:none">
     <ul style="width:200px">
-        @if (DeptID == 2)//Management Department User only
+        @if (DepName == "CAD" || DepName == "项目")//Management Department User only
         {
-            <li id="AddProject">
+            if (ViewBag.Type == 1)
+            {
+                <li id="AddProject">
+                    <img src="~/Images/EditProject.png" />
+                    <span style="font-size:12px; font-family:Verdana">新模具项目</span>
+                </li>
+            }
+            <li id="MoldFixProject">
                 <img src="~/Images/EditProject.png" />
-                <span style="font-size:12px; font-family:Verdana">新模具项目</span>
+                <span style="font-size:12px; font-family:Verdana">新修模项目</span>
             </li>
             <li id="EditProject">
                 <img src="~/Images/EditProject.png" />
@@ -133,13 +162,16 @@
                 <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">启动/暂停项目</span>
             </li>
-            
+            <li id="CloseProject">
+                <img src="~/Images/EditProject.png" />
+                <span style="font-size:12px; font-family:Verdana">项目完成</span>
+            </li>
             <li id="DeleteProject">
                 <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">删除项目</span>
             </li>
         }
-        @if (DeptID == 1)
+        @if (DepName == "管理")
         {
             <li id="EditProject">
                 <img src="~/Images/EditProject.png" />
@@ -150,14 +182,20 @@
                 <span style="font-size:12px; font-family:Verdana">删除项目</span>
             </li>
         }
-        @if (DeptID == 3)
+        @if (DepName == "CAM")
         {
             <li id="MoldFixProject">
                 <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">新修模项目</span>
             </li>
+            if (ViewBag.Type == 2)
+            {
+                <li id="DeleteProject">
+                    <img src="~/Images/EditProject.png" />
+                    <span style="font-size:12px; font-family:Verdana">删除项目</span>
+                </li>
+            }
         }
-                 
         <li id="AddMemo">
             <img src="~/Images/memo.png" />
             <span style="font-size:12px; font-family:Verdana">修改备注</span>
@@ -224,14 +262,14 @@
                         }
                         <tr>
                             <td class="col-sm-4"><label>原计划完成日期</label></td>
-                            <td class="col-sm-8"><input type="date" id="PlanFinish" name="PlanFinish" class="form-control"  readonly/></td>
+                            <td class="col-sm-8"><input type="date" id="PlanFinish" name="PlanFinish" class="form-control" readonly /></td>
                         </tr>
                         <tr>
                             <td class="col-sm-4"><label>调整后完成日期</label></td>
                             <td class="col-sm-8">
                                 <input type="date" id="PlanCFinish" name="PlanCFinish" class="form-control required" />
                             </td>
-                        </tr>                       
+                        </tr>
                         <tr>
                             <td class="col-sm-4"><label>调整原因</label></td>
                             <td class="col-sm-8">
@@ -250,7 +288,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SavePhaseModify" class="btn btn-primary">保存</button>
-                
+
             </div>
         </div>
     </div>
@@ -345,17 +383,17 @@
                     <tr>
                         <td class="col-sm-2"><label>项目号/模具号关键字</label></td>
                         <td class="col-sm-4">
-                            <input type="text" class="form-control" id="keyword" />
+                            @*<input type="text" class="form-control" id="keyword" />*@
                             <input type="hidden" id="state" value="@ViewBag.State" />
-                            <input type="hidden" id="Type" value="@ViewBag.Type"/>
+                            <input type="hidden" id="Type" value="@ViewBag.Type" />
                         </td>
-                        
+
                     </tr>
                 </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="ProjectSearchBtn" class="btn btn-primary">查询</button>
+                @*<button type="button" id="ProjectSearchBtn" class="btn btn-primary">查询</button>*@
             </div>
         </div>
     </div>
@@ -370,11 +408,12 @@
                 <h4 class="modal-title" id="ProjectFileLabel">项目文件</h4>
             </div>
             <div class="modal-body">
-                <form id="modal_ProJAttachForm" name="modal_ProJAttachForm" method="post" enctype="multipart/form-data">
+                <form id="modal_ProJAttachForm" method="post" enctype="multipart/form-data">
                     <div id="modal_fileInputGroup" class="input-group">
-                        <input id="ObjID" name="ObjID" hidden/>
-                        <input id="ObjType" name="ObjType" value="Projects" hidden/>
-                        <input id="Files" name="Files" type="file"  class="form-control" placeholder="选择文件..." multiple="multiple" >
+                        <input id="ObjID" name="ObjID" hidden />
+                        <input id="ObjType" name="ObjType" value="Projects" hidden />
+                        <input id="FolderName" name="FolderName" hidden />
+                        <input id="Files" name="Files" type="file" class="form-control" placeholder="选择文件..." multiple="multiple">
                         <span class="input-group-btn">
                             <button id="modal_ProJAttachSubmitbtn" class="btn btn-warning" type="button" style="width: 72px;"><span class="glyphicon glyphicon-upload"></span> 提交</button>
                         </span>
@@ -409,17 +448,17 @@
 </div>
 
 @*阶段任务显示*@
-<div class="modal"  data-backdrop="static" data-keyboard="false" id="PhaseTaskDialog" tabindex="-1" role="dialog" aria-labelledby="PhaseTaskLabel" aria-hidden="true">
+<div class="modal" data-backdrop="static" data-keyboard="false" id="PhaseTaskDialog" tabindex="-1" role="dialog" aria-labelledby="PhaseTaskLabel" aria-hidden="true">
     <div class="modal-dialog" style="width:800px;">
         <div class="modal-content">
             @*<div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="PhaseTaskLabel">加工任务</h4>
-            </div>*@
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h4 class="modal-title" id="PhaseTaskLabel">加工任务</h4>
+                </div>*@
             <div class="modal-body">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                 <ul id="PhaseTaskmodal_tabs" class="nav nav-tabs"></ul>
-                
+
                 <select id="MoldNumber" class="form-control"></select>
 
                 <input type="hidden" id="TaskType" />
@@ -456,8 +495,8 @@
         @if (ViewBag.Type == 1)
         {
             @:$("#ProjectGrid").setGridParam().showHideCol("ProjectNo");
-            @:$("#ProjectGrid").setGridParam().setLabel('FOT', 'FOT','','');
-        }
+                    @:$("#ProjectGrid").setGridParam().setLabel('FOT', 'FOT','','');
+                }
 
         $("#ProjectGrid").setGridWidth(document.body.clientWidth*0.98);
 
@@ -467,31 +506,31 @@
                 @if (ViewBag.Type == 1)
                 {
                 @:if ($("#PlanCFinish").val() != $("#PlanFinish").val()) {
-                                    @:if ($("#PlanCFinish").hasClass("invalidefield")) {
-                                        @:    alert("模具项目阶段完成时间不能晚于主项目");
-                                        @:}
-                                        @:else {
-                                        @:    $("#PhaseModify").submit();
-                                        @:}
-                                    @:} else {
-                                    @:    alert("调整后完成日期和原计划完成日期不能相同");
-                                    @:}
-                                }
+                                                        @:if ($("#PlanCFinish").hasClass("invalidefield")) {
+                                                                @:    alert("模具项目阶段完成时间不能晚于主项目");
+                                                                @:}
+                                                                @:else {
+                                                                @:    $("#PhaseModify").submit();
+                                                                @:}
+                                                        @:} else {
+                                                        @:    alert("调整后完成日期和原计划完成日期不能相同");
+                                                        @:}
+                                                }
                 else if (ViewBag.Type == 2)
                 {
                 @:var _url = "/Project/CheckFixMoldPhase?ProjectID="+$("#ProjectID").val()+"&PhaseID="+$("#PhaseID").val()+"&PlanCFinish="+$("#PlanCFinish").val();
-                                @:$.ajax({
-                                    @:  url:_url,
-                                    @:  type:"Get",
-                                    @:  success:function(msg){
-                                        @:    if (msg==""){
-                                            @:      $("#PhaseModify").submit();
-                                            @:    }else{
-                                            @:      alert(msg);
-                                            @:  }
-                                        @:  }
-                                    @:})
-                                }
+                                                @:$.ajax({
+                                                        @:  url:_url,
+                                                        @:  type:"Get",
+                                                        @:  success:function(msg){
+                                                                @:    if (msg==""){
+                                                                        @:      $("#PhaseModify").submit();
+                                                                        @:    }else{
+                                                                        @:      alert(msg);
+                                                                        @:  }
+                                                                @:  }
+                                                        @:})
+                                                }
             }
         });
         $('#MoldNumber').on('change',function(){
@@ -561,7 +600,7 @@
             }
             else//无模具项目
                 return;
-        })
+        });
         $.get('/Project/Service_GetTaskTypeByPhaseID?phaseid='+phaseid,function(res){
             if(res.length>0){
                 isOpen=true;
@@ -602,7 +641,7 @@
                     }
                 }
             })
-        })
+        });
     }
     //tab按钮点击
     function PhaseTaskmodal_tabs_Click(e){
@@ -616,7 +655,7 @@
             $('#PhaseTaskmodal_tabs li.tasktype.active').removeClass('active');
             $(e).attr('class', 'tasktype active');
         }
-        ////调整状态
+            ////调整状态
         else{
             _tasktype=$("#TaskType").val();
             if(e.id=='PhaseTaskmodal_pills_now'){
@@ -659,7 +698,7 @@
             $("#TaskGrid").setGridParam().showHideCol("Memo");
 
             $("#TaskGrid").setGridParam().showHideCol("Time");
-            $("#TaskGrid").setGridParam().showHideCol("Priority");            
+            $("#TaskGrid").setGridParam().showHideCol("Priority");
             $("#TaskGrid").setGridParam().showHideCol("StateMemo");
             $("#TaskGrid").setGridParam().showHideCol("State");
             $("#TaskGrid").setGridParam().showHideCol("CreateTime");
@@ -716,7 +755,7 @@
             }
             ///////
         }
-        ////采购阶段
+            ////采购阶段
         else{
             $('#gbox_TaskGrid').hide();
             $('#gbox_PurchaseItemGrid').show();
@@ -782,30 +821,33 @@
         })
 
         $('#modal_close_ProJFiles').on('click',function(){
-            ReloadProJGrid();
+            ReloadProJGrid($('#ProjectState').val());
         })
 
         $('#ProjectFileDialog').on('show.bs.modal',function() {
             $('#Files').val("");
-            var _depList=[1,2,3,21,23];
-            if(@DeptID in _depList){
+            var _depList='管理,CAD,CAM,项目';
+            if(_depList.indexOf('@DepName')>=0){
                 $('#modal_fileInputGroup').show();
             }else{
                 $('#modal_fileInputGroup').hide();
             }
-        })   
-        
+        })
     })
     function ShowProjectFile(ProjectID) {
         $("#ObjID").val(ProjectID);
         $("#FileProjectID").val(ProjectID);
+        $.ajaxSettings.async=false;
+        $.get('/Project/Service_ProJ_GetByID?proJectID='+ProjectID,function(res){
+            $('#FolderName').val(res.ProjectNumber+'('+res.MoldNumber+')');
+        });
         $("#ProjectFileDialog").modal("show");
         ReloadFileGrid(ProjectID);
     }
     //重载列表
     function ReloadFileGrid(ProjectID){
         var _url = "/Attachment/Service_GetFilesByObj?ObjID=" + ProjectID +"&ObjType=Projects";
-        $("#modal_tb_ProJFiles").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");        
+        $("#modal_tb_ProJFiles").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
     }
     function DeleteAttach(ObjID,ObjType,FileName,FileType){
         $.ajaxSettings.async = false;//同步请求
@@ -815,15 +857,59 @@
                 return false;
             }
             else
-                ReloadFileGrid(ObjID);           
+                ReloadFileGrid(ObjID);
         })
     }
-    function ReloadProJGrid(){
-        var _url = "/Project/JsonProjects?keyword=" + "@ViewBag.Keyword" + "&State=" + @ViewBag.State + "&Type=" + @ViewBag.Type + "&DepID=" + @DeptID;
+    function ReloadProJGrid(isDepFinished){
+        if(isDepFinished==undefined){
+            isDepFinished='false';
+        }
+        var _url = '/Project/JsonProjects?keyword=' + $("#keyword").val() + "&state=" + $("#state").val() + "&type=" + $("#Type").val() + "&DepID=" + @DeptID+"&isDepFinish="+isDepFinished;
         $("#ProjectGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
     }
     function DownloadAttach(ObjID,ObjType,FileName,FileType){
         $.ajaxSettings.async = false;//同步请求
         $.get('/Attachment/Service_FileDownLoad?ObjID='+ObjID+'&ObjType='+ObjType+'&FileName='+FileName+'&FileType='+FileType)
     }
+</script>
+
+<script>
+    $(document).ready(function(){
+        if(sessionStorage['SpecKey']=='hr'){
+            if('@DepName'=='项目' || '@DepName'=='管理'){
+                $('.td_CreateProject').show();
+            }else{
+                $('.td_CreateProject').hide();
+            }
+        }else if(sessionStorage['SpecKey']=='sinno'){
+            if('@DepName'=='CAD'|| '@DepName'=='管理'){
+                $('.td_CreateProject').show();
+            }else{
+                $('.td_CreateProject').hide();
+            }
+        }
+        if('@DepName'=='CAD' ||'@DepName'=='项目' || '@DepName'=='管理' ||'@DepName'=='CAM'){
+            $('.td_SaveProjectDate').show();
+        }else{
+            $('.td_SaveProjectDate').hide();
+        }
+
+        $('#ProjectStateSwitch').bootstrapSwitch({
+            size:'large',
+            state:true,
+            onText: '当前项目',
+            offText: '历史项目',
+            onSwitchChange:function(event,state){switchChange(event,state)},
+        });
+        //$('#ProjectStateSwitch').bootstrapSwitch('state',true);
+        function switchChange(event,state){
+            if(state){
+                $('#ProjectState').val('false');
+                ReloadProJGrid('false');//当前
+            }else{
+                $('#ProjectState').val('true');
+                ReloadProJGrid('true');//历史
+            }
+        }
+    })
 </script>

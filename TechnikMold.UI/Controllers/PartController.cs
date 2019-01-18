@@ -112,7 +112,7 @@ namespace MoldManager.WebUI.Controllers
                         version = "00" + partlistNow.Version.ToString();
                     }
                     version = version.Substring(version.Count() - 2, 2);
-                    Part.Memo = Part.Memo + "  Bom版本 V" + version + " 创建";
+                    Part.Memo = Part.Memo;//+ "  Bom:V" + version;
                 }
                 Part.PartListID = partlistNow.PartListID;
                 if (Part.MaterialID == 0)
@@ -563,6 +563,16 @@ namespace MoldManager.WebUI.Controllers
             }
             return Json(_moldNumbers, JsonRequestBehavior.AllowGet);
         }
+        public ActionResult Service_Get_MoldNumList()
+        {
+            List<string> molds = new List<string>();
+            IEnumerable<string> _moldNumbers1 = _partListRepository.PartLists.Where(p => p.Enabled == true).Select(p => p.MoldNumber).Distinct();
+            IEnumerable<string> _moldNumbers2 = _projectRepository.Projects.Where(p => p.Enabled == true && p.MoldNumber!="---").Select(p => p.MoldNumber).Distinct();
+            molds.AddRange(_moldNumbers1);
+            molds.AddRange(_moldNumbers2);
+            molds=molds.Distinct().ToList();
+            return Json(molds, JsonRequestBehavior.AllowGet);
+        }
         #endregion
         public ActionResult Test()
         {
@@ -778,7 +788,15 @@ namespace MoldManager.WebUI.Controllers
                             }
                         }
                         _part_db.Hardness = _part.Hardness == null ? "" : _part.Hardness;
-                        _part_db.BrandName = _part.BrandName == null ? "" : _part.BrandName;
+                        Brand _brand = _brandRepository.Brands.Where(b=>b.Name==_part.BrandName && b.Enabled==true).FirstOrDefault();
+                        if (_brand != null)
+                        {
+                            _part_db.BrandName = _brand.Name;
+                        }
+                        else
+                        {
+                            _part_db.BrandName = "";
+                        }       
                         _part_db.CatalogSpec = _part.CatalogSpec == null ? "" : _part.CatalogSpec;
                         _part_db.DrawingPath = _part.DrawingPath == null ? "" : _part.DrawingPath;
                         _part_db.ModelPath = _part.ModelPath == null ? "" : _part.ModelPath;
@@ -1646,6 +1664,8 @@ namespace MoldManager.WebUI.Controllers
                 throw ex;
             }
             #region 读取Excel文件数据 检查正确 存到数据库
+            string msg_brand = "";
+            string msg_material = "";
             try
             {
                 #region 普通Sheet
@@ -1719,9 +1739,19 @@ namespace MoldManager.WebUI.Controllers
                         return new ResponseInfo { Status = -2, Message = string.Format("Sheet{0}: 行{1}短零件规格不能为空,请重新导入！", "0", Sheet0_Index.ToString()), Data = new List<Part>() };
                     //材料
                     ICell cell_MaterialName = row_Content.GetCell(6);
-                    _entity.MaterialName = GetCellValue(cell_MaterialName);
-                    Material _material = _materialRepository.QueryByName(_entity.MaterialName).FirstOrDefault() ?? new Material();
-                    _entity.MaterialID = _material.MaterialID;
+                    Material _material = _materialRepository.QueryByName(GetCellValue(cell_MaterialName)).FirstOrDefault() ?? new Material();
+                    if (_material.MaterialID > 0)
+                    {
+                        _entity.MaterialID = _material.MaterialID;
+                        _entity.MaterialName = _material.Name;
+                    }
+                    else
+                    {
+                        _entity.MaterialID = 0;
+                        _entity.MaterialName = "";
+                        msg_material = msg_material + _entity.PartNumber + ";";
+
+                    }
                     //数量  非Null
                     ICell cell_Qty = row_Content.GetCell(7);
                     _entity.Quantity = GetCellValue(cell_Qty) == null ? 0 : Convert.ToInt32(GetCellValue(cell_Qty));
@@ -1732,7 +1762,16 @@ namespace MoldManager.WebUI.Controllers
                     _entity.Hardness = GetCellValue(cell_HardnessName);
                     //品牌
                     ICell cell_BrandName = row_Content.GetCell(9);
-                    _entity.BrandName = GetCellValue(cell_BrandName);
+                    Brand _brand = _brandRepository.Brands.ToList().Where(b => b.Name == GetCellValue(cell_BrandName) && b.Enabled == true).FirstOrDefault();
+                    if (_brand == null)
+                    {
+                        msg_brand = msg_brand + _entity.PartNumber + ";";
+                        _entity.BrandName = "";
+                    }
+                    else
+                    {
+                        _entity.BrandName = _brand.Name;
+                    }
                     //零件号  非Null
                     ICell cell_JobNo = row_Content.GetCell(10);
                     _entity.JobNo = GetCellValue(cell_JobNo);
@@ -1808,9 +1847,19 @@ namespace MoldManager.WebUI.Controllers
                         return new ResponseInfo { Status = -2, Message = string.Format("Sheet{0}: 行{1}短零件规格不能为空,请重新导入！", "1", Sheet1_Index.ToString()), Data = new List<Part>() };
                     //材料
                     ICell cell_MaterialName = row_Content.GetCell(6);
-                    _entity.MaterialName = GetCellValue(cell_MaterialName);
-                    Material _material = _materialRepository.QueryByName(_entity.MaterialName).FirstOrDefault() ?? new Material();
-                    _entity.MaterialID = _material.MaterialID;
+                    Material _material = _materialRepository.QueryByName(GetCellValue(cell_MaterialName)).FirstOrDefault() ?? new Material();
+                    if (_material.MaterialID > 0)
+                    {
+                        _entity.MaterialID = _material.MaterialID;
+                        _entity.MaterialName = _material.Name;
+                    }
+                    else
+                    {
+                        _entity.MaterialID = 0;
+                        _entity.MaterialName = "";
+                        msg_material = msg_material  + _entity.PartNumber + ";";
+
+                    }
                     //数量  非Null
                     ICell cell_Qty = row_Content.GetCell(7);
                     _entity.Quantity = GetCellValue(cell_Qty) == null ? 0 : Convert.ToInt32(GetCellValue(cell_Qty));
@@ -1821,7 +1870,16 @@ namespace MoldManager.WebUI.Controllers
                     _entity.Hardness = GetCellValue(cell_HardnessName);
                     //品牌
                     ICell cell_BrandName = row_Content.GetCell(9);
-                    _entity.BrandName = GetCellValue(cell_BrandName);
+                    Brand _brand = _brandRepository.Brands.ToList().Where(b => b.Name == GetCellValue(cell_BrandName) && b.Enabled == true).FirstOrDefault();
+                    if (_brand == null)
+                    {
+                        msg_brand = msg_brand  + _entity.PartNumber + ";";
+                        _entity.BrandName = "";
+                    }
+                    else
+                    {
+                        _entity.BrandName = _brand.Name;
+                    }
                     //零件号  非Null
                     ICell cell_JobNo = row_Content.GetCell(10);
                     _entity.JobNo = GetCellValue(cell_JobNo);
@@ -1856,15 +1914,23 @@ namespace MoldManager.WebUI.Controllers
                     Sheet1_ContentRowNow = Sheet1_ContentRowNow + 1;
                     Sheet1_ShortName = GetCellValue(sheet1.GetRow(Sheet1_ContentRowNow).GetCell(1));
                 }
-
                 #endregion
 
                 #endregion
                 if((Sheet0_Index + Sheet1_Index) > 0)
                 {
-                    return new ResponseInfo { Status = 1, Message = string.Format("全部{0}行 导入成功！", (Sheet0_Index + Sheet1_Index).ToString()), Data = _parts };
+                    string msg = string.Format("全部{0}行 导入成功！", (Sheet0_Index + Sheet1_Index).ToString());
+                    if (!string.IsNullOrEmpty(msg_material))
+                    {
+                        msg = msg + "\n材料名不存在零件列表:" + msg_material;
+                    }
+                    if (!string.IsNullOrEmpty(msg_brand))
+                    {
+                        msg = msg + "\n品牌名不存在零件列表:" + msg_brand;
+                    }
+                    return new ResponseInfo { Status = 1, Message = msg, Data = _parts };
                 }
-                return new ResponseInfo { Status = -100, Message = string.Format("未能获取Excel数据，请检查是否存在零件名！"), Data = _parts };
+                return new ResponseInfo { Status = -100, Message = string.Format("未能获取Excel数据，请检查零件名是否存在！"), Data = _parts };
             }
             catch (Exception ex)
             {
@@ -1958,6 +2024,7 @@ namespace MoldManager.WebUI.Controllers
                         Part _item = new Part()
                         {
                             PartID = p.PartID,
+                            ShortName=p.ShortName,
                             Name = p.Name,
                             PartNumber = p.PartNumber,
                             Specification = p.Specification,
@@ -2010,6 +2077,7 @@ namespace MoldManager.WebUI.Controllers
                         Part _item = new Part()
                         {
                             PartID = 0,
+                            ShortName=w.PartName,
                             Name = w.PartName,
                             PartNumber = w.PartNum,
                             Specification = w.Specification,
@@ -2062,6 +2130,7 @@ namespace MoldManager.WebUI.Controllers
                         Part _item = new Part()
                         {
                             PartID = p.PartID,
+                            ShortName = p.ShortName,
                             Name = p.Name,
                             PartNumber = p.PartNumber,
                             Specification = p.Specification,
@@ -2114,6 +2183,7 @@ namespace MoldManager.WebUI.Controllers
                         Part _item = new Part()
                         {
                             PartID = 0,
+                            ShortName = w.PartName,
                             Name = w.PartName,
                             PartNumber = w.PartNum,
                             Specification = w.Specification,
@@ -2171,6 +2241,18 @@ namespace MoldManager.WebUI.Controllers
                 return ex.Message;
             }
 
+        }
+        public JsonResult Service_Part_GetByPartNum(string _partNum)
+        {
+            Part _part = (_partRepository.Parts.Where(p => p.Enabled && p.Latest == true && p.PartNumber == _partNum).FirstOrDefault() ?? new Part());
+            return Json(_part, JsonRequestBehavior.AllowGet);
+        }
+        public JsonResult Service_Part_GetJobNo(string MoldNum)
+        {
+            List<string> JobNoList = _partRepository.Parts
+                .Where(p=>p.Enabled==true && p.Latest==true)
+                .Where(p=>p.Name.Contains(MoldNum)).Select(p=>p.JobNo).Distinct().ToList();
+            return Json(JobNoList,JsonRequestBehavior.AllowGet);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace TechnikSys.MoldManager.NX.CAM
         {
             string _url = "/Task/GetSetting?Name=STEELPATH";
             string _path = _server.ReceiveStream(_url);
-            return _path;
+            return _path.Trim();
         }
 
 
@@ -68,12 +68,12 @@ namespace TechnikSys.MoldManager.NX.CAM
         /// <param name="UpdateProgram"></param>
         /// <returns></returns>
         public  int SaveSteelDrawing(string FullPartName, string DrawName, int Version,
-            string CADPartName, string MoldName, string Programmer, bool UpdateProgram, ref int ID)
+            string CADPartName, string MoldName, string Programmer, bool UpdateProgram,double Time, ref int ID)
         {
             DrawName = DrawName.Replace("+", "%2B");
             string _url = "/Task/UpdateSteelDrawing?FullPartName=" + FullPartName + "&DrawName=" + DrawName
                 +"&Version="+Version+"&CADPartName="+CADPartName+"&MoldName="+MoldName+"&Programmer="+Programmer
-                +"&UpdateProgram="+UpdateProgram;
+                +"&UpdateProgram="+UpdateProgram+ "&Time="+ Time;
             string _result = _server.ReceiveStream(_url);
 
             string[] _content = _result.Split(',');

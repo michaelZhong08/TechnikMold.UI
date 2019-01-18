@@ -33,12 +33,12 @@ namespace TechnikMold.UI.Controllers
         /// <param name="Files">文件流</param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult Service_FileUpload(string ObjID,string ObjType, IEnumerable<HttpPostedFileBase> Files)
+        public JsonResult Service_FileUpload(string ObjID,string ObjType,string FolderName, IEnumerable<HttpPostedFileBase> Files)
         {
             try
             {
                 #region 创建文件夹
-                string filePath = Server.MapPath(string.Format("~/{0}/{1}/{2}", "Upload", ObjType, ObjID));
+                string filePath = Server.MapPath(string.Format("~/{0}/{1}/{2}", "Upload", ObjType, FolderName));
                 if (!Directory.Exists(filePath))
                 {
                     Directory.CreateDirectory(filePath);
@@ -53,6 +53,11 @@ namespace TechnikMold.UI.Controllers
                     //    return Json(new { Code = -99, Message = "Error:文件名包含特殊字符(如:'+')" }, JsonRequestBehavior.AllowGet);
                     //}
                     string ImportFilePath = Path.Combine(filePath, _file.FileName);
+                    if (System.IO.File.Exists(ImportFilePath))
+                    {
+                        ImportFilePath= Path.Combine(filePath, _file.FileName.Substring(0, _file.FileName.LastIndexOf('.')) + "(" + DateTime.Now.ToString("yyMMddHHmmss") + ")" +_file.FileName.Substring(_file.FileName.LastIndexOf('.'), _file.FileName.Length- _file.FileName.LastIndexOf('.')));
+                        fileName = fileName + "(" + DateTime.Now.ToString("yyMMddHHmmss") + ")";
+                    }
                     _file.SaveAs(ImportFilePath);
                     #endregion
                     #region 文件转成流并格式化
@@ -80,7 +85,7 @@ namespace TechnikMold.UI.Controllers
                     af.ObjID = ObjID;
                     af.ObjType = ObjType;
                     af.FileSize = Math.Round(Convert.ToDouble(btye1.Length * 1.0 / (1024 * 1024)),2);
-                    af.FilePath = @"\Upload\"+ ObjType +@"\"+ ObjID+ @"\";
+                    af.FilePath = @"\Upload\"+ ObjType +@"\"+ FolderName + @"\";
                     _attachFileInfoRepository.Save(af);
                     #endregion
                 }
@@ -146,7 +151,7 @@ namespace TechnikMold.UI.Controllers
         /// <param name="Files">文件名 零件号(模具号-图纸号)-xxx(任意)</param>
         /// <returns></returns>
         [HttpPost]
-        public JsonResult Service_PurchaseItemFileUpload(string _itemIDs, IEnumerable<HttpPostedFileBase> Files,int purFileModal= 1)
+        public JsonResult Service_PurchaseItemFileUpload(string FolderName, string _itemIDs, IEnumerable<HttpPostedFileBase> Files,int purFileModal= 1)
         {
             var _itemIDList = _itemIDs.Split(',');
             List<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems.Where(p => _itemIDList.Contains(p.PurchaseItemID.ToString())).ToList();
@@ -163,7 +168,7 @@ namespace TechnikMold.UI.Controllers
                     #region 附件传递模式
                     if (purFileModal==1)//单附件模式
                     {
-                        var res = Service_FileUpload(ObjID, ObjType, Files);
+                        var res = Service_FileUpload(ObjID, ObjType, FolderName, Files);
                         foreach (var p in _items)
                         {
                             p.AttachObjID = ObjID;
@@ -174,11 +179,10 @@ namespace TechnikMold.UI.Controllers
                     {
                         foreach (var p in _items)
                         {
-                            if (_file.FileName.Contains(p.PartNumber))
+                            var partNum = p.PartNumber.Split('-');
+                            if (_file.FileName.Contains(partNum[0]) && _file.FileName.Contains(partNum[1]))
                             {
-                                //List<HttpPostedFileBase> Files1 = new List<HttpPostedFileBase>();
-                                //Files1.Add(_file);
-                                var res = Service_FileUpload(ObjID, ObjType, Files);
+                                var res = Service_FileUpload(ObjID, ObjType, FolderName, Files);
                                 p.AttachObjID = ObjID;
                                 _purchaseItemRepository.Save(p);
                             }
@@ -205,11 +209,12 @@ namespace TechnikMold.UI.Controllers
                         ObjID = GetTimeStamp(DateTime.Now) + Math.Round(Convert.ToDouble(fs.Length), 8).ToString();
                         foreach (var p in _items)
                         {
-                            if (_file.FileName.Contains(p.PartNumber))
+                            var partNum = p.PartNumber.Split('-');
+                            if (_file.FileName.Contains(partNum[0]) && _file.FileName.Contains(partNum[1]))
                             {
                                 List<HttpPostedFileBase> Files1 = new List<HttpPostedFileBase>();
                                 Files1.Add(_file);
-                                var res = Service_FileUpload(ObjID, ObjType, Files1);
+                                var res = Service_FileUpload(ObjID, ObjType, FolderName, Files1);
                                 p.AttachObjID = ObjID;
                                 _purchaseItemRepository.Save(p);
                             }

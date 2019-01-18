@@ -397,7 +397,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             return _returnTask;
         }
 
-
         public void UpdateDrawing(string DrawName,bool IsContain2D, string DrawType)
         {
             string _taskName;
@@ -439,10 +438,19 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             IEnumerable<Task> _tasks;
             if (!string.IsNullOrEmpty(MoldNumber))
             {
-                _tasks = _context.Tasks
-                .Where(t => t.MoldNumber == MoldNumber)
-                .Where(t => t.TaskType == TaskType)
-                .Where(t => t.Enabled == Enabled);
+                if (MoldNumber == "All")
+                {
+                    _tasks = _context.Tasks
+                             .Where(t => t.TaskType == TaskType)
+                             .Where(t => t.Enabled == Enabled);
+                }
+                else
+                {
+                    _tasks = _context.Tasks
+                             .Where(t => t.MoldNumber == MoldNumber)
+                             .Where(t => t.TaskType == TaskType)
+                             .Where(t => t.Enabled == Enabled);
+                }
             }
             else
             {
@@ -483,13 +491,33 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             }
             return _task.FirstOrDefault();
         }
-
-
-        public void Delete(int TaskID)
+        /// <summary>
+        /// 删除已发布任务
+        /// </summary>
+        /// <param name="TaskID"></param>
+        public void DeleteTask(int TaskID,string StateMemo)
         {
             Task _dbEntry = _context.Tasks.Find(TaskID);
             if (_dbEntry != null)
             {
+                _dbEntry.PrevState = _dbEntry.State;
+                _dbEntry.State = (int)TaskStatus.任务取消;
+                _dbEntry.Enabled = false;
+                _dbEntry.StateMemo = _dbEntry.StateMemo == null ? StateMemo : _dbEntry.StateMemo + ";" + StateMemo;
+                _context.SaveChanges();
+            }
+        }
+        /// <summary>
+        /// 删除未发布任务
+        /// </summary>
+        /// <param name="TaskID"></param>
+        public void DeleteByCAM(int TaskID)
+        {
+            Task _dbEntry = _context.Tasks.Find(TaskID);
+            if (_dbEntry != null)
+            {
+                _dbEntry.PrevState = _dbEntry.State;
+                _dbEntry.State = (int)TaskStatus.CAM取消;
                 _dbEntry.Enabled = false;
                 _context.SaveChanges();
             }
@@ -541,6 +569,13 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             if (_tasks.Count>0)
                 MaxVer = _tasks.Max(v => v.Version);
             return MaxVer;
+        }
+
+        public void UpdateTaskTime(int taskID,double time)
+        {
+            Task _task = _context.Tasks.Where(t => t.TaskID == taskID && t.Enabled).FirstOrDefault();
+            _task.Time = time;
+            _context.SaveChanges();
         }
     }
 }

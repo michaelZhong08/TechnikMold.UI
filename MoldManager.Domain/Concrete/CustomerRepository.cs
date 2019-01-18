@@ -33,6 +33,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             if (Customer.CustomerID == 0)
             {
+                Customer.Address = Customer.Address ?? "";
                 _context.Customers.Add(Customer);
             }
             else

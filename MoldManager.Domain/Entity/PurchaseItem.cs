@@ -45,6 +45,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public string AttachObjID { get; set; }
         public string unit { get; set; }
         public DateTime PlanAJTime { get; set; }
+        public double Time { get; set; }
 
         public PurchaseItem()
         {

@@ -295,7 +295,8 @@
 
     $("#EleList").on("change", function () {
         var taskid = $("#EleList option:selected").val();
-        UpdateEleMachInfo(taskid);
+        var taskname = $("#EleList option:selected").text();
+        UpdateEleMachInfo(taskname);
     })
 
     $("#EleList").on("dblclick", function () {
@@ -422,7 +423,7 @@ function TaskListCAM(TaskType) {
             break;
 
     }
-    $("#TaskGrid").setGridWidth(document.body.clientWidth * 0.75);
+    //$("#TaskGrid").setGridWidth(document.body.clientWidth * 0.75);
 }
 
 //TODO: 加工界面显示隐藏列 分任务
@@ -589,10 +590,10 @@ function SaveMachineTask() {
 
 }
 
-function AcceptCAMTask(id) {
+function AcceptCAMTask(ids) {
     $.ajax({
         dataType: "html",
-        url: "/Task/AcceptTask?TaskID=" + id,
+        url: "/Task/AcceptTask?TaskIDs=" + ids,
         error: function () { },
         success: function (msg) {
             switch (msg) {
@@ -854,10 +855,10 @@ function PauseTask(TaskID) {
 }
 
 
-function DeleteTaskByCAM(TaskID) {
+function DeleteReleasedTask(TaskID) {
     $.ajax({
         dataType: "html",
-        url: "/Task/DeleteTaskByCAM?TaskID=" + TaskID,
+        url: "/Task/DeleteReleasedTask?TaskID=" + TaskID,
         error: function () { },
         success: function (msg) {
             alert(msg);
@@ -949,21 +950,34 @@ function QueueTask(TaskIDs) {
 
 ///Set the priority level of selected tasks
 function SetPriority(TaskIDs, Level) {
-    if (confirm("要将选中任务优先级设为" + Level + "?")) {
-        $.ajax({
-            dataType: "html",
-            url: "/Task/SetTaskPriority?TaskIDs=" + TaskIDs + "&Level=" + Level,
-            error: function () { },
-            success: function (msg) {
-                if (msg = true) {
+    console.log(TaskIDs);
+    console.log(Level);
+    if (TaskIDs.length > 0) {
+        if (Number(Level) > 0) {
+            if (confirm("要将选中任务优先级设为" + Level + "?")) {
+                $.ajax({
+                    dataType: "html",
+                    url: "/Task/SetTaskPriority?TaskIDs=" + TaskIDs + "&Level=" + Level,
+                    error: function () { },
+                    success: function (msg) {
+                        if (msg = true) {
 
-                } else {
-                    alert("出现错误,请检查并重新设置任务优先级");
-                }
-                location.reload();
+                        } else {
+                            alert("出现错误,请检查并重新设置任务优先级");
+                        }
+                        location.reload();
+                    }
+                });
             }
-        });
+        } else {
+            return false;
+        }
+    } else {
+        alert('请先选择任务！');
+        $('#Sel_priority').val(0);
+        return false;
     }
+    
 }
 
 function Outsource(ids,itemData) {
@@ -1586,10 +1600,10 @@ function StartEDMTask() {
     })
 }
 
-function UpdateEleMachInfo(TaskID) {
+function UpdateEleMachInfo(TaskName) {
     $("#TaskGrid").clearGridData();
 
-    $.getJSON("/Task/JsonEDMItems?TaskID=" + TaskID, function (msg) {
+    $.getJSON("/Task/JsonEDMItems?TaskName=" + TaskName, function (msg) {
         $.each(msg, function (i, n) {
             var data = {
                 ID: n.ID,
@@ -1688,9 +1702,9 @@ function CheckTaskExist(TaskName) {
 }
 
 
-function DeleteTask(TaskID) {
+function DeleteCAMSetting(TaskID) {
     $.ajax({
-        url: "/Task/DeleteTask?TaskID=" + TaskID,
+        url: "/Task/DeleteCAMSetting?TaskID=" + TaskID,
         type: "Get",
         dataType: "html",
         success: function (msg) {
@@ -2174,26 +2188,26 @@ function ShowEDMDetailsList() {
 //加载workshop对应部门人员
     function LoadWSUser(type) {
         $("#CheckUser option").remove();
-        var _depid=0;
+        var _depName = '';
         type=Number(type);
-        switch(type){
+        switch (type) {
             case 1:
-                _depid=7;
+                _depName = 'CNC';
                 break;
             case 2:
-                _depid=8;
+                _depName = 'EDM';
                 break;
             case 3:
-                _depid=9;
+                _depName = 'WEDM';
                 break;
             case 4:
-                _depid=7;
+                _depName = 'CNC';
                 break;
             case 6:
-                _depid=5;
+                _depName = 'MG';
                 break;
         }
-        $.getJSON("/User/GetUsersByDepartment?DepartmentID="+_depid, function (msg) {
+        $.getJSON("/User/GetUsersByDepartment?DepartmentName=" + _depName, function (msg) {
             $("#CheckUser").append($("<option/>", {
                 value: 0,
                 text: '-'
@@ -2207,13 +2221,13 @@ function ShowEDMDetailsList() {
         })
     }
 
-    function ShowTaskHourPhaseForm(_totaltime, _col) {
-        //var _totaltime = $("#tb_SetupWFTaskHour").getCell($("#tb_SetupWFTaskHour").getGridParam("selrow"), "TotalTime");
+    function ShowTaskHourPhaseForm(_totaltime, _col, _rowid) {
         var firsttdobj = $('#tb_SetupWFTaskHour td:eq(' + _col + ')');//' + _col + '
         //模拟单元格点击事件
         firsttdobj.trigger("click");
 
         if (_totaltime > 0) {
+            $('#taskhourTbCurRowid').val(_rowid);
             $('#SetupTaskPeriodHourModal').modal('show');
         }
         else

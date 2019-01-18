@@ -484,14 +484,14 @@ namespace MoldManager.WebUI.Controllers
             return testData;
         }
         #region Plug-in
-        public string Service_GetServerInfo()
+        public string Service_GetServerInfo(string _type)
         {
             string urlHost = Request.Url.Host;
             string urlPort = Request.Url.Port.ToString();
             string ServerMapPath = "";//Server.MapPath("~");
             string ServiceUri = _systemConfigRepository.GetValueByName("ServiceUri");
             var _serviceUri= string.Format(ServiceUri, urlHost);
-            string resStr = string.Format("&urlHost*{0}&urlPort*{1}&Obj*QRMail&ServiceUri*{2}&ServerMapPath*{3}&arg*", urlHost, urlPort, _serviceUri, ServerMapPath);//&ServerMapPath*{2} ServerMapPath
+            string resStr = string.Format("&urlHost*{0}&urlPort*{1}&Obj*{2}&ServiceUri*{3}&ServerMapPath*{4}&arg*", urlHost, urlPort, _type, _serviceUri, ServerMapPath);//&ServerMapPath*{2} ServerMapPath
             return resStr;
         }
         public ActionResult Service_FileDownLoad()

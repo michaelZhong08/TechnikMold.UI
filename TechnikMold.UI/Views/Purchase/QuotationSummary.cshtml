@@ -10,70 +10,97 @@
 }
 
 <style>
+    td {
+        text-align: center;
+        vertical-align: central;
+        word-break: keep-all;
+        border: 1px solid rgba(0,0,0,0.1);
+        margin: 0px;
+        padding: 0px;
+        font-family: "微软雅黑" !important;
+    }
+
+    p {
+        margin: 0px;
+        padding: 0px;
+    }
+    /*div1*/
+    #div1 td {
+        height: 150px;
+        border-style: none solid solid solid;
+    }
+    /*div2*/
+    #div2 label {
+        width: 200px;
+    }
+
+    .p1 {
+        width: 200px;
+    }
+
+    .p2 {
+        width: 100px;
+    }
+
     .total {
         display: none;
     }
 
-    #tb_QuotationCompact {
-        width: 100%;
+    .div2_row1 {
+        height: 100px;
+        border-style: none solid solid solid;
     }
 
-    #tb_QuotationCompact_T {
-        width: 100%;
+    .div2_row2 {
+        height: 50px;
+    }
+    /*div3*/
+    #div3 td {
+        height: 50px;
+    }
+    /*div4*/
+    .div4_row {
+        height: 50px;
     }
 
-    #tb_QuotationCompact td {
-        /*width:80px;*/
-        text-align: center;
+    .div4_row_p {
+        width: 100px;
+    }
+
+    .div1_tb_th td {
+        margin-bottom: 0;
+        table-layout: fixed;
+        background-color: rgba(0,0,0,0.8);
+        color: rgba(255,255,255,1);
+        font-size: 18px !important;
+        font-weight: bold !important;
+        border: 1px solid rgba(255,255,255,0.5) !important;
+        border-style: solid solid solid solid !important;
+    }
+
+    .div2_tb_th td {
+        margin-bottom: 0;
+        table-layout: fixed;
+        background-color: rgba(0,0,0,0.8);
+        color: rgba(255,255,255,1);
+        /*font-size: 14px!important;*/
+        font-weight: bold !important;
+        border: 1px solid rgba(255,255,255,0.5) !important;
+        border-style: solid solid solid solid !important;
+    }
+
+    .tdBox {
+        cursor:pointer;
+        width: 40px;
         height: 40px;
-        border: 1px rgba(0,0,0,0.1) solid;
     }
-
-    #tb_QuotationCompact_T td {
-        /*width:80px;*/
-        text-align: center;
-        height: 40px;
-        border: 1px rgba(0,0,0,0.1) solid;
-    }
-
-    #tb_QuotationCompact p {
-        margin: 0px;
-        text-align: left;
-        margin-left: 5px;
-        font-size: 12px;
-    }
-
-    #tb_QuotationCompact_T p {
-        margin: 0px;
-        text-align: left;
-        margin-left: 5px;
-        font-size: 12px;
-    }
-
-    #tb_QuotationCompact label {
-        margin-top: 5px;
-    }
-
-    #tb_QuotationCompact_T label {
-        margin-top: 5px;
-    }
-
-    .p_total {
-        line-height: 50px;
-        width: 90%;
-        text-align: right !important;
-        font-weight: bold;
-        font-size: 14px !important;
-    }
-
 </style>
+
 
 <div style="margin-top:60px;overflow:hidden;">
     <div>
-        <div id="Toolbar">
-        </div>
-        <div id="Basic" class="" style="width:100%;border:1px rgba(0,0,0,0.2) solid;height:40px;border-style:none none solid none;margin-top:10px;">
-            <table style="margin-left:1%;">
+        <div id="Basic" style="width:100%;height:40px;margin-top:10px;">
+            <table style="margin-left:10px;">
                 <tr>
                     <td style="width:200px;">
                         <select id="selTax" class="form-control">
@@ -103,241 +130,192 @@
                 
             </table>
         </div>
-        <div id="div_WidthControl" style="position:absolute;width:18px;background-color:white;height:110px;right:1%;top:120px;z-index:9999;"></div> 
 
-        @*标题*@
-        <div style="border:1px rgba(0,0,0,0.1) solid;width:98%;height:110px;position:fixed;top:120px;left:1%;overflow:hidden;overflow-y:auto;background-color:rgb(210,210,210);z-index:100;pointer-events:none;color:black;">           
-            <table id="tb_QuotationCompact_T" class="table-striped">
-                <colgroup>
-                    <col width="40" />
-                    <col width="300" />
-                    <col width="120" />
-                    <col width="600" />
-                    <col width="100" />
-                </colgroup>
-                
-                <thead>
-                    <tr>
-                        <td rowspan="2">
-                        </td>
-                        <td rowspan="2" ><label>零件名</label></td>
-                        <td rowspan="2" ><label>零件号</label></td>
-                        <td rowspan="2" ><label>规格</label></td>
-                        <td rowspan="2"><label>数量</label></td>
-                        @if (Model.SupplierGroups.Count > 0)
-                        {
-                            foreach (QRSupplier _qrsup in Model.QRSuppliers)
-                            {
-                                if (_qrsup.SupplierID > 0)
-                                {
-                                    QRSupplier _qrSupplier = Model.QRSuppliers.Where(p => p.SupplierID == _qrsup.SupplierID).FirstOrDefault();
-                                    <td colspan="2">
-
-                                        <label>@_qrsup.SupplierName</label>
-                                        @if (_qrSupplier.QuotationDate.ToString("yyyy-MM-dd") != "0001-01-01")
-                                        {
-                                            <p>
-                                                报价日期:@_qrsup.QuotationDate.ToString("yyyy-MM-dd")
-                                                <br />
-                                                税率:@(_qrsup.TaxRate * 100)%
-                                            </p>
-                                        }
-                                        else
-                                        {
-                                            <p>未报价</p>
-                                            <br />
-                                        }
-                                    </td>
-                                }
-
-                            }
-                        }
-
-                    </tr>
-                    <tr>
-                        @foreach (QRSupplier _qrsup in Model.QRSuppliers)
-                        {
-                            <td class="total" style="width:100px;">未税总价</td>
-                            <td class="totalWT" style="width:100px;" >含税总价</td>
-                            <td style="width:100px;">交付日期</td>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (QRContent _content in Model.Contents.Take(1))
-                    {
-                        Row = Row + 1;
-                        <tr id="tb_T_FRow" >
+        <div id="TableDiv" style="border:1px solid rgba(0,0,0,0.1);position:absolute;top:110px;left:10px;">
+            <div>
+                <div id="div1" style="position:absolute;top:0px;left:0px;width:800px;">
+                    <table cellspacing="0">
+                        <tr class="div1_tb_th">
                             <td>
+                                <input class="tdBox" style="width:50px;" type="checkbox" id="SelAll" />
                             </td>
-                            <td>@_content.PartName</td>
-                            <td>@_content.PartNumber</td>
-                            <td>@_content.PartSpecification</td>
-                            <td>@_content.Quantity</td>
-                            @foreach (var _qrsup in Model.QRSuppliers)
-                            {
-                                QRQuotation _quotation = Model.Quotations.Where(q => q.QRContentID == _content.QRContentID).Where(q => q.SupplierID == _qrsup.SupplierID).FirstOrDefault();
-
-                                if ((_quotation != null) && (_quotation.UnitPrice > 0))
+                            <td><p style="width:300px;">零件名</p></td>
+                            <td><p style="width:100px;">物料编号</p></td>
+                            <td><p style="width:300px;">规格</p></td>
+                            <td><p style="width:100px;">数量</p></td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="div2" style="position:absolute;top:0px;left:855px;overflow:hidden;">
+                    <table cellspacing="0">
+                        <tr class="div2_tb_th">
+                            @{
+                                if (Model.SupplierGroups.Count > 0)
                                 {
-                                    <td class="total" >@_quotation.TotalPrice</td>
-                                    <td class="totalWT" ><span>@_quotation.TotalPriceWT</span></td>
-                                    <td >@_quotation.ShipDate.ToString("yyyy-MM-dd")</td>
-
+                                    foreach (QRSupplier _qrsup in Model.QRSuppliers)
+                                    {
+                                        if (_qrsup.SupplierID > 0)
+                                        {
+                                            QRSupplier _qrSupplier = Model.QRSuppliers.Where(p => p.SupplierID == _qrsup.SupplierID).FirstOrDefault();
+                                            <td class="div2_row1" colspan="2" style="height:100px;">
+                                                <label>@_qrsup.SupplierName</label>
+                                                @if (_qrSupplier.QuotationDate.ToString("yyyy-MM-dd") != "0001-01-01")
+                                                {
+                                                    <p class="p1">
+                                                        报价日期:@_qrsup.QuotationDate.ToString("yyyy-MM-dd")
+                                                        <br />
+                                                        税率:@(_qrsup.TaxRate * 100)%
+                                                    </p>
+                                                }
+                                                else
+                                                {
+                                                    <p class="p1">未报价</p>
+                                                    <br />
+                                                }
+                                            </td>
+                                        }
+                                    }
                                 }
-                                else
+                            }
+
+                        </tr>
+                        <tr class="div2_tb_th">
+                            @{
+                                foreach (QRSupplier _qrsup in Model.QRSuppliers)
                                 {
-                                    <td class="totalWT">NA</td>
-                                    <td class="total" ><span>NA</span></td>
-                                    <td >NA</td>
+                                    <td class="div2_row2 total"><p class="p2">未税总价</p></td>
+                                    <td class="div2_row2 totalWT"><p class="p2">含税总价</p></td>
+                                    <td class="div2_row2"><p class="p2">交付日期</p></td>
                                 }
-
                             }
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        @*内容*@
-        <div style="border:1px rgba(0,0,0,0.1) solid;width:98%;height:88%;position:absolute;top:120px;left:1%;overflow:hidden;overflow-y:auto;">
-            
-            <table id="tb_QuotationCompact" >
-                <colgroup>
-                    <col width="40" />
-                    <col width="300" />
-                    <col width="120" />
-                    <col width="600" />
-                    <col width="100" />
-                </colgroup>
-
-                <thead>
-                    <tr>
-                        <td rowspan="2" >
-                            <input type="checkbox" id="SelAll" />
-                        </td>
-                        <td rowspan="2" ><label>零件名</label></td>
-                        <td rowspan="2"><label>零件号</label></td>
-                        <td rowspan="2" ><label>规格</label></td>
-                        <td rowspan="2" ><label>数量</label></td>
-                        @if (Model.SupplierGroups.Count > 0)
-                        {
-                            foreach (QRSupplier _qrsup in Model.QRSuppliers)
+                    </table>
+                </div>
+            </div>
+            <div>
+                <div id="div3" style="position:absolute;top:150px;width:850px;overflow:hidden">
+                    <table cellspacing="0">
+                        @{
+                            foreach (QRContent _content in Model.Contents)
                             {
-                                if (_qrsup.SupplierID > 0)
-                                {
-                                    QRSupplier _qrSupplier = Model.QRSuppliers.Where(p => p.SupplierID == _qrsup.SupplierID).FirstOrDefault();
-                                    <td colspan="2">
-
-                                        <label>@_qrsup.SupplierName</label>
-                                        @if (_qrSupplier.QuotationDate.ToString("yyyy-MM-dd") != "0001-01-01")
+                                Row = Row + 1;
+                                <tr>
+                                    <td>
+                                        @if (_content.SupplierID > 0)
                                         {
-                                            <p>
-                                                报价日期:@_qrsup.QuotationDate.ToString("yyyy-MM-dd")
-                                                <br />
-                                                税率:@(_qrsup.TaxRate * 100)%
-                                            </p>
+                                            <input class="tdBox" style="width:50px;" type="checkbox" value="@_content.PurchaseItemID" id="@Row" disabled />
                                         }
                                         else
                                         {
-                                            <p>未报价</p>
-                                            <br />
+                                            <input class="tdBox" style="width:50px;" type="checkbox" value="@_content.PurchaseItemID" id="@Row"/>
                                         }
                                     </td>
-                                }
+                                    <td><p style="width:300px;">@_content.PartName</p></td>
+                                    <td><p style="width:100px;">@_content.PartNumber</p></td>
+                                    <td><p style="width:300px;">@_content.PartSpecification</p></td>
+                                    <td><p style="width:100px;">@_content.Quantity</p></td>
+                                </tr>
+                            }
+                        }
+                        @*@{
+                            for (var i = 1; i < 21; i++)
+                            {
+                                <tr>
+                                    <td><input type="checkbox" style="width:50px;"  class="tdBox"/></td>
+                                    <td><p style="width:120px;">零件名111111</p></td>
+                                    <td><p style="width:80px;">零件号222</p></td>
+                                    <td><p style="width:300px;">规格31444545</p></td>
+                                    <td><p style="width:100px;">123</p></td>
+                                </tr>
+                            }
+                        }*@
+                        <tr><td colspan="5"><label>总价</label></td></tr>
+                    </table>
+                </div>
+                <div id="div4" style="position:absolute;top:150px;left:855px;overflow:auto">
+                    <table cellspacing="0">
+                        @{
+                            foreach (QRContent _content in Model.Contents)
+                            {
+                                <tr>
+                                    @foreach (var _qrsup in Model.QRSuppliers)
+                                    {
+                                        QRQuotation _quotation = Model.Quotations.Where(q => q.QRContentID == _content.QRContentID).Where(q => q.SupplierID == _qrsup.SupplierID).FirstOrDefault();
+
+                                        if ((_quotation != null) && (_quotation.UnitPrice > 0))
+                                        {
+                                            if (_content.SupplierID == _qrsup.SupplierID)
+                                            {
+                                                <td style="background-color:yellow;" class="div4_row total"><p class="div4_row_p"><span id="@_qrsup.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPrice</span></p></td>
+                                                <td style="background-color:yellow;" class="div4_row totalWT"><p class="div4_row_p"><span id="@_qrsup.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPriceWT</span></p></td>
+                                                <td style="background-color:yellow;" class="div4_row"><p class="div4_row_p">@_quotation.ShipDate.ToString("yyyy-MM-dd")</p></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="div4_row total"><p class="div4_row_p"><span id="@_qrsup.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPrice</span></p></td>
+                                                <td class="div4_row totalWT"><p class="div4_row_p"><span id="@_qrsup.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPriceWT</span></p></td>
+                                                <td class="div4_row"><p class="div4_row_p">@_quotation.ShipDate.ToString("yyyy-MM-dd")</p></td>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <td class="div4_row totalWT"><p class="div4_row_p">NA</p></td>
+                                            <td class="div4_row total"><p class="div4_row_p">NA</p></td>
+                                            <td class="div4_row"><p class="div4_row_p">NA</p></td>
+                                        }
+                                    }
+                                </tr>
 
                             }
                         }
+                        @*@{
+                            for (var i = 1; i < 21; i++)
+                            {
+                                <tr>
+                                    <td class="div4_row totalWT"><p class="div4_row_p">NA</p></td>
+                                    <td class="div4_row total"><p class="div4_row_p">NA</p></td>
+                                    <td class="div4_row"><p class="div4_row_p">NA</p></td>
 
-                    </tr>
-                    <tr>
-                        @foreach (QRSupplier _qrsup in Model.QRSuppliers)
-                        {
-                            <td class="total" style="width:100px;">未税总价</td>
-                            <td class="totalWT" style="width:100px;">含税总价</td>
-                            <td style="width:100px;">交付日期</td>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (QRContent _content in Model.Contents)
-                    {
-                        Row = Row + 1;
+                                    <td class="div4_row totalWT"><p class="div4_row_p">NA</p></td>
+                                    <td class="div4_row total"><p class="div4_row_p">NA</p></td>
+                                    <td class="div4_row"><p class="div4_row_p">NA</p></td>
+
+                                    <td class="div4_row totalWT"><p class="div4_row_p">NA</p></td>
+                                    <td class="div4_row total"><p class="div4_row_p">NA</p></td>
+                                    <td class="div4_row"><p class="div4_row_p">NA</p></td>
+                                </tr>
+                            }
+                        }*@
                         <tr>
-                            <td>
-                                @if (_content.SupplierID > 0)
-                                {
-                                    <input type="checkbox" value="@_content.PurchaseItemID" id="@Row" class="cbox" disabled/>
-                                }
-                                else
-                                {
-                                    <input type="checkbox" value="@_content.PurchaseItemID" id="@Row" class="cbox" />
-                                }
-                                
-                            </td>
-                            <td>@_content.PartName</td>
-                            <td>@_content.PartNumber</td>
-                            <td>@_content.PartSpecification</td>
-                            <td>@_content.Quantity</td>
                             @foreach (var _qrsup in Model.QRSuppliers)
                             {
-                                QRQuotation _quotation = Model.Quotations.Where(q => q.QRContentID == _content.QRContentID).Where(q => q.SupplierID == _qrsup.SupplierID).FirstOrDefault();
-
-                                if ((_quotation != null) && (_quotation.UnitPrice > 0))
-                                {
-                                    if (_content.SupplierID == _qrsup.SupplierID)
+                                double _total = @Model.Quotations.Where(q => q.SupplierID == _qrsup.SupplierID).Where(q => q.UnitPrice > 0).Sum(q => q.TotalPrice);
+                                double _totalWT = @Model.Quotations.Where(q => q.SupplierID == _qrsup.SupplierID).Where(q => q.UnitPrice > 0).Sum(q => q.TotalPriceWT);
+                                <td colspan="2" class="div4_row total">
+                                    @if (_total == 0)
                                     {
-                                        <td class="total" style="background-color:yellow;"><span id="@_qrsup.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPrice</span></td>
-                                        <td class="totalWT" style="background-color:yellow;"><span id="@_qrsup.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPriceWT</span></td>
-                                        <td style="background-color:yellow;">@_quotation.ShipDate.ToString("yyyy-MM-dd")</td>
+                                        <p id="@_qrsup.SupplierID" class="div4_row_p">NA</p>
                                     }
                                     else
                                     {
-                                        <td class="total"><span id="@_qrsup.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPrice</span></td>
-                                        <td class="totalWT"><span id="@_qrsup.SupplierID-@_content.PurchaseItemID">@_quotation.TotalPriceWT</span></td>
-                                        <td>@_quotation.ShipDate.ToString("yyyy-MM-dd")</td>
+                                        <p id="@_qrsup.SupplierID" class="div4_row_p">@_total</p>
                                     }
-                                }
-                                else
-                                {
-                                    <td class="totalWT">NA</td>
-                                    <td class="total"><span id="">NA</span></td>
-                                    <td>NA</td>
-                                }
-
+                                </td>
+                                <td colspan="2" class="div4_row totalWT">
+                                    @if (_totalWT == 0)
+                                    {
+                                        <p id='WT@_qrsup.SupplierID' class="div4_row_p">NA</p>
+                                    }
+                                    else
+                                    {
+                                        <p id='WT@_qrsup.SupplierID' class="div4_row_p">@_totalWT</p>
+                                    }
+                                </td>
                             }
                         </tr>
-                    }
-                    <tr>
-                        <td colspan="5"><label>总价</label></td>
-                        @foreach (var _qrsup in Model.QRSuppliers)
-                        {
-                            double _total = @Model.Quotations.Where(q => q.SupplierID == _qrsup.SupplierID).Where(q => q.UnitPrice > 0).Sum(q => q.TotalPrice);
-                            double _totalWT = @Model.Quotations.Where(q => q.SupplierID == _qrsup.SupplierID).Where(q => q.UnitPrice > 0).Sum(q => q.TotalPriceWT);
-                            <td colspan="2" class="total">
-                                @if (_total == 0)
-                                {
-                                    <p id="@_qrsup.SupplierID" class="p_total">NA</p>
-                                }
-                                else
-                                {
-                                    <p id="@_qrsup.SupplierID" class="p_total">@_total</p>
-                                }
-                            </td>
-                            <td colspan="2" class="totalWT">
-                                @if (_totalWT == 0)
-                                {
-                                    <p id='WT@_qrsup.SupplierID' class="p_total">NA</p>
-                                }
-                                else
-                                {
-                                    <p id='WT@_qrsup.SupplierID' class="p_total">@_totalWT</p>
-                                }
-                            </td>
-                        }
-                    </tr>
-                </tbody>
-            </table>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -460,7 +438,7 @@
             }
             UpdateTotal();
         });
-       FormatTable();
+       //FormatTable();
     })
     function FormatTable() {
         var tb_Content_High = parseInt(($('#tb_QuotationCompact').css('height')).replace('px',''));
@@ -475,4 +453,37 @@
             $('#div_WidthControl').attr('hidden', 'hidden');
         }
     }
+</script>
+
+<script>
+    $(document).ready(function () {
+        var _clientWidth = document.documentElement.clientWidth;
+        var _clientHeight = document.documentElement.clientHeight;
+        $('#div2').css('width', _clientWidth - 20 - 14 - 850);
+        $('#div4').css('width', _clientWidth - 20 - 850);
+
+        $('#div3').css('height', _clientHeight - 14 - 150 -130);
+        $('#div4').css('height', _clientHeight - 150 - 130);
+
+        $('#TableDiv').css('width', _clientWidth -15 );
+        $('#TableDiv').css('height', _clientHeight - 110 - 20);
+
+        $(window).resize(function () {
+            var _clientWidth = document.documentElement.clientWidth;
+            var _clientHeight = document.documentElement.clientHeight;
+            $('#div2').css('width', _clientWidth - 20 - 14 - 850);
+            $('#div4').css('width', _clientWidth - 20 - 850);
+
+            $('#div3').css('height', _clientHeight - 14 - 150 - 130);
+            $('#div4').css('height', _clientHeight - 150 - 130);
+
+            $('#TableDiv').css('width', _clientWidth - 15);
+            $('#TableDiv').css('height', _clientHeight - 110 - 20);
+        });
+
+        $("#div4").scroll(function () {
+            $("#div3").scrollTop($(this).scrollTop());
+            $("#div2").scrollLeft($(this).scrollLeft());
+        });
+    })
 </script>

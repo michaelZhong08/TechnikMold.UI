@@ -130,6 +130,33 @@ function ConfirmInStock() {
     
 }
 
+function SaveWHStock() {
+    var rowIDs = $('#POContentGrid').getDataIDs();
+    for (var i = 0; i < rowIDs.length; i++) {
+        //获取第2行(除表头)第2个单元格(第一个默认隐藏)
+        var firsttdobj = $('#POContentGrid td:eq(13)');
+        //模拟单元格点击事件
+        firsttdobj.trigger("click");
+
+        var rowData = $('#POContentGrid').getRowData(rowIDs[i]);
+        var AcceptQty=Number(rowData.AcceptQty);
+        if ((AcceptQty + Number(rowData.InStockQty)) <= Number(rowData.Quantity)) {
+            if (AcceptQty > 0) {
+                //console.log($('#wh182').val());
+                var warehouse = $('#wh' + rowData.PurchaseItemID).val();
+                var whposition = $('#whposi' + rowData.PurchaseItemID).val();
+                var _urlData = { 'PurchaseItemID': rowData.PurchaseItemID, 'ReceiveQty': AcceptQty, 'Memo': rowData.Memo, 'WarehouseID': warehouse, 'WarehousePositionID': whposition };
+                console.log(_urlData);
+                $.ajaxSettings.async = false;
+                $.post('/Warehouse/POContentInStock', _urlData);
+            }
+        }
+    }
+    var _url = '/Warehouse/JsonPOContents?POID=' + $('#PurchaseOrderID').val();
+    $('#POContentGrid').jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger('reloadGrid');
+}
+
+
 function ClosePO() {
     var PurchaseOrderID = $("#PurchaseOrderID").val();
     location.href = "/Warehouse/ClosePurchaseOrder?PurchaseOrderID=" + PurchaseOrderID;

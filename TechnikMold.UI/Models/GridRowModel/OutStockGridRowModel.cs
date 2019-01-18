@@ -11,17 +11,18 @@ namespace MoldManager.WebUI.Models.GridRowModel
     {
         public string[] cell;
 
-        public OutStockGridRowModel(OutStockItem Item,OutStockForm Form, string ReceiveUser, string WarehouseUser)
+        public OutStockGridRowModel(OutStockItem Item,OutStockForm Form, string ReceiveUser, string WarehouseUser,string _whRequestNum)
         {
-            cell = new string[8];
+            cell = new string[9];
             cell[0] = Item.OutStockItemID.ToString();
-            cell[1] = Item.PartName;
-            cell[2] = Item.PartNumber;
-            cell[3] = Item.Specification;
-            cell[4] = Item.Quantity.ToString();
-            cell[5] = ReceiveUser; 
-            cell[6] = Item.OutDate.ToString("yyyy-MM-dd HH:mm");
-            cell[7] = WarehouseUser;
+            cell[1] = _whRequestNum;
+            cell[2] = Item.PartName;
+            cell[3] = Item.PartNumber;
+            cell[4] = Item.Specification;
+            cell[5] = Item.Quantity.ToString();
+            cell[6] = ReceiveUser; 
+            cell[7] = Item.OutDate.ToString("yyyy-MM-dd HH:mm");
+            cell[8] = WarehouseUser;
         }
     }
 }

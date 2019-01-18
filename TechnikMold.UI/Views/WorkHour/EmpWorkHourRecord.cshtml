@@ -1,0 +1,585 @@
+﻿
+@{
+    ViewBag.Title = "人工工时报表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .Report_FatherDiv{
+        position:absolute;
+        top:100px;
+        top:100px;
+        bottom:5px;
+        left:5px;
+        right:5px;
+        width:100%-10px;
+        /*border:1px solid rgba(0,0,0,0.1);*/
+    }
+    .Report_TopDiv{
+        position:absolute;
+        left:0px;
+        width:100%;
+        height:40px;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .Report_BottomDiv{
+        position:absolute;
+        top:40px;
+        left:0px;
+        width:100%;
+        height:100%-40px;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .tb_EmpWHReport{
+        width:100%;
+    }
+    .tb_EmpWHReport td{
+        border: 1px solid rgba(0,0,0,0.1);
+        text-align: center;
+        vertical-align: central;
+        font-size: 12px;
+        font-family:"微软雅黑"!important;
+    }
+    #htb_EmpWHReport td{
+        margin-bottom: 0;
+        table-layout: fixed;
+        background-color: rgba(0,0,0,0.8);
+        color: rgba(255,255,255,1);
+        font-size: 14px!important;
+        font-weight:bold!important;
+        height: 36.53px;
+        
+        border:1px solid rgba(255,255,255,0.5)!important;
+        border-style:solid solid solid solid!important;
+    }
+    .tb_EmpWHReport td span {
+        cursor:pointer;
+        float: left;
+    }
+    .td_label{
+        font-weight:bold;
+        margin-left:10px!important;
+    }
+</style>
+@section Header{
+    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
+    <link rel="stylesheet" href="~/Content/datepicker.css" />
+    <script src="~/Scripts/bootstrap-switch.js"></script>
+    <script src="~/Scripts/bootstrap-datepicker.js"></script>
+}
+@{ 
+    int DepID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+    int Position = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    string inputStatus = string.Empty;
+    if (Position <= 1)
+    {
+        inputStatus = "disabled";
+    }
+}
+<h2 style="margin-top:60px;">人工工时报表</h2>
+
+<div class="Report_FatherDiv">
+    <div class="Report_TopDiv">
+        <table>
+            <tr>
+                <td>
+                    <select id="RecordStatus" class="form-control" style="width:150px;font-weight:bold;font-size:16px;" @inputStatus>
+                        <option value="100">审核通过</option>
+                        <option value="5">待审核</option>
+                        
+                    </select>
+                </td>
+                <td class="td_label">工作类型</td>
+                <td>
+                    <select id="WorkType" class="form-control"></select>
+                </td>
+                <td class="td_label">时间范围</td>
+                <td>
+                    <select id="Sel_dateType" class="form-control">
+                        <option value="0">-</option>
+                        <option value="1">本周</option>
+                        <option value="2">本月</option>
+                        <option value="-1">上周</option>
+                        <option value="-2">上月</option>
+                    </select>
+                </td>
+                <td class="td_label">开始时间</td>
+                <td>
+
+                    <div class="input-daterange input-group" id="datepicker">
+                        <input type="text" class="form-control" id="startTimeFr" style="width:120px;" />
+                        <span class="input-group-addon">至</span>
+                        <input type="text" class="form-control" id="startTimeTo" style="width:120px;" />
+                    </div>
+                </td>
+                <td class="td_label">结束时间</td>
+                <td>
+
+                    <div class="input-daterange input-group" id="datepicker">
+                        <input type="text" class="form-control" id="finishTimeFr" style="width:120px;" />
+                        <span class="input-group-addon">至</span>
+                        <input type="text" class="form-control" id="finishTimeTo" style="width:120px;" />
+                    </div>
+                </td>
+                <td class="td_label"><button id="btn_Search" class="btn btn-info"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+                @{
+                    if (Position > 1)
+                    {
+                        <td id="td_Approval" class="td_label" hidden>
+                            <button id="btn_Approval" class="btn btn-warning"><span class="glyphicon glyphicon-lock"></span> 审核</button>
+                        </td>
+                    }
+                }
+            </tr>
+        </table>
+    </div>
+    <div class="Report_BottomDiv">
+        <div class="hdiv">
+            <table id="htb_EmpWHReport" class="tb_EmpWHReport">
+                <colgroup><col width="10%" /><col width="10%" /><col width="20%" /><col width="20%" /><col width="10%" /><col width="10%" /><col width="10%" /><col width="10%" /></colgroup>
+                <tr>
+                    <td>部门</td>
+                    <td>姓名</td>
+                    <td>开始时间</td>
+                    <td>结束时间</td>
+                    <td>工时</td>
+                    <td>模号</td>
+                    <td>工作类型</td>
+                    <td>状态</td>
+                </tr>
+            </table>
+        </div>
+        <div class="bdiv" style="overflow-y:auto;">
+            <table id="tb_EmpWHReport" class="tb_EmpWHReport"></table>
+        </div>
+    </div>
+</div>
+
+@*审批模态框*@
+<div class="modal" id="EmpWHApproDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                @*<h4 class="modal-title">工时审核</h4>*@
+            </div>
+            <div class="modal-body">
+                @*<table>
+                    <tr>
+                        <td>
+                            <button id="modal_Approval_EmpWH" type="button" class="btn btn-success"><span class="glyphicon glyphicon-ok"></span> 通过</button>
+                        </td>
+                        <td>
+                            <button id="modal_Reject_EmpWH" type="button" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> 拒绝</button>
+                        </td>
+                    </tr>
+                </table>*@
+                <table style="width:300px;text-align:center;margin:0px;padding:0px;">
+                    <tr>
+                        <td style="width:100px;font-weight:bold;float:left;">审核结果</td>
+                        <td style="width:100px;float:left;color:green;"><input id="whchk_ok" name="approvalRadio" checked="checked" type="radio"/>通过</td>
+                        <td style="width:100px;float:left;color:red;"><input id="whchk_ng" name="approvalRadio" type="radio" />拒绝</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
+                <button id="modal_confirm_whApproval" type="button" class="btn btn-primary">确认</button>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    var plus = 'plus';//加号标志
+    var minus = 'minus';//减号标志
+    var plusSpan = 'plus';//glyphicon glyphicon-plus
+    var minusSpan = 'minus';//glyphicon glyphicon-minus
+
+    $(document).ready(function () {
+        ReInitalFormDiv();
+        $(window).resize(function () {
+            ReInitalFormDiv();
+        })
+        LoadWorkType();
+        //
+        ReloadWHTable();
+        //
+        $('#EmpWHApproDialog').on('show.bs.modal', function () {
+            $('#whchk_ok')[0].checked = true;
+            $('#whchk_ng')[0].checked = false;
+        })
+        //
+        $('#btn_Approval').on('click', function () {
+            $('#EmpWHApproDialog').modal('show');
+        });
+        //
+        $('#btn_Search').on('click', function () {
+            ReloadWHTable();
+        })
+        //通过
+        $('#modal_Approval_EmpWH').on('click', function () {
+            if (confirm('确认执行？')) {
+                var _ids = GetClickedTr();
+                
+            }
+        });
+        //拒绝
+        $('#modal_Reject_EmpWH').on('click', function () {
+            if (confirm('确认执行？')) {
+                var _ids = GetClickedTr();
+                
+            }
+        });
+
+        $('#RecordStatus').on('change', function () {
+            ReloadWHTable();
+            var _state = Number($('#RecordStatus').val());
+            if (_state==5) {
+                $('#td_Approval').show();
+            } else {
+                $('#td_Approval').hide();
+            }
+        });
+
+        $('#modal_confirm_whApproval').on('click', function () {
+            var okres = $('#whchk_ok')[0].checked;
+            var ngres = $('#whchk_ng')[0].checked;
+            var _ids = GetClickedTr();
+            if (okres) {
+                whApproval_ok(_ids);
+                $('#EmpWHApproDialog').modal('hide');
+            } else if (ngres) {
+                whApproval_ng(_ids);
+                $('#EmpWHApproDialog').modal('hide');
+            } else {
+                alert('请选择审核结果！');
+                return;
+            }
+        })
+    })
+    //单击行事件
+    function trClick_EmpWHReport(e) {
+        var _class = e.className;//$(e).attr('class');
+        var _classArry = _class.split('_');
+        var trIdArry = e.id.split('_');
+        var cbId = trIdArry[0] + '_' + trIdArry[1] + '_cb';
+        var dbObj = $('#' + cbId)[0];
+        if (dbObj.checked) {
+            if (_classArry[3] == 'odd') {
+                $(e).css('background', 'white');
+            } else {
+                $(e).css('background', '#eeeeee');
+            }
+            dbObj.checked = false;
+        } else {
+            $(e).css('background-color', sessionStorage['trClickedColor']);
+            dbObj.checked = true;
+        }
+    }
+
+    function ReInitalFormDiv() {
+        //table高度
+        var _fatherDivHeight = $('.Report_FatherDiv').height();
+        //$('.bdiv').css('height', _fatherDivHeight - 40 - 40);
+        $('.bdiv').css('height', _fatherDivHeight-43 - 37);
+        $('#htb_EmpWHReport').css('width', $('.Report_BottomDiv').width() - 18);
+        $('#tb_EmpWHReport').css('width', $('.Report_BottomDiv').width() - 18);
+    }
+
+    function isValid(str) {
+        str = str.trim();
+        if (str == '' || str == null || str == undefined) {
+            return false;
+        } else
+            return true;
+    }
+    
+    function LoadWorkType() {
+        $('#WorkType').empty();
+        $('#WorkType').append('<option value="All">All</option>');
+        $.get('/WorkHour/Service_WH_GetWorkType', function (res) {
+            $.each(res, function (i, n) {
+                var _html = '<option value="' + n.WorkTypeCode + '">' + n.Name + '</option>';
+                $('#WorkType').append(_html);
+            })
+        });
+    }
+
+    function LoadDepartmentList() {
+        $.get('/Administrator/Service_GetDepartmentJson', function (res) {
+            //var _html='<option></option>'
+        })
+    }
+
+    //重载表格
+    function ReloadWHTable() {
+        var _status = $('#RecordStatus').val();
+        var _worktype = $('#WorkType').val();
+        var _url = '/WorkHour/Service_WH_GetEmpWHReportDataAByProc?Status=' + _status + '&WorkType=' + _worktype + '&startTimeFr=' + $('#startTimeFr').val() + '&startTimeTo=' + $('#startTimeTo').val() + '&finishTimeFr=' + $('#finishTimeFr').val() + '&finishTimeTo=' + $('#finishTimeTo').val();
+        $.ajaxSettings.async = false;
+        $.get(_url, function (res) {
+            $('#tb_EmpWHReport').empty();
+            var _json = JSON.parse(res);//Json对象 数组
+            var _html = '';
+            //console.log(_json);
+            _html = '<colgroup><col width="10%" /><col width="10%" /><col width="20%" /><col width="20%" /><col width="10%" /><col width="10%" /><col width="10%" /><col width="10%" /></colgroup>';
+            $.each(_json, function (i, n) {
+                var _trclass = '';
+                if (i % 2 == 0) {
+                    _trclass = 'odd';
+                } else {
+                    _trclass = 'even';
+                }
+                if (n.Flag == 1) {
+                    _html = _html + '<tr class="' + n.Flag + '_' + n.DepID + '_' + n.EmpCode + '_' + _trclass + '"><td style="font-size:13px;font-weight:bold;"><span style="color:green;" id="' + n.Flag + '_' + n.DepID + '_' + n.EmpCode + '_plus" class="' + plusSpan + '" onclick="SpanClick(this)">+</span><span id="' + n.Flag + '_' + n.DepID + '_' + n.EmpCode + '_minus" class="' + minusSpan + '" onclick="SpanClick(this)" style="display:none;color:red;">-</span>' + n.DepName + '</td><td>' + n.EmpName + '</td><td>' + n.StartTime + '</td><td>' + n.EndTime + '</td><td style="font-weight:bold;">' + n.Time + '</td><td>' + n.MoldNumber + '</td><td>' + n.WorkType + '</td><td>' + n.Status + '</td></tr>';
+                } else if (n.Flag == 2) {
+                    _html = _html + '<tr class="' + n.Flag + '_' + n.DepID + '_' + n.EmpCode + '_' + _trclass + '"><td>' + n.DepName + '</td><td style="font-size:13px;font-weight:bold;"><span style="color:green;" id="' + n.Flag + '_' + n.DepID + '_' + n.EmpCode + '_plus" class="' + plusSpan + '" onclick="SpanClick(this)">+</span><span id="' + n.Flag + '_' + n.DepID + '_' + n.EmpCode + '_minus" class="' + minusSpan + '" onclick="SpanClick(this)" style="display:none;color:red;">-</span>' + n.EmpName + '</td><td>' + n.StartTime + '</td><td>' + n.EndTime + '</td><td style="font-weight:bold;">' + n.Time + '</td><td>' + n.MoldNumber + '</td><td>' + n.WorkType + '</td><td>' + n.Status + '</td></tr>';
+                } else if (n.Flag == 3) {
+                    _html = _html + '<tr onclick="trClick_EmpWHReport(this)" id="' + n.Id + '_EmpWHRecordTb_tr" class="' + n.Flag + '_' + n.DepID + '_' + n.EmpCode + '_' + _trclass + '"><td hidden><input type="checkbox" id="' + n.Id + '_EmpWHRecordTb_cb"/></td><td hidden>' + n.Id + '</td><td></td><td></td><td>' + n.StartTime + '</td><td>' + n.EndTime + '</td><td>' + n.Time + '</td><td>' + n.MoldNumber + '</td><td>' + n.WorkType + '</td><td>' + n.Status + '</td></tr>';
+                } else {
+                    _html = _html + '<tr class="' + n.Flag + '_' + n.DepID + '_' + n.EmpCode + '_' + _trclass + '"><td>' + n.DepName + '</td><td>' + n.EmpName + '</td><td>' + n.StartTime + '</td><td>' + n.EndTime + '</td><td style="font-size:14px;font-weight:bold;height:36px;">' + n.Time + '</td><td>' + n.MoldNumber + '</td><td>' + n.WorkType + '</td><td>' + n.Status + '</td></tr>';
+                }
+            });
+            $('#tb_EmpWHReport').append(_html);
+        });
+        //默认隐藏
+        $("#tb_EmpWHReport tr").each(function (i, n) {
+            var _class = $(this).attr('class');
+            if (_class != 'tb_EmpWHReport') {
+                var _classArry = _class.split('_');
+                if (_classArry[0] != '1' && _classArry[0] != '0') {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            }
+        });
+
+        trBColorReSet();
+    };
+    //背景色
+    function trBColorReSet() {
+        var z = 1;//用来记录显示行的序号
+        $("#tb_EmpWHReport tr").each(function (i, n) {
+            var _class = $(this).attr('class');
+            var _classArry = _class.split('_');
+            if (_classArry[3] == 'odd') {
+                $(this).css('background', 'white');
+            } else {
+                $(this).css('background', '#eeeeee');
+            }
+            //var _display = $(this).css('display');
+            //if (_display != 'none') {
+                
+            //}
+        })
+    };
+    //控制 加号/减号 显示/隐藏
+    function SpanClick(e) {
+        var _id = $(e).attr('id');
+        var _idArry = _id.split('_');
+        $(e).hide();
+        if (_idArry[3] == plus) {
+            $('#' + _idArry[0] + '_' + _idArry[1] + '_' + _idArry[2] + '_' + minus).show();
+            plusBandFun(e);
+        } else if (_idArry[3] == minus) {
+            $('#' + _idArry[0] + '_' + _idArry[1] + '_' + _idArry[2] + '_' + plus).show();
+            minusBandFun(e);
+        }
+        //trBColorReSet();
+    }
+    //加号方法
+    function plusBandFun(e) {//加号方法
+        var _id = $(e).attr('id');
+        //console.log(_id);
+        var _idArry = _id.split('_');
+        if (_idArry[0] == '1') {
+            $("#tb_EmpWHReport tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                var _classArry = _class.split('_');
+                if (_classArry[0] == '2' && _classArry[1] == _idArry[1]) {
+                    $(this).show();
+                }
+            })
+        } else if (_idArry[0] == '2') {
+            $("#tb_EmpWHReport tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                var _classArry = _class.split('_');
+                if (_classArry[0] == '3' && _classArry[1] == _idArry[1] && _classArry[2] == _idArry[2]) {
+                    $(this).show();
+                }
+            })
+        }
+    };
+    //减号方法
+    function minusBandFun(e) {//减号方法
+        var _id = $(e).attr('id');
+        //console.log(_id);
+        var _idArry = _id.split('_');
+        if (_idArry[0] == '1') {
+            $("#tb_EmpWHReport tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                var _classArry = _class.split('_');
+                if (_classArry[0] == '3' && _classArry[1] == _idArry[1]) {
+                    $(this).hide();
+                }
+            });
+            $("#tb_EmpWHReport tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                var _classArry = _class.split('_');
+                if (_classArry[0] == '2' && _classArry[1] == _idArry[1]) {
+                    $(this).hide();
+                }
+            });
+            //所有第二层减号需要变成加号
+            $('span').each(function (i, n) {
+                var _class1 = $(this).attr('class');
+                var _id1 = this.id;
+                var _idArry1 = _id1.split('_');
+                if (_class1 == 'plus' && _idArry1[0] == '2' && _idArry1[1] == _idArry[1]) {
+                    $(this).show();
+                }
+                if (_class1 == 'minus' && _idArry1[0] == '2' && _idArry1[1] == _idArry[1]) {
+                    $(this).hide();
+                }
+            })
+        } else if (_idArry[0] == '2') {
+            $("#tb_EmpWHReport tr").each(function (i, n) {
+                var _class = $(this).attr('class');
+                if (_class != 'tb_EmpWHReport') {
+                    var _classArry = _class.split('_');
+                    if (_classArry[0] == '3' && _classArry[1] == _idArry[1] && _classArry[2] == _idArry[2]) {
+                        $(this).hide();
+                    }
+                }
+            })
+        }
+    };
+    //获取所有被选中行
+    function GetClickedTr() {
+        var checked = $(":checked");
+        var _ids = '';
+        $.each(checked, function (i, n) {
+            var _idArry = n.id.split('_');
+            if (_idArry[2] == 'cb') {
+                _ids = _ids + _idArry[0] + ',';
+            }
+        })
+        if (_ids.length > 0) {
+            return _ids.substr(0, _ids.length - 1);
+        }
+        return '';
+    }
+    //审核通过
+    function whApproval_ok(_ids) {
+        if (isValid(_ids)) {
+            $.get('/WorkHour/Service_WH_ApproEmpWHRecord?ids=' + _ids + '&type=3', function (res) {
+                ReloadWHTable();
+            })
+        } else {
+            alert('请选择行！');
+            return;
+        }
+    }
+    //审核拒绝
+    function whApproval_ng(_ids) {
+        if (isValid(_ids)) {
+            $.get('/WorkHour/Service_WH_ApproEmpWHRecord?ids=' + _ids + '&type=4', function (res) {
+                ReloadWHTable();
+            })
+        } else {
+            alert('请选择行！');
+            return;
+        }
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        //开始时间
+        $('#startTimeFr').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            todayHighlight: true,
+            //startDate : new Date()
+        });
+        //结束时间
+        $('#startTimeTo').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            todayHighlight: true,
+            //startDate : new Date()
+        });
+        //开始时间
+        $('#finishTimeFr').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            todayHighlight: true,
+            //startDate : new Date()
+        });
+        //结束时间
+        $('#finishTimeTo').datepicker({
+            todayBtn: "linked",
+            autoclose: true,
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            todayHighlight: true,
+            //startDate : new Date()
+        });
+
+        $('#Sel_dateType').on('change', function () {
+            switch (Number($('#Sel_dateType').val())) {
+                case 1://本周
+                    $('#startTimeFr').val(getWeekStartDate());
+                    $('#startTimeTo').val(getWeekEndDate());
+                    $('#finishTimeFr').val(getWeekStartDate());
+                    $('#finishTimeTo').val(getWeekEndDate());
+                    break;
+                case 2://本月
+                    $('#startTimeFr').val(getMonthStartDate());
+                    $('#startTimeTo').val(getMonthEndDate());
+                    $('#finishTimeFr').val(getMonthStartDate());
+                    $('#finishTimeTo').val(getMonthEndDate());
+                    break;
+                case 3://本季
+                    $('#startTimeFr').val(getQuarterStartDate());
+                    $('#startTimeTo').val(getQuarterEndDate());
+                    $('#finishTimeFr').val(getQuarterStartDate());
+                    $('#finishTimeTo').val(getQuarterEndDate());
+                    break;
+                case 4://本年
+                    $('#startTimeFr').val(getWeekStartDate());
+                    $('#startTimeTo').val(getWeekEndDate());
+                    $('#finishTimeFr').val(getWeekStartDate());
+                    $('#finishTimeTo').val(getWeekEndDate());
+                    break;
+                case -1://上周
+                    $('#startTimeFr').val(getLastWeekStartDate());
+                    $('#startTimeTo').val(getLastWeekEndDate());
+                    $('#finishTimeFr').val(getLastWeekStartDate());
+                    $('#finishTimeTo').val(getLastWeekEndDate());
+                    break;
+                case -2://上月
+                    $('#startTimeFr').val(getLastMonthStartDate());
+                    $('#startTimeTo').val(getLastMonthEndDate());
+                    $('#finishTimeFr').val(getLastMonthStartDate());
+                    $('#finishTimeTo').val(getLastMonthEndDate());
+                    break;
+                case 0:
+                    $('#startTimeFr').val('');
+                    $('#startTimeTo').val('');
+                    $('#finishTimeFr').val('');
+                    $('#finishTimeTo').val('');
+                    break;
+            }
+        })
+    })
+</script>

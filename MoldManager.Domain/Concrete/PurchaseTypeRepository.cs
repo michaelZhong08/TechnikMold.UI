@@ -49,16 +49,26 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public List<PurchaseType> QueryByParentName(string ParentName, bool ContainParent=true)
         {
             List<PurchaseType> _purchaseTypes= new List<PurchaseType>();
+            List<PurchaseType> _purchaseTypes1 = new List<PurchaseType>();
             PurchaseType ParentType = PurchaseTypes.Where(p => p.Name == ParentName).Where(p=>p.Enabled==true).FirstOrDefault();
             if (ContainParent)
             {
-
-                _purchaseTypes.Add(ParentType);
+                if (ParentType != null)
+                {
+                    _purchaseTypes.Add(ParentType);
+                }                
             }
-
-            _purchaseTypes.AddRange(PurchaseTypes.Where(p => p.ParentTypeID == ParentType.PurchaseTypeID && p.Enabled==true).OrderBy(p=>p.Name));
-            
-            
+            else
+            {
+                if (ParentType != null)
+                {
+                    _purchaseTypes1 = PurchaseTypes.Where(p => p.ParentTypeID == ParentType.PurchaseTypeID && p.Enabled == true).ToList();
+                    if (_purchaseTypes1 != null)
+                    {
+                        _purchaseTypes.AddRange(_purchaseTypes1.OrderBy(p => p.Name));
+                    }
+                }
+            }
             return _purchaseTypes;
         }
 

@@ -66,6 +66,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 _dbEntry.CostCenterID = PurchaseItem.CostCenterID;
                 _dbEntry.AttachObjID = PurchaseItem.AttachObjID?? _dbEntry.AttachObjID;
                 _dbEntry.unit = PurchaseItem.unit??"件";
+                //_dbEntry.Time = PurchaseItem.Time;
             }
             _context.SaveChanges();
             return PurchaseItem.PurchaseItemID;
@@ -185,6 +186,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public List<PurItemChangeDateRecord> GetPurItemChangeDateRecords(int PurchaseRequestID)
         {
             return _context.PurItemChangeDateRecords.Where(p => p.PurchaseItemID == PurchaseRequestID).OrderByDescending(p => p.CreDate).ToList();
+        }
+
+        public int UpdateItemTime(int purItemID,double time)
+        {
+            PurchaseItem _purItem = _context.PurchaseItems.Where(p => p.PurchaseItemID == purItemID).FirstOrDefault();
+            _purItem.Time = time;
+            _context.SaveChanges();
+            return _purItem.PurchaseItemID;
         }
     }
 }

@@ -16,14 +16,16 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Records;
 
         public OutStockGridViewModel(IEnumerable<OutStockItem> Items,
-            IOutStockFormRepository FormRepo, IUserRepository UserRepo)
+            IOutStockFormRepository FormRepo, IUserRepository UserRepo
+           ,IWarehouseRequestRepository WareHouseRequestRepo)
         {
             OutStockForm _form;
             string RequestUser, WarehouseUser;
             foreach (OutStockItem _item in Items)
             {
-                _form = FormRepo.QueryByID(_item.OutStockFormID);
+                _form = (FormRepo.QueryByID(_item.OutStockFormID)?? new OutStockForm());
                 WarehouseUser = UserRepo.GetUserByID(_form.WHUserID).FullName;
+                string _whRequestNum = (WareHouseRequestRepo.QueryByID(_form.RequestID) ??new WarehouseRequest()).RequestNumber;
                 try
                 {
                     RequestUser = UserRepo.GetUserByID(_form.UserID).FullName;
@@ -34,7 +36,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 }
                 
                 //OutStockGridRowModel _row = new OutStockGridRowModel(_item, FormRepo, RequestUser, WarehouseUser);
-                rows.Add(new OutStockGridRowModel(_item, _form, RequestUser,WarehouseUser));
+                rows.Add(new OutStockGridRowModel(_item, _form, RequestUser,WarehouseUser, _whRequestNum));
 
             }
         }

@@ -131,19 +131,19 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         /// <returns></returns>
         public int UpdateQuantity(int WarehouseStockID, int Quantity, int WarehouseID = 1)
         {
-            WarehouseStock _dbEntry = _context.WarehouseStocks.Find(WarehouseStockID);
+            WHStock _dbEntry = _context.WHStocks.Find(WarehouseStockID);
             if (_dbEntry != null)
             {
                 _dbEntry.InStockQty = _dbEntry.InStockQty + Quantity;
                 if (Quantity < 0)
                 {
-                    _dbEntry.OutStockQty = _dbEntry.OutStockQty - Quantity;
+                    _dbEntry.OutStockQty = _dbEntry.OutStockQty+( - Quantity);
                 }
-                _dbEntry.Quantity = _dbEntry.Quantity + Quantity;
+                _dbEntry.Qty = _dbEntry.Qty + Quantity;
             }
-            _dbEntry.InStockTime = DateTime.Now;
+            _dbEntry.LInStockDate = DateTime.Now;
             _context.SaveChanges();
-            return _dbEntry.WarehouseStockID;
+            return _dbEntry.ID;
         }
 
         private WarehouseStock GetStock(string Specification, int WarehouseID)

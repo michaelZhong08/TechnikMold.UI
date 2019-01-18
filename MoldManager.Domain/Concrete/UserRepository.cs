@@ -89,16 +89,26 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             }
             return _user;
         }
-
+        public User GetUserByCode(string UserCode)
+        {
+            User _user;
+            try
+            {
+                _user = _context.Users.Where(u => u.UserCode.ToLower()
+                    .Trim() == UserCode.ToLower().Trim()).Where(u => u.Enabled == true).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                _user = null;
+            }
+            return _user;
+        }
 
         public IEnumerable<User> FilterUser(List<int> _depList,string UserName = "")
         {
             IEnumerable<User> _users = _context.Users.Where(u => u.FullName.Contains(UserName)&& _depList.Contains(u.DepartmentID)).Where(u=>u.Enabled==true);
             return _users;
         }
-
-
-
 
         public NetworkCredential MailCredential(int UserID)
         {

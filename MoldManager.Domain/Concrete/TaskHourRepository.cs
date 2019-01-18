@@ -24,8 +24,13 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         private EFDbContext _context=new EFDbContext();
         public IQueryable<TaskHour> TaskHours 
         {
-            get { return _context.TaskHours; }
+            get { return _context.TaskHours.Where(h => h.TaskType != 5); }
         }
+        /// <summary>
+        /// RecordType:0正常开始  1暂停后重启  -1取消/删除任务 2 外发 3返工
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public int Save(TaskHour model)
         {
             TaskHour dbentry;
@@ -40,9 +45,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 dbentry.TaskType = model.TaskType;
                 dbentry.Enabled = model.Enabled;
                 dbentry.Time = model.Time ;
-                // RecordType:0正常开始  1暂停后重启  -1取消/删除任务 2 外发
+                // RecordType:0正常开始  1暂停后重启  -1取消/删除任务 2 外发 3返工
                 dbentry.RecordType = model.RecordType;
-                //dbentry.Memo = "任务开始于：" + DateTime.Now.ToString("yyMMddhhmm") + "；操作者：" + operater + "/r/n";
                 dbentry.Memo = model.Memo;
                 dbentry.MoldNumber = model.MoldNumber;
                 dbentry.MachineCode = model.MachineCode;
@@ -96,7 +100,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
         public TaskHour GetCurTHByTaskID(int TaskID)
         {
-            TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && h.Enabled == true && h.State==(int)TaskHourStatus.开始).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && h.Enabled == true && h.State==(int)TaskHourStatus.开始).Where(h=>h.TaskType!=5).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
             return _taskhour;
         }
         public TaskHour GetCurTHBySemiTaskFlag(string SemiTaskFlag)
@@ -116,7 +120,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 (int)TaskHourStatus.暂停,
             };
             #region 获取关闭工时
-            List<TaskHour> _ClosedTHs = _context.TaskHours.Where(h => _FStatelist.Contains(h.State) && h.TaskID == TaskID).ToList();
+            List<TaskHour> _ClosedTHs = _context.TaskHours.Where(h => _FStatelist.Contains(h.State) && h.TaskID == TaskID).Where(h => h.TaskType != 5).ToList();
             if (_ClosedTHs != null)
             {
                 foreach(var cth in _ClosedTHs)
@@ -126,7 +130,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             }
             #endregion
             #region 获取Open工时
-            List<TaskHour> _OpenTHs = _context.TaskHours.Where(h => h.State == (int)TaskHourStatus.开始 && h.TaskID == TaskID).ToList();
+            List<TaskHour> _OpenTHs = _context.TaskHours.Where(h => h.State == (int)TaskHourStatus.开始 && h.TaskID == TaskID).Where(h => h.TaskType != 5).ToList();
             if (_OpenTHs != null)
             {
                 TimeSpan _timespan;
@@ -152,7 +156,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 (int)TaskHourStatus.开始,
                 (int)TaskHourStatus.外发,
             };
-            TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && _FStatelist.Contains(h.State)).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.TaskID == TaskID && _FStatelist.Contains(h.State)).Where(h => h.TaskType != 5).OrderByDescending(h=>h.TaskHourID).FirstOrDefault() ?? new TaskHour();
             string _operater = _taskhour.TaskHourID > 0 ? _taskhour.Operater != null ? _taskhour.Operater : "" : "";
             return _operater;
         }
@@ -167,7 +171,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 (int)TaskHourStatus.开始,
                 (int)TaskHourStatus.外发,
             };
-            var _th = _context.TaskHours.Where(t => t.TaskID == TaskID && _FStatelist.Contains(t.State)).OrderByDescending(h=>h.TaskHourID).FirstOrDefault();
+            var _th = _context.TaskHours.Where(t => t.TaskID == TaskID && _FStatelist.Contains(t.State)).Where(h => h.TaskType != 5).OrderByDescending(h=>h.TaskHourID).FirstOrDefault();
             if (_th != null)
             {
                 MachinesInfo _mInfo = _context.MachinesInfo.Where(m => m.MachineCode == _th.MachineCode).FirstOrDefault();
@@ -187,7 +191,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 (int)TaskHourStatus.开始,
                 (int)TaskHourStatus.外发,
             };
-            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && _FStatelist.Contains(h.State)).OrderByDescending(h => h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && _FStatelist.Contains(h.State)).Where(h => h.TaskType != 5).OrderByDescending(h => h.TaskHourID).FirstOrDefault() ?? new TaskHour();
             string _operater = _taskhour.TaskHourID > 0 ? _taskhour.Operater != null ? _taskhour.Operater : "" : "";
             return _operater;
         }
@@ -202,7 +206,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 (int)TaskHourStatus.开始,
                 (int)TaskHourStatus.外发,
             };
-            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && _FStatelist.Contains(h.State)).OrderByDescending(h => h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && _FStatelist.Contains(h.State)).Where(h => h.TaskType != 5).OrderByDescending(h => h.TaskHourID).FirstOrDefault() ?? new TaskHour();
             if (_taskhour != null)
             {
                 MachinesInfo _mInfo = _context.MachinesInfo.Where(m => m.MachineCode == _taskhour.MachineCode).FirstOrDefault();
@@ -211,5 +215,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             }
             return "";
         }
+
+
     }
 }

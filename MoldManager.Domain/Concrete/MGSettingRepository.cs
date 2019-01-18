@@ -34,19 +34,19 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             try
             {
                 MGSetting _dbentity = new MGSetting();
-                _dbentity = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev == entity.Rev).FirstOrDefault() ?? new MGSetting();
+                _dbentity = _context.MGSettings.Where(m => m.DrawName == entity.DrawName && m.active).Where(m => m.Rev == entity.Rev).FirstOrDefault() ?? new MGSetting();
                 if (ForUG)
                 {                    
                     if (_dbentity.ReleaseFlag)
                         return -1;
                     MGSetting _dbentity2 = new MGSetting();
-                    _dbentity2 = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev > entity.Rev).Where(m => m.active == true).FirstOrDefault() ?? new MGSetting();
+                    _dbentity2 = _context.MGSettings.Where(m => m.DrawName == entity.DrawName && m.active).Where(m => m.Rev > entity.Rev).FirstOrDefault() ?? new MGSetting();
                     if (_dbentity2.ID > 0)
                         return -3;
-                    _dbentity2 = _context.MGSettings.Where(m => m.DrawName == entity.DrawName).Where(m => m.Rev < entity.Rev).Where(m => m.ReleaseFlag == false).Where(m => m.active == true).FirstOrDefault() ?? new MGSetting();
+                    _dbentity2 = _context.MGSettings.Where(m => m.DrawName == entity.DrawName && m.active).Where(m => m.Rev < entity.Rev).Where(m => m.ReleaseFlag == false).FirstOrDefault() ?? new MGSetting();
                     if (_dbentity2.ID > 0)
                         return -4;
-                }               
+                }     
                 #region Add 
                 if (_dbentity.ID == 0)
                 {
@@ -112,7 +112,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         /// <param name="DrawIndex"></param>
         /// <param name="ReleaseBy"></param>
         /// <returns>return value 0 --成功 1--失败 2--已发布</returns>
-        public int ReleaseMGDrawing(int DrawIndex, string ReleaseBy, string TaskName)
+        public int ReleaseMGDrawing(int DrawIndex, string ReleaseBy, string TaskName,string Memo)
         {
             #region 返回失败代码
             MGSetting dbentity = _context.MGSettings.Where(m => m.ID == DrawIndex).Where(m => m.active == true).FirstOrDefault() ?? new MGSetting();
@@ -225,7 +225,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     #endregion
                     //关键 TaskType->6 铣磨任务; OldID字段用于记录旧表(MG_Task)Process信息-> 0:铣床任务 1:磨床任务
                     MGTypeName _mgtype = _context.MGTypeNames.Where(t => t.Note == Process.ToString()).FirstOrDefault() ?? new MGTypeName();
-                    Task mgtask = new Task { TaskName = TaskName,DrawingFile= DrawName, Version = dbentity.Rev, ProgramID = dbentity.ID, Creator = user.UserID, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = "Create by CAM", Quantity = dbentity.Qty, OldID = Convert.ToInt32(Process), PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 6, MoldNumber = dbentity.MoldName, HRC = dbentity.HRC, ProcessName = _mgtype.Name, Time = Convert.ToDouble(dbentity.Time),Material=dbentity.Material,Raw=dbentity.RawSize ,CAMUser=0};
+                    Task mgtask = new Task { TaskName = TaskName,DrawingFile= DrawName, Version = dbentity.Rev, ProgramID = dbentity.ID, Creator = user.UserID, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = Memo, Quantity = dbentity.Qty, OldID = Convert.ToInt32(Process), PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 6, MoldNumber = dbentity.MoldName, HRC = dbentity.HRC, ProcessName = _mgtype.Name, Time = Convert.ToDouble(dbentity.Time),Material=dbentity.Material,Raw=dbentity.RawSize ,CAMUser=0};
                     if (Process != null)
                     {
                         _context.Tasks.Add(mgtask);

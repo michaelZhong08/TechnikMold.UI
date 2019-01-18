@@ -16,7 +16,7 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         int Save(MGSetting entity, bool ForUG = true);
         List<MGTypeName> GetMGTypeName();
         bool DeleteSettingByName(string partname, int rev);
-        int ReleaseMGDrawing(int DrawIndex, string ReleaseBy,string TaskName);
+        int ReleaseMGDrawing(int DrawIndex, string ReleaseBy,string TaskName, string Memo="");
         List<MGSetting> GetMGPartListByMold(string MoldNo, bool bRelease);
         string GetDrawFileByDrawName(string DrawName, bool IsContain2D, string DrawType = "CAM");
         bool IsLatestDrawFile(string DrawName, bool IsContain2D, string DrawType = "CAM");

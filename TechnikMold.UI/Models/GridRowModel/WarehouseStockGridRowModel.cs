@@ -24,7 +24,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //{
             //    PurchaseItem = new PurchaseItem();
             //}
-            cell = new string[13];
+            cell = new string[14];
             cell[0] = Stock.ID.ToString();
             cell[1] = _Part.PartName;
             
@@ -54,6 +54,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //cell[19] = Stock.PlanQty.ToString();
             cell[11] = Warehouse;
             cell[12] = WarehousePosition;
+            cell[13] = Stock.PartID.ToString();
          }
     }
 }

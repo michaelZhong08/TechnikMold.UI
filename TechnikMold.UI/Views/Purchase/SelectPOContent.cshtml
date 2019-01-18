@@ -1,10 +1,11 @@
 ﻿@{
     ViewBag.Title = "创建订单";
 }
+@section Header{
+    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
+    <script src="~/Scripts/bootstrap-switch.js"></script>
+}
 <style>
-    /*.form-control {
-        display: inline;
-    }*/
     #POContentGrid td {
         margin:0px!important;
         padding:0px!important;
@@ -12,7 +13,6 @@
         text-align:center;
         vertical-align:middle;
         font-size:12px;
-        /*position:absolute;*/
     }
     #POContentGrid input {
         height: 24px;
@@ -37,16 +37,36 @@
         height:30px;
         margin-top:2px;
     }
-    td select{
-        height:30px;
-        margin-top:2px;
-        margin-left:2px;
+        td select {
+            height: 30px;
+            margin-top: 2px;
+            margin-left: 2px;
+        }
+    /*td span{
+        position:absolute;
+    }*/
+
+    .bootstrap-switch-Normal {
+        height: 30px !important;
     }
+
+    .bootstrap-switch-container {
+        height: 32px !important;
+        margin-top: 2px;
+    }
+
+        .bootstrap-switch-container span {
+            line-height: 32px !important;
+            width: 32px !important;
+            margin: 0px !important;
+            padding: 0px !important;
+            font-size: 20px !important;
+        }
 </style>
 <div style="position:absolute;left:10px;top:60px;bottom:10px;right:10px;border:1px rgba(0,0,0,0.1) solid;min-width:1920px;">
     <h2>采购订单维护 </h2>
-    <div style="position:absolute;left:0px;top:40px;bottom:0px;width:43%;">
-        <div style="position:absolute;left:0px;top:0px;width:100%;height:40px;border:1px rgba(0,0,0,0.1) solid;">
+    <div style="position:absolute;left:0px;top:40px;bottom:0px;width:43%;border:1px rgba(0,0,0,0.1) solid;">
+        <div style="position:absolute;left:0px;top:0px;width:100%;height:40px;">
             <table>
                 <colgroup>
                     <col width='20%' />
@@ -79,10 +99,15 @@
                     </td>
                     <td>询价结果</td>   
                     <td>
-                        <select style="height:34px;width:90%;float:right;" class="form-control" id="PurchaseState">
+                        <input id="PurchaseState" value="2" hidden />
+                        <div class="switch">                          
+                            <input id="PurchaseStateSwitch" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" />
+                        </div>
+                        
+                        @*<select style="height:34px;width:90%;float:right;" class="form-control" id="PurchaseState">
                             <option value="1">有</option>
                             <option value="2">无</option>
-                        </select>
+                        </select>*@
                     </td>                                   
                 </tr>
             </table>
@@ -98,52 +123,61 @@
         <p id="poContentDecrease" style="cursor:pointer;width:80%;margin-left:10%;line-height:80px;float:left;border:1px rgba(0,0,0,0) solid;text-align:center;font-size:80px;font-weight:bold;margin-top:20px;background-color:rgba(0,0,0,0);color:rgba(220,220,220,1);text-shadow:2px 2px 8px rgba(0,0,0,1);padding:0px;"><span class="glyphicon glyphicon-arrow-left"></span></p>
     </div>
 
-    <div  style="position:absolute;left:48%;top:40px;bottom:0px;width:52%;">
-        <div style="position:absolute;left:0px;top:0px;width:100%;height:40px;border:1px rgba(0,0,0,0.1) solid;">
+    <div  style="position:absolute;left:48%;top:40px;bottom:0px;width:52%;border:1px rgba(0,0,0,0.1) solid;">
+        <div style="position:absolute;left:0px;top:0px;width:100%;height:40px;">
             <table style="width:100%;">
                 <colgroup>
+                    <col width="10%" />
+                    <col width="15%" />
+                    <col width="10%" />
                     <col width="10%"/>
-                    <col width="30%" />
+                    <col width="30%" />                   
                     <col width="10%" />
                     <col width="15%" />
-                    <col width="10%" />
-                    <col width="15%" />
-                    <col width="10%" />
                 </colgroup>
                 <tr>
                     <td>
-                        供应商
+                        <button class="btn btn-primary" id="CreatePO" style="float:right;">创建订单</button>
+                        @*币种*@
+                        @*供应商*@
                     </td>
                     <td>
-                        <input style="height:34px;" id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" />
-                        <datalist id="SupplierIDD"></datalist>
-                    </td>
-                    <td>
-                        币种
-                    </td>
-                    <td>
-                        <select style="height:34px;" id="Currency" class="form-control">
+                        @*<select style="height:34px;" id="Currency" class="form-control">
                             <option value="人民币">人民币</option>
                             <option value="美元">美元</option>
                             <option value="日元">日元</option>
                             <option vlaue="欧元">欧元</option>
-                        </select>
+                        </select>*@
+                        @*<input style="height:34px;" id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" />
+                        <datalist id="SupplierIDD"></datalist>*@
                     </td>
                     <td>
-                        税率
+                        @*<button class="btn btn-primary" id="CreatePO" style="float:right;">创建订单</button>*@
+                        @*币种*@
                     </td>
                     <td>
-                        <select style="height:34px;" id="TaxRate" class="form-control">
+                        @*<select style="height:34px;" id="Currency" class="form-control">
+                            <option value="人民币">人民币</option>
+                            <option value="美元">美元</option>
+                            <option value="日元">日元</option>
+                            <option vlaue="欧元">欧元</option>
+                        </select>*@
+                    </td>
+                    <td>
+                        @*税率*@
+                    </td>
+                    <td>
+                        @*<select style="height:34px;" id="TaxRate" class="form-control">
                             <option value="17">17%</option>
                             <option value="6">6%</option>
                             <option value="5">5%</option>
                             <option value="4">4%</option>
                             <option value="3">3%</option>
                             <option value="0">0%</option>
-                        </select>
+                        </select>*@
                     </td>
                     <td>
-                        <button class="btn btn-primary" id="CreatePO" style="float:right;">保存订单</button>
+                        @*<button class="btn btn-primary" id="CreatePO" style="float:right;">创建订单</button>*@
                     </td>
                 </tr>
             </table>
@@ -154,109 +188,10 @@
         </div>
     </div>
 
-
-    @*<table id="tb_layout" style="width:100%;">
-        <colgroup>
-            <col width="200" />
-            <col width="100" />
-            <col width="100" />
-            <col width="200" />
-            <col width="100" />
-            <col width="200" />
-
-            <col width="100" />
-
-            <col width="60" />
-            <col width="200" />
-            <col width="60" />
-            <col width="200" />
-            <col width="60" />
-            <col width="200" />
-
-        </colgroup>
-        <tr>
-            <td>
-                <input style="height:34px;" type="text" class="form-control" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword" />
-            </td>
-            <td>
-                <button class="btn btn-primary" id="Search">查询</button>
-            </td>
-            <td>
-                <label>采购类型</label>
-            </td>
-            <td>
-                @if (ViewBag.PurchaseItemIDs == "")
-                {
-                    <select style="height:34px;" class="form-control" id="PurchaseType"></select>
-                }
-                else
-                {
-                    <select style="height:34px;" class="form-control" id="PurchaseType" disabled></select>
-                }
-            </td>
-            <td>
-                <label style="float:right;">询价状态</label>
-            </td>
-            <td>
-                <select style="height:34px;width:90%;float:right;" class="form-control" id="PurchaseState">
-                    <option value="1">已选定供应商</option>
-                    <option value="2">未选定供应商</option>
-                </select>
-            </td>
-            <td></td>
-            <td>
-                <label>供应商</label>
-            </td>
-            <td>
-                <input style="height:34px;" id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" />
-                <datalist id="SupplierIDD"></datalist>
-            </td>
-            <td>
-                <label>币种</label>
-            </td>
-            <td>
-                <select style="height:34px;" id="Currency" class="form-control">
-                    <option value="人民币">人民币</option>
-                    <option value="美元">美元</option>
-                    <option value="日元">日元</option>
-                    <option vlaue="欧元">欧元</option>
-                </select>
-            </td>
-            <td>
-                <label>税率</label>
-            </td>
-            <td>
-                <select style="height:34px;" id="TaxRate" class="form-control">
-                    <option value="17">17%</option>
-                    <option value="6">6%</option>
-                    <option value="5">5%</option>
-                    <option value="4">4%</option>
-                    <option value="3">3%</option>
-                    <option value="0">0%</option>
-                </select>
-            </td>
-            <td>
-                <button class="btn btn-primary" id="CreatePO">保存订单</button>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="6" style="width:900px;">
-                <table id="PRContentGrid" style="width:100%;"></table>
-            </td>
-            <td style="vertical-align:top">
-                <button id="poContentAdd" type="button" class="btn btn-success" value="Add" style="height:200px;width:90%;float:left;margin-top:100px;margin-left:5%;"><span class="glyphicon glyphicon-chevron-right" style="font-size:20px;"></span></button>
-                <button id="poContentDecrease" type="button" class="btn btn-danger" value="Decrease" style="height:200px;width:90%;float:left;margin-top:100px;margin-left:5%;"><span class="glyphicon glyphicon-chevron-left" style="font-size:20px;"></span></button>
-            </td>
-            <td colspan="7">
-                <input type="hidden" id="ActiveCol" />
-                <table id="POContentGrid" ></table>
-            </td>
-        </tr>
-    </table>*@
 </div>
 <input type="number" id="pr_tempID" value="-1" hidden/>
 <input type="number" id="po_tempID" value="-1" hidden/>
-
+<input type="hidden" id="po_purType" value="0" hidden />
 
 @*待采购项右键菜单*@
 <div class="contextMenu dropdown" id="PurchaseItemContextMenu" style="display:none">
@@ -371,6 +306,7 @@
         POContent_PO_T("@ViewBag.PurchaseItemIDs");
         LoadSuppliers();
         LoadPurchaseTypes();
+        
 
         SupplierListImport('SupplierIDD');
 
@@ -449,7 +385,6 @@
                         }))
                     }
                 }
-
             })
             LoadPRContents($("#Keyword").val(), $("#PurchaseType").val(), "@ViewBag.PurchaseItemIDs");
         })
@@ -467,75 +402,7 @@
             $("#POContentGrid").jqGrid('setCell', rowNo[i], 'DeliverDate', $("#DeliveryDateValue").val());
         }
         $("#DeliveryDateDialog").modal("hide");
-    }
-
-    
-    function UpdateTotal(id){
-        console.log('更新总价——');
-        console.log('数量:'+$("#" + id + "_Quantity").val());
-        console.log('单价:'+$("#" + id + "_UnitPriceWT").val());
-        $("#" + id + "_TotalPriceWT").val(Number($("#" + id + "_Quantity").val()) * Number($("#" + id + "_UnitPriceWT").val()));
-    }
-
-    function UpdateUnit(id){
-        console.log('更新单价：');
-        console.log($('总价:'+"#" + id + "_TotalPriceWT").val());
-        console.log($('数量:'+"#" + id + "_Quantity").val());
-        $("#" + id + "_UnitPriceWT").val(Number($("#" + id + "_TotalPriceWT").val())/Number(Number($("#" + id + "_Quantity").val())));
-    }
-    function BindRowAction(id, iCol) {
-
-        $("#" + id + "_Quantity").on("keyup", function () {       
-            UpdateTotal(id);
-        })
-
-        $("#" + id + "_UnitPriceWT").on("keyup", function () {
-            UpdateTotal(id);
-        })
-
-        $("#" + id + "_Quantity").on("focus", function () {
-            $("#ActiveCol").val(4);
-            $("#" + id + "_Quantity").attr("type", "number");
-        })
-
-        $("#" + id + "_UnitPriceWT").on("focus", function () {
-            $("#ActiveCol").val(5);
-            $("#" + id + "_UnitPriceWT").attr("type", "number");
-        })
-
-        $("#" + id + "_TotalPriceWT").on("focus", function () {
-            $("#ActiveCol").val(6);
-            $("#" + id + "_TotalPriceWT").attr("type", "number");
-        })
-
-        $("#" + id + "_TotalPriceWT").on("keyup", function () {
-            UpdateUnit(id);
-        })
-
-
-
-        if (iCol==undefined){
-            iCol = Number($("#ActiveCol").val());
-        }
-        switch (iCol) {
-            case 4:
-                _inputID = "#"+id + "_Quantity";
-                break;
-            case 5:
-                _inputID = "#"+id + "_UnitPriceWT";
-                break;
-            case 6:
-                _inputID ="#" + id + "_TotalPriceWT";
-                break;
-            default:
-                _inputID = "#"+ id + "_Quantity";
-                break;
-        }
-        //alert(_inputID)
-        //alert($(_inputID).val());
-        setTimeout("$(_inputID).focus()",1);
-        $(_inputID).select();
-    }
+    }    
 
     function ShowBatchPrice(){
         $("#BatchUnitPriceDialog").modal("show");
@@ -627,13 +494,10 @@
             var itemIDs1=[];
             itemIDs1=AddPRContent(selr);
             RemoveContent('POContentGrid',itemIDs1);
-            //RemovePOItem();
-
-            //CancelRowEdit(selr);
         });
-        $('#PurchaseState').on('change',function(){
-            LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
-        })
+        //$('#PurchaseState').on('change',function(){
+        //    LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
+        //})
     })
 
     function RemovePOItem() {
@@ -673,54 +537,54 @@
         var errorPart1='';
         var _purState=Number($('#PurchaseState').val());
         var supplier='';
+        var purType='0';
         var fQRPurObj=0;
         var itemIDs1=[];
         var z=0;
         var obj=$("#POContentGrid").jqGrid("getRowData");
         if(obj.length==0){
-            $('#SupplierName').val('');
+            $('#po_purType').val('0');
         }
+        purType=$('#po_purType').val();
         for (var i = 0; i < itemIDs.length; i++){
             var rowData = $("#PRContentGrid").jqGrid('getRowData', itemIDs[i]);
-            if(_purState==1){//待采购
-                if(supplier==''){
-                    if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined ||$('#SupplierName').val()==rowData.Supplier){
-                        fQRPurObj=i;
-                        supplier=rowData.Supplier;
-                        itemIDs1[z]=itemIDs[i];
-                        z++;
-
-                        $('#SupplierName').attr('readonly','readonly');
-                    }else{
-                        errorPart1=errorPart1+rowData.PartNumber+';';
-                    }                   
-                }else{
-                    if(rowData.Supplier==supplier){
-                        if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined ||$('#SupplierName').val()==rowData.Supplier){
-                            itemIDs1[z]=itemIDs[i];
-                            z++;
-                            $('#SupplierName').attr('readonly','readonly');
-                        }else{
-                            errorPart1=errorPart1+rowData.PartNumber+';';
-                        }                        
-                    }else{
-                        errorPart1=errorPart1+rowData.PartNumber+';';
-                    }
-                }
+            //if(_purState==1){//询价结果 无
                 
-            }else{
-                if(supplier==''){
+                
+            //}else{
+            //    if(supplier==''){
+            //        fQRPurObj=i;
+            //        supplier=rowData.Supplier;
+            //    }
+            //    itemIDs1[z]=itemIDs[i];
+            //    z++;
+            //    $('#SupplierName').remove('readonly');
+            //}
+            if(purType=='0'){
+                if(purType=='0' || purType==rowData.PurchaseTypeID){
                     fQRPurObj=i;
-                    supplier=rowData.Supplier;
+                    purType=rowData.PurchaseTypeID;
+                    itemIDs1[z]=itemIDs[i];
+                    z++;
+
+                    $('#po_purType').val(purType);
+                    //$('#SupplierName').attr('readonly','readonly');
+                }else{
+                    errorPart1=errorPart1+rowData.PartNumber+';';
+                }                   
+            }else{
+                if(rowData.PurchaseTypeID==purType){
+                    itemIDs1[z]=itemIDs[i];
+                    z++;
+                    //$('#SupplierName').attr('readonly','readonly');                       
+                }else{
+                    errorPart1=errorPart1+rowData.PartNumber+';';
                 }
-                itemIDs1[z]=itemIDs[i];
-                z++;
-                $('#SupplierName').remove('readonly');
             }
         }
-        if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined){
-            $('#SupplierName').val(supplier);
-        }
+        //if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined){
+        //    $('#SupplierName').val(supplier);
+        //}
                
         //if($('#SupplierName').val()=='' || $('#SupplierName').val()==undefined){
         //    for (var i = 0; i < itemIDs.length; i++) {
@@ -762,7 +626,7 @@
         //}
         for (var i = 0; i < itemIDs1.length; i++) {
             $('#POContentGrid').jqGrid('saveRow',itemIDs1[i]);
-            var rowData = $("#PRContentGrid").jqGrid('getRowData', itemIDs1[i]);            
+            var rowData = $("#PRContentGrid").jqGrid('getRowData', itemIDs1[i]);
             console.log(rowData);
             var _tempID = Number($("#pr_tempID").val())- 1;
             $("#pr_tempID").val(_tempID);
@@ -790,7 +654,8 @@
             $("#POContentGrid").addRowData(_tempID, data, 0, 0);
         }
         if(errorPart1!=''){
-            alert('零件['+errorPart1+']已指定供应商与页面供应商不符,请重新选择供应商！');
+            //alert('零件['+errorPart1+']已指定供应商与页面供应商不符,请重新选择供应商！');
+            console.log('零件['+errorPart1+'] 采购类型不一致！');
         } 
         return itemIDs1;
     }
@@ -879,9 +744,9 @@
                     isStateValid=false;
                 }
             }
-            if(isStateValid){
-                $('#SupplierName').removeAttr('readonly');
-            }
+            //if(isStateValid){
+            //    $('#SupplierName').removeAttr('readonly');
+            //}
         }
     }
 
@@ -893,7 +758,9 @@
 </script>
 
 <script>
-    $(document).ready(function(){       
+    $(document).ready(function(){   
+        //LoadPRContents('', $("#PurchaseType").val());
+
         window.onresize=function(){  
             $("#PRContentGrid").jqGrid("setGridHeight", $('#div_tb_left').height() - 42);
             $("#POContentGrid").jqGrid("setGridHeight", $('#div_tb_right').height() - 42);
@@ -901,5 +768,28 @@
             $("#PRContentGrid").jqGrid("setGridWidth", $('#div_tb_left').width() - 2);
             $("#POContentGrid").jqGrid("setGridWidth", $('#div_tb_right').width() - 2);
         } 
+        $('#PurchaseStateSwitch').bootstrapSwitch({
+            onText: '有',
+            offText: '无',
+            onSwitchChange:function(event,state){switchChange(event,state)},
+        });
+        function switchChange(event,state){
+            if(state){
+                $('#PurchaseState').val(1);
+            }else{
+                $('#PurchaseState').val(2);
+            }
+            console.log($('#PurchaseState').val());
+            LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
+        }
     })
+</script>
+
+<script>
+    $(document).ready(function(){
+        $("#CreatePO").on("click", function () {
+            //CreatePO();
+            TransferPO();
+        })
+    });
 </script>

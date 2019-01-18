@@ -481,14 +481,14 @@
     })
 
     $("#QuotationInput").on("click", function () {
-        location.href = "/Purchase/QuotationInput?QuotationRequestID=" + $("#QuotationRequestID").val();
+        $.get("/Purchase/Service_QR_GetQRSuppliers?quotationID=" + $('#QuotationRequestID').val(), function (msg) {
+            if (msg.length > 0) {
+                location.href = "/Purchase/QuotationInput?QuotationRequestID=" + $("#QuotationRequestID").val();
+            } else {
+                alert('请选择包含有供应商的报价组！');
+            }
+        });       
     })
-
-    $("#CreatePO").on("click", function () {
-        //$("#CreatePO").attr("disabled", true);
-        CreatePO();
-    })
-
     $("#RestartQR").on("click", function () {
         if (confirm("确定要重新询价？")) {
             RestartQR();
@@ -592,102 +592,104 @@ function GetERPID() {
     var rowData = $("#PRContentGrid").jqGrid("getRowData");
     var itemData = "";
     var name = "PRContents";
-    //var partIds = "";
-    //for (var i = 0; i < rowData.length; i++) {
-    //    if (rowData[i].PartID!=0)
-    //        partIds = partIds + "," + rowData[i].PartID;        
-    //}
-    var PurchaseRequestID=$('#PurchaseRequestID').val();
-    $.ajax({
-        type: "Post",
-        dataType: "html",
-        //async: false,
-        url: "/Purchase/ExportExcelForPartByPR?PurchaseRequestID=" + PurchaseRequestID,
-        data: {},
-        error: function () {
-            PRContentGrid("", $("#PurchaseRequestID").val(), "", "");
-        },
-        success: function (msg) {
-            //if (msg != "ok") {               
-                ////PRContentGrid(getQueryString("PartIDs"), 0, 0, "");
-                //$("#PRContentGrid").jqGrid('clearGridData');
-                //$("#PRContentGrid").jqGrid('setGridParam', {  // 重新加载数据
-                //    url: '/Purchase/JsonPRNew',
-                //    type: 'Post',
-                //    datatype: 'json',
-                //    //data: newdata,   //  newdata 是符合格式要求的需要重新加载的数据 
-                //    data: { 'PartIDs': partIds, 'PurchaseRequestStatus': $('#PurchaseRequestStatus').val() },
-                //    page: 1
-                //}).trigger("reloadGrid");
-                //document.location.href = "/Purchase/ExportExcelForPart?PartID=" + partIds;
-            //}
-            if (msg != "ok") {
-                
-                document.location.href = "/Purchase/ExportExcelForPartByPR?PurchaseRequestID=" + PurchaseRequestID;
-            }
-            var rows=$('#PRContentGrid').getDataIDs();
-            for (var i = 0; i < rows.length; i++) {
-                $.ajax({
-                    type: "Post",
-                    //同步至前台table显示 ajax设置为同步执行 
-                    async: false,
-                    url: "/Purchase/GetErpIDByPrcID",
-                    data: { 'PrcID': rowData[i].ID },
-                    success: function (result) {
-                        if (result != '') {
-                            $("#PRContentGrid").setCell(rows[i], 'ERPPartID', result);
-                        }
-                    }
-                })
-            };
 
+    var PurchaseRequestID = $('#PurchaseRequestID').val();
+    $.ajaxSettings.async = 'false';
+    $.get('/Purchase/Service_PR_Vaild_ExprotExcelForPart?PurchaseRequestID=' + PurchaseRequestID, function (msg) {
+        if (msg == 'ok') {
+            location.href = "/Purchase/ExportExcelForPartByPR?PurchaseRequestID=" + PurchaseRequestID;
+        }
+        //更新页面字段 ERP料号
+        var rows = $('#PRContentGrid').getDataIDs();
+        for (var i = 0; i < rows.length; i++) {
             $.ajax({
-                url: "/Purchase/IsErpPasrts",
-                type: "Get",
+                type: "Post",
                 async: false,
-                data: { 'prID': PurchaseRequestID },
+                url: "/Purchase/GetErpIDByPrcID",
+                data: { 'PrcID': rowData[i].ID },
                 success: function (result) {
-                    if (result != 'ok') {
-                        return
-                    }
-                    else {
-                        //$('#GetERPID').css('display', 'none');
-                        $('#GetERPID').css('pointer-events', 'none');
-                        $('#GetERPID').css('cursor', 'not-allowed');
-                        $('#GetERPID').css('background-color', 'darkgray');
-                        $('#GetERPID').css('border-color', 'darkgray');
-
+                    if (result != '') {
+                        $("#PRContentGrid").setCell(rows[i], 'ERPPartID', result);
                     }
                 }
             })
-        }
-    });
+        };
+        //更新按钮状态
+        $.ajax({
+            url: "/Purchase/IsErpPasrts",
+            type: "Get",
+            async: false,
+            data: { 'prID': PurchaseRequestID },
+            success: function (result) {
+                if (result != 'ok') {
+                    return
+                }
+                else {
+                    $('#GetERPID').css('pointer-events', 'none');
+                    $('#GetERPID').css('cursor', 'not-allowed');
+                    $('#GetERPID').css('background-color', 'darkgray');
+                    $('#GetERPID').css('border-color', 'darkgray');
+
+                }
+            }
+        });
+    }, 'html');
+    
+    //$.ajax({
+    //    type: "Post",
+    //    dataType: "html",
+    //    //async: false,
+    //    url: "/Purchase/ExportExcelForPartByPR?PurchaseRequestID=" + PurchaseRequestID,
+    //    data: {},
+    //    error: function () {
+    //        PRContentGrid("", $("#PurchaseRequestID").val(), "", "");
+    //    },
+    //    success: function (msg) {
+            
+    //    }
+    //});
 }
 //导出采购申请
 function ExportExcelForPurchase() {
     var _ids = GetMultiSelectedCell("PRListGrid", "ID");
     if (_ids != "") {
-
         _ids = _ids + ",";
-        $.ajax({
-            type: "Post",
-            dataType: "html",
-            url: "/Purchase/ExportExcelForPurchase?prNo=" + _ids,
-            data: {},
-            error: function () {
-
-            },
-            success: function (msg) {
-                if (msg != "ok" && msg.indexOf('NG')==-1) {
-
-                    document.location.href = "/Purchase/ExportExcelForPurchase?prNo=" + _ids;
-                }
-                else {
-                    var str = msg.split('|');
-                    alert("采购申请单[" + str[1] + "]的零件号[" + str[2] + "]ERP料号为空，请点同步ERP料号再导出申请单！")
-                }
-            }
+        ////2019/1/17 添加
+        $.ajaxSettings.async = false;
+        $.get('/Purchase/Service_PR_RefreshSyncState', function () {
+            var _url = "/Purchase/JsonPRList?State=" + $("#PRState").val() + "&Department=" + $('#Department').val();
+            $("#PRListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
         });
+        $.get('/Purchase/Service_PR_Vaild_ExportExcelForPR?prNO=' + _ids, function (msg) {
+            if (msg == "ok") {
+                location.href = "/Purchase/ExportExcelForPurchase?prNo=" + _ids;     
+            } else if (msg.indexOf('NG') == -1) {
+                var str = msg.split('|');
+                alert("采购申请单[" + str[1] + "]的零件号[" + str[2] + "]ERP料号为空，请点同步ERP料号再导出申请单！");
+            } else {
+                alert('数据服务发生异常(或物料还未同步)，请检查数据服务器！');
+            }
+        }, 'html');
+        
+        
+        //$.ajax({
+        //    type: "Post",
+        //    dataType: "html",
+        //    url: "/Purchase/ExportExcelForPurchase?prNo=" + _ids,
+        //    data: {},
+        //    error: function () {
+
+        //    },
+        //    success: function (msg) {
+        //        if (msg != "ok" && msg.indexOf('NG')==-1) {
+        //            location.href = "/Purchase/ExportExcelForPurchase?prNo=" + _ids;
+        //        }
+        //        else {
+        //            var str = msg.split('|');
+        //            alert("采购申请单[" + str[1] + "]的零件号[" + str[2] + "]ERP料号为空，请点同步ERP料号再导出申请单！")
+        //        }
+        //    }
+        //});
     }
     else {
         alert("请选择一条记录．");
@@ -714,7 +716,7 @@ function CreatePR(Submit) {
     }
     if (sessionStorage['SpecKey'] != null) {
         if (sessionStorage['SpecKey'] == 'hr') {
-            if ($("#ApprovalUserID").val().trim() == "0") {
+            if ($("#ApprovalUserID").val().trim() == "0" || $("#ApprovalUserID").val().trim()=='-') {
                 $("#CreatePR").removeAttr("disabled");
                 alert("请选择申请人")
                 return false;
@@ -723,17 +725,24 @@ function CreatePR(Submit) {
     }    
     var m = true;
     var s = true;
+    var c = true;
     var alertMsg = "";
     var rowData = $("#PRContentGrid").jqGrid("getRowData");
     for (var i = 0; i < rowData.length; i++) {
-        if (rowData[i].BrandName == "") {
-            alertMsg = rowData[i].JobNo + ";" + alertMsg;
-            m = false;
-        }
-        if (rowData[i].Specification == "") {
+        if (sessionStorage['SpecKey'] == 'hr') {
+            if (rowData[i].CostCenterID.trim() == "" || rowData[i].CostCenterID == "0") {
+                alertMsg = rowData[i].JobNo + ";" + alertMsg;
+                c = false;
+            }
+            if (rowData[i].BrandName.trim() == "" || rowData[i].BrandName == "-") {
+                alertMsg = rowData[i].JobNo + ";" + alertMsg;
+                m = false;
+            }
+        }        
+        if (rowData[i].Specification.trim() == "" || rowData[i].CostCenterID == undefined) {
             alertMsg = rowData[i].JobNo + ";" + alertMsg;
             s = false;
-        }
+        }      
     }
     if ($('#TaskType').val() == 0) {
         if (!m) {
@@ -747,7 +756,11 @@ function CreatePR(Submit) {
         $("#CreatePR").removeAttr("disabled");
         return false;
     }
-
+    if (!c) {
+        alert("零件号[" + alertMsg + "]的归属部门为空，请选择归属部门后再提交单据！");
+        $("#CreatePR").removeAttr("disabled");
+        return false;
+    }
     if (Submit) {
         $("#SubmitPR").attr("disabled", true);
     } else {
@@ -795,6 +808,7 @@ function CreatePR(Submit) {
                     name + "[" + i + "].CostCenterID=" + rowData[i].CostCenterID + "&"+
                     name + "[" + i + "].PlanQty=" + rowData[i].PlanQty + "&" +
                     name + "[" + i + "].PurchaseTypeID=" + rowData[i].PurchaseType + "&" +
+                    name + "[" + i + "].Time=" + rowData[i].Time + "&" +
                     name + "[" + i + "].ERPPartID=" + rowData[i].ERPPartID + "&";
         }
         itemData = itemData + "PurchaseRequestID=" + ($("#PurchaseRequestID").val() == undefined ? 0 : $("#PurchaseRequestID").val()) +
@@ -822,6 +836,7 @@ function CreatePR(Submit) {
         });
     } else {
         alert("申请单内容不能为空!");
+        $("#CreatePR").removeAttr("disabled");
         return false;
     }
 }
@@ -870,7 +885,7 @@ function AddPRContent(row) {
         var _tempID = Number($("#tempID").val()) - 1;
         $("#tempID").val(_tempID);
         data = {
-            ID: _tempID,
+            ID: 0,
             Name: $("#Name").val(),
             Quantity: $("#Quantity").val(),
             PartNumber: moldNum + str + $("#JobNo").val(),
@@ -886,6 +901,7 @@ function AddPRContent(row) {
             MoldNumber: moldNum,
             JobNo: $("#JobNo").val(),
             PlanQty: $('#PlanQty').val(),
+            PartID: $('#PartID').val(),
         };
         $("#PRContentGrid").addRowData(_tempID, data, 0, 0);
     } else {
@@ -909,6 +925,7 @@ function AddPRContent(row) {
         $("#PRContentGrid").jqGrid('setCell', _rowno, 'JobNo', $("#JobNo").val());
         $("#PRContentGrid").jqGrid('setCell', _rowno, 'PartNumber', moldNum + str + $("#JobNo").val());
         $("#PRContentGrid").jqGrid('setCell', _rowno, 'PlanQty', $("#PlanQty").val());
+        $("#PRContentGrid").jqGrid('setCell', _rowno, 'PartID', $("#PartID").val());
     }
 }
 
@@ -975,6 +992,7 @@ function EditPrContent(id, row) {
         //$("#RequireDate").val(rowdata.RequireTime);
         $("#MoldNumber").val(rowdata.MoldNumber);
         $("#PlanQty").val(rowdata.PlanQty);
+        $("#PartID").val(rowdata.PartID);
         $("#MaterialID option").each(function () {
             if ($(this).text() == rowdata.Material) {
                 //$(this).attr("selected", "true");
@@ -1049,12 +1067,12 @@ function LoadSupplier(SupplierID) {
         $("#Code").val(msg.Code);
         $("#Name").val(msg.Name);
         $("#FullName").val(msg.FullName);
-        $("#Address").val(msg.Address);
-        $("#Bank").val(msg.Bank);
-        $("#Account").val(msg.Account);
-        $("#TaxNo").val(msg.TaxNo);
+        $("#Address").val((msg.Address == '' || msg.Address == null) ? 'X' : msg.Address);
+        $("#Bank").val((msg.Bank == '' || msg.Bank == null) ? 'X' : msg.Bank);
+        $("#Account").val((msg.Account == '' || msg.Account == null)  ? 'X' : msg.Account);
+        $("#TaxNo").val((msg.TaxNo == '' || msg.TaxNo == null)  ? 'X' : msg.TaxNo);
         $("#TaxRate").val(msg.TaxRate);
-        $("#Settlement").val(msg.Settlement);
+        $("#Settlement").val((msg.Settlement == '' || msg.Settlement == null)  ? 'X' : msg.Settlement);
         $("#Enabled").val(msg.Enabled);
         $('#JianSuo').val(msg.JianSuo);
     });
@@ -1064,7 +1082,11 @@ function LoadSupplier(SupplierID) {
 
 //清空供应商信息对话框
 function ClearSupplierDialog() {
-    $("#SupplierInfo input").val("");
+    $("#SupplierInfo input").val("X");
+    $('#TaxRate').val('0.00');
+    $("#Code").val("X");
+    $("#Name").val("");
+    $("#FullName").val("");
     //$("#SupplierID").val(0);
     //$("#Name").val("");
     //$("#FullName").val("");
@@ -1204,15 +1226,17 @@ function ValidateCreate(FormName) {
     $(selector).each(function () {
         var item = $("#" + UnifyName(this.id));
         var _display = item.parent().css('display');
+        var _hidden = item[0].hidden;
         //console.log(_display);
-        if (_display != 'none') {
+        //if (_display != 'none') {
+        if (_hidden == false && _display != 'none') {
             if ((item.val() == "") || (item.val() == undefined)) {
                 item.addClass("invalidefield");
                 RequiredFieldValid = false;
             } else {
                 item.removeClass("invalidefield");
             }
-        }      
+        }
     });
     return RequiredFieldValid;
 }
@@ -1778,6 +1802,10 @@ function LoadSupplierNames(QuotationRequestID) {
                 })
             }
             ////
+            var mailBtn = $('#QREmail')[0];
+            if (mailBtn != null) {
+                $('#QREmail').remove();               
+            }
             var _qrID = $('#QuotationRequestID').val();
             var _html = '<a id="QREmail" class="btn btn-primary" href="' + FormatHrefStr(_fval) + '" onclick="ShowDialog()" ><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>';//href=MoldSysPlugin:'+res+_qrID +'
             $('#td_GenerateLink').append(_html);
@@ -1864,18 +1892,20 @@ function DeletePOContent() {
     var selrows = $("#POContentGrid").jqGrid('getGridParam', 'selarrrow');
     if (selrows.length > 0) {
         if (confirm("确认删除零件？")) {
-            while (selrows.length > 0) {
-                var _id = $("#POContentGrid").getCell(selrows[0], "POContentID");
-                if (_id > 0) {
-                    $.ajax({
-                        dataType: "html",
-                        url: "/Purchase/DeletePOContent?POContentID=" + _id
-                    })
+            if (selrows.length > 0) {
+                for (var i = 0; i < selrows.length; i++) {
+                    var _id = $("#POContentGrid").getCell(selrows[i], "POContentID");
+                    if (_id > 0) {
+                        $.ajax({
+                            dataType: "html",
+                            url: "/Purchase/DeletePOContent?POContentID=" + _id,
+                            async: false,
+                        })
+                    }
                 }
-                $("#POContentGrid").delRowData(selrows[0]);
             }
-            $("#POContentGrid").trigger("reloadGrid");
         }
+        location.href = '/Purchase/PODetail?PurchaseOrderID=' + $('#PurchaseOrderID').val();
     } else {
         alert("请至少选择一个零件");
     }
@@ -2136,6 +2166,25 @@ function LoadMoldNumbers(Keyword) {
     })
 }
 
+function TransferPO() {
+    //获取所有行PurchaseItemId
+    var rowids = $('#POContentGrid').jqGrid("getDataIDs");
+    if (rowids.length > 0) {
+        var itemIds = '';
+        var purType = '';
+        for (var i = 0; i < rowids.length; i++) {
+            var rowData = $("#POContentGrid").jqGrid('getRowData', rowids[i]);
+            itemIds = itemIds + rowData.PurchaseItemID + ',';
+            purType=rowData.PurchaseType;
+        }
+        itemIds = itemIds.substr(0, itemIds.length - 1);
+        location.href = "/Purchase/PODetail?PurchaseOrderID=0&itemIds=" + itemIds + '&purType=' + purType;
+    } else {
+        alert('失败：右侧表格无数据行.请从左侧列表选择采购项添加至右侧表格！');
+        return false;
+    }
+}
+
 //TODO:生成采购订单
 function CreatePO() {
     var POContents = new Object();
@@ -2154,7 +2203,7 @@ function CreatePO() {
     var rowData = $("#POContentGrid").jqGrid("getRowData");
     if (rowData.length > 0) {
         if ($('#SupplierName').val() == null || $('#SupplierName').val() == '' || $('#SupplierName').val() == undefined) {
-            $("#CreatePO").removeAttr("disabled");
+            $("#SaveOrder").removeAttr("disabled");
             alert('请选择供应商！');
             return;
         }
@@ -2163,27 +2212,31 @@ function CreatePO() {
         //
         for (var i = 0; i < rowData.length; i++) {
             console.log(rowData[i]);
-            if ((rowData[i].Quantity == 0) || (rowData[i].UnitPriceWT == 0) || (rowData[i].TotalPriceWT == 0) || (rowData[i].DeliverDate == ""||rowData[i].DeliverDate == "-")) {
-                alert("请输入订单项数量/单价/总价/交付日期信息");                
+            if ((rowData[i].Quantity == 0) || (rowData[i].UnitPriceWT == 0) || (rowData[i].TotalPriceWT == 0) || (rowData[i].DeliverDate == "" || rowData[i].DeliverDate == "-")) {
+                alert("请输入订单项数量/单价/总价/交付日期信息");
                 $('#POContentGrid').jqGrid('editRow', i, true);
-                $("#CreatePO").removeAttr("disabled");
+                $("#SaveOrder").removeAttr("disabled");
                 return false;
             } else {
                 itemData = itemData + name + "[" + i + "].PurchaseItemID=" + rowData[i].PurchaseItemID + "&" +
                     name + "[" + i + "].Quantity=" + rowData[i].Quantity + "&" +
+                    name + "[" + i + "].UnitPrice=" + rowData[i].UnitPrice + "&" +
+                    name + "[" + i + "].TotalPrice=" + rowData[i].TotalPrice + "&" +
                     name + "[" + i + "].UnitPriceWT=" + rowData[i].UnitPriceWT + "&" +
                     name + "[" + i + "].TotalPriceWT=" + rowData[i].TotalPriceWT + "&" +
-                    name + "[" + i + "].PlanTime=" + rowData[i].DeliverDate + "&"+
+                    name + "[" + i + "].PlanTime=" + rowData[i].RequestTime + "&" +
+                    name + "[" + i + "].Time=" + rowData[i].Time + "&" +
                 name + "[" + i + "].Memo=" + rowData[i].Memo + "&";
             }
         }
         
-        itemData = itemData + "&Supplier=" + $('#SupplierName').val() +//$("#Supplier option:selected").val() +
+        itemData = itemData +//$("#Supplier option:selected").val() +
             "&Currency=" + $("#Currency").val() +
             "&TaxRate=" + $("#TaxRate").val() +
-            "&PurchaseType=" + $("#PurchaseType").val() +
-            "&SupplierName=" + $('#SupplierName').val();//$("#Supplier option:selected").text();
-        $("#CreatePO").removeAttr("disabled");
+            "&PurchaseType=" + $("#PurchaseTypeID").val() +
+            "&SupplierName=" + $("#SupplierName").val() +
+            "&POMemo=" + $('#Memo').val();//$("#Supplier option:selected").text();
+        $("#SaveOrder").removeAttr("disabled");
         $.ajax({
             type: "Post",
             dataType: "html",
@@ -2195,7 +2248,7 @@ function CreatePO() {
             success: function (msg) {
                 if (msg == "") {
                     //alert("订单生成");
-                    $("#CreatePO").attr("disabled", false);
+                    $("#SaveOrder").attr("disabled", false);
                     location.href = "/Purchase/PurchaseOrderList";
                 } else {
                     alert(msg);
@@ -2305,6 +2358,10 @@ function SupplierListImport(_suplistID,isWF) {
             var v1 = fo[i].split('/')[0];
             //英文
             var v2 = fo[i].split('/')[1];
+            //应对英文显示bug
+            if (v1 == v2) {
+                v2 = v2.substr(0,3);
+            }
             var ohtml = "<option value='" + v1 + "'>" + v2 + "</option>";
             var $ohtml = $(ohtml);
             $('#' + _suplistID).append($ohtml);
@@ -2319,4 +2376,128 @@ function PurItenChangePlan(purItemID, planDate) {
     if (Number(purItemID) > 0) {
         $.get('/Purchase/Service_PurItem_ChangePlan?purchaseItemID=' + purItemID + '&planDate=' + planDate, function () { });
     }    
+}
+
+function BindRowAction(id, iCol) {
+    //keyup
+    $("#" + id + "_Quantity").on("keyup", function () {
+        UpdateTotal(id);
+    })
+
+    $("#" + id + "_UnitPrice").on("keyup", function () {
+        UpdateUnitWT(id);
+    })
+
+    $("#" + id + "_UnitPriceWT").on("keyup", function () {
+        UpdateUnit(id);
+    })
+
+    $("#" + id + "_Time").on("keyup", function () {
+        UpdateTotal(id);
+    })
+    //focus
+    //$("#" + id + "_Quantity").on("focus", function () {
+    //    $("#ActiveCol").val(4);
+    //    //$("#" + id + "_Quantity").attr("type", "number");
+    //})
+
+    //$("#" + id + "_UnitPrice").on("focus", function () {
+    //    $("#ActiveCol").val(5);
+    //    //$("#" + id + "_UnitPriceWT").attr("type", "number");
+    //})
+
+    //$("#" + id + "_UnitPriceWT").on("focus", function () {
+    //    $("#ActiveCol").val(6);
+    //    //$("#" + id + "_UnitPriceWT").attr("type", "number");
+    //})
+
+    //UpdateUnit
+    $("#" + id + "_TotalPriceWT").on("keyup", function () {
+        UpdateUnitByTotalWT(id);
+    })
+
+    $("#" + id + "_TotalPrice").on("keyup", function () {
+        UpdateUnitByTotal(id);
+    })
+    //$("#" + id + "_TotalPriceWT").on("focus", function () {
+    //    $("#ActiveCol").val(7);
+    //    //$("#" + id + "_TotalPriceWT").attr("type", "number");
+    //})
+
+    
+    //if (iCol == undefined) {
+    //    iCol = Number($("#ActiveCol").val());
+    //}
+
+    //switch (iCol) {
+    //    case 4:
+    //        _inputID = "#" + id + "_Quantity";
+    //        break;
+    //    case 5:
+    //        _inputID = "#" + id + "_UnitPriceWT";
+    //        break;
+    //    case 6:
+    //        _inputID = "#" + id + "_TotalPriceWT";
+    //        break;
+    //    default:
+    //        _inputID = "#" + id + "_Quantity";
+    //        break;
+    //}
+
+    //setTimeout("$(_inputID).focus()", 1);
+    //$(_inputID).select();
+}
+
+//更新含税单价
+function UpdateUnitWT(id) {
+    //更新含税单价
+    var _taxRate = $('#TaxRate').val();
+    $("#" + id + "_UnitPriceWT").val((Number($("#" + id + "_UnitPrice").val()) * (1+Number(_taxRate)/100)).toFixed(2));
+    //更新总价
+    UpdateTotal(id);
+}
+
+//更新未税单价
+function UpdateUnit(id) {
+    //更新未税单价
+    var _taxRate = $('#TaxRate').val();
+    $("#" + id + "_UnitPrice").val((Number($("#" + id + "_UnitPriceWT").val()) / (1 + Number(_taxRate) / 100)).toFixed(2));
+    //更新总价
+    UpdateTotal(id);
+}
+
+//更新总价
+function UpdateTotal(id) {
+    //console.log('更新总价——');
+    //console.log('数量:' + $("#" + id + "_Quantity").val());
+    //console.log('单价:' + $("#" + id + "_UnitPriceWT").val());
+    $("#" + id + "_TotalPriceWT").val((Number($("#" + id + "_Time").val()) * Number($("#" + id + "_Quantity").val()) * Number($("#" + id + "_UnitPriceWT").val())).toFixed(2));
+    $("#" + id + "_TotalPrice").val((Number($("#" + id + "_Time").val()) * Number($("#" + id + "_Quantity").val()) * Number($("#" + id + "_UnitPrice").val())).toFixed(2));
+}
+
+//更新单价
+function UpdateUnitByTotalWT(id) {
+    //console.log('更新单价：');
+    //console.log('总价:'+$("#" + id + "_TotalPriceWT").val());
+    //console.log('数量:' + $("#" + id + "_Quantity").val());
+
+    //更新含税单价
+    $("#" + id + "_UnitPriceWT").val((Number($("#" + id + "_TotalPriceWT").val()) / Number($("#" + id + "_Quantity").val()) / Number($("#" + id + "_Time").val())).toFixed(2));
+    //更新未税单价
+    var _taxRate = $('#TaxRate').val();
+    $("#" + id + "_UnitPrice").val(((Number($("#" + id + "_TotalPriceWT").val()) / Number($("#" + id + "_Quantity").val()) / Number($("#" + id + "_Time").val())) / (1 + Number(_taxRate) / 100)).toFixed(2));
+
+    $("#" + id + "_TotalPrice").val((Number($("#" + id + "_TotalPriceWT").val()) / (1 + Number(_taxRate) / 100)).toFixed(2));
+}
+function UpdateUnitByTotal(id) {
+    //console.log('更新单价：');
+    //console.log('总价:'+$("#" + id + "_TotalPriceWT").val());
+    //console.log('数量:' + $("#" + id + "_Quantity").val());
+    var _taxRate = $('#TaxRate').val();
+    //更新含税单价
+    $("#" + id + "_UnitPriceWT").val((Number($("#" + id + "_TotalPrice").val()) * (1 + Number(_taxRate) / 100) / Number($("#" + id + "_Quantity").val()) / Number($("#" + id + "_Time").val())).toFixed(2));
+    //更新未税单价   
+    $("#" + id + "_UnitPrice").val(((Number($("#" + id + "_TotalPrice").val()) / Number($("#" + id + "_Quantity").val()) / Number($("#" + id + "_Time").val()))).toFixed(2));
+
+    $("#" + id + "_TotalPriceWT").val((Number($("#" + id + "_TotalPrice").val()) * (1 + Number(_taxRate) / 100)).toFixed(2));
 }

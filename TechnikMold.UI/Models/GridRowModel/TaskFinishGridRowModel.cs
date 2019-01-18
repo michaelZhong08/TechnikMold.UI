@@ -21,13 +21,13 @@ namespace MoldManager.WebUI.Models.GridRowModel
 
         }
 
-        public TaskFinishGridRowModel(CNCItem Item)
+        public TaskFinishGridRowModel(CNCItem Item,string machineName)
         {
             cell = new string[4];
             cell[0] = Item.CNCItemID.ToString();
             cell[1] = Item.LabelName;
             cell[2] = Item.CNCStartTime.ToString("yyyy-MM-dd HH:mm");
-            cell[3] = Item.CNCMachine;
+            cell[3] = machineName;//Item.CNCMachine;
         }
     }
 }

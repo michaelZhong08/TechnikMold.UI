@@ -126,7 +126,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
 
         public IEnumerable<int> GetNCIDs(string Name, int Version)
         {
-            IEnumerable<int> _result = _context.SteelCAMDrawngs.Where(s => s.DrawName == Name).Where(s => s.DrawREV < Version).Select(s => s.NCID);
+            IEnumerable<int> _result = _context.SteelCAMDrawngs.Where(s => s.DrawName == Name && s.active).Where(s => s.DrawREV < Version).Select(s => s.NCID);
             return _result;
         }
 

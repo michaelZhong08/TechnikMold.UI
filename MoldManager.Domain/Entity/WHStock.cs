@@ -30,5 +30,6 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int TaskID { get; set; }
         public int StockType { get; set; }
         public string MoldNumber { get; set; }
+        public string Memo { get; set; }
     }
 }

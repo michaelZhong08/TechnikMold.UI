@@ -35,14 +35,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             try
             {
                 #region 返回错误代码
-                WEDMSetting ws = _context.WEDMSettings.Where(w => w.DrawName == entity.DrawName && w.Rev == entity.Rev).FirstOrDefault() ?? new WEDMSetting();
+                WEDMSetting ws = _context.WEDMSettings.Where(w => w.DrawName == entity.DrawName && w.Rev == entity.Rev && w.active).FirstOrDefault() ?? new WEDMSetting();
                 Task _task = _context.Tasks.Where(t => t.TaskType == 3 && t.ProgramID == ws.ID && t.ProgramID>0).FirstOrDefault() ?? new Task();
                 if (_task.TaskID>0 && _task.State!=(int)TaskStatus.未发布)
                     return -1;
-                WEDMSetting ws3 = _context.WEDMSettings.Where(w => w.DrawName == entity.DrawName && w.Rev == entity.Rev && w.Rev > entity.Rev && w.active == true).FirstOrDefault() ?? new WEDMSetting();
+                WEDMSetting ws3 = _context.WEDMSettings.Where(w => w.DrawName == entity.DrawName && w.Rev == entity.Rev && w.Rev > entity.Rev && w.active).FirstOrDefault() ?? new WEDMSetting();
                 if (ws3.ID > 0)
                     return -3;
-                WEDMSetting ws4 = _context.WEDMSettings.Where(w => w.DrawName == entity.DrawName && w.Rev == entity.Rev && w.Rev < entity.Rev && w.active == true && w.ReleaseFlag == false).FirstOrDefault() ?? new WEDMSetting();
+                WEDMSetting ws4 = _context.WEDMSettings.Where(w => w.DrawName == entity.DrawName && w.Rev == entity.Rev && w.Rev < entity.Rev && w.active && w.ReleaseFlag == false).FirstOrDefault() ?? new WEDMSetting();
                 if (ws4.ID > 0)
                     return -4;
                 #endregion
@@ -256,7 +256,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             SystemConfig sys = _context.SystemConfigs.Where(s => s.SettingName == "WEDM3DPATH").FirstOrDefault() ?? new SystemConfig();
             string path = sys.Value.Substring(2, sys.Value.Length - 2).Replace("\\", "/") + "/";
-            return sys.Value;
+            return sys.Value.Trim();
         }
         public List<WEDMTaskInfo> GetWEDMTaskInfoByMoldAndStatus(string MoldNo, int Status = -2, int PlanID = 0)
         {

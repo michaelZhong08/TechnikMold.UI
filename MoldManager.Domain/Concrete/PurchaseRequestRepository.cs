@@ -132,7 +132,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             PurchaseRequest _dbEntry = _context.PurchaseRequests.Find(PurchaseRequestID); 
             if (_dbEntry != null)
             {
-                _dbEntry.State = 99;
+                _dbEntry.State = -99;
                 _dbEntry.Memo = Memo;
             }
             _context.SaveChanges();
@@ -176,14 +176,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Memo = _dbEntry.Memo+" "+Memo;
                 }
                 switch (State){
-                    case 2:
+                    case 5:
                         _dbEntry.SubmitUserID=UserID;
                         break;
-                    case 3:
+                    case 10:
                         _dbEntry.ReviewUserID=UserID;
                         _dbEntry.ApprovalDate = DateTime.Now;
                         break;
-                    case 99:
+                    case -99:
                         _dbEntry.ReviewUserID=UserID;
                         _dbEntry.ApprovalDate = DateTime.Now;
                         break;

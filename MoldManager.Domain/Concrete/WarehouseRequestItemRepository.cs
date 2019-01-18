@@ -19,24 +19,24 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public int Save(WarehouseRequestItem Item)
         {
             //bool _isNew = false;
-            WarehouseRequestItem _dbEntry;
-            if (Item.WarehouseRequestItemID == 0)
+            WarehouseRequestItem _dbEntry = _context.WarehouseRequestItems.Find(Item.WarehouseRequestItemID);
+            if (_dbEntry==null)
             {
                     _context.WarehouseRequestItems.Add(Item);
             }
             else
-            {
-                _dbEntry = _context.WarehouseRequestItems.Find(Item.WarehouseRequestItemID);
-                _dbEntry.WarehouseRequestID = Item.WarehouseRequestID;
-                _dbEntry.PartName = Item.PartName;
-                _dbEntry.PartNumber = Item.PartNumber;
-                _dbEntry.Specification = Item.Specification;
-                _dbEntry.PartID = Item.PartID;                
+            {                
+                //_dbEntry.WarehouseRequestID = Item.WarehouseRequestID;
+                //_dbEntry.PartName = Item.PartName;
+                //_dbEntry.PartNumber = Item.PartNumber;
+                //_dbEntry.Specification = Item.Specification;
+                //_dbEntry.PartID = Item.PartID;                
                 _dbEntry.Quantity = Item.Quantity;
                 _dbEntry.ReceivedQuantity = Item.ReceivedQuantity;
                 _dbEntry.ReceiveDate = Item.ReceiveDate;
                 _dbEntry.Received = Item.Received;
                 _dbEntry.WarehouseStockID = Item.WarehouseStockID;
+                _dbEntry.ShortQty = Item.ShortQty;
             }
             _context.SaveChanges();
             

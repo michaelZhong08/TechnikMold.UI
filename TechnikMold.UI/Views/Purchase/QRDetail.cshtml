@@ -38,7 +38,25 @@
 
     }
 }
+<style>
+    #QRContentGrid td {
+        margin: 0px !important;
+        padding: 0px !important;
+        height: 30px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 12px;
+    }
 
+    #QRContentGrid input {
+        height: 24px;
+        border-style: none;
+        outline: none;
+        font-size: 12px;
+        margin: 0px;
+        padding: 0px;
+    }
+</style>
 <div style="margin-top:60px">   
     <div class="col-sm-11">
         @if (ViewBag.QuotationRequestID != 0)
@@ -676,14 +694,14 @@
                         return;
                     }
                 });
-
             }else{
-                $.jAlert({ //this is the normal usage
-                    'content': '请选择报价组后再进行操作！',
-                    'autoClose' : 2000,
-                    'closeBtn':false,
-                    'size': 'xsm'
-                });
+                //$.jAlert({ //this is the normal usage
+                //    'content': '请选择报价组后再进行操作！',
+                //    'autoClose' : 2000,
+                //    'closeBtn':false,
+                //    'size': 'xsm'
+                //});
+                alert('请选择报价组后再进行操作！');
                 return false;
             }
         });
@@ -692,7 +710,7 @@
     function FormatHrefStr(_fval){
         var _href='';
         $.ajaxSettings.async=false;
-        $.get('/Administrator/Service_GetServerInfo',function(res){
+        $.get('/Administrator/Service_GetServerInfo?_type=QRMail',function(res){
             var _qrID=$('#QuotationRequestID').val();
             _href= 'MoldSysPlugin:'+res+_qrID+','+_fval;
         });  

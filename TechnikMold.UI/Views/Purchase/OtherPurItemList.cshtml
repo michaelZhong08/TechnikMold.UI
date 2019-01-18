@@ -13,47 +13,47 @@
         DeptID = 0;
     }
 }
-<div style="margin-top:60px">
-    <h2>@ViewBag.Title</h2>
-    <div class="col-sm-2">
-        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
-        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
-        <select class="form-control" id="MoldSelect" size="20"></select>
-    </div>
-    <div class="col-sm-10">
-        <table style="margin-right:20px!important;">
-            <tr>
-                <td style="width:200px!important;">
-                    <select id="ChargePurType" class="form-control" style="width:200px;">
-                        <option value="2">模具耗材</option>
-                        <option value="4">固定资产</option>
-                    </select>
-                </td>
-                <td style="width:200px!important;">
-                    <select id="PurchaseType" class="form-control" style="width:200px;"></select>
-                </td>
-                <td style="width:200px!important;">
-                    <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;" />
-                </td>
-                <td style="width:400px!important;">
-                    <button class="btn btn-primary" id="Query">查询</button>
-                    @if ((ViewBag.State == 30) && (DeptID == 4))
-                    {
-                        <button class="btn btn-primary" id="Quotation">开始询价</button>
-                        <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
-                    }
-                </td>
-            </tr>
-        </table>
-
+<h2 style="margin-top:60px;">@ViewBag.Title</h2>
+<div class="FatherDiv">
+    <div class="LeftDiv">
+        <button class="btn btn-primary LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
+        <select class="form-control LeftDiv_Sel" id="MoldSelect" size="20"></select>
         <input type="hidden" id="MoldNumber" />
-        <input type="hidden" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID"/>
-        <input type="hidden" id="PurchaseTypeName" value="@ViewBag.PurchaseTypeName"/>
-        <div style="float:left;margin-right:20px!important;">
+        <input type="hidden" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID" />
+        <input type="hidden" id="PurchaseTypeName" value="@ViewBag.PurchaseTypeName" />
+    </div>
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
+                <tr>
+                    <td style="width:200px!important;">
+                        <select id="ChargePurType" class="form-control" style="width:200px;">
+                            <option value="2">模具耗材</option>
+                            <option value="4">固定资产</option>
+                        </select>
+                    </td>
+                    <td style="width:200px!important;">
+                        <select id="PurchaseType" class="form-control" style="width:200px;"></select>
+                    </td>
+                    <td style="width:200px!important;">
+                        <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;" />
+                    </td>
+                    <td style="width:400px!important;">
+                        <button class="btn btn-primary" id="Query">查询</button>
+                        @if ((ViewBag.State == 30) && (DeptID == 4))
+                        {
+                            <button class="btn btn-primary" id="Quotation">开始询价</button>
+                            <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
+                        }
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="RightDiv_BottomDiv">
             <table id="PurchaseItemGrid"></table>
             <div id="jqGridPager"></div>
         </div>
-
     </div>
 </div>
 <script src="~/Scripts/JqGridTemplate.js"></script>
@@ -117,7 +117,7 @@
         })
 
         $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
-        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
+        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.75);
 
 
         $('#ChargePurType').on('change', function () {

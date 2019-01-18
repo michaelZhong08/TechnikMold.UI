@@ -24,15 +24,16 @@
         PosID = 0;
     }
 }
-<div id="hidden">
+<div id="hidden" style="margin-top:0px;">
     <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
     <input type="hidden" id="State" value="@ViewBag.State" />
+    <input type="hidden" id="Department" value="@ViewBag.Department" />
 </div>
 
 <div style="margin-top:60px">
     <div class="col-sm-11">
 
-        <h3>申请单列表</h3>
+        <h2>申请单列表</h2>
         <div>
             <button class="btn btn-primary" id="NewPR">新建申请单</button>
             <button class="btn btn-primary" id="SearchPR">申请单查询</button>
@@ -41,7 +42,7 @@
                 <button class="btn btn-primary" id="BatchApprove">批量通过</button>
             }
 
-            <button class="btn btn-primary hr" id="ExportExcelForPurchase" style="background-color:#71C671;display:none;">导出采购申请</button>
+            <button class="btn btn-primary hr" id="ExportExcelForPurchase" style="background-color:#71C671;" hidden>导出采购申请</button>
 
             <div class="col-sm-2">
                 <select id="PRState" class="form-control">
@@ -70,9 +71,6 @@
 
 <script>
     $("document").ready(function(){
-
-        //$("#ExportExcelForPurchase").hide();
-        @*PRListGrid("@ViewBag.MoldNumber", "@ViewBag.PRKeyword", "@ViewBag.StartDate", "@ViewBag.FinishDate", @ViewBag.Supplier, @ViewBag.PurchaseType, @ViewBag.Department, @ViewBag.State);*@
         PRListGrid(@ViewBag.Department, @ViewBag.State);
 
         LoadQuerySuppliers();
@@ -82,13 +80,16 @@
         $("#QueryPR").on("click", function(){
             QueryPurchaseOrders();
         })
-        //////////暂时注释
+        //////////
         if (sessionStorage['SpecKey'] != null) {
             if (sessionStorage['SpecKey'] == 'hr') {
-                if($("#PRState").val() =="3")
+                if($("#PRState").val() =="10")
                 {
-                    $("#ExportExcelForPurchase").show();
+                    $('#ExportExcelForPurchase').show();
                     $("#PRListGrid").setGridParam().showHideCol("ERPPartStatus");
+                }else{
+                    $('#ExportExcelForPurchase').hide();
+                    $("#PRListGrid").setGridParam().hideCol("ERPPartStatus").trigger("reloadGrid");;
                 }
             }
         }
@@ -130,14 +131,13 @@
         
         if (sessionStorage['SpecKey'] != null) {
             if (sessionStorage['SpecKey'] == 'hr') {
-                if($("#PRState").val() =="3")
+                if($("#PRState").val() =="10")
                 {
-                    $("#ExportExcelForPurchase").show();
-                }
-                else
-                {
-                    $("#ExportExcelForPurchase").hide();
-
+                    $('#ExportExcelForPurchase').show();
+                    $("#PRListGrid").setGridParam().showHideCol("ERPPartStatus");
+                }else{
+                    $('#ExportExcelForPurchase').hide();
+                    $("#PRListGrid").setGridParam().hideCol("ERPPartStatus").trigger("reloadGrid");;
                 }
             }
         }
@@ -253,11 +253,10 @@
         </div>
     </div>
 </div>
+
+
 <script>
     $(document).ready(function(){
-        //_hrConfig();
+        $('#PRState').val('@ViewBag.State');
     })
-    function _hrConfig(){
-        $('#ExportExcelForPurchase').hide();
-    }
 </script>

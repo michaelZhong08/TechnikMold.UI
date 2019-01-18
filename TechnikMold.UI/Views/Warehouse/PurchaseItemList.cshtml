@@ -1,8 +1,17 @@
 ﻿@{
     ViewBag.Title = "待收货零件清单";
 }
-
-
+@{
+    string Department;
+    try
+    {
+        Department = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]).ToString();
+    }
+    catch
+    {
+        Department = "";
+    }
+}
 <div style="margin-top:60px">
     <h2>待收货零件清单</h2>
     <div class="col-sm-2">
@@ -16,12 +25,19 @@
             <table class="col-sm-4">
                 <tr>
                     <td class="col-sm-2">
-                        <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项关键字" />
+                        <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 订单号/零件名/物料号/规格" style="width:500px;" />
                         <input type="hidden" id="MoldNumber" />
                     </td>
                     <td class="col-sm-1">
-                        <button class="btn btn-primary" id="Query">查询</button>
+                        <button class="btn btn-primary" id="Query" style="width:100px;">查询</button>
                     </td>
+                    @if (Department == "仓库")
+                    {
+                        <td class="col-sm-1">
+                            <button class="btn btn-info" id="OrderAccept" style="width:100px;">订单收货</button>
+                        </td>
+                    }
+                    
                 </tr>
             </table>
         </div>
@@ -40,6 +56,7 @@
 
         LoadMoldNumber("", "")
         PurchaseItem("", "", 10);
+        $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseOrder");
         $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
         $("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
         $("#PurchaseItemGrid").setGridParam().showHideCol("InStockQty");
@@ -62,12 +79,12 @@
 
 
     function LoadMoldNumber(Keyword) {
-        var _url = "/Purchase/JsonMoldNumber?State=10&Keyword="+$("#Keyword").val();
+        var _url = "/Purchase/JsonMoldNumber?State=10";
         if (Keyword != "") {
-            _url = _url + "?Keyword=" + Keyword;
+            _url = _url + "&Keyword=" + Keyword;
         }
         $("#MoldSelect option").remove();
-
+        $.ajaxSettings.async = false;
         $.getJSON(_url, function (msg) {
             $.each(msg, function (i, n) {
                 $("#MoldSelect").append($("<option/>",{
@@ -84,5 +101,46 @@
     }
 
 
+</script>
+<script>
+    $(document).ready(function () {
+        $('#OrderAccept').on('click', function () {
+            var selrowIDs = $('#PurchaseItemGrid').jqGrid('getGridParam', 'selarrrow');
+            var _orderNum = '';
+            var _purItemid = 0;
+            if (selrowIDs.length == 0) {
+                alert('请选择行！');
+                return false;
+            }
+            for (var i = 0; i < selrowIDs.length; i++) {
+                var rowData = $('#PurchaseItemGrid').getRowData(selrowIDs[i]);
+                if (_orderNum == '') {
+                    _orderNum = rowData.PurchaseOrder;
+                    _purItemid = Number(rowData.ID);
+                } else {
+                    if (_orderNum != rowData.PurchaseOrder) {
+                        alert('仅支持单张订单，请重新选择！');
+                        return false;
+                    }
+                }
+            }
+            //$.get('/Purchase/Service_PO_GetPOByOrder?_purchaseOrder=' + _orderNum, function (res) {
+            //    if (res.State == 3 || res.State == 4 || res.State == 10) {//发布 部分收货 外发项待出库
+            //        location.href = "/Warehouse/POContentList?PurchaseOrderID=" + res.PurchaseOrderID;
+            //    } else {
+            //        alert('请先发布订单！');
+            //        return false;
+            //    }                
+            //})
+            $.get('/Purchase/Service_PurItem_GetByID?_purItemID=' + _purItemid, function (res) {
+                if (res.State == 45 || res.State == 50 || res.State == 60) {//发布 部分收货 外发项待出库
+                    location.href = "/Warehouse/POContentList?PurchaseOrderID=" + res.PurchaseOrderID;
+                } else {
+                    alert('请先发布订单！');
+                    return false;
+                }                
+            })
+        })
+    })
 </script>
 

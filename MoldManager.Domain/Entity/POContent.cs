@@ -73,7 +73,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             State = 0;
             Enabled = true;
             PurchaseItemID = ItemID;
-            RequireTime = PurchaseItem.RequireTime;
+            RequireTime = PurchaseItem.PlanTime;
         }
     }
 }

@@ -49,11 +49,11 @@ namespace TechnikSys.MoldManager.NX.CAM
                 return false;
             }
         }
-        public int ReleaseMGDrawing(int DrawIndex, string ReleaseBy,string TaskName)
+        public int ReleaseMGDrawing(int DrawIndex, string ReleaseBy,string TaskName,string Memo="")
         {
             try
             {
-                string _url = "/Task/ReleaseMGDrawingService?DrawIndex=" + DrawIndex.ToString() + "&ReleaseBy=" + ReleaseBy+ "&TaskName="+ TaskName;
+                string _url = "/Task/ReleaseMGDrawingService?DrawIndex=" + DrawIndex.ToString() + "&ReleaseBy=" + ReleaseBy+ "&TaskName="+ TaskName+"&Memo="+ Memo;
                 int res = JsonConvert.DeserializeObject<int>(_server.ReceiveStream(_url));
                 return res;
             }

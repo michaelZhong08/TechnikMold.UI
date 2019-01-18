@@ -18,10 +18,12 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public WHRequestGridViewModel(IEnumerable<WarehouseRequest> Requests, IUserRepository Users)
         {
             string _user;
+            string _approvalUser;
             foreach (WarehouseRequest _request in Requests)
             {
-                _user = Users.GetUserByID(_request.RequestUserID).FullName;
-                WHRequestGridRowModel _row = new WHRequestGridRowModel(_request, _user);
+                _user = (Users.GetUserByID(_request.RequestUserID)??new User()).FullName;
+                _approvalUser = (Users.GetUserByID(_request.ApprovalUserID)??new User()).FullName;
+                WHRequestGridRowModel _row = new WHRequestGridRowModel(_request, _user, _approvalUser);
                 rows.Add(_row);
             }
         }

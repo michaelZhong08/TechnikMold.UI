@@ -14,7 +14,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public IQueryable<WHPart> WHParts { get { return _context.WHParts; } }
         public int Save(WHPart model)
         {
-            WHPart dbEntry = _context.WHParts.Where(p => p.PartNum == model.PartNum).FirstOrDefault();
+            WHPart dbEntry = _context.WHParts.Where(p => p.PartNum == model.PartNum && p.PartID==model.PartID).FirstOrDefault();
             if (dbEntry == null)
             {
                 model.Enable = true;
@@ -38,7 +38,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
         public int Delete(WHPart model)
         {
-            WHPart _part = _context.WHParts.Where(p => p.PartNum == model.PartNum && p.Enable==true).FirstOrDefault();
+            WHPart _part = _context.WHParts.Where(p => p.PartNum == model.PartNum && p.PartID == model.PartID && p.Enable==true).FirstOrDefault();
             if (_part != null)
             {
                 _part.Enable = false;

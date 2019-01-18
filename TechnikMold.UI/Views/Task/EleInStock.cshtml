@@ -3,26 +3,25 @@
     ViewBag.Title = "EleInStock";
 }
 
-
-
-<div class="col-sm-12" style="margin-top:60px">
+<div class="FatherDiv">
     <h2>电极仓库管理</h2>
     
-
-
-   <div class="col-sm-2">
-       <input type="text" id="Keyword" class="form-control" />
-       <select id="InstockMoldList" class="form-control" size="20"></select>
+   <div class="LeftDiv">
+       <button class="btn btn-primary  LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
+       <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" />
+       <select id="InstockMoldList" class="form-control LeftDiv_Sel" size="20"></select>
    </div>
-   <div class="col-sm-10">
-       <div id="Toolbar">
+   <div class="RightDiv">
+       <div id="Toolbar" class="RightDiv_TopDiv">
            <ul class="nav nav-pills">
                <li><button class="btn btn-primary" id="ScanInStock">扫描入库</button></li>
                <li><button class="btn btn-primary" id="ScanOutStock">扫描出库</button></li>
                <li><button class="btn btn-warning" id="ElectrodeDestroy">电极销毁</button></li>
            </ul>
        </div>
-       <table id="ElectrodeGrid"></table>
+       <div class="RightDiv_BottomDiv">
+           <table id="ElectrodeGrid"></table>
+       </div>      
    </div>
    </div>
 
@@ -106,10 +105,10 @@
 </div>
 
 
-    <script src="~/Scripts/JqGridTemplate.js"></script>
-    <script src="~/Scripts/Task.js"></script>
+<script src="~/Scripts/JqGridTemplate.js"></script>
+<script src="~/Scripts/Task.js"></script>
 
-    <script>
+<script>
         //LabelNames <=> ELE_IndexCode
         var LabelNames = new Array();
         var ItemIDs = new Array();
@@ -141,7 +140,7 @@
                 $("#ScanBarCodeDialog").modal("show");
             })
 
-            
+
 
             $("#BarCode").on("change", function () {
                 var _exist = 0;
@@ -160,11 +159,11 @@
                         success: function (res) {
                             $("#Ele_List").append("<tr class='EleList'><td>" + res.LabelName + "</td></tr>")
                         }
-                    })                    
+                    })
                 } else {
                     alert("电极已扫描");
                 }
-                
+
                 $("#BarCode").val("");
                 $("#BarCode").focus();
             })
@@ -192,6 +191,10 @@
             $("#DestroyElectrode").on("click", function () {
                 DestroyElectrode();
             })
+
+            $('#RefreshMold').on('click', function () {
+                LoadInstockMoldNumbers('');
+            })
         })
 
 
@@ -207,9 +210,9 @@
         }
 
         function LoadStockCNCItem(MoldNumber) {
-            //$("#ElectrodeGrid").jqGrid('setGridParam', { datatype: "json", url: '/Task/JsonEleInStock?MoldNumber=' + MoldNumber }).trigger("reloadGrid");
+            $("#ElectrodeGrid").jqGrid('setGridParam', { datatype: "json", url: '/Task/JsonEleInStock?MoldNumber=' + MoldNumber }).trigger("reloadGrid");
 
-            location.href = "/Task/EleInStock?MoldNumber=" + MoldNumber;
+            //location.href = "/Task/EleInStock?MoldNumber=" + MoldNumber;
         }
 
         function StockChange() {
@@ -224,9 +227,7 @@
                     type: "GET",
                     success: function (msg) {
                         if (msg == "") {
-                            
                             alert("电极"+$("#StockChange").html()+"完成");
-                                          
                             location.reload();
                         } else {
                             alert("以下电极入库操作失败，请重试\r\n" + msg);
@@ -237,18 +238,21 @@
                 alert("请扫描电极标签条码后再执行操作");
             }
             LabelNames = new Array();
+            $('#Ele_List').empty();
         }
 
         function GetEleToDestroy() {
             var Labels = GetMultiSelectedCell("ElectrodeGrid", "LabelName");
             var _itemIDs = GetMultiSelectedCell("ElectrodeGrid", "ID");
+            var eleIndexCodes = GetMultiSelectedCell("ElectrodeGrid", "EleIndexCode");
             if (Labels == "") {
                 alert("请选择要销毁的电极");
             } else {
                 var _labels = Labels.split(',');
                 var _ids = _itemIDs.split(',');
+                var __eleIndexCodes = eleIndexCodes.split(',');
                 for (i = 0; i < _labels.length; i++) {
-                    LabelNames.push(_labels[i]);
+                    LabelNames.push(__eleIndexCodes[i]);
                     ItemIDs.push(_ids[i]);
                     $("#Ele_List_D").append("<tr class='EleList'><td><input type='checkbox' class='itemid' id="+_ids[i]+"  disabled/></td><td>" + _labels[i] + "</td></tr>")
                 }
@@ -293,6 +297,13 @@
                 }
             })
         }
-
-    </script>
+</script>
+<script>
+    $(document).ready(function () {
+        $(window).resize(function () {
+            $("#ElectrodeGrid").setGridWidth($('.RightDiv_BottomDiv').eq(0).width());
+            $("#ElectrodeGrid").setGridHeight($('.RightDiv_BottomDiv').eq(0).height() - 40);
+        })
+    })
+</script>
 

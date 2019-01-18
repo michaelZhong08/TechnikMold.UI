@@ -1,0 +1,190 @@
+﻿
+@{
+    ViewBag.Title = "EmpWorkHourSubmit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .tb_EmpWorkHour td{
+        border: 1px solid rgba(0,0,0,0.1);
+        text-align: center;
+        vertical-align: central;
+        font-size: 12px;
+        font-family:"微软雅黑"!important;
+    }
+    #htb_EmpWorkHourA td{
+        margin-bottom: 0;
+        table-layout: fixed;
+        background-color: rgba(0,0,0,0.8);
+        color: rgba(255,255,255,1);
+        font-size: 14px!important;
+        font-weight:bold!important;
+        height: 36.53px;
+
+        border:1px solid rgba(255,255,255,0.5)!important;
+        border-style:solid solid solid solid!important;
+    }
+    #tb_EmpWorkHour td{
+
+    }
+</style>
+<style>
+    #EmpWH_SubmitTb{
+        padding:0px;
+        margin:0px;
+        width:100%;
+        height:100%;
+    }
+    #EmpWH_SubmitTb td{
+        text-align: center;
+        vertical-align: central;
+        font-size: 12px;
+        font-family: "微软雅黑" !important;
+    }
+    .td_label{
+        text-align: left!important;
+        font-size:14px!important;
+        font-weight:bold;
+    }
+</style>
+
+<h2 style="margin-top:60px;">人工工时录入</h2>
+<div class="FatherDiv">
+    <div class="LeftDiv">
+
+    </div>
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
+                <tr>
+                    <td>
+                        <input type="button" id="AddEmpWH" class="btn btn-success" value="填写工时" />
+                    </td>
+                    <td>
+                        <input class="form-control" />
+                    </td>
+                    <td>
+                        <input type="button" class="btn btn-primary" value="查询" id="SearchEmpWH" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="RightDiv_BottomDiv">
+            <div class="hdiv" style="overflow:hidden;">
+                <table id="htb_EmpWorkHourA" class="tb_EmpWorkHour">
+                    <colgroup><col width="8%"/><col width="10%" /><col width="10%" /><col width="10%" /><col width="15%" /><col width="15%" /><col width="10%" /><col width="10%" /><col width="12%" /></colgroup>
+                    <tr>
+                        <td>月份</td>
+                        <td>姓名</td>
+                        <td>部门</td>
+                        <td>日期</td>
+                        <td>开始时间</td>
+                        <td>结束时间</td>
+                        <td>工时</td>
+                        <td>模号</td>
+                        <td>工作类型</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="bdiv" style="overflow:hidden;overflow-y:auto;">
+                <table id="tb_EmpWorkHourA"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*工时录入界面*@
+<div class="modal" id="EmpWHDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title">工时填报</h4>
+            </div>
+            <div class="modal-body">
+                <form id="EmpWH_SubmitForm" method="post" enctype="multipart/form-data">
+                    <table id="EmpWH_SubmitTb">
+                        <colgroup>
+                            <col width="20%" />
+                            <col width="80%" />
+                        </colgroup>
+                        <tr>
+                            <td class="td_label">员工工号</td>
+                            <td>
+                                <input id="EmpCodeInput" name="EmpCode" list="EmpCodeList" placeholder="请输入工号" class="form-control" required/>
+                                <datalist id="EmpCodeList"></datalist>
+                                <input id="Id" name="Id" value="0" hidden/>
+                            </td>
+                        </tr>
+                        <tr><td class="td_label">员工姓名</td><td><input id="EmpNameInput" name="EmpName" class="form-control" readonly placeholder="员工姓名" required/></td></tr>
+                        <tr><td class="td_label">模具号</td><td><input id="MoldNumber" name="MoldNumber" class="form-control" placeholder="请输入模号" /></td></tr>
+                        <tr><td class="td_label">工作类型</td><td><select id="WorkType" name="WorkType" class="form-control"><option value="0">-</option></select></td></tr>
+                        <tr><td class="td_label">开始时间</td><td><input type="date" id="StartTime" name="StartTime" class="form-control" required/></td></tr>
+                        <tr><td class="td_label">结束时间</td><td><input type="date" id="EndTime" name="EndTime" class="form-control" /></td></tr>
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="modal_Save_EmpWH" type="button" class="btn btn-primary" data-dismiss="modal">提交</button>
+                <button id="modal_close_EmpWH" type="button" class="btn btn-default" data-dismiss="modal">返回</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        //
+        $('.bdiv').css('height', $('.RightDiv_BottomDiv').height() - 37);
+        $('#htb_EmpWorkHourA').css('width', $('.RightDiv_BottomDiv').width() - 14);
+        $('#tb_EmpWorkHourA').css('width', $('.RightDiv_BottomDiv').width() - 14);
+        $(window).resize(function () {
+            $('.bdiv').css('height', $('.RightDiv_BottomDiv').height() - 37);
+            $('#htb_EmpWorkHourA').css('width', $('.RightDiv_BottomDiv').width() - 14);
+            $('#tb_EmpWorkHourA').css('width', $('.RightDiv_BottomDiv').width() - 14);
+        });
+        //
+        $('#AddEmpWH').on('click', function () {
+            $('#EmpWHDialog').modal('show');
+        });
+        $('#EmpWHDialog').on('shown.bs.modal', function () {
+            var _inputs = $('#EmpWH_SubmitForm input');
+            $.each(_inputs, function (i, n) {
+                $(this).val('');
+            });
+            $('#WorkType').val(0);
+            $('#EmpCodeInput').focus();
+        });
+        $('#EmpCodeInput').on('blur', function () {
+            var _code = $('#EmpCodeInput').val();
+            //console.log(_code);
+        });
+        $('#modal_Save_EmpWH').on('click', function () {
+            var serializeEmpWHForm = $("#EmpWH_SubmitForm").serialize();
+            //console.log(serializeEmpWHForm);
+            $.post('/WorkHour/Service_WH_SaveEmpWHRecords', serializeEmpWHForm, function (res) { }, 'html');
+            $('#EmpWHDialog').modal('hide');
+        });
+        function EmpFormImputValid() {
+            var _id = Number($('#Id').val());
+            var _code = $('#EmpCodeInput').val();
+            var _name = $('#EmpNameInput').val();
+            var _startTime = $('#StartTime').val();
+            var _endTime = $('#EndTime').val();
+            if (isValid(_code) && isValid(_name) && isValid(_startTime)) {
+                if (_id == 0)
+                    return true;
+                else {
+                    if (isValid(_endTime))
+                        return true;
+                }
+            }
+            return false;
+        }
+        function isValid(str){
+            if(str=='' || str==null || str == undefined){
+                return false;
+            }else
+                return true;
+        }
+    })
+</script>

@@ -24,7 +24,7 @@
     </h2>
 
     <div class="col-sm-11">
-        <div id="Toolbar">
+        <div id="Toolbar" class="col-sm-11" style="float:left;">
             <ul class="nav nav-pills">
                 <li class="dropdown all-camera-dropdown">
 
@@ -162,6 +162,9 @@ else if (ViewBag.TaskType == 4)
 
         $("#SpotCheckDlg").on("shown.bs.modal", function () {
             LoadCNCUser();
+            $('#BarCode').val('');
+            $('#Ele_List_D').empty();
+            $('#BarCode').focus();
         })
 
         $("#BarCode").on("keyup", function () {
@@ -193,7 +196,7 @@ else if (ViewBag.TaskType == 4)
 
     function LoadCNCUser() {
         $("#CheckUser option").remove();
-        $.getJSON("/User/GetUsersByDepartment?DepartmentID=7", function (msg) {
+        $.getJSON("/User/GetUsersByDepartment?DepartmentName=CNC", function (msg) {
             $.each(msg, function (i, n) {
                 $("#CheckUser").append($("<option/>", {
                     value: n.UserID,
@@ -219,8 +222,7 @@ else if (ViewBag.TaskType == 4)
                     //var d = $('#1')[0];
                     var _id=msg.CNCItemID + "_EleLabel";
                     if ($("#" + _id).length == 0) {
-                        $("#Ele_List_D").append("<tr><td><input class='itemid' type='checkbox' id='" + _id + "' checked disabled></td><td>" + msg.LabelName + "</td></tr>")
-                        $("#BarCode").val("");
+                        $("#Ele_List_D").append("<tr><td><input class='itemid' type='checkbox' id='" + _id + "' checked disabled></td><td>" + msg.LabelName + "</td></tr>");
                     }
                     else {
                         alert("电极已存在");
@@ -237,6 +239,7 @@ else if (ViewBag.TaskType == 4)
             else {
                 alert("未找到对应电极信息");
             }
+            $("#BarCode").val('');
         })
 
 

@@ -13,7 +13,7 @@ namespace TechnikMold.UI.Models.GridRowModel
         {
             cell = new string[14];
             cell[0] = _item.PartID.ToString();
-            cell[1] = _item.Name;
+            cell[1] = _item.ShortName;
             cell[2] = _item.PartNumber;
             cell[3] = _item.Specification ?? "";
             cell[4] = _item.MaterialName ?? "";

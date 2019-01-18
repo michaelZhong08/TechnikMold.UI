@@ -16,12 +16,11 @@
     @Scripts.Render("~/bundles/GridTemplate")
     <link rel="stylesheet" href="~/Content/jAlert.css">
     <link rel="stylesheet" href="/Content/jquery-ui.css">
-    <link rel="stylesheet" href="~/Content/datepicker.css" />
     <script src="/Scripts/jquery-ui.js"></script>
     <script src="~/Scripts/jquery.form.js"></script>
     <script src="~/Scripts/MoldManager.js"></script>
     <script src="~/Scripts/jAlert.js"></script>
-    <script src="~/Scripts/bootstrap-datepicker.js"></script>
+    <script src="~/Scripts/TimeFormat.js"></script>
     <style>
         .hrsys_a {
             display: none;
@@ -59,24 +58,19 @@
             line-height:40px;
             font-size:18px;
             text-indent:10px;
-            /*font-weight:bold;*/
+            font-weight:bold;
+            font-family:"微软雅黑"!important;
         }
     </style>
     <style>
         .cbox {
             margin: 0px !important;
-            width: 60% !important;
+            width: 90% !important;
             height: 100% !important;
-            margin-left: 20% !important;
+            /*margin-left: 20% !important;*/
             display: block !important;
-        }
 
-        .ui-row-ltr td {
-            padding: 0px !important;
-            padding-top: 8px !important;
-            text-indent: 8px !important;
         }
-
         .ui-row-ltr label {
             text-indent: -2px !important;
         }
@@ -124,19 +118,117 @@
         }
     }
     </script>
-    @*<script>
-        $( function() {
-            //$("#datepicker").datepicker();
-      
-            //日期格式改变
-            //$(".hasDatepicker").datepicker({ dateFormat: "yy-mm-dd" });
-            //星期格式汉化
-            $(".hasDatepicker").datepicker("option", "dayNamesMin", ["日", "一", "二", "三", "四", "五", "六"]);
-            //月份格式汉化
-            $(".hasDatepicker").datepicker("option", "monthNames", ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]);
+    <style>
+        .btn {
+            border-radius: 0px !important;
+        }
 
-        });
-    </script>*@
+        .FatherDiv {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 60px;
+            bottom: 0px;
+        }
+
+        .LeftDiv {
+            position: absolute;
+            left: 10px;
+            top: 40px;
+            bottom: 10px;
+            width: 180px;
+        }
+
+        .RightDiv {
+            position: absolute;
+            left: 200px;
+            top: 40px;
+            bottom: 0px;
+            right: 0px;
+        }
+
+        .LeftDiv_Btn {
+            width: 100%;
+            /*height: 40px;*/
+            border-radius: 0px !important;
+        }
+
+        .LeftDiv_Inpt {
+            width: 100%;
+            height: 41px;
+            border-radius: 0px !important;
+            margin-top: 8px;
+        }
+
+        .LeftDiv_Sel {
+            position: absolute;
+            left: 0px;
+            top: 80px;
+            bottom: 0px;
+            width: 100%;
+            border-radius: 0px !important;
+        }
+
+            .LeftDiv_Sel option {
+                font-size: 16px;
+                padding: 2px;
+                cursor: pointer;
+                width: 100% !important;
+            }
+
+                .LeftDiv_Sel option:hover {
+                    background-color: rgba(0,0,0,0.1);
+                    font-size: 22px;
+                    font-weight: bold;
+                    text-align: center;
+                }
+
+        .RightDiv_TopDiv {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 0px;
+            height: 40px;
+        }
+
+            .RightDiv_TopDiv select {
+                height: 34px !important;
+                border-radius: 0px !important;
+                font-size: 16px;
+            }
+
+            .RightDiv_TopDiv input {
+                border-radius: 0px !important;
+            }
+
+            .RightDiv_TopDiv option {
+                font-size: 18px;
+            }
+
+        .RightDiv_BottomDiv {
+            position: absolute;
+            left: 0px;
+            right: 10px;
+            top: 40px;
+            bottom: 10px;
+        }
+
+        input {
+            border-radius: 0px !important;
+        }
+
+        select {
+            border-radius: 0px !important;
+        }
+
+        div {
+            border-radius: 0px !important;
+        }
+
+        p, td, input, select, div {
+            font-family: "微软雅黑" !important;
+        }
+    </style>
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -146,6 +238,7 @@
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 <li>@Html.ActionLink("模具管理系统", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })</li>
+                @*项目管理*@
                 <li class="dropdown dropdown-main">
                     <a href="/Project" class="dropdown-toggle"
                        data-toggle="dropdown" role="button"
@@ -156,11 +249,12 @@
                         @if (DeptID == 1)
                         {
                             <li><a href="/Project/CustomerManagement">客户管理</a></li>
-                            <li><a class="sinno" style="display:none;" href="/Project/CostSummary">项目成本统计</a></li>
+                            <li><a class="#sinno" style="display:none;" href="/Project/CostSummary">项目成本统计</a></li>
                         }
 
                     </ul>
                 </li>
+                @*设计管理*@
                 <li class="dropdown dropdown-main">
                     <a href="/Project" class="dropdown-toggle"
                        data-toggle="dropdown" role="button"
@@ -175,6 +269,7 @@
                         }                   
                     </ul>
                 </li>
+                @*采购管理*@
                 <li class="dropdown dropdown-main">
                     <a href="#" class="dropdown-toggle"
                        data-toggle="dropdown" role="button"
@@ -198,7 +293,8 @@
 
                         @if ((DeptID == 1) || (DeptID == 4))
                         {
-                            <li><a class="sinno" style="display:none;" href="/Purchase/POReport">订单记录查询</a></li>
+                            <li><a class="sinno" style="display:none;" href="/Purchase/POReportForQuery">订单记录查询</a></li>
+                            <li><a class="sinno" style="display:none;" href="/Purchase/POReport">订单对账查询</a></li>                            
                         }
                         @if ((DeptID == 4))
                         {
@@ -206,7 +302,7 @@
                         }                       
                     </ul>
                 </li>
-
+                @*加工任务*@
                 <li class="dropdown dropdown-main">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">加工任务</a>
                     <ul class="dropdown-menu">
@@ -214,6 +310,7 @@
                         <li><a href="/Task/Index">加工任务</a></li>
                     </ul>
                 </li>
+                @*仓库管理*@
                 <li class="dropdown dropdown-main">
                     <a href="#" class="dropdown-toggle sinno" style="display:none;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">仓库管理</a>
                     <ul class="dropdown-menu">
@@ -234,15 +331,16 @@
                         }
                     </ul>
                 </li>
-                <li class="dropdown dropdown-main" style="display:none;">
-                    <a href="#" class="dropdown-toggle sinno" style="display:none;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" >工时管理</a>
+                @*工时管理*@
+                <li class="dropdown dropdown-main" >
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" >工时管理</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#">预估工时</a></li>
-                        <li><a href="#">工时填报</a></li>
-                        <li><a href="#">工时审批</a></li>
-                        <li><a href="#">工时报表</a></li>
-                        <li><a href="#">机器稼动率</a></li>
-                        <li><a href="/Administrator/TaskHourCost">工时费率</a></li>
+                        @*
+                        <li><a href="/Administrator/TaskHourCost">工时费率</a></li>*@
+                        <li><a href="/Task/TaskTimeView">预估工时</a></li>
+                        <li style="display:inline;"><a href="/WorkHour/EmpWorkHourSubmitA">工时录入</a></li>
+                        <li style="display:inline;"><a href="/WorkHour/EmpWorkHourRecord">人工工时报表</a></li>
+                        <li style="display:inline;"><a href="/WorkHour/WHReportWithMachine">机器工时报表</a></li>
                     </ul>
                 </li>
             </ul>
@@ -263,7 +361,6 @@
     </div>
     <div class="container-fluid body-content" role="main">       
         @RenderBody()
-
     </div>   
 
     @*用户角色切换*@

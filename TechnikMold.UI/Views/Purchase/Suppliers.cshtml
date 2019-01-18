@@ -34,9 +34,8 @@
 
 <div style="margin-top:60px">
     <div class="col-sm-11">
-        
         <div class="col-sm-12">
-            <h3>供应商信息</h3>
+            <h2>供应商信息</h2>
 
             @if (DeptID == 4)
             {
@@ -47,6 +46,7 @@
                     <button class="btn btn-info" id="SupplierContacts">供应商联系人</button>
                     <button class="btn btn-info" id="SupplierBrand">供应商品牌</button>
                     <button class="btn btn-info" id="SupplierGroup">报价组管理</button>
+                    <button class="btn btn-primary" id="UptSupplierCode">同步供应商信息</button>
                 </div>
             }
             
@@ -113,10 +113,10 @@
                                 <input type="hidden" name="Enabled" id="Enabled" value="true" />
                             </td>
                         </tr>
-                        <tr>
+                        <tr hidden>
                             <td class="col-sm-4"><label>检索</label></td>
                             <td class="col-sm-8">
-                                <input type="text" class="form-control required" name="JianSuo" id="JianSuo" placeholder="建议名称首字母"/>
+                                <input type="text" class="form-control" name="JianSuo" id="JianSuo" placeholder="建议名称首字母"/>
                             </td>
                         </tr>
                         <tr>
@@ -126,37 +126,43 @@
                         <tr>
                             <td class="col-sm-4">地址</td>
                             <td class="col-sm-8">
-                                <input type="text" class="form-control required" name="Address" id="Address" maxlength="100" />
+                                <input type="text" class="form-control required" name="Address" id="Address" value="X" maxlength="100" />
                             </td>
                         </tr>
                         <tr>
                             <td class="col-sm-4">开户行</td>
                             <td class="col-sm-8">
-                                <input type="text" class="form-control required" name="Bank" id="Bank" maxlength="25" />
+                                <input type="text" class="form-control required" name="Bank" id="Bank" value="X" maxlength="25" />
                             </td>
                         </tr>
                         <tr>
                             <td class="col-sm-4">账号</td>
                             <td class="col-sm-8">
-                                <input type="text" class="form-control required" name="Account" id="Account" maxlength="100" />
+                                <input type="text" class="form-control required" name="Account" id="Account" value="X" maxlength="100" />
                             </td>
                         </tr>
                         <tr>
                             <td class="col-sm-4">税号</td>
                             <td class="col-sm-8">
-                                <input type="text" class="form-control required" name="TaxNo" id="TaxNo" min="0" />
+                                <input type="text" class="form-control required" name="TaxNo" id="TaxNo" value="X" min="0" />
                             </td>
                         </tr>
                         <tr>
                             <td class="col-sm-4">税率</td>
                             <td class="col-sm-8">
-                                <input type="text" class="form-control required" name="TaxRate" id="TaxRate" />
+                                @*<input type="text" class="form-control required" name="TaxRate" id="TaxRate" />*@
+                                <select type="text" class="form-control required" name="TaxRate" id="TaxRate">
+                                    <option>0.00</option>
+                                    <option>3.00</option>
+                                    <option>6.00</option>
+                                    <option>16.00</option>
+                                </select>
                             </td>
                         </tr>
                         <tr>
                             <td class="col-sm-4">结算方式</td>
                             <td class="col-sm-8">
-                                <input type="text" class="form-control required" name="Settlement" id="Settlement" maxlength="50" />
+                                <input type="text" class="form-control required" name="Settlement" id="Settlement" value="X" maxlength="50" />
                             </td>
                         </tr>
                     </table>
@@ -1041,5 +1047,21 @@
             //}
         };
         return isok;
+    }
+</script>
+
+<script>
+    $(document).ready(function(){
+        $('#UptSupplierCode').on('click', function () {
+            $.get('/Purchase/Service_Usr_UptSupplierCodeByProc', function () {
+                alert('同步成功！');
+                LoadSupGrid();
+            })
+        })
+    })
+
+    function LoadSupGrid() {
+        var _url = '/Purchase/JsonSuppliers';
+        $('#SupplierGrid').jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger('reloadGrid');
     }
 </script>

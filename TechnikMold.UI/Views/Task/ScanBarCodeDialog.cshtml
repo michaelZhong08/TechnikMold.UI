@@ -79,7 +79,7 @@
             ElePosition = new Array();
             $("#Ele_List tr").remove();
             //加载人员
-            $.getJSON("/User/GetUsersByDepartment?DepartmentID=" + 1, function (msg) {
+            $.getJSON("/User/GetUsersByDepartment?DepartmentName=CNC", function (msg) {
                 $("#CheckUser1").append($("<option/>", {
                     value: 0,
                     text: '-'

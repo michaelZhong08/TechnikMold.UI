@@ -28,6 +28,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public DateTime ReleaseDate { get; set; }
         public DateTime FinishDate { get; set; }
         public double TotalPrice { get; set; }
+        public double TotalPriceWT { get; set; }
         public int SupplierID { get; set; }
         public string Memo { get; set; }
         public DateTime DueDate { get; set; }

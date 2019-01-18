@@ -43,7 +43,6 @@ namespace TechnikSys.MoldManager.NX.CAM
             string CADUser, 
             string CAMUser) 
         {
-
             string _url = "/Task/SaveUGTask";
 
             Task.DrawingFile = Task.DrawingFile == null ? "" : Task.DrawingFile;
@@ -77,10 +76,11 @@ namespace TechnikSys.MoldManager.NX.CAM
             bool _qcPoint = QCPointProgramExist(Task.Model, Task.Version);
 
 
-            if (MachInfo.Model == null)
-            {
-                MachInfo.Model = Task.Model;
-            }
+            //if (MachInfo.Model == null)
+            //{
+            //    MachInfo.Model = Task.Model;
+            //}
+            MachInfo.Model = Task.Model;
 
             MachInfo.QCPoint = _qcPoint;
             MachInfo.SafetyHeight = _safeHeight;
@@ -102,7 +102,7 @@ namespace TechnikSys.MoldManager.NX.CAM
         public   string ElePath() {
             string _url = "/Task/GetSetting?Name=ELEPATH";
             string _path = _server.ReceiveStream(_url);
-            return _path;
+            return _path.Trim();
         }
 
         /// <summary>

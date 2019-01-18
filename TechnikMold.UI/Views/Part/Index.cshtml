@@ -12,16 +12,15 @@
     }
 }
 
-<div style="margin-top:60px">
+<div class="FatherDiv">
     <h2>设计清单</h2>
-    <div class="col-sm-2">
-        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
-        <input type="text" id="Keyword" class="form-control" />
-        <select class="form-control" id="MoldSelect" style=""></select>
+    <div  class="LeftDiv">
+        <button class="btn btn-primary LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" />
+        <select class="form-control LeftDiv_Sel" id="MoldSelect" style=""></select>
     </div>
-    <div class="col-sm-10">
-
-        <div id="Toolbar">
+    <div class="RightDiv">
+        <div id="Toolbar" class="RightDiv_TopDiv">
             <select id="sltVersion" style="width:100px;height:32px;border:1px solid #ccc;margin-right:4px;"></select>
             @*///CAD User Operation*@
             @if (DeptID == 2)
@@ -35,7 +34,7 @@
                 <button class="btn btn-success" id="PLImport">外部导入</button>
             }
         </div>
-        <div id="PartGridDiv" style="overflow-x:auto;overflow-y:hidden;">
+        <div class="RightDiv_BottomDiv" id="PartGridDiv" style="overflow-x:auto;overflow-y:hidden;">
             <table id="PartGrid" style="width:100%"></table>
             @*<div id="jqGridPager"></div>*@
         </div>
@@ -199,7 +198,7 @@
 
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/Part.js"></script>
-<script src="http://malsup.github.io/jquery.form.js"></script>
+<script src="~/Scripts/jquery.form.js"></script>
 <script type="text/javascript">
     $(document).ready(function () {
         //
@@ -216,14 +215,15 @@
             $("#PartGridDiv").css('height', document.documentElement.clientHeight - 165)
         })
         //
-        @if (DeptID == 2)
+        PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
+        @*@if (DeptID == 2)
         {
             @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
                                 }
         else
         {
             @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
-                        }
+                        }*@
 
         var _listsize = Math.round((document.documentElement.clientHeight - 165) / 18);
         $("#MoldSelect").attr("size", _listsize);

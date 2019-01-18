@@ -116,8 +116,9 @@ $(document).ready(function () {
         $("#ProjectSearchDialog").modal("show");
     })
 
-    $("#ProjectSearchBtn").on("click", function(){        
-        location.href = "/Project/Index?keyword=" + $("#keyword").val() + "&state=" + $("#state").val() + "&type=" + $("#Type").val();
+    $("#ProjectSearchBtn").on("click", function () {
+        var _url = '/Project/JsonProjects?keyword=' + $("#keyword").val() + "&state=" + $("#state").val() + "&type=" + $("#Type").val();
+        $('#ProjectGrid').jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger('reloadGrid');
     })
 
     $("#AllProject").on("click", function () {
@@ -535,30 +536,45 @@ function PauseProject() {
 function DeleteProject() {
     var _data;
     _data = "ProjectID=" + $("#DeleteProjectID").val() + "&Memo=" + $("#DeleteMemo").val();
-    $("#DeleteProjectID").val()
+    //$.ajax({
+    //    dataType: "html",
+    //    url: "/Project/SubProjectCount?ProjectID=" + $("#DeleteProjectID").val(),
+    //    error: function () { },
+    //    success: function (msg) {
+    //        if (msg == 0) {
+    //            $.ajax({
+    //                dataType: "html",
+    //                url: "/Project/DeleteProject?" + _data,
+    //                error: function () { },
+    //                success: function (msg) {
+    //                    if (msg == 1) {
+    //                        alert("项目已删除");
+    //                        $("#DeleteProjectDialog").modal("hide");
+    //                        $("#ProjectGrid").jqGrid().trigger("reloadGrid");
+    //                        $("#DeleteMemo").val("");
+    //                    } else {
+    //                        alert("仅管理部门和项目创建者可以删除项目！");
+    //                    }
+    //                }
+    //            })
+    //        } else {
+    //            alert("主项目下还有(新/修)模具项目，无法删除。请先删除全部子项目");
+    //        }
+    //    }
+    //})
     $.ajax({
         dataType: "html",
-        url: "/Project/SubProjectCount?ProjectID=" + $("#DeleteProjectID").val(),
-        error: function () { },
+        url: "/Project/DeleteProject?" + _data,
         success: function (msg) {
-            if (msg == 0) {
-                $.ajax({
-                    dataType: "html",
-                    url: "/Project/DeleteProject?" + _data,
-                    error: function () { },
-                    success: function (msg) {
-                        if (msg == 1) {
-                            alert("项目已删除");
-                            $("#DeleteProjectDialog").modal("hide");
-                            $("#ProjectGrid").jqGrid().trigger("reloadGrid");
-                            $("#DeleteMemo").val("");
-                        } else {
-                            alert("仅管理部门和项目创建者可以删除项目！");
-                        }
-                    }
-                })
-            } else {
-                alert("主项目下还有(新/修)模具项目，无法删除。请先删除全部子项目");
+            if (msg == 1) {
+                alert("项目已删除");
+                $("#DeleteProjectDialog").modal("hide");
+                $("#ProjectGrid").jqGrid().trigger("reloadGrid");
+                $("#DeleteMemo").val("");
+            } else if (msg == -99) {
+                alert("仅管理部门和项目创建者可以删除项目！");
+            } else if (msg == -100) {
+                alert("项目下还有(新/修)模具项目，无法删除。请先删除全部子项目");
             }
         }
     })

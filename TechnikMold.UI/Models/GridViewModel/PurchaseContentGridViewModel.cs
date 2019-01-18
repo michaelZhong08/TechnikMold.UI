@@ -57,7 +57,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             foreach (var m in _viewmodel)
             {
                 Task _task = TaskRepository.QueryByTaskID(m.TaskID) ?? new Task();
-                rows.Add(new PurchaseContentGridRowModel(_task, m, mrPurDate, ProjectPhaseRepository, SteelDrawingRepo, WHPartRepository, PurchaseTypeRepository));
+                rows.Add(new PurchaseContentGridRowModel(_task, m, mrPurDate, ProjectPhaseRepository, SteelDrawingRepo, WHPartRepository, PurchaseTypeRepository, _task.Time));
             }
             Page=1;
             Total=Tasks.Count();
