@@ -44,7 +44,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int State { get; set; }
         public int ProjectID { get; set; }
         public int TaskType { get; set; }
-        public int Creator { get; set; }
+        public string Creator { get; set; }
         public int CADUser { get; set; }
         public int CAMUser { get; set; }
         public int WorkshopUser { get; set; }
@@ -95,6 +95,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             MoldNumber = "";
             Enabled = true;
             PrevState = 0;
+            Creator = string.Empty;
         }
     }
 }

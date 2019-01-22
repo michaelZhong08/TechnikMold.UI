@@ -7,31 +7,37 @@
         background-color: #ffffff;
     }
 </style>
-<div style="margin-top:60px">
 
-    <div class="col-sm-12">
-        <h2>订单记录查询</h2>
-        <ul class="nav nav-pills">
-            <li><label>开始日期</label></li>
-            <li class="col-sm-2">
-                <input type="date"  id="StartDate" class="form-control"/>
-            </li>
-            <li><label>结束日期</label></li>
-            <li class="col-sm-2">
-                <input type="date" id="EndDate" class="form-control"/>
-            </li>
-            <li><button class="btn btn-primary" id="GetReport">查询</button></li>
-            <li><button class="btn btn-info" id="CatchPDReport">导出</button></li>
-        </ul>
-
+<h2 style="margin-top:60px">订单对账查询</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>开始日期</td>
+                <td><input type="date" id="StartDate" class="form-control" /></td>
+                <td>结束日期</td>
+                <td><input type="date" id="EndDate" class="form-control" /></td>
+                <td><button class="btn btn-info" id="GetReport"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+                <td><button class="btn btn-primary" id="CatchPDReport"><span class="glyphicon glyphicon-share-alt"></span> 导出</button></td>
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
         <table id="POReport"></table>
         <div id="jqGridPager"></div>
-
     </div>
 </div>
+
 <script>
     $(function () {
-        PurchaseOrderReport($("#StartDate").val(), $("#EndDate").val())
+
+        $(window).resize(function () {
+            $("#POReport").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#POReport").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+        });
+
+        PurchaseOrderReport($("#StartDate").val(), $("#EndDate").val());
+
         $("#GetReport").on("click", function () {
             var startdate = '';
             var enddate = ''

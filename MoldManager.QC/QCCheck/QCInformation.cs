@@ -468,5 +468,10 @@ namespace MoldManager.QC.QCCheck
             string _url = "/User/GetUsersByDepartment?DepartmentName=测量";
             return JsonConvert.DeserializeObject<List<User>>(_server.ReceiveStream(_url));
         }
+        public string GetRaw(string ELE_IndexCode)
+        {
+            string _url = "/Task/GetEleTaskRaw?ELE_IndexCode="+ ELE_IndexCode;
+            return JsonConvert.DeserializeObject<string>(_server.ReceiveStream(_url));
+        }
     }
 }

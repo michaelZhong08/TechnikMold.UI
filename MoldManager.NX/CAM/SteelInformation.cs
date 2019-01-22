@@ -143,9 +143,9 @@ namespace TechnikSys.MoldManager.NX.CAM
         /// <returns></returns>
         public  int CreateSteelTask(int GroupID, string Note, string CreateBy)
         {
-            UserInfo  _userInfo = new UserInfo(_server);
-            int _userid = _userInfo.GetUserID(CreateBy);
-            string _url = "/Task/CreateSteelTask?GroupID=" + GroupID + "&Note=" + Note + "&CreateBy=" + _userid;
+            //UserInfo  _userInfo = new UserInfo(_server);
+            //int _userid = _userInfo.GetUserID(CreateBy);
+            string _url = "/Task/CreateSteelTask?GroupID=" + GroupID + "&Note=" + Note + "&CreateBy=" + CreateBy;//_userid;
             string _result = _server.ReceiveStream(_url);
             return Convert.ToInt16(_result);
         }

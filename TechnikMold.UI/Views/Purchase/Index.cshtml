@@ -30,40 +30,44 @@
     <input type="hidden" id="Department" value="@ViewBag.Department" />
 </div>
 
-<div style="margin-top:60px">
-    <div class="col-sm-11">
-
-        <h2>申请单列表</h2>
-        <div>
-            <button class="btn btn-primary" id="NewPR">新建申请单</button>
-            <button class="btn btn-primary" id="SearchPR">申请单查询</button>
-            @if ((PosID > 1) && (ViewBag.State == 2))
-            {
-                <button class="btn btn-primary" id="BatchApprove">批量通过</button>
-            }
-
-            <button class="btn btn-primary hr" id="ExportExcelForPurchase" style="background-color:#71C671;" hidden>导出采购申请</button>
-
-            <div class="col-sm-2">
-                <select id="PRState" class="form-control">
-                    @foreach (int _val in @Enum.GetValues(typeof(PurchaseRequestStatus)))
-                    {
-                        if (ViewBag.State == _val)
+<h2 style="margin-top:60px">申请单列表</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
+                    <select id="PRState" class="form-control">
+                        @foreach (int _val in @Enum.GetValues(typeof(PurchaseRequestStatus)))
                         {
-                            <option value="@_val" selected>@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
+                            if (ViewBag.State == _val)
+                            {
+                                <option value="@_val" selected>@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
+                            }
+                            else
+                            {
+                                <option value="@_val">@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
+                            }
                         }
-                        else
-                        {
-                            <option value="@_val">@Enum.GetName(typeof(PurchaseRequestStatus), _val)</option>
-                        }
-                    }
-                </select>
-            </div>
-        </div>
-        <div style="margin-top:20px">
-            <table id="PRListGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+                    </select>
+                </td>
+                <td>
+                    <button class="btn btn-info" id="SearchPR"><span class="glyphicon glyphicon-search"></span> 查询</button>
+                </td>
+                <td>
+                    <button class="btn btn-success" id="NewPR"><span class="glyphicon glyphicon-plus"></span> 创建</button>
+                </td>
+                <td id="td_BatchApprove" hidden>
+                    <button class="btn btn-warning" id="BatchApprove"><span class="glyphicon glyphicon-lock"></span> 批量通过</button>
+                </td>
+                <td class="hr" hidden>
+                    <button class="btn btn-primary" id="ExportExcelForPurchase"><span class="glyphicon glyphicon-share-alt"></span> 导出采购申请</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
+        <table id="PRListGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
 
@@ -71,6 +75,12 @@
 
 <script>
     $("document").ready(function(){
+
+        $(window).resize(function () {
+            $("#PRListGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#PRListGrid").setGridHeight($('.UD_TableDiv').eq(0).height()-40);
+        });
+
         PRListGrid(@ViewBag.Department, @ViewBag.State);
 
         LoadQuerySuppliers();
@@ -80,6 +90,12 @@
         $("#QueryPR").on("click", function(){
             QueryPurchaseOrders();
         })
+
+        if($('#PRState').val()=='5' && @PosID>1 ){
+            $('#td_BatchApprove').show();
+        }else{
+            $('#td_BatchApprove').hide();
+        }
         //////////
         if (sessionStorage['SpecKey'] != null) {
             if (sessionStorage['SpecKey'] == 'hr') {
@@ -128,7 +144,11 @@
         var _url = "/Purchase/JsonPRList?State="+$("#PRState").val()+"&Department=@ViewBag.Department";
         $("#PRListGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
         //////////暂时注释
-        
+        if($('#PRState').val()=='5' && @PosID>1){
+            $('#td_BatchApprove').show();
+        }else{
+            $('#td_BatchApprove').hide();
+        }
         if (sessionStorage['SpecKey'] != null) {
             if (sessionStorage['SpecKey'] == 'hr') {
                 if($("#PRState").val() =="10")

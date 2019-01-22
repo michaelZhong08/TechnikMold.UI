@@ -55,6 +55,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     Task.StateMemo = Task.StateMemo == null ? "" : Task.StateMemo;
                     Task.State = (int)TaskStatus.未发布;///If this is a new task, set the task in "Not Released" state;
                     Task.PrevState = (int)TaskStatus.未发布;
+                    Task.Creator = Task.Creator ?? "";
                     _context.Tasks.Add(Task);
                 }
                 else
@@ -89,6 +90,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Enabled = Task.Enabled;
                     _dbEntry.QCInfoFinish = Task.QCInfoFinish;
                     _dbEntry.PositionFinish = Task.PositionFinish;
+                    _dbEntry.Creator = Task.Creator ?? "";
                 }
             }
             else
@@ -114,10 +116,12 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Memo=Task.Memo==null?"":Task.Memo;
 
                     _dbEntry.StateMemo = Task.StateMemo == null ? "" : Task.StateMemo;
-                    _dbEntry.PrevState = _dbEntry.State;
-                    _dbEntry.State=Task.State;
+                    if (_dbEntry.State != Task.State)
+                    {
+                        _dbEntry.PrevState = _dbEntry.State;
+                        _dbEntry.State = Task.State;
+                    }
                     _dbEntry.ProjectID=Task.ProjectID;
-                   
                     _dbEntry.TaskType = Task.TaskType;
                     _dbEntry.ProgramID = Task.ProgramID;
                     _dbEntry.ProjectID = Task.ProjectID;
@@ -125,7 +129,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.Enabled = Task.Enabled;
                     _dbEntry.QCInfoFinish = Task.QCInfoFinish;
                     _dbEntry.PositionFinish = Task.PositionFinish;
-                    
+                    _dbEntry.Creator = Task.Creator ?? "";
                 }
             }
             _context.SaveChanges();

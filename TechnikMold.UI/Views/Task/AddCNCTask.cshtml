@@ -251,14 +251,6 @@
     })
     function LoadMolds(Keyword, CurrentVal) {
         $("#MoldList option").remove();
-        //$.getJSON("/Project/JsonMoldNumber?Keyword=" + Keyword + "&TakeAll=true", function (msg) {
-        //    $.each(msg, function (i, n) {
-        //        $("#MoldList").append($("<option/>", {
-        //            value: n,
-        //            text: n
-        //        }))
-        //    });
-        //})
         var _url = "/Task/GetMoldNumberList?State=1&CAM=0&TaskType=" + $('#TaskType').val() + "&Keyword=" + Keyword;
         $.ajaxSettings.async = false;//同步
         $.getJSON(_url, function (msg) {
@@ -340,6 +332,7 @@
         $('#PD_DivC').empty();
     }
 </script>
+
 <script>
     $(document).ready(function () {
         var _taskObj = { taskID: 0, taskName: '', R: 0, F: 0,RZero:false,FZero:false };

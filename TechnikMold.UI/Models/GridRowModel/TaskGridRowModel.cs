@@ -22,7 +22,8 @@ namespace MoldManager.WebUI.Models.GridRowModel
             //图纸
             if (Task.DrawingFile != "")
             {
-                cell[1] = "<a href='/File"+FilePath+Task.MoldNumber+"/"+Task.DrawingFile+ ".pdf" + "' target='_blank'>Open</a>";
+                //cell[1] = "<a href='/File"+FilePath+Task.MoldNumber+"/"+Task.DrawingFile+ ".pdf" + "' target='_blank'>Open</a>";//ShowElePDF(taskid);
+                cell[1] = "<a onclick='ShowElePDF("+ Task.TaskID .ToString()+ ")'>Open</a>";
             }
             //任务名
             cell[2] = Task.TaskName;

@@ -28,6 +28,11 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public string MoldNumber { get; set; }
         public bool Enabled { get; set; }
 
+        public string Creator { get; set; }
+        public string Finisher { get; set; }
+        public string Deletor { get; set; }
+        public DateTime DeleteTime { get; set; }
+
         public QCTask()
         {
             TaskID = 0;
@@ -41,6 +46,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             CreateTime = DateTime.Now;
             StartTime = new DateTime(1900, 1, 1);
             FinishTime = new DateTime(1900, 1, 1);
+            DeleteTime = new DateTime(1900, 1, 1);
             Memo = "";
             StateMemo = "";
             State = -99;

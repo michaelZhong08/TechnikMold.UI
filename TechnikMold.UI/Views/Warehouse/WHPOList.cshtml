@@ -6,31 +6,28 @@
     <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
     <input type="hidden" id="State" value="@ViewBag.State" />
 </div>
-<div style="margin-top:60px">
-    <div class="col-sm-11">
 
-        <h3>订单列表</h3>
-        <div>
-            <ul class="nav nav-pills">
-                <li class="col-sm-2">
+<h2 style="margin-top:60px">订单列表</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
                     <select id="POState" class="form-control">
                         <option value="1">待收货</option>
                         <option value="2">完成</option>
                         <option value="0">所有状态</option>
                     </select>
-                </li>
-                <li><button class="btn btn-primary" id="SearchPO">查询订单</button></li>
-            </ul>
-
-        </div>
-        <div style="margin-top:20px">
-            <table id="POListGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+                </td>
+                <td><button class="btn btn-info" id="SearchPO"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
+        <table id="POListGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
-
-
 
 <div class="modal" data-backdrop="static" data-keyboard="false" id="POSearchDialog" tabindex="-1" role="dialog" aria-labelledby="POSearchLabel">
     <div class="modal-dialog">
@@ -112,6 +109,12 @@
 <script src="~/Scripts/Warehouse.js"></script>
 <script>
     $("document").ready(function(){
+
+        $(window).resize(function () {
+            $("#POListGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#POListGrid").setGridHeight($('.UD_TableDiv').eq(0).height()-40);
+        });
+
         SetList(@ViewBag.State);
         WHPOListGrid(@ViewBag.ProjectID, @ViewBag.State);
         

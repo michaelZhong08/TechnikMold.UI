@@ -1,35 +1,40 @@
 ﻿
+<div>
 
-<div style="margin-top:60px">
+</div>
 
-
-        <h2>
-            @ViewBag.Title
-        </h2>
-       
-
-        <div class="col-sm-2">
-            <button class="btn btn-primary col-sm-12" id="RefreshPO">刷新订单列表</button>
-            <select id="PurchaseTypes" class="form-control"></select>
-            <select id="PurchaseOrders" class="form-control" size="20"></select>
+<h2 style="margin-top:60px">@ViewBag.Title</h2>
+<div class="FatherDiv">
+    <div class="LeftDiv">
+        <button class="btn btn-primary LeftDiv_Btn" id="RefreshPO">刷新订单列表</button>
+        <select id="PurchaseTypes" class="form-control LeftDiv_Inpt"></select>
+        <select class="form-control LeftDiv_Sel" id="PurchaseOrders" size="3"></select>
+    </div>
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
+                <tr>
+                    <td><input type="text" id="WKeyword" class="form-control" value="@ViewBag.Keyword" placeholder="零件名/物料编号/规格" /></td>
+                    <td><button class="btn btn-info" id="StockQuery"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+                    <td><button class="btn btn-primary" id="OutSourceStart"><span class="glyphicon glyphicon-indent-left"></span> 外发出库</button></td>
+                </tr>
+            </table>
         </div>
-
-        <div class="col-sm-8">
-            <ul class="nav nav-pills">
-                <li class="col-sm-4">
-                    <input type="text" id="WKeyword" class="form-control" value="@ViewBag.Keyword" placeholder="零件名/物料编号/规格" />
-                </li>
-                <li><button class="btn btn-primary" id="StockQuery">查询</button></li>
-                <li><button class="btn btn-primary" id="OutSourceStart">外发出库</button>
-            </ul>
+        <div class="RightDiv_BottomDiv">
             <table id="PurchaseItemGrid"></table>
         </div>
-
+    </div>
 </div>
 
 <script>
 
     $("document").ready(function () {
+
+        $(window).resize(function () {
+            $("#PurchaseItemGrid").setGridWidth($('.RightDiv_BottomDiv').eq(0).width());
+            $("#PurchaseItemGrid").setGridHeight($('.RightDiv_BottomDiv').eq(0).height() - 40);
+        });
+
         LoadPurchaseTypes();
         OutSourceItem();
 

@@ -15,43 +15,12 @@
 }
 
 
-
-
-<div style="margin-top:60px">
-    <div class="col-sm-11">
-        <h3>订单列表</h3>
-        <div>
-            <table>
-                <tr>
-                    <td>
-                        <select id="POState" class="form-control">
-                            <option value="0">所有状态</option>
-                            @foreach (int _val in @Enum.GetValues(typeof(PurchaseOrderStatus)))
-                            {
-                                if (_val == ViewBag.State)
-                                {
-                                    <option value="@_val" selected>@Enum.GetName(typeof(PurchaseOrderStatus), _val)</option>
-                                }
-                                else
-                                {
-                                    <option value="@_val">@Enum.GetName(typeof(PurchaseOrderStatus), _val)</option>
-                                }
-                            }
-                        </select>
-                    </td>
-                    <td>
-                        <button class="btn btn-primary" id="SearchPO">查询订单</button>
-                    </td>
-                    <td>
-                        @if (_dept == 4)
-                        {
-                            <button class="btn btn-primary" id="CreatePO">创建订单</button>
-                        }
-                    </td>
-                </tr>
-            </table>
-            @*<ul class="nav nav-pills">
-                <li class="col-sm-2">
+<h2 style="margin-top:60px;">订单列表</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
                     <select id="POState" class="form-control">
                         <option value="0">所有状态</option>
                         @foreach (int _val in @Enum.GetValues(typeof(PurchaseOrderStatus)))
@@ -66,22 +35,22 @@
                             }
                         }
                     </select>
-                </li>
-
-                <li><button class="btn btn-primary" id="SearchPO">查询订单</button></li>
-                @if (_dept == 4)
-                {
-                    <li><button class="btn btn-primary" id="CreatePO">创建订单</button></li>
-                }
-                
-            </ul>*@
-        </div>
-        <div >
-            <table id="POListGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+                </td>
+                <td>
+                    <button class="btn btn-info" id="SearchPO"><span class="glyphicon glyphicon-search"></span> 查询</button>
+                </td>
+                <td id="td_CreatePO">
+                    <button class="btn btn-success" id="CreatePO"><span class="glyphicon glyphicon-plus"></span> 创建</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
+        <table id="POListGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
+
 <script src="~/Scripts/Purchase.js"></script>
 <script>
     $("document").ready(function () {
@@ -158,6 +127,12 @@
 
 <script>
     $("document").ready(function(){
+
+        $(window).resize(function () {
+            $("#POListGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#POListGrid").setGridHeight($('.UD_TableDiv').eq(0).height()-40);
+        });
+
         $('#CreatePO').on('click',function(){
             CreatePO1();
         })
@@ -166,6 +141,12 @@
         })
 
         LoadPurchaseType();
+
+        if(@_dept==4){
+            $('#td_CreatePO').show();
+        }else{
+            $('#td_CreatePO').hide();
+        }
     })
 
     function QueryPO() {
@@ -194,7 +175,7 @@
             _url = _url == "" ? "PurchaseType=" + $("#PurchaseType").val() : _url + "&PurchaseType=" + $("#PurchaseType").val();
         }
         _url =_url==""?"/Purchase/PurchaseOrderList": "/Purchase/PurchaseOrderList?" + _url;
-       
+
         location.href = _url;
     }
 
@@ -210,8 +191,8 @@
         $.getJSON(_url, function(msg){
             $.each(msg, function(i,n){
                 $("#PurchaseType").append($("<option/>", {
-                    value:n.PurchaseTypeID, 
-                    text:n.Name 
+                    value:n.PurchaseTypeID,
+                    text:n.Name
                 }))
             })
         })

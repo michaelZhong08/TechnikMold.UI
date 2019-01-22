@@ -1,13 +1,4 @@
-﻿/*
- * Create By:lechun1
- * 
- * Description:
- * 
- */
-
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -64,25 +55,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 dbentry = _context.TaskHours.Where(h => h.TaskHourID == model.TaskHourID).FirstOrDefault();
                 if (dbentry != null)
                 {
-                    //if (model.State == (int)TaskHourStatus.完成)
-                    //{
-                    //    TimeSpan timeSpan;
-                    //    timeSpan = dbentry.FinishTime - dbentry.StartTime;
-                    //    dbentry.Time = Convert.ToDecimal(timeSpan.TotalMinutes);
-                    //    dbentry.FinishTime = model.FinishTime;
-                    //    dbentry.MachineCode = model.MachineCode;
-                    //}   
-                    //TimeSpan timeSpan;
+                    dbentry.StartTime = model.StartTime;
                     dbentry.FinishTime = model.FinishTime;
-                    //timeSpan = dbentry.FinishTime - dbentry.StartTime;
-                    ////正常结束
-                    //if (dbentry.RecordType==2)
-                    //{
-                    //    dbentry.Time = model.Time;                        
-                    //}
-                    ////外发结束
-                    //else
-                    //    dbentry.Time = Convert.ToDecimal(timeSpan.TotalMinutes);
                     dbentry.Time = model.Time;
                     dbentry.MachineCode = model.MachineCode;
                     dbentry.Enabled = model.Enabled;
@@ -91,7 +65,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     dbentry.Qty = model.Qty;
                     dbentry.Cost = model.Cost;
                     dbentry.SemiTaskFlag = model.SemiTaskFlag;
-                    dbentry.Memo = model.Memo + " 时间：" + dbentry.Time.ToString();
+                    dbentry.Memo = model.Memo;// + " 时间：" + dbentry.Time.ToString();
                 }               
             }
             #endregion
@@ -105,8 +79,13 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
         public TaskHour GetCurTHBySemiTaskFlag(string SemiTaskFlag)
         {
-            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && h.Enabled == true && h.State == (int)TaskHourStatus.开始).OrderByDescending(h => h.TaskHourID).FirstOrDefault() ?? new TaskHour();
+            TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Equals(SemiTaskFlag) && h.Enabled && h.State == (int)TaskHourStatus.开始).OrderByDescending(h => h.TaskHourID).FirstOrDefault();
             return _taskhour;
+        }
+        public List<TaskHour> GetCurTHsBySemiTaskFlag(string SemiTaskFlag)
+        {
+            List<TaskHour> _taskhours = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && h.Enabled && h.State == (int)TaskHourStatus.开始).OrderByDescending(h => h.TaskHourID).ToList();
+            return _taskhours;
         }
         public decimal GetTotalHourByTaskID(int TaskID)
         {
@@ -216,6 +195,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             return "";
         }
 
-
+        public List<TaskHour> GetCurTHsByMCode(string MCode)
+        {
+            List<TaskHour> _taskhourList=_context.TaskHours.Where(h=>h.MachineCode==MCode && h.Enabled && h.State == (int)TaskHourStatus.开始).OrderByDescending(h => h.TaskHourID).ToList();
+            return _taskhourList;
+        }
     }
 }

@@ -4,7 +4,9 @@
 }
 
 
-
+<div class="hidden">
+    <input id="TaskType" value="2" hidden />
+</div>
 <div class="col-sm-11" style="margin-top:50px">
     <h2>添加EDM加工任务</h2>
     <div class="col-sm-12">
@@ -28,11 +30,11 @@
     </div>
     <div class="col-sm-12">
         <div class="col-sm-3">
-            <label>电极列表</label>
+            <label>电极任务</label>
             <select id="AvailableElectrodeList" class="form-control" size="10"></select>
         </div>
         <div class="col-sm-3">
-            <label>任务电极列表</label>
+            <label>电极标签</label>
             <select id="SelectedElectrodeList" class="form-control" size="10"></select>
         </div>
         <div class="col-sm-4">
@@ -51,9 +53,12 @@
                     <td class="col-sm-4"><label>优先级</label></td>
                     <td class="col-sm-8">
                         <select id="Priority" class="form-control">
-                            <option value="0">一般</option>
-                            <option value="1">较急</option>
-                            <option value="2">特急</option>
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
                         </select>
                     </td>
                 </tr>
@@ -77,7 +82,6 @@
         </div>
 
     </div>
-    
 </div>
 
 @using (Html.BeginForm("ReaddEDMTask", "Task", FormMethod.Post, new { id = "AAA" }))
@@ -90,10 +94,11 @@
     <input type="hidden"  id="TaskMemo" name="Memo" />
     <input type="hidden" id="TaskPriority" name="Priority" />
 }
+
 <script src="~/Scripts/Task.js"></script>
 <script>
     $("document").ready(function(){
-        TaskRecreateGrid(0, 2);
+        TaskRecreateGrid(0, 2, true);
 
         $("#Keyword").on("keyup", function () {
             LoadMolds($("#Keyword").val());
@@ -102,8 +107,9 @@
         $("#MoldList").on("change", function () {
             var _moldNumber = $("#MoldList option:selected").val();
             $("#AvailableElectrodeList option").remove();
+            $("#SelectedElectrodeList option").remove();
             $("#ItemList option").remove();
-            $("#TaskGrid").jqGrid("setGridParam", { datatype: "json", url: "/Task/JsonMachineTasks?MoldNumber=" + _moldNumber + "&TaskType=2&state=1" }).trigger('reloadGrid');
+            LoadTasks();
         })
         
         $("#CreateEDM").on("click", function(){
@@ -123,7 +129,6 @@
                     $("#TaskMemo").val($("#Memo option:selected").val());
                     $("#TaskPriority").val($("#Priority option:selected").val());
                     $("#AAA").submit();
-                    //alert($("#AAA").serialize());
                 } else {
                     alert("需要加工的电极或工件总数不能为0");
                 }
@@ -133,26 +138,42 @@
             }
         })
 
+        $('#AvailableElectrodeList').on('change', function () {
+            $("#SelectedElectrodeList option").remove();
+            var eleTaskName = $('#AvailableElectrodeList').val();
+            $.get('/Task/Service_Ele_GetCncItemsByEle?eleTaskName=' + eleTaskName, function (res) {
+                $.each(res, function (i, n) {
+                    $('#SelectedElectrodeList').append($("<option/>", {
+                        text: n.LabelName,
+                        value: n.CNCItemID
+                    }))
+                })
+            })
+        });
         LoadMolds("");
     })
 
 
     function LoadMolds(Keyword) {
         $("#MoldList option").remove();
-        $.getJSON("/Project/JsonMoldNumber?Keyword=" + Keyword+"&TakeAll=true", function (msg) {
+        var _url = "/Task/GetMoldNumberList?State=1&CAM=0&TaskType=" + $('#TaskType').val() + "&Keyword=" + Keyword;
+        $.ajaxSettings.async = false;//同步
+        $.getJSON(_url, function (msg) {
             $.each(msg, function (i, n) {
-                $("#MoldList").append($("<option/>", {
-                    value: n,
-                    text: n
-                }))
-            });
-        })
+                var _val = $.trim(n);
+                if (_val != "") {
+                    $("#MoldList").append($("<option/>", {
+                        text: _val,
+                        value: _val
+                    }))
+                }
+            })
+        });
     }
-
 
     function GetEleList() {
         var result = "";
-        $("#SelectedElectrodeList option").each(function () {
+        $("#AvailableElectrodeList option").each(function () {
             var _item = $(this).text();
 
             result = result == "" ? _item : result + ";" + _item;
@@ -162,12 +183,17 @@
 
     function GetCADList() {
         var result = "";
-        $("#ItemList option:selected").each(function () {
+        $("#ItemList option").each(function () {
             var _item = $(this).text();
-
             result = result == "" ? _item : result + ";" + _item;
         })
         return result;
+    }
+
+    function LoadTasks() {
+        var _moldnumber = $("#MoldList option:selected").val();
+        var _taskType = $("#TaskType").val();
+        $("#TaskGrid").jqGrid("setGridParam", { datatype: "json", url: "/Task/Service_Task_GetFinishedTaskJson?MoldNumber=" + _moldnumber + "&TaskType=" + _taskType }).trigger("reloadGrid");//加工历史
     }
 </script>
 

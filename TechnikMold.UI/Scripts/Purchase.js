@@ -2082,17 +2082,20 @@ function SupplierContacts() {
 
 function LoadContactInfo() {
     var _url = "/Purchase/JsonContact?ContactID=" + $("#ContactList").val();
-    $("#ContactInfo :input").removeAttr("disabled");
+    
     $.getJSON(_url, function (msg) {
-        $("#ContactFullName").val(msg.FullName);
-        $("#ContactID").val(msg.ContactID);
-        $("#ContactType").val(msg.ContactType);
-        $("#OrganizationID").val(msg.OrganizationID);
-        $("#Enabled").val(msg.Enabled);
-        $("#Email").val(msg.Email);
-        $("#Telephone").val(msg.Telephone);
-        $("#Mobile").val(msg.Mobile);
-        $("#Memo").val(msg.Memo);
+        if (msg.ContactID > 0) {
+            $("#ContactInfo :input").removeAttr("disabled");
+            $("#ContactFullName").val(msg.FullName);
+            $("#ContactID").val(msg.ContactID);
+            $("#ContactType").val(msg.ContactType);
+            $("#OrganizationID").val(msg.OrganizationID);
+            $("#Enabled").val(msg.Enabled);
+            $("#Email").val(msg.Email);
+            $("#Telephone").val(msg.Telephone);
+            $("#Mobile").val(msg.Mobile);
+            $("#Memo").val(msg.Memo);
+        }
     })
 }
 
@@ -2117,6 +2120,7 @@ function SaveContact() {
             success: function () {
                 alert("联系人信息已保存");
                 SupplierContacts();
+                ResetContactDialog();
             }
         })
     }

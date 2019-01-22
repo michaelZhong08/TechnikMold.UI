@@ -94,45 +94,21 @@
         });
 
         $("#SendProgram").on("click", function () {
-            var allID="";
+            var allIDs = "";
             for (i = 0; i < EleIDs.length; i++) {
 
-                allID = allID ==""?EleIDs[i]:allID+","+EleIDs[i];
+                allIDs = allIDs == "" ? EleIDs[i] : allIDs + "," + EleIDs[i];
             }
 
             var allPos = "";
             for (i = 0; i < ElePosition.length; i++) {
                 allPos = allPos == "" ? ElePosition[i] : allPos + "," + ElePosition[i];
             }
-            var _userid = $('#CheckUser1 option:selected').val();
-            var _username = $('#CheckUser1 option:selected').text();
-
-            $.ajax({
-                dataType: "html",
-                url: "/Task/CreateCNCProgram?EleIds=" + allID + "&Positions=" + allPos
-                    + "&Path=" + $("#DevicePath").val() + "&Device=" + $("#Device").val()
-                    + '&_wsUserName=' + _username,
-                error: function () {
-
-                },
-                success:function(msg){
-                    if (msg == "") {
-                        alert("传输成功");
-                        ResetEleList();
-                        $("#ScanBarCodeDialog").modal("hide");
-                    } else {
-                        
-                        alert("传输失败\r\n错误信息:\r\n"+msg);
-                    }
-                }
-            })
-            
-            
+            ////若有其它机器的工时记录则提醒用户
+            Chk_TH_BeforeInsert(allIDs);
+            ////
+            SendProgram(allIDs, allPos);
         })
-
-        //$("#BarCode,#Position").on("keyup", function () {
-        //    CheckInput(this);
-        //})
 
         $("#BarCode").on('keyup', function () {
             delay_till_last('BarCode', function () {
@@ -279,5 +255,51 @@
         $("#BarCode").val("");
         $("Position").val("");
         $("#BarCode").focus();
+    }
+
+    function SendProgram(allIDs, allPos) {
+        var _userid = $('#CheckUser1 option:selected').val();
+        var _username = $('#CheckUser1 option:selected').text();
+
+        $.ajax({
+            dataType: "html",
+            url: "/Task/CreateCNCProgram?EleIds=" + allIDs + "&Positions=" + allPos
+                + "&Path=" + $("#DevicePath").val() + "&Device=" + $("#Device").val()
+                + '&_wsUserName=' + _username,
+            error: function () {
+
+            },
+            success: function (msg) {
+                if (msg == "") {
+                    alert("传输成功");
+                    ResetEleList();
+                    $("#ScanBarCodeDialog").modal("hide");
+                } else {
+
+                    alert("传输失败\r\n错误信息:\r\n" + msg);
+                }
+            }
+        });
+    }
+
+    function Chk_TH_BeforeInsert(allIDs) {
+        var _username = $('#CheckUser1 option:selected').text();
+        $.ajaxSettings.async = false;
+        $.get('/Task/Service_TH_ChkBeforeInsert?EleIDs=' + allIDs + '&MachineCode=' + $('#Device').val(), function (res) {
+            if (res.length > 0) {
+                var msg = '请确认以下工时(选择取消则以下工时取消)——';
+                $.each(res, function (i, n) {
+                    msg = msg + '工时——开始时间：' + n.StartTime + ';操作员：' + n.Operater + ';设备代码：' + n.MachineCode + '\n';
+                });
+                var _return = confirm(msg);
+                if (_return) {
+                    //确认工时
+                    $.get('/Task/Service_TH_ConfirmTH?EleIDs=' + allIDs + '&MachineCode=' + $('#Device').val() + '&_wsUserName=' + _username)
+                } else {
+                    //取消工时
+
+                }
+            }
+        })
     }
 </script>

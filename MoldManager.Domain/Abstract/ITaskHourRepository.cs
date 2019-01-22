@@ -1,12 +1,4 @@
-﻿
-/*
- * Create By:lechun1
- * 
- * Description: public interface for repository of TechnikSys.MoldManager.Domain.Entity.TaskHour
- * 
- */
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,7 +17,9 @@ namespace TechnikSys.MoldManager.Domain.Abstract
         string GetOperaterByTaskID(int TaskID);
         string GetMachineByTask(int TaskID);
         TaskHour GetCurTHBySemiTaskFlag(string SemiTaskFlag);
+        List<TaskHour> GetCurTHsBySemiTaskFlag(string SemiTaskFlag);
         string GetOperaterBySemiTaskFlag(string SemiTaskFlag);
         string GetMachineBySemiTaskFlag(string SemiTaskFlag);
+        List<TaskHour> GetCurTHsByMCode(string MCode);
     }
 }

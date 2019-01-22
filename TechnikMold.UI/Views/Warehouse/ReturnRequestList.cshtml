@@ -2,60 +2,60 @@
 @model TechnikSys.MoldManager.Domain.Entity.ReturnRequest
 @{
     ViewBag.Title = "退货管理";
-    int DeptID;
+    int DeptID;string DepName = string.Empty;
     try
     {
         DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+        DepName = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]).ToString();
     }
     catch
     {
         DeptID = 0;
     }
 }
-<div style="margin-top:60px">
-    <h2>退货单列表</h2>
-    <div class="col-sm-11">
-        <div id="ToolBar">        
-            <ul class="nav nav-pills">
-                <li><label>状态</label></li>
-                <li class="col-sm-2">
+
+<h2 style="margin-top:60px">退货单列表</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
                     <select class="form-control" id="Status">
                         <option value="-1">新建</option>
                         <option value="0">待审批</option>
                         <option value="1">审批完成</option>
                         <option value="2">关闭</option>
                     </select>
-                </li>
-                <li><label>开始日期</label></li>
-                <li class="col-sm-2">
-                    <input type="date" class="form-control" id="StartDate" />
-                </li>
-                <li><label>结束日期</label></li>
-                <li class="col-sm-2">
-                    <input type="date" class="form-control" id="EndDate" />
-                </li>
-
-                <li class="col-sm-2">
-                    <input type="text" id="Keyword" class="form-control" placeholder="退货项关键字" />
-                </li>
-                <li><button class="btn btn-primary" id="FilterReturnRequests">查询</button></li>
-                @if (DeptID == 20)
-                {
-                    <li><button class="btn btn-primary" id="CreateReturnRequest">创建退货单</button></li>
-                }
-               
-            </ul>          
-        </div>
-
-    <div class="col-sm-12" style="float:left;">
+                </td>
+                <td>开始日期</td>
+                <td><input type="date" class="form-control" id="StartDate" /></td>
+                <td>结束日期</td>
+                <td><input type="date" class="form-control" id="EndDate" /></td>
+                <td><input type="text" id="Keyword" class="form-control" placeholder="退货项关键字" /></td>
+                <td><button class="btn btn-info" id="FilterReturnRequests"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+                <td id="td_CreateReturnRequest" hidden><button class="btn btn-success" id="CreateReturnRequest"><span class="glyphicon glyphicon-plus"></span> 创建</button></td>
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
         <table id="ReturnRequestGrid"></table>
         <div id="jqGridPager"></div>
     </div>
 </div>
-    </div>
 
 <script>
     $("document").ready(function () {
+
+        $(window).resize(function () {
+            $("#ReturnRequestGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#ReturnRequestGrid").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+        });
+
+        if ('@DepName' == '仓库') {
+            $('#td_CreateReturnRequest').show();
+        } else {
+            $('#td_CreateReturnRequest').hide();
+        }
 
         ReturnRequestGrid($("#Status option:selected").val());
 

@@ -54,7 +54,7 @@ function ProjectGrid(keyword, state, type, depID, YJHEditedCellList) {
     }
     var _url = '/Project/JsonProjects?keyword=' + keyword + "&State=" + state + "&Type=" + type + "&DepID=" + depID;
     $("#ProjectGrid").jqGrid({
-        url: _url,
+        url: '',//_url,
         mtype: "GET",
         styleUI: 'Bootstrap',
         datatype: "json",
@@ -816,7 +816,6 @@ function CAMTaskList(MoldNumber, TaskType, State, CAM) {
         //width: document.body.clientWidth * 0.8,
         height:$('.RightDiv_BottomDiv').eq(0).height()-40,
         width: $('.RightDiv_BottomDiv').eq(0).width(),
-        rowNum: 500,
         shrinkToFit: false,
         loadonce: true,
         ondblClickRow: function (iRow) {
@@ -876,7 +875,7 @@ function MGUptList(IDs) {
             { label: 'TaskID', name: 'TaskID', width: 20,hidden:true },
             { label: '任务名', name: 'TaskName', width: 120 },
             { label: 'CAM', name: 'CAM', width: 120},
-            { label: '工艺名(可编辑)', name: 'Technology', width: 120, editable: true, edittype: 'select', editoptions: { value: { 0: '铣床', 1: '磨床', 2: '铣磨', 3: '车' } } },//, edittype: 'select', editoptions: {value: {1:'铣床', 2:'磨床', 3:'铣磨',4:'车'}}
+            { label: '工艺名(可编辑)', name: 'Technology', width: 120, editable: true, edittype: 'select', editoptions: { value: { 0: '铣床', 1: '磨床', 100: '铣磨', 3: '车',9:'全加工' } } },//, edittype: 'select', editoptions: {value: {1:'铣床', 2:'磨床', 3:'铣磨',4:'车'}}
             { label: '数量(可编辑)', name: 'Qty', width: 120, editable: true, edittype: 'text',formatter:'number' },//需要胡工同意
             { label: '图纸', name: 'DrawingFile', width: 120 }
         ],
@@ -1101,12 +1100,14 @@ function CNCItemList(TaskIDs) {
             { label: '安全高度', name: 'SafetyHeight', width: 40 },
             { label: '毛坯', name: 'Raw', width: 75 },
             { label: '标签打印', name: 'LabelPrinted', formatter: "checkbox", width: 40 },
-            { label: '已完成', name: 'Finished', width: 75, formatter: "checkbox" },
+            
+            { label: 'CNC结束', name: 'Finished', width: 75, formatter: "checkbox" },
+            { label: '开始时间', name: 'StartTime', width: 100},
+            { label: '结束时间', name: 'FinishTime', width: 100},
         ],
         viewrecords: true,
         height: document.documentElement.clientHeight - 80,
         width: document.body.clientWidth * 0.95,
-        rowNum: 500,
         loadonce: true,
         multiselect: true,
         loadComplete: function () {
@@ -1257,27 +1258,25 @@ function StockItem(Keyword, MoldNumber, PurchaseType, Mode, Parent) {
         datatype: "json",
         colModel: [
             { label: "", name: "ID", hidden: true },
-            { label: '零件名', name: 'PartName', width: 120 },
-            { label: '物料号', name: 'PartNum', width: 75 },
-            { label: '规格', name: 'Specification', width: 180 },
-            { label: "材料", name: "Materials", width: 50 },
-            { label: '库存', name: 'Qty', width: 40 },
-            { label: '安全库存', name: 'SafeQuantity', width: 40, },
-            { label: '采购类型', name: "PurchaseType", width: 80, hidden: true },
-            { label: '备库类型', name: 'StockType', width: 80, hidden: true },
-            { label: "到库", name: "ReceiveQty", width: 40, hidden: true },
-            { label: "领出", name: "OutQty", width: 40, hidden: true },
-            { label: "仓库", name: "Warehouse", width: 40 },
-            { label: "库位", name: "WarehousePosition", width: 40 },
+            { label: '零件名', name: 'PartName', width: 150 },
+            { label: '物料号', name: 'PartNum', width: 120 },
+            { label: '规格', name: 'Specification', width: 300 },
+            { label: "材料", name: "Materials", width: 200 },
+            { label: '库存', name: 'Qty', width: 80 },
+            { label: '安全库存', name: 'SafeQuantity', width: 80, },
+            { label: '采购类型', name: "PurchaseType", width: 120, hidden: true },
+            { label: '备库类型', name: 'StockType', width: 120, hidden: true },
+            { label: "到库", name: "ReceiveQty", width: 80, hidden: true },
+            { label: "领出", name: "OutQty", width: 80, hidden: true },
+            { label: "仓库", name: "Warehouse", width: 120 },
+            { label: "库位", name: "WarehousePosition", width: 120 },
             { label: '', name: 'PartID', hidden: true },
         ],
-        viewrecords: true,
-        height: document.documentElement.clientHeight - 220,
-        width: document.body.clientWidth * 0.875,
-        rowNum: 500,
+        height: $('.RightDiv_BottomDiv').eq(0).height()-40,//document.documentElement.clientHeight - 220,
+        width: $('.RightDiv_BottomDiv').eq(0).width(),//document.body.clientWidth * 0.875,
         multiselect: _multi,
         loadonce: true,
-        shrinkToFit: true,
+        shrinkToFit: false,
         autoScroll: true,
         loadComplete: function () {
             $(".jqgrow", this).contextMenu("StockItemContext", {
@@ -1335,7 +1334,6 @@ function StockItem(Keyword, MoldNumber, PurchaseType, Mode, Parent) {
 function PRListGrid(Department, State) {
     var _url = "/Purchase/JsonPRList?State=" + State + "&Department=" + Department;
     var _condition = "";
-
     _url = _url + _condition;
     $("#PRListGrid").jqGrid({
         url: _url,
@@ -1344,21 +1342,19 @@ function PRListGrid(Department, State) {
         datatype: "json",
         colModel: [
             { label: "", name: "ID", hidden: true },
-            { label: '单号', name: 'PRNumber', width: 75 },
-            //{ label: '项目号', name: 'ProjectNumber', width: 75 },
-            //{ label: '模具号', name: 'MoldNumber', width: 75 },
-            { label: '创建人', name: 'PRUser', width: 75 },
-            { label: '所属部门', name: 'Department', width: 75 },
-            { label: '发起日期', name: 'CreateDate', width: 75, sorttype: 'date' },
-            { label: '提请人', name: 'SubmitUser', width: 75 },
-            { label: "审批人", name: "ReviewUser", width: 75 },
-            { label: '审批日期', name: 'ReviewDate', width: 75, sorttype: 'date' },
-            { label: '采购类型', name: "PurchaseType", width: 75 },
-            { label: '状态', name: 'Status', width: 75 },
-            { label: "备注", name: "Memo", width: 100 },
-            { label: '申请人', name: 'ApprovalUser', width: 75 },
+            { label: '单号', name: 'PRNumber', width: 150 },
+            { label: '创建人', name: 'PRUser', width: 150 },
+            { label: '所属部门', name: 'Department', width: 150 },
+            { label: '发起日期', name: 'CreateDate', width: 200, sorttype: 'date' },
+            { label: '提请人', name: 'SubmitUser', width: 120 },
+            { label: "审批人", name: "ReviewUser", width: 120 },
+            { label: '审批日期', name: 'ReviewDate', width: 200, sorttype: 'date' },
+            { label: '采购类型', name: "PurchaseType", width: 200 },
+            { label: '状态', name: 'Status', width: 120 },
+            { label: "备注", name: "Memo", width: 300 },
+            { label: '申请人', name: 'ApprovalUser', width: 120 },
             {
-                label: 'ERP料号同步', name: 'ERPPartStatus', width: 75, hidden: true,
+                label: 'ERP料号同步', name: 'ERPPartStatus', width: 150, hidden: true,
                 formatter: function (cellvalue, options, rowObject) {
                     var status;
                     if (cellvalue == 'True')
@@ -1369,14 +1365,12 @@ function PRListGrid(Department, State) {
                 }
             },
         ],
-        viewrecords: true,
-        height: document.documentElement.clientHeight - 230,
-        width: document.body.clientWidth * 0.98,
-        rowNum: 500,
+        height:$('.UD_TableDiv').eq(0).height()-40, //document.documentElement.clientHeight - 230,
+        width:$('.UD_TableDiv').eq(0).width(),//document.body.clientWidth * 0.98,
         loadonce: true,
         multiselect: true,
+        shrinkToFit: false,
         ondblClickRow: function (iRow) {
-
             location.href = "/Purchase/PRDetail?PurchaseRequestID=" + GetDblClickCell("PRListGrid", "ID");
         }
     })
@@ -1489,10 +1483,8 @@ function WHPOListGrid(ProjectID, State, UserID) {
             { label: '发起日期', name: 'CreateDate', width: 75 },
             { label: '状态', name: 'Status', width: 75 },
         ],
-        viewrecords: true,
-        height: document.documentElement.clientHeight - 200,
-        width: document.body.clientWidth * 0.875,
-        rowNum: 500,
+        height: $('.UD_TableDiv').eq(0).height()-40,//document.documentElement.clientHeight - 200,
+        width: $('.UD_TableDiv').eq(0).width(),//document.body.clientWidth * 0.875,
         loadonce: true,
         ondblClickRow: function (iRow) {
 
@@ -1549,8 +1541,8 @@ function POListGrid(MoldNumber, Keyword, StartDate, EndDate, Supplier, State, Pu
             { label: "生成人员", name: "PurchaseUser", width: 60 },
             { label: "生成日期", name: "CreateDate", width: 75 },
         ],
-        height: document.documentElement.clientHeight - 220,
-        width: document.body.clientWidth * 0.95,
+        height: $('.UD_TableDiv').eq(0).height()-40,//document.documentElement.clientHeight - 220,
+        width: $('.UD_TableDiv').eq(0).width(),//document.body.clientWidth * 0.95,
         loadonce: true,
         ondblClickRow: function () {
             var _id = GetCurrentID("POListGrid");
@@ -1727,14 +1719,11 @@ function QRListGrid(ProjectID, State, UserID) {
             { label: '状态', name: 'State', width: 75 },
 
         ],
-        viewrecords: true,
-        height: document.documentElement.clientHeight - 240,
-        width: document.body.clientWidth * 0.95,
-        rowNum: 500,
+        height: $('.UD_TableDiv').eq(0).height()-40,//document.documentElement.clientHeight - 240,
+        width: $('.UD_TableDiv').eq(0).width(),//document.body.clientWidth * 0.95,
         loadonce: true,
         multiselect: true,
         ondblClickRow: function () {
-
             var _id = GetDblClickCell("QRListGrid", "QuotationRequestID");
             location.href = "/Purchase/QRDetail?QuotationRequestID=" + _id;
         }
@@ -1802,28 +1791,26 @@ function SupplierGrid(Mode) {
         datatype: "json",
         colModel: [
             { label: '', name: 'SupplierID', hidden: true },
-            { label: '代码', name: 'Code', width: 35 },
-            { label: '名称', name: 'Name', width: 50 },
-            { label: '全名', name: 'FullName', width: 120 },
-            { label: '地址', name: 'Address', width: 100 },
-            { label: '开户行', name: 'Bank', width: 75, hidden: true },
-            { label: '账号', name: 'Account', width: 75, hidden: true },
-            { label: '税号', name: 'TaxNo', width: 75, hidden: true },
-            { label: '税率', name: 'TaxRate', width: 25, hidden: true },
-            { label: '结算方式', name: 'Settlement', width: 40, hidden: true }
+            { label: '代码', name: 'Code', width: 120 },
+            { label: '名称', name: 'Name', width: 200 },
+            { label: '全名', name: 'FullName', width: 300 },
+            { label: '地址', name: 'Address', width: 400 },
+            { label: '开户行', name: 'Bank', width: 180, hidden: true },
+            { label: '账号', name: 'Account', width: 180, hidden: true },
+            { label: '税号', name: 'TaxNo', width: 180, hidden: true },
+            { label: '税率', name: 'TaxRate', width: 100, hidden: true },
+            { label: '结算方式', name: 'Settlement', width: 120, hidden: true }
         ],
-        viewrecords: true,
-        height: document.documentElement.clientHeight - 250,
-        width: document.body.clientWidth * 0.875,
+        height: $('.UD_TableDiv').eq(0).height()-40,//document.documentElement.clientHeight - 250,
+        width: $('.UD_TableDiv').eq(0).width(),//document.body.clientWidth * 0.875,
         multiselect: true,
-        rowNum: 500,
         loadonce: true,
+        shrinkToFit:false,
         ondblClickRow: function (iRow) {
             if (Mode == 0) {
                 var id = $("#SupplierGrid").getCell(iRow, "SupplierID");
                 LoadSupplier(id);
             }
-
         },
         onCellSelect: function (iRow) {
             var id = $("#SupplierGrid").getCell(iRow, "SupplierID");
@@ -2017,8 +2004,8 @@ function WHRequestGrid(state) {
             
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight * 0.72,
-        width: document.body.clientWidth * 0.75,
+        height: $('.UD_TableDiv').eq(0).height()-40,//document.documentElement.clientHeight * 0.72,
+        width: $('.UD_TableDiv').eq(0).width(),//document.body.clientWidth * 0.75,
         loadonce: true,
         ondblClickRow: function (iRow) {
             //var id = $("#ElectrodeGrid").getCell(iRow, "ID");
@@ -2520,9 +2507,6 @@ function POContent_PO_T(ItemIDs) {
     })
 }
 
-
-
-
 function CheckFieldNotZero(curRow) {
     var fields = $(".inline-edit-cell[name^='curRow'");
 
@@ -2724,18 +2708,12 @@ function OutSourceItem() {
             { label: "计划时间", name: "PlanTime", width: 80 },
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight - 210,
-        width: document.body.clientWidth * 0.7,
-        rowNum: 500,
+        height: $('.RightDiv_BottomDiv').eq(0).height() - 40,//document.documentElement.clientHeight - 210,
+        width: $('.RightDiv_BottomDiv').eq(0).width(),//document.body.clientWidth * 0.7,
         loadonce: true,
         multiselect: true,
         ondblClickRow: function (iRow) {
 
-            //if (state < 2) {
-            //    var row = $(event.target).closest("tr.jqgrow").attr("id");
-            //    var _id = $("#PRContentGrid").getCell(row, "ID");
-            //    EditPrContent(_id, row);
-            //}
         }
     })
 }
@@ -2768,10 +2746,8 @@ function OutStockHistory(MoldNumber, Keyword) {
             { label: "领用时间", name: "OutDate", width: 80 },
             { label: "发料人", name: "WarehouseUser", width: 60 },
         ],
-        viewrecords: true,
-        height: document.documentElement.clientHeight - 215,
-        width: document.body.clientWidth * 0.7,
-        rowNum: 500,
+        height: $('.RightDiv_BottomDiv').eq(0).height() - 40,//document.documentElement.clientHeight - 215,
+        width: $('.RightDiv_BottomDiv').eq(0).width(),//document.body.clientWidth * 0.7,
         loadonce: true,
     })
 }
@@ -2799,8 +2775,8 @@ function ReturnRequestGrid(State) {
                 { label: "关闭时间", name: "ReturnDate", width: 60 },
         ],
         viewrecords: true,
-        height: document.documentElement.clientHeight - 200,
-        width: document.body.clientWidth * 0.9,
+        height: $('.UD_TableDiv').eq(0).height()-40,//document.documentElement.clientHeight - 200,
+        width: $('.UD_TableDiv').eq(0).width(),//document.body.clientWidth * 0.9,
         rowNum: 100,
         loadonce: true,
         ondblClickRow: function (rowid) {
@@ -2855,8 +2831,8 @@ function ReturnItemGrid(ReturnRequestID, PurchaseItemIDs) {
         }
     })
 }
-function PurchaseOrderReport(startdate, enddate) {
 
+function PurchaseOrderReport(startdate, enddate) {
     var _url = '';
     $("#POReport").jqGrid({
         url: _url,
@@ -2869,28 +2845,26 @@ function PurchaseOrderReport(startdate, enddate) {
                 { label: "成本中心", name: "CostCenter", width: 80 },
                 { label: "一级分类", name: "FClass", width: 80 },
                 { label: "二级分类", name: "SClass", width: 80 },
-                { label: "供应商", name: "supName", width: 60 },
+                { label: "供应商", name: "supName", width: 120 },
                 
                 { label: "模具号", name: "MoldNumber", width: 60 },
-                { label: "规格", name: "Spec", width: 80 },
-                { label: "数量", name: "Count", width: 40 },
-                { label: "单位", name: "Unit", width: 40 },
+                { label: "规格", name: "Spec", width: 150 },
+                { label: "数量", name: "Count", width: 60 },
+                { label: "单位", name: "Unit", width: 60 },
                 { label: "含税单价", name: "UnitPriceWT", width: 80 },
                 { label: "含税总价", name: "TotalPriceWT", width: 80 },
-                { label: "税率", name: "TaxRate", width: 40 },
+                { label: "税率", name: "TaxRate", width: 60 },
                 { label: "未税总价", name: "TotalPrice", width: 80 },
                 
-                { label: "订单号", name: "PONumber", width: 80 },
-                { label: "请购单号", name: "PRNumber", width: 80 },
-                { label: "生成时间", name: "CreateTime", width: 100 },
-                { label: "预计交货日期", name: "PlanTime", width: 100 },
-                { label: "实际到达日期", name: "AcualTime", width: 100 },
-                { label: "备注", name: "Memo", width: 150 },
+                { label: "订单号", name: "PONumber", width: 110 },
+                { label: "请购单号", name: "PRNumber", width: 110 },
+                { label: "生成时间", name: "CreateTime", width: 120 },
+                { label: "预计交货日期", name: "PlanTime", width: 120 },
+                { label: "实际到达日期", name: "AcualTime", width: 120 },
+                { label: "备注", name: "Memo", width: 180 },
         ],
-        viewrecords: true,
-        height: document.documentElement.clientHeight - 200,
-        width: document.body.clientWidth * 0.9,
-        rowNum: 100,
+        height: $('.UD_TableDiv').height()-40,//document.documentElement.clientHeight - 200,
+        width: $('.UD_TableDiv').width(),//document.body.clientWidth * 0.9,
         loadonce: true,
         multiselect: true,
         shrinkToFit: false,

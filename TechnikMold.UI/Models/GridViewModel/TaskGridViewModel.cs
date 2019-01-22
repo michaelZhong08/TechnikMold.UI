@@ -190,7 +190,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 //    UserName = Operater,
                 //};
                 #endregion
-                string Creator = (UserRepository.GetUserByID(_task.Creator) ?? new User()).FullName;
+                string Creator = _task.Creator;//(UserRepository.GetUserByID(_task.Creator) ?? new User()).FullName;
                 rows.Add(new TaskGridRowModel(_task, CAMDrawingPath, Creator));
             }
         }

@@ -46,14 +46,6 @@ namespace TechnikSys.MoldManager.NX.CAM
             string _url = "/Task/SaveUGTask";
 
             Task.DrawingFile = Task.DrawingFile == null ? "" : Task.DrawingFile;
-            //if ((Task.TaskName == null) || (Task.TaskName == ""))
-            //{
-            //    Task.TaskName = Task.ProcessName;
-            //}
-            //else
-            //{
-            //    Task.TaskName = Task.TaskName;
-            //}
             Task.ProcessName = MachInfo.MachType;
             Task.HRC = Task.HRC == null ? "" : Task.HRC;
             Task.Memo = Task.Memo == null ? "" : Task.Memo;

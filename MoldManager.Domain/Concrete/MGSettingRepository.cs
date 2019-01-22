@@ -204,7 +204,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     {
                         PlanDate = DateTime.Parse("1900/1/1");
                     }
-                    User user = _context.Users.Where(u => u.FullName == ReleaseBy).FirstOrDefault() ?? new User();
+                    //User user = _context.Users.Where(u => u.FullName == ReleaseBy).FirstOrDefault() ?? new User();
                     #region 检索图纸
                     string flag = _context.SystemConfigs.Where(s => s.SettingName == "2D_Drw_Type").FirstOrDefault().Value ?? "";
                     string DrawType = flag == "Outside" ? "2D" : "";
@@ -225,7 +225,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     #endregion
                     //关键 TaskType->6 铣磨任务; OldID字段用于记录旧表(MG_Task)Process信息-> 0:铣床任务 1:磨床任务
                     MGTypeName _mgtype = _context.MGTypeNames.Where(t => t.Note == Process.ToString()).FirstOrDefault() ?? new MGTypeName();
-                    Task mgtask = new Task { TaskName = TaskName,DrawingFile= DrawName, Version = dbentity.Rev, ProgramID = dbentity.ID, Creator = user.UserID, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = Memo, Quantity = dbentity.Qty, OldID = Convert.ToInt32(Process), PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 6, MoldNumber = dbentity.MoldName, HRC = dbentity.HRC, ProcessName = _mgtype.Name, Time = Convert.ToDouble(dbentity.Time),Material=dbentity.Material,Raw=dbentity.RawSize ,CAMUser=0};
+                    Task mgtask = new Task { TaskName = TaskName,DrawingFile= DrawName, Version = dbentity.Rev, ProgramID = dbentity.ID, Creator = ReleaseBy, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = Memo, Quantity = dbentity.Qty, OldID = Convert.ToInt32(Process), PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 6, MoldNumber = dbentity.MoldName, HRC = dbentity.HRC, ProcessName = _mgtype.Name, Time = Convert.ToDouble(dbentity.Time),Material=dbentity.Material,Raw=dbentity.RawSize ,CAMUser=0};
                     if (Process != null)
                     {
                         _context.Tasks.Add(mgtask);

@@ -184,8 +184,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 ws.ReleaseFlag = true;
                 ws.ReleaseDate = DateTime.Now;
                 #endregion
-                User user = _context.Users.Where(u => u.FullName == ReleaseBy && u.Enabled == true).FirstOrDefault() ?? new User();
-                Task WEDMtask = new Task { TaskName = ws.DrawName,Version = ws.Rev, ProgramID = ws.ID, Creator = user.UserID, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = "Create by CAM", Quantity = Qty, PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 3, MoldNumber = ws.MoldName, ProcessName = ws.Precision, Time = Convert.ToDouble(ws.Time),CAMUser=0,Raw=""};//ws.DrawName.Substring(ws.DrawName.IndexOf('(') + 1, ws.DrawName.Length - ws.DrawName.IndexOf('(') - 2)
+                //User user = _context.Users.Where(u => u.FullName == ReleaseBy && u.Enabled == true).FirstOrDefault() ?? new User();
+                Task WEDMtask = new Task { TaskName = ws.DrawName,Version = ws.Rev, ProgramID = ws.ID, Creator = ReleaseBy, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = "Create by CAM", Quantity = Qty, PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 3, MoldNumber = ws.MoldName, ProcessName = ws.Precision, Time = Convert.ToDouble(ws.Time),CAMUser=0,Raw=""};//ws.DrawName.Substring(ws.DrawName.IndexOf('(') + 1, ws.DrawName.Length - ws.DrawName.IndexOf('(') - 2)
                 _context.Tasks.Add(WEDMtask);
                 #endregion
                 _context.SaveChanges();
@@ -317,8 +317,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 var taskinfo = from t in _context.Tasks
                                join w in _context.WEDMSettings on t.ProgramID equals w.ID into tmp1
                                from a in tmp1.DefaultIfEmpty()
-                               join u1 in _context.Users on t.Creator equals u1.UserID into tmp2
-                               from b in tmp2.DefaultIfEmpty()
+                               //join u1 in _context.Users on t.Creator equals u1.UserID into tmp2
+                               //from b in tmp2.DefaultIfEmpty()
                                join u2 in _context.Users.DefaultIfEmpty() on t.FinishBy equals u2.UserID into tmp3
                                from c in tmp3.DefaultIfEmpty()
                                where t.TaskType==3 && t.Enabled==true
@@ -330,7 +330,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                                    rev = t.Version,
                                    Priority = t.Priority,
                                    Note = t.Memo,
-                                   CreateBy = b.FullName,
+                                   CreateBy = t.Creator,//b.FullName,
                                    CreateDate = t.CreateTime,
                                    StartDate = t.StartTime,
                                    FinishDate = t.FinishTime,

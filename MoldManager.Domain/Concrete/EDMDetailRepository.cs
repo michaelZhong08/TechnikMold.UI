@@ -43,7 +43,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.ModifyName = EDMDetail.ModifyName;
                     _dbEntry.ModifyCount = EDMDetail.ModifyCount;
                     _dbEntry.CADCount = EDMDetail.CADCount;
-                    _dbEntry.CreateDate = EDMDetail.CreateDate;
+                    //_dbEntry.CreateDate = EDMDetail.CreateDate;
                     _dbEntry.Designer = EDMDetail.Designer;
                     _dbEntry.Lock = EDMDetail.Lock;
                     _dbEntry.Expire = EDMDetail.Expire;
@@ -51,6 +51,9 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.EleCount = EDMDetail.EleCount;
                     _dbEntry.QCPoint = EDMDetail.QCPoint;
                     _dbEntry.ProcessName = EDMDetail.ProcessName??"";
+
+                    _dbEntry.Deletor = EDMDetail.Deletor;
+                    _dbEntry.DeleteTime = EDMDetail.DeleteTime;
                 }
             }
             else
@@ -66,7 +69,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.ModifyName = EDMDetail.ModifyName;
                     _dbEntry.ModifyCount = EDMDetail.ModifyCount;
                     _dbEntry.CADCount = EDMDetail.CADCount;
-                    _dbEntry.CreateDate = EDMDetail.CreateDate;
+                    //_dbEntry.CreateDate = EDMDetail.CreateDate;
                     _dbEntry.Designer = EDMDetail.Designer;
                     _dbEntry.Lock = EDMDetail.Lock;
                     _dbEntry.Expire = EDMDetail.Expire;
@@ -74,6 +77,9 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     _dbEntry.EleCount = EDMDetail.EleCount;
                     _dbEntry.QCPoint = EDMDetail.QCPoint;
                     _dbEntry.ProcessName = EDMDetail.ProcessName ?? "";
+
+                    _dbEntry.Deletor = EDMDetail.Deletor;
+                    _dbEntry.DeleteTime = EDMDetail.DeleteTime;
                 }
             }
 

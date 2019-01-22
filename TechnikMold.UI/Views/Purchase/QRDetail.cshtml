@@ -62,12 +62,12 @@
         @if (ViewBag.QuotationRequestID != 0)
         {
             <input type="hidden" id="QuotationRequestID" value="@ViewBag.QuotationRequestID" />
-            <h3>询价单号：@Model.QuotationNumber</h3>
+            <h2>询价单号：@Model.QuotationNumber</h2>
         }
         else
         {
             <input type="hidden" id="QuotationRequestID" value="0" />
-            <h3>创建询价单</h3>
+            <h2>创建询价单</h2>
         }
         <div id="Toolbar">
 

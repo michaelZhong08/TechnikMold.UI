@@ -98,6 +98,7 @@
     <Compile Include="Abstract\IMachinesInfoRepository.cs" />
     <Compile Include="Abstract\IMaterialRepository.cs" />
     <Compile Include="Abstract\IMGSettingRepository.cs" />
+    <Compile Include="Abstract\IMGTypeNameRepository.cs" />
     <Compile Include="Abstract\IPhaseTaskTypeRepository.cs" />
     <Compile Include="Abstract\ISupplierGroupRepository.cs" />
     <Compile Include="Abstract\ITaskTypeRepository.cs" />
@@ -193,6 +194,7 @@
     <Compile Include="Concrete\MachinesInfoRepository.cs" />
     <Compile Include="Concrete\MaterialRepository.cs" />
     <Compile Include="Concrete\MGSettingRepository.cs" />
+    <Compile Include="Concrete\MGTypeNameRepository.cs" />
     <Compile Include="Concrete\OutStockFormRepository.cs" />
     <Compile Include="Concrete\OutStockItemRepository.cs" />
     <Compile Include="Concrete\PartCodeRepository.cs" />

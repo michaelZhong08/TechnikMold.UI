@@ -4,13 +4,17 @@
 }
 @using TechnikSys.MoldManager.Domain.Status;
 
-<div class="col-sm-12" style="margin-top:60px">
-    <div class="col-sm-11">
-        <div class="col-sm-12" style="float:left;">
-            <h2>@ViewBag.MoldNumber 领料申请单</h2>
-            <input type="hidden" id="MoldNumber" value="@ViewBag.MoldNumber" />
-            <ul class="nav nav-pills">
-                <li>
+<div class="hidden">
+    <input type="hidden" id="MoldNumber" value="@ViewBag.MoldNumber" />
+
+</div>
+
+<h2 style="margin-top:60px">@ViewBag.MoldNumber 领料申请单</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
                     <select id="ChangeState_Sel" class="form-control form-inline">
                         @foreach (var s in (Dictionary<string, int>)ViewBag.WHRequestStates)
                         {
@@ -22,20 +26,20 @@
                             {
                                 <option value="@(s.Value)">@(s.Key)</option>
                             }
-
                         }
                     </select>
-                </li>
-                <li><button class="btn btn-success" id="NewWHRequest">新建申请单</button> </li>
-                <li><button class="btn btn-primary" id="RequestQuery">查询申请单</button></li>
-            </ul>
-            <div style="margin-top:10px">
-                <table id="WHRequestGrid"></table>
-                @*<div id="jqGridPager"></div>*@
-            </div>                       
-        </div>
+                </td>
+                <td><button class="btn btn-info" id="RequestQuery"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+                <td><button class="btn btn-success" id="NewWHRequest"><span class="glyphicon glyphicon-plus"></span> 新建</button></td>
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
+        <table id="WHRequestGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
+
 
 <div class="modal" data-backdrop="static" data-keyboard="false" id="RequestSearchDialog" tabindex="-1" role="dialog" aria-labelledby="RequestSearchLabel">
     <div class="modal-dialog">
@@ -88,6 +92,12 @@
 <script>
 
     $("document").ready(function () {
+
+        $(window).resize(function () {
+            $("#WHRequestGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#WHRequestGrid").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+        });
+
         WHRequestGrid(@ViewBag.State);
 
         $("#NewWHRequest").on("click", function () {

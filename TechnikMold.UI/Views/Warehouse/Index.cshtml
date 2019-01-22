@@ -25,61 +25,54 @@
     }
     else// if (ViewBag.Parent == "生产耗材")
     {
-        Parent = "生产耗材";
+        Parent = "耗材";
     }
 }
+<div>
+    <input type="hidden" id="WMoldNumber" />
+    <input type="hidden" id="Parent" value="@ViewBag.Parent" />
+</div>
 
-
-<div style="margin-top:60px">
-   
-        <h2>
-            @ViewBag.Title
-        </h2>
-
-        
-        <div class="col-sm-2">
-            @if (ViewBag.PurchaseType != 2)
-            {
-                <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
-                <input type="text" id="Keyword" class="form-control" />
-                <input type="hidden" id="WMoldNumber" />
-                <input type="hidden" id="PurchaseType" value="@ViewBag.PurchaseType" />
-                <input type="hidden" id="StockTypes" value="" />
-                <select class="form-control" id="MoldSelect" size="3"></select>
-            }
-            else
-            {
-                @*@if (ViewBag.Parent == "模具耗材备库")
-                {*@
-                    <select class="form-control" id="StockTypes" size="3"></select>
-                    <input type="hidden" id="WMoldNumber" value="" />
-                    //}
-                @*else if (ViewBag.Parent = "生产耗材")
-                {
-                    <select class="form-control" id="StockTypes" size="3"></select>
-                    <input type="hidden" id="WMoldNumber" value="" />
-                }*@
-            }            
+<h2 style="margin-top:60px">@ViewBag.Title</h2>
+<div class="FatherDiv">
+    <div class="LeftDiv">
+        @if (ViewBag.PurchaseType != 2)
+        {
+            <button class="btn btn-primary LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
+            <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
+            <select class="form-control LeftDiv_Sel" id="MoldSelect" size="3"></select>
+        }
+        else
+        {
+            <select class="form-control LeftDiv_Sel_1" id="StockTypes" size="3"></select>
+        }
+    </div>
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
+                <tr>
+                    @*<td id="td_AddStockItem" hidden>
+                        <button class="btn btn-success" id="AddStockItem"><span class="glyphicon glyphicon-plus"></span> 新增@(Parent)零件</button>
+                    </td>*@
+                    <td id="td_AddStockType" hidden>
+                        <button class="btn btn-success" id="AddStockType"><span class="glyphicon glyphicon-plus"></span> 新增@(Parent)类型</button>
+                    </td>
+                    <td id="td_DeleteStockType" hidden>
+                        <button class="btn btn-danger" id="DeleteStockType"><span class="glyphicon glyphicon-trash"></span> 删除@(Parent)类型</button>
+                    </td>
+                    <td>
+                        <input type="text" id="WKeyword" class="form-control" value="@ViewBag.Keyword" placeholder="库存关键字" style="width:400px;"/>
+                    </td>
+                    <td>
+                        <button class="btn btn-info" id="StockQuery"><span class="glyphicon glyphicon-search"></span> 查询</button>
+                    </td>
+                </tr>
+            </table>
         </div>
-
-        <div class="col-sm-9">
-            <ul class="nav nav-pills">
-                @if ((PurchaseType == 2) && (_DeptID == 20))
-                {
-                    <li><button class="btn btn-primary" id="AddStockItem">新增 @Parent 零件</button></li>
-                    <li><button class="btn btn-warning" id="DeleteStockItem">删除 @Parent 零件</button></li>
-                    <li><button class="btn btn-primary" id="AddStockType">新增 @Parent 类型</button></li>
-                    <li><button class="btn btn-warning" id="DeleteStockType">删除 @Parent 类型</button></li>
-                    <li class="col-sm-3">
-                        <input type="text" id="WKeyword" class="form-control" value="@ViewBag.Keyword" placeholder="库存关键字" />
-                    </li>
-                    <li><button class="btn btn-primary" id="StockQuery">查询</button></li>
-                }
-                
-            </ul>
-
+        <div class="RightDiv_BottomDiv">
             <table id="StockItemGrid"></table>
         </div>
+    </div>
 </div>
 
 @*右键菜单*@
@@ -89,7 +82,7 @@
         <ul style="width:200px">
             <li id="StockEdit">
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
-                <span style="font-size:12px; font-family:Verdana">@Parent 修改</span>
+                <span style="font-size:12px; font-family:Verdana">@(Parent)修改</span>
             </li>
             <li id="SafeQtyEdit">
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
@@ -97,7 +90,7 @@
             </li>
             <li id="StockPurchase">
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/emblem-money.png" /></span>
-                <span style="font-size:12px; font-family:Verdana">@Parent 采购</span>
+                <span style="font-size:12px; font-family:Verdana">@(Parent)采购</span>
             </li>
             <li id="PositionEdit">
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/refresh.png" /></span>
@@ -105,7 +98,7 @@
             </li>
             <li id="DeleteStock">
                 <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png"/></span>
-                <span style="font-size:12px; font-family:Verdana">删除 @Parent</span>
+                <span style="font-size:12px; font-family:Verdana">删除@(Parent)</span>
             </li>
         </ul>
     }
@@ -152,12 +145,12 @@
     </div>
 
      //备库零件编辑
-    <div class="modal" data-backdrop="static" data-keyboard="false" id="StockItemEdit" tabindex="-1" role="dialog" aria-labelledby="StockItemEditLabel" aria-hidden="true">
+    <div class="modal"id="StockItemEdit" tabindex="-1" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                    <h4 class="modal-title" id="StockItemEditLabel">新增 @Parent 零件</h4>
+                    <h4 class="modal-title" id="StockItemEditLabel">新增@(Parent)零件</h4>
                 </div>
                 <div class="modal-body">
                     @using (Html.BeginForm("StockItemEdit", "Warehouse", FormMethod.Post, new { id = "StockEditForm" }))
@@ -165,19 +158,19 @@
                     
                     <table class="table-striped">
                         <tr>
-                            <td class="col-sm-2"><label>@Parent 物料类型</label></td>
+                            <td class="col-sm-2"><label>@(Parent)物料类型</label></td>
                             <td class="col-sm-4">
                                 <select id="StockTypeList" class="form-control required" name="StockTypes"></select>
+                                <input type="hidden" id="PurchaseType" name="PurchaseType" value="@PurchaseType" />
+                                <input type="hidden" id="CreateUserID" name="CreateUserID" value="@UserID" />
+                                <input type="hidden" id="MoldNumber" name="MoldNumber" value="" />
                             </td>
                         </tr>
                         <tr>
-                            <td class="col-sm-2"><label>@Parent 名称</label></td>
+                            <td class="col-sm-2"><label>@(Parent)名称</label></td>
                             <td class="col-sm-4">
                                 <input type="text" class="form-control required" id="PartName" name="PartName" value=""/>
-                                @*<input type="hidden" id="WarehouseStockID" name="WarehouseStockID" />*@
-                                <input type="hidden" id="PurchaseType" name="PurchaseType" value="@PurchaseType" />
-                                <input type="hidden" id="CreateUserID" name="CreateUserID" value="@UserID" />
-                                <input type="text" id="MoldNumber" name="MoldNumber" value="" hidden />
+                                
                             </td>
                         </tr>
                         <tr>
@@ -222,23 +215,23 @@
         </div>
     </div>
 
-    <div class="modal" data-backdrop="static" data-keyboard="false" id="StockTypeDialog" tabindex="-1" role="dialog" aria-labelledby="StockTypeLabel" aria-hidden="true">
+    <div class="modal"id="StockTypeDialog" tabindex="-1" role="dialog" aria-labelledby="StockTypeLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                    <h4 class="modal-title" id="StockTypeLabel">添加 @Parent 类型</h4>
+                    <h4 class="modal-title" id="StockTypeLabel">添加@(Parent)类型</h4>
                 </div>
                 <div class="modal-body">
-                    <table>
+                    <table class="table-striped">
                         <tr>
-                            <td class="col-sm-2"><lable>@Parent 类型代码</lable></td>
+                            <td class="col-sm-2"><lable>@(Parent)类型代码</lable></td>
                             <td class="col-sm-4">
                                 <input type="text" class="form-control required" id="Code" min="6" max="6" value="" placeholder="@Parent 类型代码(限制:6位)" />
                             </td>
                         </tr>
                         <tr>
-                            <td class="col-sm-2"><lable>@Parent 类型名称</lable></td>
+                            <td class="col-sm-2"><lable>@(Parent)类型名称</lable></td>
                             <td class="col-sm-4">
                                 <input type="text" class="form-control required" id="StockTypeName" value="" placeholder="@Parent 类型名称" />
                             </td>
@@ -306,22 +299,15 @@
 <script>
     $("document").ready(function () {
 
-        var _listsize = Math.round((document.documentElement.clientHeight-210) / 18);
-        @if (ViewBag.PurchaseType != 2)
-        {
-            @:$("#MoldSelect").attr("size", _listsize);
-                                        }else{
-            @:$("#StockTypes").attr("size", _listsize);
-                                            @:LoadStockTypes();
-                                        }
-
-
+        $(window).resize(function () {
+            $("#StockItemGrid").setGridWidth($('.RightDiv_BottomDiv').eq(0).width());
+            $("#StockItemGrid").setGridHeight($('.RightDiv_BottomDiv').eq(0).height() - 40);
+        });
 
         StockItem("@ViewBag.Keyword", "@ViewBag.MoldNumber", @ViewBag.PurchaseType,'',"@ViewBag.Parent");
         SetStockItemColumn();
-        SetGridSize();
+        //SetGridSize();
         LoadWarehouses();
-        LoadMoldNumber("");
 
         $("#RefreshMold").on("click", function(){
             LoadMoldNumber("",$("#MoldSelect").val());
@@ -360,6 +346,7 @@
 
         $("#AddStockItem").on("click", function(){
             ShowStockEdit("");
+            //$("#StockItemEdit").modal("show");
         })
 
         $("#DeleteStockItem").on("click", function(){
@@ -375,7 +362,7 @@
         })
 
         $("#Keyword").on("keyup", function(){
-            LoadMoldNumber($("#Keyword").val());
+            LoadMoldNumber($("#Keyword").val(),'');
         })
 
         $("#MoldSelect").on("change", function(){
@@ -390,7 +377,7 @@
             AddStockType();
         })
 
-       
+
 
         $("#SaveStockType").on("click", function(){
             SaveStockType();
@@ -399,8 +386,20 @@
         $("#DeleteStockType").on("click", function(){
             DelStockType();
         })
+        ////
+        if($('#PurchaseType').val()=='2'){
+            $('#td_AddStockItem').show();
+            $('#td_AddStockType').show();
+            $('#td_DeleteStockType').show();
+            LoadStockTypes();
 
-
+        }else{
+            $('#td_AddStockItem').hide();
+            $('#td_AddStockType').hide();
+            $('#td_DeleteStockType').hide();
+            LoadMoldNumber("",'');
+        }
+        /////
     })
 
     function SetStockItemColumn() {
@@ -500,7 +499,7 @@
 
         }
         $("#StockItemEdit").modal("show");
-        $('#StockItemEdit').removeAttr('disabled');
+        //$('#StockItemEdit').removeAttr('disabled');
     }
 
     function SaveStockItem(){
@@ -600,13 +599,13 @@
         var _url = "/Warehouse/JsonMoldNumber?Keyword="+Keyword+"&PurchaseType=@ViewBag.PurchaseType";
         $("#MoldSelect option").remove();
         $.getJSON(_url, function(msg){
-            $("#MoldSelect").append($("<option/>", {value:'', text:'-'}))
+            $("#MoldSelect").append($("<option/>", {value:'', text:'All'}))
             $.each(msg, function(i,n){
                 if (MoldNumber==n){
                     $("#MoldSelect").append($("<option/>", {value:n, text:n, selected:true}))
                 }else{
                     $("#MoldSelect").append($("<option/>", {value:n, text:n}))
-                }             
+                }
             })
         })
     }
@@ -620,28 +619,37 @@
         var _name = $("#StockTypeName").val();
         var _code=$('#Code').val();
         if (_name!=""){
-            var _url = "/Warehouse/SaveStockType?Name="+_name+'&Code='+_code;
+            var _url = "/Warehouse/SaveStockType?Name="+_name+'&Code='+_code+'&Parent='+$('#Parent').val();
             $.ajax({
-                url:_url, 
-                type:"Get", 
+                url:_url,
+                type:"Get",
                 success:function(msg){
                     var _return = Number(msg);
                     if (_return>0){
-                        alert("@Parent 类型创建成功");
+                        //alert("'@Parent'类型创建成功");
                         LoadStockTypes();
-
                         $("#StockTypeDialog").modal("hide");
                     }else if (_return==0){
-                        alert("@Parent 类型已存在");
+                        alert("'@Parent'类型已存在");
+                    }else if(_return==-99){
+                        alert("请输入6位代码！");
+                        $('#Code').val('');
+                    }else if(_return==-100){
+                        alert("代码或类型名称重复！");
+                        $('#Code').val('');
+                        $('#StockTypeName').val('');
+                    }else if(_return==-101){
+                        alert("请输入合法代码(英文数字)！");
+                        $('#Code').val('');
                     }else{
-                        alert("@Parent 类型创建失败,请重试");
+                        alert("'@Parent'类型创建失败,请重试");
                     }
                 }
             })
         }else{
-            alert("请输入要创建的@Parent类型名称");
+            alert("请输入要创建的'@Parent'类型名称");
         }
-        
+
     }
 
     function DeleteStockItem(){
@@ -659,52 +667,52 @@
 
         if (_valid){
             if (_stockItemIDs!=""){
-                if (confirm("确认删除选中@Parent零件？")){
+                if (confirm("确认删除选中'@Parent'零件？")){
                     var _url = "/Warehouse/DeleteWarehouseStocks?WarehouseStockIDs="+_stockItemIDs;
                     $.ajax({
-                        url:_url, 
-                        type:"Get", 
+                        url:_url,
+                        type:"Get",
                         success:function(msg){
                             if (msg==""){
-                                alert("@Parent 件删除成功");
+                                //alert("'@Parent'件删除成功");
                                 $("#StockItemGrid").jqGrid('setGridParam', { datatype: 'json'}).trigger("reloadGrid");
                             }
                         }
                     })
                 }
             }else{
-                alert("请先选择要删除的@Parent零件")
+                alert("请先选择要删除的'@Parent'零件")
             }
         }else{
-            alert("无法删除库存数量不为0的@Parent件");
+            alert("无法删除库存数量不为0的'@Parent'件");
         }
-        
+
     }
 
     function DelStockType(){
         var _stockTypeID= $("#StockTypes").val();
         if (_stockTypeID!=null){
             if ($("#StockItemGrid").jqGrid("getDataIDs").length==0){
-                if (confirm("确认删除@Parent类型？")){
+                if (confirm("确认删除'@Parent'类型？")){
                     var _url = "/Warehouse/DeleteStockType?StockTypeID="+_stockTypeID;
                     $.ajax({
-                        url:_url, 
-                        type:"Get", 
+                        url:_url,
+                        type:"Get",
                         success:function(msg){
                             if (Number(msg)==0){
-                                alert("@Parent 类型删除成功")
+                                //alert("'@Parent'类型删除成功")
                                 LoadStockTypes();
                             }else{
-                                alert("@Parent 类型删除失败，请重试");
+                                alert("'@Parent'类型删除失败，请重试");
                             }
                         }
                     })
                 }
             }else{
-                alert("当前@Parent类型下还有零件，无法删除");
+                alert("当前'@Parent'类型下还有零件，无法删除");
             }
         }else{
-            alert("请选择要删除的@Parent类型");
+            alert("请选择要删除的'@Parent'类型");
         }
     }
 </script>
@@ -722,6 +730,7 @@
             $('#MoldNumber').val(_text);
             $.get('/WareHouse/Service_WH_GetPartNumByType?_type='+_text,function(res){
                 $('#PartNum').val(res);
+                $('#SaveStockItem').removeAttr('disabled');
             });
         }else{
             alert('类型无效！');

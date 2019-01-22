@@ -11,103 +11,44 @@
     ViewBag.Title = "采购记录查询报表";
 }
 
-<style>
-    #PurchaseItemGrid td {
-        margin: 0px !important;
-        padding: 0px !important;
-        height: 30px;
-        text-align: center;
-        vertical-align: middle;
-        font-size: 12px;
-        /*position:absolute;*/
-    }
+<div class="hidden">
+    <input id="depID" value="@DeptID" hidden />
+    <input type="hidden" id="MoldNumber" />
+</div>
 
-    #PurchaseItemGrid input {
-        height: 24px;
-        border-style: none;
-        outline: none;
-        font-size: 12px;
-        margin: 0px;
-        padding: 0px;
-    }
-
-    .ui-tooltip table {
-        border: 1px rgba(0,0,0,0.1) solid;
-        border-collapse: collapse;
-    }
-    /*.ui-tooltip tr:nth-child(odd) {
-        background-color:rgba(0,0,0,0.2);
-    }
-    .ui-tooltip tr:nth-child(even) {
-        background-color:rgba(0,0,0,0.4);
-    }*/
-    .ui-tooltip {
-        box-shadow: 5px 5px 5px rgba(0,0,0,0.1) !important;
-        border-style: none !important;
-        background-color: rgba(240,255,255,0.9) !important;
-        padding: 0px !important;
-    }
-
-        .ui-tooltip td {
-            border: 1px rgba(0,0,0,0.1) solid;
-            text-align: center;
-            width: 300px;
-            font-size: 10px;
-            height: 26px;
-        }
-
-        .ui-tooltip th {
-            border: 1px rgba(0,0,0,0.1) solid;
-            text-align: center;
-            width: 300px;
-            font-size: 10px;
-            font-weight: normal !important;
-            height: 26px;
-            background-color: rgba(0,0,0,0.1);
-        }
-
-    .Lab_PlanAJDate {
-        display: block;
-        width: 100%;
-        line-height: 100%;
-        font-weight: normal !important;
-    }
-</style>
-
-<div style="margin-top:60px">
-    <h2>采购记录查询报表</h2>
-    <div class="col-sm-2">
-        <input id="depID" value="@DeptID" hidden />
-        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
-        <input type="text" id="Keyword" class="form-control" placeholder="模具号关键字" />
-        <select class="form-control" id="MoldSelect" size="3"></select>
-        <input type="hidden" id="MoldNumber" />
+<h2 style="margin-top:60px">采购记录查询报表</h2>
+<div class="FatherDiv">
+    <div class="LeftDiv">
+        <button class="btn btn-primary LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
+        <select class="form-control LeftDiv_Sel" id="MoldSelect" size="3"></select>
     </div>
-    <div class="col-sm-10">
-        <table style="margin-right:20px!important;">
-            <tr>
-                <td style="width:200px!important;">
-                    创建时间(.从)
-                </td>
-                <td style="width:200px!important;">
-                    <input id="dateFr" type="date" class="form-control"/>
-                </td>
-                <td style="width:200px!important;">
-                    创建时间(.到)
-                </td>
-                <td style="width:200px!important;">
-                    <input id="dateTo" type="date" class="form-control"/>
-                </td>
-                <td style="width:20px!important;"></td>
-                <td style="width:200px!important;">
-                    <input type="text" class="form-control" id="ItemKeyword" placeholder="PO号/零件名/物料号/规格" style="width:400px;" />
-                </td>
-                <td style="width:400px!important;">
-                    <button class="btn btn-primary" id="Query">查询</button>
-                </td>
-            </tr>
-        </table>
-        <div style="float:left;margin-right:20px!important;">
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
+                <tr>
+                    <td>
+                        创建时间(.从)
+                    </td>
+                    <td style="width:200px">
+                        <input id="dateFr" type="date" class="form-control" />
+                    </td>
+                    <td>
+                        创建时间(.到)
+                    </td>
+                    <td style="width:200px">
+                        <input id="dateTo" type="date" class="form-control" />
+                    </td>
+                    <td style="width:200px">
+                        <input type="text" class="form-control" id="ItemKeyword" placeholder="PO号/零件名/物料号/规格" style="width:400px;" />
+                    </td>
+                    <td style="width:400px">
+                        <button class="btn btn-info" id="Query"><span class="glyphicon glyphicon-search"></span> 查询</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="RightDiv_BottomDiv">
             <table id="PurchaseItemGrid"></table>
             <div id="jqGridPager"></div>
         </div>
@@ -125,9 +66,15 @@
 <script>
     $("document").ready(function () {
 
+        $(window).resize(function () {
+            $("#PurchaseItemGrid").setGridWidth($('.RightDiv_BottomDiv').eq(0).width());
+            $("#PurchaseItemGrid").setGridHeight($('.RightDiv_BottomDiv').eq(0).height() - 40);
+        });
+
         LoadMoldNumber("");
 
         PurchaseItem("","", @ViewBag.State);
+
         @if ((ViewBag.State==10)||(ViewBag.State==40) || (ViewBag.State == 0))
         {
             @:ShowPOCol();
@@ -135,25 +82,24 @@
 
         $("#Keyword").on("keyup", function () {
             LoadMoldNumber($("#Keyword").val());
-        })
+        });
 
         $("#MoldSelect").on("change", function () {
             $('#ItemKeyword').val('');
             $("#MoldNumber").val($("#MoldSelect option:selected").val());
-            QueryPurchaseitem("", $("#MoldNumber").val(),'','');
-        })
+            //QueryPurchaseitem("", $("#MoldNumber").val(),'','');
+            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val(),String($('#dateFr').val()),String($('#dateTo').val()));
+        });
 
         $("#Query").on("click", function () {
             console.log($('#dateFr').val());
             console.log($('#dateTo').val());
             QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val(),String($('#dateFr').val()),String($('#dateTo').val()));
-        })
+        });
 
         $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
-        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
 
     })
-
 
     function LoadMoldNumber(Keyword) {
         var _url = "/Purchase/Service_Json_PORepotForQuery_MoldNum";
@@ -206,8 +152,6 @@
         $("#PurchaseItemGrid").setGridParam().showHideCol("TotalPriceWT");
         $("#PurchaseItemGrid").setGridParam().showHideCol("UnitPriceWT");
         $("#PurchaseItemGrid").setGridParam().showHideCol("CreateDate");
-
-        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
     }
 </script>
 <script>

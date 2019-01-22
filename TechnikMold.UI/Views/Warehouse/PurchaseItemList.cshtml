@@ -12,46 +12,44 @@
         Department = "";
     }
 }
-<div style="margin-top:60px">
-    <h2>待收货零件清单</h2>
-    <div class="col-sm-2">
-        <button class="btn btn-primary col-sm-12" id="RefreshMold">刷新模号列表</button>
 
-        <input type="text" id="Keyword" class="form-control" />
-        <select class="form-control" id="MoldSelect" size="20"></select>
+<div>
+    <input type="hidden" id="MoldNumber" />
+</div>
+
+<h2 style="margin-top:60px">待收货零件清单</h2>
+<div class="FatherDiv">
+    <div class="LeftDiv">
+        <button class="btn btn-primary LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
+        <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
+        <select class="form-control LeftDiv_Sel" id="MoldSelect" size="20"></select>
     </div>
-    <div class="col-sm-10">
-        <div>
-            <table class="col-sm-4">
+    <div class="RightDiv">
+        <div class="RightDiv_TopDiv">
+            <table>
                 <tr>
-                    <td class="col-sm-2">
+                    <td>
                         <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 订单号/零件名/物料号/规格" style="width:500px;" />
-                        <input type="hidden" id="MoldNumber" />
                     </td>
-                    <td class="col-sm-1">
-                        <button class="btn btn-primary" id="Query" style="width:100px;">查询</button>
+                    <td>
+                        <button class="btn btn-info" id="Query"><span class="glyphicon glyphicon-search"></span> 查询</button>
                     </td>
-                    @if (Department == "仓库")
-                    {
-                        <td class="col-sm-1">
-                            <button class="btn btn-info" id="OrderAccept" style="width:100px;">订单收货</button>
-                        </td>
-                    }
-                    
+                    <td id="td_OrderAccept" hidden>
+                        <button class="btn btn-success" id="OrderAccept"><span class="glyphicon glyphicon-plus"></span> 订单收货</button>
+                    </td>
                 </tr>
             </table>
         </div>
-        <div class="col-sm-11" style="float:left;">
+        <div class="RightDiv_BottomDiv">
             <table id="PurchaseItemGrid"></table>
             <div id="jqGridPager"></div>
         </div>
     </div>
 </div>
+
 <script src="~/Scripts/JqGridTemplate.js"></script>
 <script src="~/Scripts/Warehouse.js"></script>
 <script>
-
-
     $("document").ready(function () {
 
         LoadMoldNumber("", "")
@@ -60,7 +58,6 @@
         $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
         $("#PurchaseItemGrid").setGridParam().showHideCol("PlanDate");
         $("#PurchaseItemGrid").setGridParam().showHideCol("InStockQty");
-        $("#PurchaseItemGrid").setGridWidth(document.body.clientWidth * 0.8);
 
         $("#Keyword").on("keyup", function () {
             LoadMoldNumber($("#Keyword").val());
@@ -104,6 +101,18 @@
 </script>
 <script>
     $(document).ready(function () {
+
+        $(window).resize(function () {
+            $("#PurchaseItemGrid").setGridWidth($('.RightDiv_BottomDiv').eq(0).width());
+            $("#PurchaseItemGrid").setGridHeight($('.RightDiv_BottomDiv').eq(0).height() - 40);
+        });
+
+        if ('@Department' == '仓库') {
+            $('#td_OrderAccept').show();
+        } else {
+            $('#td_OrderAccept').hide();
+        }
+
         $('#OrderAccept').on('click', function () {
             var selrowIDs = $('#PurchaseItemGrid').jqGrid('getGridParam', 'selarrrow');
             var _orderNum = '';

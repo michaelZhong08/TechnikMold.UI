@@ -27,6 +27,10 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public bool QCPoint { get; set; }
         public string ProcessName { get; set; }
         public double Time { get; set; }
+
+        public string Creator { get; set; }
+        public string Deletor { get; set; }
+        public DateTime DeleteTime { get; set; }
     }
 
 }

@@ -136,17 +136,22 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             _context.SaveChanges();
         }
 
-
+        /// <summary>
+        /// 打印标签（复打）
+        /// </summary>
+        /// <param name="CNCItemID"></param>
+        /// <param name="Reprint"></param>
+        /// <returns></returns>
         public string SetToPrint(int CNCItemID, bool Reprint = false)
         {
 
             CNCItem _item = QueryByID(CNCItemID);
-            List<int> _ItemStatusList = new List<int>() { (int)CNCItemStatus.未开始,(int)CNCItemStatus.暂停 };
+            List<int> _ItemStatusList = new List<int>() { (int)CNCItemStatus.未开始,(int)CNCItemStatus.暂停};
             if (Reprint)
             {
                 _item.LabelPrinted = false;
                 _item.LabelToPrint = true;
-                if(_ItemStatusList.Contains(_item.Status))
+                if(_ItemStatusList.Contains(_item.Status) && _item.Required)
                     _item.Status = (int)CNCItemStatus.备料;
                 _context.SaveChanges();
                 return "";

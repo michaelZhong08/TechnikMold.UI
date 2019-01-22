@@ -486,6 +486,7 @@
 
 
         ProjectGrid("@ViewBag.Keyword", @ViewBag.State, @ViewBag.Type,@DeptID,YJHEditedCellList);
+        ReloadProJGrid();
 
         TaskList("", 0, 0, 1);//任务列表
         $("#TaskGrid").setGridWidth('740');
@@ -568,7 +569,7 @@
             }
         });
     })
-
+    /////项目列表——任务阶段
     //重载任务列表
     function ReloadTaskGrid(){
         var _url = "/Task/JsonMachineTasks?MoldNumber=" + $("#MoldNumber").val() + "&TaskType="+$("#TaskType").val()+"&State="+$("#State").val();
@@ -791,6 +792,7 @@
             }
         }
     }
+    ////
 </script>
 
 <script>
@@ -844,7 +846,7 @@
         $("#ProjectFileDialog").modal("show");
         ReloadFileGrid(ProjectID);
     }
-    //重载列表
+    //重载附件列表
     function ReloadFileGrid(ProjectID){
         var _url = "/Attachment/Service_GetFilesByObj?ObjID=" + ProjectID +"&ObjType=Projects";
         $("#modal_tb_ProJFiles").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");

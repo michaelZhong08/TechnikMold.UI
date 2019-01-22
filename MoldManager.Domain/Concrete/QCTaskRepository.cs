@@ -50,6 +50,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                         _dbEntry.QCUser = QCTask.QCUser;
                         _dbEntry.MoldNumber = QCTask.MoldNumber;
                         _dbEntry.Enabled = QCTask.Enabled;
+
+                        _dbEntry.Finisher = QCTask.Finisher??"";
+                        _dbEntry.Deletor = QCTask.Deletor??"";
+                        _dbEntry.DeleteTime = QCTask.DeleteTime;
                     }
                     
                 }
@@ -76,6 +80,10 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                         _dbEntry.QCUser = QCTask.QCUser;
                         _dbEntry.MoldNumber = QCTask.MoldNumber;
                         _dbEntry.Enabled = QCTask.Enabled;
+
+                        _dbEntry.Finisher = QCTask.Finisher ?? "";
+                        _dbEntry.Deletor = QCTask.Deletor;
+                        _dbEntry.DeleteTime = QCTask.DeleteTime;
                     }
                 }
             }

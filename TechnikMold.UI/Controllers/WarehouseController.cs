@@ -11,6 +11,7 @@ using TechnikSys.MoldManager.Domain.Status;
 using System.Linq.Expressions;
 using MoldManager.WebUI.Tools;
 using MoldManager.WebUI.Models.EditModel;
+using System.Text.RegularExpressions;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -1220,18 +1221,22 @@ namespace MoldManager.WebUI.Controllers
         public ActionResult JsonMoldNumber(int PurchaseType=0, string Keyword="") {
             List<int> _typeids = GetPurchaseType(PurchaseType);
             List<string> _moldNumbers;
+            if (!string.IsNullOrEmpty(Keyword))
+            {
+                Keyword = Keyword.ToUpper();
+            }
             switch (PurchaseType)
             {
                 case 0:
-                    _moldNumbers = _whStockRepository.GetWHStocks().Where(s => s.MoldNumber.Contains(Keyword))
+                    _moldNumbers = _whStockRepository.GetWHStocks().Where(s => s.MoldNumber.ToUpper().Contains(Keyword))
                     .Select(s => s.MoldNumber).Distinct().ToList();
                     break;
                 case 6:
-                    _moldNumbers = _whStockRepository.GetWHStocks().Where(s => PurchaseType==s.PurchaseType && s.MoldNumber.Contains(Keyword))
+                    _moldNumbers = _whStockRepository.GetWHStocks().Where(s => PurchaseType==s.PurchaseType && s.MoldNumber.ToUpper().Contains(Keyword))
                     .Select(s => s.MoldNumber).Distinct().ToList();
                     break;
                 default:
-                    _moldNumbers = _whStockRepository.GetWHStocks().Where(s => _typeids.Contains(s.PurchaseType) && s.MoldNumber.Contains(Keyword))
+                    _moldNumbers = _whStockRepository.GetWHStocksByType("模具直接材料").Where(s=>s.MoldNumber.ToUpper().Contains(Keyword))
                     .Select(s => s.MoldNumber).Distinct().ToList();
                     break;
             }
@@ -1558,31 +1563,56 @@ namespace MoldManager.WebUI.Controllers
             }
         }
 
-        public int SaveStockType(string Name,string Code)
+        public int SaveStockType(string Name,string Code,string Parent)
         {
-            //StockType _stockType = _stockTypeRepository.QueryByName(Name);
-            StockType _stockType = new StockType()
+            bool isValid = true;
+            //Regex regEnglish = new Regex("^[a-zA-Z]");
+            Regex regChina = new Regex("^[^\x00-\xFF]");
+            if (!regChina.IsMatch(Code))
             {
-                StockTypeID = 0,
-                Name = Name,
-                Code = Code,
-                Enabled = true,
-            };
-            if (_stockType != null)
-            {
-                try
+                if (Code.Length == 6)
                 {
-                    int _stockTypeID = _stockTypeRepository.Save(_stockType);
-                    return _stockTypeID;
+                    StockType _stockType1 = _stockTypeRepository.StockTypes.Where(s => (s.Code == Code || s.Name == Name) && s.Enabled && s.Parent == Parent).FirstOrDefault();
+                    if (_stockType1 == null)
+                    {
+                        StockType _stockType = new StockType()
+                        {
+                            StockTypeID = 0,
+                            Name = Name,
+                            Code = Code,
+                            Parent = Parent,
+                            Enabled = true,
+                        };
+                        if (_stockType != null)
+                        {
+                            try
+                            {
+                                int _stockTypeID = _stockTypeRepository.Save(_stockType);
+                                return _stockTypeID;
+                            }
+                            catch (Exception ex)
+                            {
+                                return -1;
+                            }
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    }
+                    else
+                    {
+                        return -100;
+                    }
                 }
-                catch(Exception ex)
+                else
                 {
-                    return -1;
+                    return -99;
                 }
             }
             else
             {
-                return 0;
+                return -101;
             }
         }
 
@@ -1699,14 +1729,20 @@ namespace MoldManager.WebUI.Controllers
         [HttpPost]
         public void StockItemEdit(WHPart model)
         {
-            //WHPart _part = _whPartRepository.GetPart(model.PartNum);
-            //if (_part == null)
+            if (model.ID == 0)
+            {
+                model.CreateUserID = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
+                model.CreDate = DateTime.Now;
+                _whPartRepository.Save(model);
+            }
+            //WHStock _stock = _whStockRepository.GetStockByPartNum(model.PartNum, model.PartID);
+            //if (_stock == null)
             //{
-            //    WarehouseStock.Quantity = 0;
+            //    WHStock _dbstock = new WHStock()
+            //    {
+
+            //    };
             //}
-            model.CreateUserID = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
-            _whPartRepository.Save(model);
-            //int _warehouseStockID = _warehouseStockRepository.Save(WarehouseStock);
         }
         public string Service_WH_GetPartNumByType(string _type)
         {

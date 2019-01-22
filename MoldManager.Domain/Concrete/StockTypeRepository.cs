@@ -34,8 +34,15 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             StockType _stockType = _context.StockTypes.Where(s => s.StockTypeID == _model.StockTypeID).FirstOrDefault();
             if (_stockType == null)
             {
-                _model.Enabled = true;
-                _context.StockTypes.Add(_model);
+                StockType _stockType1 = _context.StockTypes.Where(s => (s.Code == _model.Code || s.Name == _model. Name) && s.Parent== _model.Parent).FirstOrDefault();
+                if (_stockType1 != null)
+                {
+                    _model.Enabled = true;
+                }
+                else
+                {
+                    _context.StockTypes.Add(_model);
+                }
             }
             else
             {

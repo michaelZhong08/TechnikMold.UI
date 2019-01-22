@@ -46,43 +46,56 @@
     <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
     <input type="hidden" id="State" value="@ViewBag.State" />
 </div>
-<div style="margin-top:60px">
 
-    <div class="col-sm-11">
-
-        <h3>询价单列表</h3>
-        <div style="height:35px"> 
-            @if (DeptID == 4) { 
-            <button class="btn btn-primary" id="NewQR">新建询价单</button>
-            }
-            @*<button class="btn btn-primary" id="FilterMoldNo">按项目查询</button>*@
-            <div class="col-sm-2">
-                <select id="QRState" class="form-control">
-                    <option value="0">所有状态</option>
-                    @foreach (int _val in @Enum.GetValues(typeof(QuotationRequestStatus)))
-                    {
-                        if (ViewBag.State == _val) { 
-                            <option value="@_val" selected>@Enum.GetName(typeof(QuotationRequestStatus), _val)</option>
-                        }
-                        else
+<h2 style="margin-top:60px">询价单列表</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
+                    <select id="QRState" class="form-control">
+                        <option value="0">所有状态</option>
+                        @foreach (int _val in @Enum.GetValues(typeof(QuotationRequestStatus)))
                         {
-                            <option value="@_val">@Enum.GetName(typeof(QuotationRequestStatus), _val)</option>
+                            if (ViewBag.State == _val)
+                            {
+                                <option value="@_val" selected>@Enum.GetName(typeof(QuotationRequestStatus), _val)</option>
+                            }
+                            else
+                            {
+                                <option value="@_val">@Enum.GetName(typeof(QuotationRequestStatus), _val)</option>
+                            }
                         }
-                    }
-                </select>
-            </div>
-        </div>
-        <div style="margin-top:20px">
-            <table id="QRListGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+                    </select>
+                </td>
+                <td id="td_NewQR" hidden><button class="btn btn-success" id="NewQR"><span class="glyphicon glyphicon-plus"></span> 新建</button></td>
+
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
+        <table id="QRListGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
+
 <script src="~/Scripts/Purchase.js"></script>
 <script>
     $("document").ready(function(){
+
+        $(window).resize(function () {
+            $("#QRListGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#QRListGrid").setGridHeight($('.UD_TableDiv').eq(0).height()-40);
+        });
+
         QRListGrid(@ViewBag.ProjectID, @ViewBag.State, @ViewBag.UserID);
         $("#PRState option[value=@ViewBag.State]").attr("selected", "true");
+
+        if(@DeptID==4){
+            $('#td_NewQR').show();
+        }else{
+            $('#td_NewQR').hide();
+        }
     })
 
 
