@@ -2086,11 +2086,14 @@ namespace MoldManager.WebUI.Controllers
             {
                 _poList = _purchaseOrderRepository.PurchaseOrders;//.Where(p=>p.State != (int)PurchaseOrderStatus.取消);
 
-                if (State > 0)
+                //if (State > 0)
+                //{
+
+                //}
+                if (State != 0)
                 {
                     _poList = _poList.Where(p => p.State == State);
                 }
-
                 _poList = _poList.OrderByDescending(p => p.PurchaseOrderNumber);
             }
             else
@@ -2128,7 +2131,7 @@ namespace MoldManager.WebUI.Controllers
 
                 IEnumerable<int> _poIds = _items.Select(p => p.PurchaseOrderID);
 
-                _poList = _purchaseOrderRepository.PurchaseOrders.Where(p => (_poIds.Contains(p.PurchaseOrderID)) && p.State !=(int)PurchaseOrderStatus.取消);
+                _poList = _purchaseOrderRepository.PurchaseOrders.Where(p => (_poIds.Contains(p.PurchaseOrderID)) );//&& p.State !=(int)PurchaseOrderStatus.取消
             }
 
             POListGridViewModel _viewModel = new POListGridViewModel(_poList, _projectRepository, _supplierRepository, _purchaseTypeRepository,
@@ -2271,9 +2274,12 @@ namespace MoldManager.WebUI.Controllers
         {
             try
             {
-                _purchaseOrderRepository.Submit(PurchaseOrderID, (int)PurchaseRequestStatus.待审批);
-
+                _purchaseOrderRepository.Submit(PurchaseOrderID, (int)PurchaseOrderStatus.待审批);
                 _purchaseItemRepository.ChangeState(0, 0, PurchaseOrderID, (int)PurchaseItemStatus.订单待审批);
+
+                #region 创建PO文件
+                GeneratePOPDFFile(PurchaseOrderID);
+                #endregion
             }
             catch
             {
@@ -2287,31 +2293,26 @@ namespace MoldManager.WebUI.Controllers
             string _msg = "";
 
             PurchaseOrder _po = _purchaseOrderRepository.QueryByID(PurchaseOrderID);
-
+            int userid=Convert.ToInt32(Request.Cookies["User"]["UserID"]);
 
             if (ResponseType == (int)PurchaseOrderStatus.发布)
             {
                 if (IsOutSource(_po.PurchaseType))
                 {
-                    _purchaseOrderRepository.Submit(PurchaseOrderID, (int)PurchaseOrderStatus.外发待出库, Memo);
+                    _purchaseOrderRepository.Submit(PurchaseOrderID, (int)PurchaseOrderStatus.外发待出库, Memo, userid);
                 }
                 else
                 {
-                    _purchaseOrderRepository.Submit(PurchaseOrderID, ResponseType, Memo);
+                    _purchaseOrderRepository.Submit(PurchaseOrderID, ResponseType, Memo, userid);
                 }
             }
             else
             {
-                _purchaseOrderRepository.Submit(PurchaseOrderID, ResponseType, Memo);
+                _purchaseOrderRepository.Submit(PurchaseOrderID, ResponseType, Memo, userid);
             }
 
-
-
-            PurchaseRequest _request = _purchaseRequestRepository.GetByID(PurchaseOrderID);
-
-
-
-            string response = ResponseType == (int)PurchaseOrderStatus.发布 ? "批准" : "拒绝";
+            //PurchaseRequest _request = _purchaseRequestRepository.GetByID(PurchaseOrderID);
+            //string response = ResponseType == (int)PurchaseOrderStatus.发布 ? "批准" : "拒绝";
 
             if (ResponseType == (int)PurchaseOrderStatus.发布)
             {
@@ -2323,11 +2324,10 @@ namespace MoldManager.WebUI.Controllers
                 {
                     _purchaseItemRepository.ChangeState(0, 0, PurchaseOrderID, (int)PurchaseItemStatus.订单待发);
                 }
-
             }
             else
             {
-                _purchaseItemRepository.ChangeState(0, 0, PurchaseOrderID, (int)PurchaseItemStatus.订单审批拒绝);
+                _purchaseItemRepository.ChangeState(0, 0, PurchaseOrderID, (int)PurchaseItemStatus.待采购);//(int)PurchaseItemStatus.订单审批拒绝
             }
             return _msg;
         }
@@ -2385,11 +2385,16 @@ namespace MoldManager.WebUI.Controllers
         }
         public ActionResult OtherPurItemList(int State = 0, int PurchaseTypeID = 2)
         {
-            PurchaseType _pt = _purchaseTypeRepository.QueryByID(PurchaseTypeID);
+            List<PurchaseType> _types = new List<PurchaseType>();
+            _types.Add(_purchaseTypeRepository.QueryByName("模具耗材"));
+            _types.Add(_purchaseTypeRepository.QueryByName("采购备库"));
+            _types.Add(_purchaseTypeRepository.QueryByName("固定资产"));
+            PurchaseType _pt = (_purchaseTypeRepository.QueryByName("模具耗材")??new PurchaseType());
             ViewBag.State = State;
             ViewBag.PurchaseTypeID = PurchaseTypeID;
             ViewBag.PurchaseTypeName = _pt.Name;
             ViewBag.Title = "待处理资材项";
+            ViewBag.Types = _types;
             return View();
         }
         public ActionResult OutSourceItemList(int State = 0, int PurchaseTypeID = 3)
@@ -2726,17 +2731,12 @@ namespace MoldManager.WebUI.Controllers
 
                 }
                 _poContentRepository.BatchCreate(_poContents);
-                #region 创建PO文件
-                GeneratePOPDFFile(_purchaseOrderID);
-                #endregion
 
             }
             catch (Exception ex)
             {
                 _error = "订单保存失败:"+ (ex.InnerException.InnerException);
             }
-
-
 
             return _error;
         }
@@ -4952,7 +4952,7 @@ namespace MoldManager.WebUI.Controllers
             DateTime _endDate;
             if (EndDate == "")
             {
-                EndDate = DateTime.Now.ToString("yyyy-MM-dd") + " 23:59";
+                EndDate = DateTime.Now.ToString("yyyy-MM-dd");
             }
             _endDate = Convert.ToDateTime(EndDate + " 23:59");//Convert.ToDateTime(EndDate);
             List<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems.Where(p => p.DeliveryTime > _startDate)
@@ -4965,7 +4965,7 @@ namespace MoldManager.WebUI.Controllers
             {
                 foreach (var p in _items)
                 {
-                    string bu, costcent,fClass,sClass,supFullname,supName,zcClass;
+                    string bu, costcent,fClass,sClass,supFullname,supName,zcClass,supCode;
                     try
                     {
                         CostCenter _cc = _costCenterRepository.QueryByID(p.CostCenterID) ?? new TechnikSys.MoldManager.Domain.Entity.CostCenter();
@@ -4997,22 +4997,20 @@ namespace MoldManager.WebUI.Controllers
                         {
                             supFullname = _sup.FullName;
                             supName = _sup.Name;
+                            supCode = _sup.Code;
                         }
-                        else { supFullname = ""; supName = ""; }
+                        else { supFullname = ""; supName = ""; supCode = "";  }
                     }
-                    catch { supFullname = ""; supName = ""; }
-                    switch (p.ProcedureType)
+                    catch { supFullname = ""; supName = ""; supCode = ""; }
+                    switch (fClass)
                     {
-                        //case 0:
-                        //    zcClass = "";
-                        //    break;
-                        case 10:
+                        case "模具直接材料"://10:
                             zcClass = "制模";
                             break;
-                        case 20:
-                            zcClass = "修模";
-                            break;
-                        case 30:
+                        //case ""://20:
+                        //    zcClass = "修模";
+                        //    break;
+                        case "模具耗材"://30:
                             zcClass = "耗材";
                             break;
                         default:
@@ -5020,23 +5018,24 @@ namespace MoldManager.WebUI.Controllers
                             break;
                     }
                     PDReportViewModel _pditem = new PDReportViewModel()
-                    {                        
+                    {
+                        下单日期 = p.DeliveryTime.ToString("yyyy-MM-dd"),
                         事业部 = bu,
                         成本中心 = costcent,
                         制程分类 = zcClass,
                         一级分类 = fClass,
                         二级分类 = sClass,
                         供应商全称 = supFullname,
-                        模号 = p.MoldNumber,
+                        模号 = p.PartNumber,
                         规格 = p.Specification,
                         数量 = p.Quantity,
-                        单位 = "件",
-                        含税单价 =Math.Round( p.UnitPriceWT,2),
-                        含税总价 = Math.Round(p.TotalPriceWT,2),
+                        单位 = "个",//Sinno ERP采购单默认单位： 个
+                        含税单价 = Math.Round(p.UnitPriceWT, 2),
+                        含税总价 = Math.Round(p.TotalPriceWT, 2),
                         税率 = p.TaxRate,
-                        未税总价 = Math.Round(p.TotalPrice,2),
+                        未税总价 = Math.Round(p.TotalPrice, 2),
                         订单 = (_purchaseOrderRepository.QueryByID(p.PurchaseOrderID).PurchaseOrderNumber),
-                        请购单 =(_purchaseRequestRepository.GetByID(p.PurchaseRequestID).PurchaseRequestNumber),
+                        请购单 = (_purchaseRequestRepository.GetByID(p.PurchaseRequestID).PurchaseRequestNumber),
                         备注 = p.Memo,
                         其它 = "",
                         PurchaseItemID = p.PurchaseItemID,
@@ -5044,7 +5043,13 @@ namespace MoldManager.WebUI.Controllers
                         供应商 = supName,
                         实际到达日期 = p.DeliveryTime,
                         生成时间 = p.CreateTime,
-                        预计交货日期=p.PlanTime,
+                        预计交货日期 = p.PlanTime,
+
+                        采购类型 = sClass,
+                        供应商编码 = supCode,
+                        未税单价 = Math.Round(p.UnitPrice, 2),
+                        税组 = "J" + p.TaxRate.ToString(),
+
                     };
                     _prItems.Add(_pditem);
                 }
@@ -5792,12 +5797,24 @@ namespace MoldManager.WebUI.Controllers
         public ActionResult PRForm(int PurchaseOrderID)
         {
             PurchaseOrder _order = _purchaseOrderRepository.QueryByID(PurchaseOrderID);
-            User _user = _userRepository.GetUserByID(_order.Responsible);
+            User _user = (_userRepository.GetUserByID(_order.Responsible) ?? new TechnikSys.MoldManager.Domain.Entity.User());
             IEnumerable<POContent> _poContents = _poContentRepository.QueryByPOID(PurchaseOrderID);
-            Supplier _supplier = _supplierRepository.QueryByID(_order.SupplierID);
-            Contact _contact = _contactRepository.QueryByOrganization(_order.SupplierID).FirstOrDefault();
-            POViewModel _model = new POViewModel(_poContents, _order, _user, _supplier, _contact);
-            return View(_model);
+            if (_poContents.Count()>0)
+            {
+                foreach(var p in _poContents)
+                {
+                    PurchaseItem _pi = _purchaseItemRepository.QueryByID(p.PurchaseItemID)??new PurchaseItem();
+                    PurchaseRequest _pr = _purchaseRequestRepository.GetByID(_pi.PurchaseRequestID) ?? new PurchaseRequest();
+                    p.PRNumber = _pr.PurchaseRequestNumber ?? "";
+                }
+            }
+            Supplier _supplier = (_supplierRepository.QueryByID(_order.SupplierID) ?? new TechnikSys.MoldManager.Domain.Entity.Supplier());
+            Contact _contact = (_contactRepository.QueryByOrganization(_order.SupplierID).FirstOrDefault() ?? new Contact());
+            string buyer = (_userRepository.GetUserByID(_order.UserID) ?? new TechnikSys.MoldManager.Domain.Entity.User()).FullName ?? "";
+            string chker = (_userRepository.GetUserByID(_order.UserID) ?? new TechnikSys.MoldManager.Domain.Entity.User()).FullName ?? "";
+            string approval = (_userRepository.GetUserByID(_order.Approval) ?? new TechnikSys.MoldManager.Domain.Entity.User()).FullName ?? "";
+            POViewModel _model = new POViewModel(_poContents, _order, _supplier, _contact, _user, buyer,chker,approval);
+            return View(viewName: "POFormTemplate", model:_model);
         }
         /// <summary>
         /// TODO:PO PDF界面
@@ -5881,7 +5898,7 @@ namespace MoldManager.WebUI.Controllers
             ViewBag.State = 40;
             return View();
         }
-        public JsonResult Service_Json_PORepotForQuery(string MoldNumber = "",string Keyword="",string dateFr="1900/1/1",string dateTo="2200/1/1")
+        public JsonResult Service_Json_PORepotForQuery(string MoldNumber = "",string Keyword="",string dateFr="1900/1/1",string dateTo="2200/1/1",bool isDelay=false)
         {
             List<PurchaseItem> _items=new List<PurchaseItem>();
             Expression<Func<PurchaseItem, bool>> _exp1 = null;
@@ -5889,7 +5906,15 @@ namespace MoldManager.WebUI.Controllers
             DateTime dateTimeFr = DateTime.Parse(dateFr);
             DateTime dateTimeTo = DateTime.Parse(dateTo);
             _exp1 = i => i.State >= (int)PurchaseItemStatus.订单新建;
-            _exp2 = i => i.State <= (int)PurchaseItemStatus.完成;
+            if (isDelay)
+            {
+                _exp2 = i => i.State <= (int)PurchaseItemStatus.部分收货;
+            }
+            else
+            {
+                _exp2 = i => i.State <= (int)PurchaseItemStatus.完成;
+            }
+            
             _exp1 = PredicateBuilder.And(_exp1, _exp2);
 
             //PurchaseType _pt = _purchaseTypeRepository.QueryByID(PurchaseType);
@@ -5924,7 +5949,11 @@ namespace MoldManager.WebUI.Controllers
             List<int> polistids= _purchaseOrderRepository.PurchaseOrders.Where(i => i.CreateDate >= dateTimeFr && i.CreateDate <= dateTimeTo).Select(o=>o.PurchaseOrderID).ToList();
             _exp1= PredicateBuilder.And(_exp1, i => polistids.Contains(i.PurchaseOrderID));
             _items = _purchaseItemRepository.PurchaseItems.Where(_exp1).ToList();
-
+            //预警到货
+            if (isDelay)
+            {
+                _items = _items.Where(i => DateTime.Parse(i.PlanTime.ToString("yyyy-MM-dd")) < DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"))).Where(i=>Toolkits.CheckZero(i.DeliveryTime)).ToList();
+            }
             PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_items,
                 _purchaseRequestRepository,
                 _quotationRequestRepository,

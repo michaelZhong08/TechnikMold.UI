@@ -6,66 +6,67 @@
 }
 
 
-
-
-<h2>客户管理</h2>
-
-<div>
-    <div class="col-sm-11">
-        <h3 class="page-header">客户管理</h3>
-        <ul class="nav nav-pills">
-            <li><button class="btn btn-primary" id="CreateCustomer">新建客户</button></li>
-            <li><button class="btn btn-primary" id="DeleteCustomer">删除客户</button></li>
-
-        </ul>
-        <div class="col-sm-2">
-            <div class="panel panel-info">
-                <div class="panel-heading"><h3 class="panel-title">客户列表</h3></div>
-                <div class="panel-body">
-                    <div>
-                        <select class="form-control" size="25" id="CustomerList">
-                            @foreach (Customer _customer in Model)
-                            {
-                                <option value="@_customer.CustomerID">@_customer.Name</option>
-                            }
-
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-5">
-            <div class="panel panel-info">
-                <div class="panel-heading"><h3 class="panel-title">客户信息</h3></div>
-                <div class="panel-body" style="height:460px">
-                    <div>
-                        @using (Html.BeginForm("CustomerSave", "Project", FormMethod.Post, new { id = "SaveCustomerForm" }))
+<div></div>
+<div style="margin-top:60px;">
+    <h2>客户管理</h2>
+</div>
+<div class="BaseData_FatherDiv">
+    <div class="BaseData_LeftDiv">
+        <div class="panel panel-info">
+            <div class="panel-heading" style="height:40px;"><h3 class="panel-title">客户列表</h3></div>
+            <div class="panel-body" style="padding:0px!important;">
+                <div>
+                    <select class="form-control BaseData_Left_Sel" size="25" id="CustomerList">
+                        @foreach (Customer _customer in Model)
                         {
-                            <table class="table table-striped">
-                                <tr>
-                                    <td class="col-sm-2"><label>客户名称</label></td>
-                                    <td class="col-sm-4">
-                                        <input type="hidden" id="CustomerID" name="CustomerID" value="0"/>
-                                        
-                                        <input type="text" maxlength="50" id="Name" name="Name" class="form-control required" />
-                                        
-                                        
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="col-sm-2"><label>客户地址</label></td>
-                                    <td class="col-sm-4">
-                                        <input type="text" maxlength="100" id="Address" name="Address" class="form-control" />
-                                        <input type="hidden" id="Enabled" name="Enabled" value="true"/>
-                                    </td>
-                                </tr>
-                            </table>
+                            <option value="@_customer.CustomerID">@_customer.Name</option>
                         }
-                        <button id="SaveCustomer" class="btn btn-primary">保存</button>
-                    </div>
+                    </select>
                 </div>
             </div>
         </div>
     </div>
+    <div class="BaseData_RightDiv">
+        <div class="BaseData_Right_ToolbarDiv">
+            <table style="margin-left:20px;">
+                <tr>
+                    <td>
+                        <button class="btn btn-success" id="CreateCustomer"><span class="glyphicon glyphicon-plus"></span> 新建</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" id="DeleteCustomer"><span class="glyphicon glyphicon-trash"></span> 删除</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="BaseData_Right_TableDiv">
+            <div class="BaseData_Right_FormDiv">
+                @using (Html.BeginForm("CustomerSave", "Project", FormMethod.Post, new { id = "SaveCustomerForm" }))
+                {
+                    <table class="table table-striped" style="text-align:center;vertical-align:central;">
+                        <colgroup><col width="20%" /><col width="80%" /></colgroup>
+                        <tr>
+                            <td><label>客户名称</label></td>
+                            <td>
+                                <input type="hidden" id="CustomerID" name="CustomerID" value="0" />
+                                <input type="text" id="Name" name="Name" class="form-control required" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label>客户地址</label></td>
+                            <td>
+                                <input type="text" id="Address" name="Address" class="form-control" />
+                                <input type="hidden" id="Enabled" name="Enabled" value="true" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><button id="SaveCustomer" class="btn btn-primary" style="float:right;"><span class="glyphicon glyphicon-pencil"></span> 保存</button></td>
+                        </tr>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
 </div>
+
 <script src="~/Scripts/Project.js"></script>

@@ -1,0 +1,190 @@
+控制器：Home,处理函数:Index——
+System.IndexOutOfRangeException: There is no row at position 0.
+   at System.Data.RBTree`1.GetNodeByIndex(Int32 userIndex)
+   at System.Data.DataRowCollection.get_Item(Int32 index)
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 50
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.IndexOutOfRangeException: There is no row at position 0.
+   at System.Data.RBTree`1.GetNodeByIndex(Int32 userIndex)
+   at System.Data.DataRowCollection.get_Item(Int32 index)
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 50
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.IndexOutOfRangeException: There is no row at position 0.
+   at System.Data.RBTree`1.GetNodeByIndex(Int32 userIndex)
+   at System.Data.DataRowCollection.get_Item(Int32 index)
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 50
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.IndexOutOfRangeException: There is no row at position 0.
+   at System.Data.RBTree`1.GetNodeByIndex(Int32 userIndex)
+   at System.Data.DataRowCollection.get_Item(Int32 index)
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 50
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.IndexOutOfRangeException: There is no row at position 0.
+   at System.Data.RBTree`1.GetNodeByIndex(Int32 userIndex)
+   at System.Data.DataRowCollection.get_Item(Int32 index)
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 50
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.IndexOutOfRangeException: There is no row at position 0.
+   at System.Data.RBTree`1.GetNodeByIndex(Int32 userIndex)
+   at System.Data.DataRowCollection.get_Item(Int32 index)
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 50
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.IndexOutOfRangeException: There is no row at position 0.
+   at System.Data.RBTree`1.GetNodeByIndex(Int32 userIndex)
+   at System.Data.DataRowCollection.get_Item(Int32 index)
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 50
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.IndexOutOfRangeException: There is no row at position 0.
+   at System.Data.RBTree`1.GetNodeByIndex(Int32 userIndex)
+   at System.Data.DataRowCollection.get_Item(Int32 index)
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 50
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:Index——
+System.Web.HttpException (0x80004005): Cannot redirect after HTTP headers have been sent.
+   at System.Web.HttpResponse.Redirect(String url, Boolean endResponse, Boolean permanent)
+   at System.Web.HttpResponseWrapper.Redirect(String url, Boolean endResponse)
+   at System.Web.Mvc.RedirectToRouteResult.ExecuteResult(ControllerContext context)
+   at System.Web.Mvc.ControllerActionInvoker.InvokeActionResult(ControllerContext controllerContext, ActionResult actionResult)
+   at System.Web.Mvc.ControllerActionInvoker.InvokeActionResultFilterRecursive(IList`1 filters, Int32 filterIndex, ResultExecutingContext preContext, ControllerContext controllerContext, ActionResult actionResult)
+   at System.Web.Mvc.ControllerActionInvoker.InvokeActionResultFilterRecursive(IList`1 filters, Int32 filterIndex, ResultExecutingContext preContext, ControllerContext controllerContext, ActionResult actionResult)
+   at System.Web.Mvc.ControllerActionInvoker.InvokeActionResultFilterRecursive(IList`1 filters, Int32 filterIndex, ResultExecutingContext preContext, ControllerContext controllerContext, ActionResult actionResult)
+   at System.Web.Mvc.ControllerActionInvoker.InvokeActionResultWithFilters(ControllerContext controllerContext, IList`1 filters, ActionResult actionResult)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<>c__DisplayClass2b.<BeginInvokeAction>b__1c()
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__1e(IAsyncResult asyncResult)
+控制器：Home,处理函数:Index——
+System.Exception: 在系统中没有找到 钟润嘉---DESKTOP-3RAETLP\钟润嘉 的信息，请与系统管理员联系
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 66
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.Exception: 在系统中没有找到 钟润嘉---DESKTOP-3RAETLP\钟润嘉 的信息，请与系统管理员联系
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 66
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.Exception: 在系统中没有找到 钟润嘉---DESKTOP-3RAETLP\钟润嘉 的信息，请与系统管理员联系
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 66
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.Exception: 在系统中没有找到 钟润嘉---DESKTOP-3RAETLP\钟润嘉 的信息，请与系统管理员联系
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 66
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Home,处理函数:ErrorHandler——
+System.Exception: 在系统中没有找到 钟润嘉---DESKTOP-3RAETLP\钟润嘉 的信息，请与系统管理员联系
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.SetUserCookie(String UserName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 66
+   at TechnikMold.UI.Models.Filter.ActionFilter.MoldSysActionFilterAttribute.OnActionExecuting(ActionExecutingContext filterContext) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs:line 22
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.InvokeActionMethodFilterAsynchronouslyRecursive(Int32 filterIndex)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__31(AsyncCallback asyncCallback, Object asyncState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallBeginDelegate(AsyncCallback callback, Object callbackState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.Begin(AsyncCallback callback, Object state, Int32 timeout)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.BeginInvokeActionMethodWithFilters(ControllerContext controllerContext, IList`1 filters, ActionDescriptor actionDescriptor, IDictionary`2 parameters, AsyncCallback callback, Object state)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__19(AsyncCallback asyncCallback, Object asyncState)
+控制器：Purchase,处理函数:PRSave——
+System.ArgumentException: The parameters dictionary contains a null entry for parameter 'PurchaseType' of non-nullable type 'System.Int32' for method 'Int32 PRSave(System.Collections.Generic.List`1[TechnikSys.MoldManager.Domain.Entity.PRContent], Int32, Int32, Int32, System.String, System.String, Int32, Int32)' in 'MoldManager.WebUI.Controllers.PurchaseController'. An optional parameter must be a reference type, a nullable type, or be declared as an optional parameter.
+Parameter name: parameters
+   at System.Web.Mvc.ActionDescriptor.ExtractParameterFromDictionary(ParameterInfo parameterInfo, IDictionary`2 parameters, MethodInfo methodInfo)
+   at System.Web.Mvc.ReflectedActionDescriptor.Execute(ControllerContext controllerContext, IDictionary`2 parameters)
+   at System.Web.Mvc.ControllerActionInvoker.InvokeActionMethod(ControllerContext controllerContext, ActionDescriptor actionDescriptor, IDictionary`2 parameters)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<BeginInvokeSynchronousActionMethod>b__39(IAsyncResult asyncResult, ActionInvocation innerInvokeState)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`2.CallEndDelegate(IAsyncResult asyncResult)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.End()
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.EndInvokeActionMethod(IAsyncResult asyncResult)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.<InvokeActionMethodFilterAsynchronouslyRecursive>b__3d()
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.<>c__DisplayClass46.<InvokeActionMethodFilterAsynchronouslyRecursive>b__3f()
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.AsyncInvocationWithFilters.<>c__DisplayClass46.<InvokeActionMethodFilterAsynchronouslyRecursive>b__3f()
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass33.<BeginInvokeActionMethodWithFilters>b__32(IAsyncResult asyncResult)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResult`1.CallEndDelegate(IAsyncResult asyncResult)
+   at System.Web.Mvc.Async.AsyncResultWrapper.WrappedAsyncResultBase`1.End()
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.EndInvokeActionMethodWithFilters(IAsyncResult asyncResult)
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<>c__DisplayClass2b.<BeginInvokeAction>b__1c()
+   at System.Web.Mvc.Async.AsyncControllerActionInvoker.<>c__DisplayClass21.<BeginInvokeAction>b__1e(IAsyncResult asyncResult)

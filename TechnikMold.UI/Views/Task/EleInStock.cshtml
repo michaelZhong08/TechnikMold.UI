@@ -1,6 +1,6 @@
 ﻿
 @{
-    ViewBag.Title = "EleInStock";
+    ViewBag.Title = "电极仓库";
 }
 
 <div class="FatherDiv">
@@ -13,11 +13,19 @@
    </div>
    <div class="RightDiv">
        <div id="Toolbar" class="RightDiv_TopDiv">
-           <ul class="nav nav-pills">
-               <li><button class="btn btn-primary" id="ScanInStock">扫描入库</button></li>
-               <li><button class="btn btn-primary" id="ScanOutStock">扫描出库</button></li>
-               <li><button class="btn btn-warning" id="ElectrodeDestroy">电极销毁</button></li>
-           </ul>
+           <table>
+               <tr>
+                   <td>
+                       <button class="btn btn-success" id="ScanInStock"><span class="glyphicon glyphicon-log-in"></span> 扫描入库</button>
+                   </td>
+                   <td>
+                       <button class="btn btn-warning" id="ScanOutStock"><span class="glyphicon glyphicon-log-out"></span> 扫描出库</button>
+                   </td>
+                   <td>
+                       <button class="btn btn-danger" id="ElectrodeDestroy"><span class="glyphicon glyphicon-trash"></span> 电极销毁</button>
+                   </td>
+               </tr>
+           </table>
        </div>
        <div class="RightDiv_BottomDiv">
            <table id="ElectrodeGrid"></table>
@@ -59,7 +67,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="StockChange" class="btn btn-primary">入库</button>
+                <button type="button" id="StockChange" class="btn btn-primary">确认</button>
             </div>
         </div>
     </div>
@@ -98,7 +106,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="DestroyElectrode" class="btn btn-primary">销毁电极</button>
+                <button type="button" id="DestroyElectrode" class="btn btn-primary">确认</button>
             </div>
         </div>
     </div>
@@ -129,14 +137,14 @@
                 $("#ScanBarCodeLabel").html("扫描入库")
                 $("#Ele_List tr").remove();
                 $("#OperationType").val("1");
-                $("#StockChange").html("入库");
+                $("#StockChange").html("确认");
                 $("#ScanBarCodeDialog").modal("show");
             })
             $("#ScanOutStock").on("click", function () {
                 $("#ScanBarCodeLabel").html("扫描出库")
                 $("#Ele_List tr").remove();
                 $("#OperationType").val("2");
-                $("#StockChange").html("出库");
+                $("#StockChange").html("确认");
                 $("#ScanBarCodeDialog").modal("show");
             })
 

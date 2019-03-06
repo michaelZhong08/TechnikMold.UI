@@ -4,7 +4,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title</title>
+    <title>模具管理系统-@ViewBag.Title</title>
+    @using StackExchange.Profiling;
     @RenderSection("Headerjs", required: false)
 
     @Styles.Render("~/Content/css")
@@ -21,6 +22,15 @@
     <script src="~/Scripts/MoldManager.js"></script>
     <script src="~/Scripts/jAlert.js"></script>
     <script src="~/Scripts/TimeFormat.js"></script>
+    @*Switch Date 控件*@
+    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
+    <link rel="stylesheet" href="~/Content/datepicker.css" />
+    <script src="~/Scripts/bootstrap-switch.js"></script>
+    <script src="~/Scripts/bootstrap-datepicker.js"></script>
+    <link rel="stylesheet" href="~/Content/bootstrap-datetimepicker.min.css" />
+    <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+    <script src="~/Scripts/bootstrap-datetimepicker.zh-CN.js"></script>
+
     <style>
         .hrsys_a {
             display: none;
@@ -52,15 +62,7 @@
         .modal-body {
             padding: 10px 10px 10px 10px;
         }
-        h2{
-            margin:0px;
-            padding:0px;
-            line-height:40px;
-            font-size:18px;
-            text-indent:10px;
-            font-weight:bold;
-            font-family:"微软雅黑"!important;
-        }
+        
     </style>
     <style>
         .cbox {
@@ -80,11 +82,12 @@
     </style>
     @RenderSection("Header", required: false)
     <script>
-        $("document").ready(function(){
+        @*$("document").ready(function(){
             $("#UserInfo").html("@{Html.RenderAction("Validate", "User", new { UserName = User.Identity.Name });}");
-        })
+        })*@
     @{
         int DeptID,PosID, UserID;
+        string DisplayName = string.Empty;
         try
         {
             DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
@@ -116,6 +119,13 @@
         {
             UserID = 0;
         }
+        try
+        {
+            DisplayName= HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"])
+                    + "(" + HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"])
+                    + "-" + HttpUtility.UrlDecode(Request.Cookies["User"]["PositionName"]) + ")";
+        }
+        catch { }
     }
     </script>
     <style>
@@ -127,14 +137,14 @@
             position: absolute;
             left: 0px;
             right: 0px;
-            top: 60px;
+            top: 100px;
             bottom: 0px;
         }
 
         .LeftDiv {
             position: absolute;
             left: 10px;
-            top: 40px;
+            top: 0px;
             bottom: 10px;
             width: 180px;
         }
@@ -142,7 +152,7 @@
         .RightDiv {
             position: absolute;
             left: 200px;
-            top: 40px;
+            top: 0px;
             bottom: 0px;
             right: 0px;
         }
@@ -279,6 +289,292 @@
             bottom: 10px;
             /*border:1px solid red;*/
         }
+
+    </style>
+    <style>
+        .BaseData_FatherDiv {
+            position: absolute;
+            top: 100px;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+        }
+
+        .BaseData_LeftDiv {
+            position: absolute;
+            width: 10%;
+            height: 100%;
+            /*border:1px solid rgba(0,0,0,0.1);*/
+        }
+
+        .BaseData_RightDiv {
+            position: absolute;
+            left: 10%;
+            width: 40%;
+            height: 100%;
+        }
+
+        .BaseData_Right_ToolbarDiv {
+            position: absolute;
+            width: 100%;
+            height: 40px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .BaseData_Right_TableDiv {
+            position: absolute;
+            width: 100%;
+            top: 40px;
+            bottom: 0px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .BaseData_Left_Sel {
+            position: absolute;
+            left: 0px;
+            top: 40px;
+            bottom: 0px;
+            width: 100%;
+            border-radius: 0px !important;
+        }
+
+            .BaseData_Left_Sel option {
+                font-size: 16px;
+                padding: 2px;
+                cursor: pointer;
+                width: 100% !important;
+            }
+
+                .BaseData_Left_Sel option:hover {
+                    background-color: rgba(0,0,0,0.1);
+                    font-size: 22px;
+                    font-weight: bold;
+                    text-align: center;
+                }
+
+        .BaseData_Right_FormDiv {
+            margin: 20px;
+            box-shadow: rgba(0,0,0,0.1) 0px 0px 5px 5px;
+        }
+    </style>
+    <style>
+        .Form_FatherDiv {
+            position: absolute;
+            top: 100px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            /*border: 1px solid red;*/
+        }
+
+        .Form_ToolbarDiv {
+            position: absolute;
+            top: 0px;
+            width: 100%;
+            /*border: 1px solid blue;*/
+        }
+
+        .Form_HeadDiv {
+            position: absolute;
+            width: 100%; /*1884px*/
+            background-color: #fffde4;
+            border: 1px solid;
+            border-color: #fbf727;
+            border-radius: 5px;
+        }
+
+        .Form_HeadTable {
+            width: 80%;
+        }
+
+            .Form_HeadTable td {
+                font-family: "微软雅黑";
+                font-weight: bold;
+                text-align: center;
+                vertical-align: central;
+            }
+
+        .Form_TableDiv {
+            /*border: 1px solid red;*/
+            position: absolute;
+        }
+    </style>
+    <style>
+        .modal_LMR_FatherDiv {
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+        }
+
+        .modal_LMR_LeftDiv {
+            position: absolute;
+            left: 0px;
+            width: 45%;
+            height: 100%;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .modal_LMR_MiddleDiv {
+            position: absolute;
+            left: 45%;
+            width: 10%;
+            height: 100%;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .modal_LMR_RightDiv {
+            position: absolute;
+            left: 55%;
+            right: 0px;
+            width: 45%;
+            height: 100%;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .modal_SelTitle {
+            height: 25px;
+        }
+
+        .modal_Sel {
+            position: absolute;
+            left: 0px;
+            top: 25px;
+            bottom: 0px;
+            width: 100%;
+            border-radius: 0px !important;
+        }
+
+            .modal_Sel option {
+                font-size: 16px;
+                padding: 2px;
+                cursor: pointer;
+                width: 100% !important;
+            }
+
+                .modal_Sel option:hover {
+                    background-color: rgba(0,0,0,0.1);
+                    font-size: 22px;
+                    font-weight: bold;
+                    text-align: center;
+                }
+    </style>
+    <style>
+        .LR_FatherDiv {
+            position: absolute;
+            top: 100px;
+            bottom: 0px;
+            left: 10px;
+            right: 10px;
+        }
+
+        .LR_LeftDiv {
+            position: absolute;
+            left: 0px;
+            width: 30%;
+            height: 100%;
+        }
+
+        .LR_Left_ToolbarDiv {
+            position: absolute;
+            width: 100%;
+            height: 40px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .LR_Left_BodyDiv {
+            position: absolute;
+            top: 40px;
+            bottom: 0px;
+            width: 100%;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .LR_RightDiv {
+            position: absolute;
+            left: 30%;
+            width: 30%;
+            height: 100%;
+        }
+
+        .LR_Right_ToolbarDiv {
+            position: absolute;
+            width: 100%;
+            height: 40px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .LR_Right_BodyDiv {
+            position: absolute;
+            top: 40px;
+            bottom: 0px;
+            width: 100%;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .LR_Body_Sel {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            bottom: 0px;
+            width: 100%;
+            border-radius: 0px !important;
+        }
+
+            .LR_Body_Sel option {
+                font-size: 16px;
+                padding: 2px;
+                cursor: pointer;
+                width: 100% !important;
+            }
+
+                .LR_Body_Sel option:hover {
+                    background-color: rgba(0,0,0,0.1);
+                    font-size: 22px;
+                    font-weight: bold;
+                    text-align: center;
+                }
+    </style>
+    @*页面加载延迟时提醒用户等待脚本*@
+    <script>
+        //获取浏览器页面可见高度和宽度
+        var _PageHeight = document.documentElement.clientHeight,
+            _PageWidth = document.documentElement.clientWidth;
+        //计算loading框距离顶部和左部的距离（loading框的宽度为215px，高度为61px）
+        var _LoadingTop = _PageHeight > 61 ? (_PageHeight - 61) / 2 : 0,
+            _LoadingLeft = _PageWidth > 215 ? (_PageWidth ) / 2 : 0;
+        //在页面未加载完毕之前显示的loading Html自定义内容
+        var _LoadingHtml = '<div id="loadingDiv" style="position:absolute;left:0;width:100%;height:' + _PageHeight + 'px;top:0;background:#ffffff;opacity:0.8;filter:alpha(opacity=80);z-index:10000;"><div style="position: absolute; cursor1: wait; left: ' + _LoadingLeft + 'px; top:' + _LoadingTop + 'px; width: auto; height: 200px; padding-left: 150px; background: #fff url(/Images/loading-1.gif) no-repeat ;"></div></div>';
+        //呈现loading效果
+        document.write(_LoadingHtml);
+        //监听加载状态改变
+        document.onreadystatechange = completeLoading;
+        //加载状态为complete时移除loading效果
+        function completeLoading() {
+            if (document.readyState == "complete") {
+                var loadingMask = document.getElementById('loadingDiv');
+                loadingMask.parentNode.removeChild(loadingMask);
+            }
+        }
+    </script>
+    @*全局样式设置*@
+    <style>
+        @*注：本系统Body标题统一使用 H2 标签*@
+        h2{
+            margin:0px;
+            padding:0px;
+            line-height:40px;
+            font-size:18px;
+            text-indent:10px;
+            font-weight:bold;
+            font-family:"微软雅黑"!important;
+            width:220px;
+        }
+
+        input[type="checkbox"],button,a,select,h2 {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -287,8 +583,9 @@
             <input type="hidden" id="CurrentUserID" value="@UserID" />
         </div>
         <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li>@Html.ActionLink("模具管理系统", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })</li>
+            <ul class="nav navbar-nav"> 
+                @*模具管理系统首页图标*@
+                <li><a href="/Home/Index" class="navbar-brand"><span class="glyphicon glyphicon-home"></span> 模具管理系统</a></li>
                 @*项目管理*@
                 <li class="dropdown dropdown-main">
                     <a href="/Project" class="dropdown-toggle"
@@ -357,7 +654,7 @@
                 <li class="dropdown dropdown-main">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">加工任务</a>
                     <ul class="dropdown-menu">
-                        <li><a href="/Task/CAMTaskList">CAM任务</a></li>
+                        <li><a href="/Task/CAMTaskList">发布任务</a></li>
                         <li><a href="/Task/Index">加工任务</a></li>
                     </ul>
                 </li>
@@ -395,23 +692,41 @@
                     </ul>
                 </li>
             </ul>
-
-            <p class="nav navbar-text navbar-right">
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown dropdown-main" >
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="color:rgba(255,255,255,1);">@DisplayName <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a id="RoleChange" href="#"><span class="glyphicon glyphicon-pencil"></span> 角色切换</a></li>
+                        <li role="separator" class="divider"></li>
+                        @if ((DeptID == 1) || (PosID == 3))
+                        {
+                            <li><a href="/Administrator/UserManagement"><span class="glyphicon glyphicon-user"></span> 用户管理</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/Administrator/Department"><span class="glyphicon glyphicon-cog"></span> 部门管理</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/Administrator/EquipmentList"><span class="glyphicon glyphicon-book"></span> 设备管理</a></li>
+                            <li role="separator" class="divider"></li>
+                        }
+                    </ul>
+                </li>
+            </ul>
+            @*<p class="nav navbar-text navbar-right">
                 <label id="UserInfo">
-                    @{Html.RenderAction("Validate", "User", new { UserName = User.Identity.Name });}
+                    @DisplayName
                 </label>
-
+                
                 @if ((DeptID == 1) || (PosID == 3))
             {
-                    <a href="/Administrator/"><img src="~/Images/system.png" width="24" height="24" /></a>
+                    <a href="/Administrator/" style="color:rgba(255,255,255,1);font-size:18px;"><span class="glyphicon glyphicon-cog"></span> </a>
                 }
-                <a href="#" id="RoleChange"><img src="~/Images/exit.png" title="角色切换" /></a>
-            </p>
+                <a href="#" id="RoleChange" style="color:rgba(255,255,255,0.7);font-size:18px;"><span class="glyphicon glyphicon-user"></span> </a>
+            </p>*@
     </div>
 
     </div>
     <div class="container-fluid body-content" role="main">       
         @RenderBody()
+        @*@MiniProfiler.RenderIncludes();*@
     </div>   
 
     @*用户角色切换*@
@@ -420,14 +735,10 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                    <h4 class="modal-title" id="UserRoleLabel"><span id="UserName"></span>角色切换</h4>
+                    <h4 class="modal-title" id="UserRoleLabel" style="font-weight:bold;"><span class="glyphicon glyphicon-pencil"></span> 角色切换</h4>
                 </div>
                 <div class="modal-body">
                     <select id="UserRoles" class="form-control"></select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                    <button type="button" class="btn btn-primary" id="SwitchRole">确定</button>
                 </div>
             </div>
         </div>
@@ -445,12 +756,19 @@
         $("#SwitchRole").on("click", function(){
             SwitchRole();
         })
-
+        $('#UserRoles').on('change',function(){
+            SwitchRole();
+        })
         $('li.dropdown-main').mouseover(function() {
             $(this).addClass('open');    }).mouseout(function() {        $(this).removeClass('open');    });
 
         B_forbiden_menu();
 
+        $('h2').on('click',function(){
+            history.go(-1);
+        })
+
+        $('h2').attr('title','返回上一页');
     })
 
     function LoadUserRoles(){
@@ -458,7 +776,13 @@
         $("#UserRoles option").remove();
         $.getJSON(_url, function (msg) {
             $.each(msg, function (i, n) {
-                $("#UserRoles").append($("<option/>", { value: n.UserRoleID, text: n.DisplayName }))
+                var _html='';
+                if(n.DepID=='@DeptID' && n.Position=='@PosID'){
+                    _html=$("<option/>", { value: n.UserRoleID, text: n.DisplayName,selected:true });
+                }else{
+                    _html=$("<option/>", { value: n.UserRoleID, text: n.DisplayName });
+                } 
+                $("#UserRoles").append(_html);
             })
         })
     }

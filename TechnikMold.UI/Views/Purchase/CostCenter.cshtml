@@ -14,41 +14,70 @@
     }
 }
 
-<div style="margin-top:60px">
+<div>
+
+</div>
+<div style="margin-top:60px;">
     <h2>@ViewBag.Title</h2>
-    <div class="col-sm-2">
-        <input type="text" class="form-control" id="Keyword" />
-        <select class="form-control" id="CostCenterList"></select>
+</div>
+
+<div class="BaseData_FatherDiv">
+    <div class="BaseData_LeftDiv">
+        <div class="panel panel-info">
+            <div class="panel-heading" style="height:40px;"><h3 class="panel-title">归属部门列表</h3></div>
+            <div class="panel-body" style="padding:0px!important;">
+                <div>
+                    <select class="form-control" id="CostCenterList"></select>
+                </div>
+            </div>
+        </div>
     </div>
-    @if (DeptID ==4)
-    {
-        <div class="col-sm-4">
-            <ul class="nav nav-pills">
-                <li><button class="btn btn-primary" id="NewCostCenter">添加归属部门</button></li>
-                <li><button class="btn btn-warning" id="DeleteCostCenter">删除归属部门</button></li>
-            </ul>
-            <table class="table-striped col-sm-12">
-                <tr>
-                    <td class="col-sm-4"><label>归属部门代码</label></td>
-                    <td class="col-sm-8">
-                        <input type="text" class="form-control" id="DepCode" disabled />
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-sm-4"><label>归属部门名称</label></td>
-                    <td class="col-sm-8">
-                        <input type="text" class="form-control" id="Name" disabled />
-                        <input type="hidden" id="CostCenterID" />
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <button class="btn btn-primary" id="SaveCostCenter">保存</button>
-                    </td>
-                </tr>
+    <div class="BaseData_RightDiv">
+        <div class="BaseData_Right_ToolbarDiv">
+            <table style="margin-left:20px;">
+                @if (DeptID == 4)
+                {
+                    <tr>
+                        <td>
+                            <button class="btn btn-success" id="NewCostCenter"><span class="glyphicon glyphicon-plus"></span> 新建</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" id="DeleteCostCenter"><span class="glyphicon glyphicon-trash"></span> 删除</button>
+                        </td>
+                    </tr>
+                }
+                
             </table>
         </div>
-    }
+        <div class="BaseData_Right_TableDiv">
+            <div class="BaseData_Right_FormDiv">
+                <table class="table table-striped" style="text-align:center;vertical-align:central;">
+                    <colgroup><col width="20%" /><col width="80%" /></colgroup>
+                    <tr>
+                        <td><label>归属部门代码</label></td>
+                        <td>
+                            <input type="text" class="form-control" id="DepCode" disabled />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>归属部门名称</label></td>
+                        <td>
+                            <input type="text" class="form-control" id="Name" disabled />
+                            <input type="hidden" id="CostCenterID" />
+                        </td>
+                    </tr>
+                    @if (DeptID == 4)
+                    {
+                        <tr>
+                            <td colspan="2"><button id="SaveCostCenter" class="btn btn-primary" style="float:right;"><span class="glyphicon glyphicon-pencil"></span> 保存</button></td>
+                        </tr>
+                    }
+                    
+                </table>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <script>
@@ -133,7 +162,11 @@
                         type: "Post",
                         url: _url,
                         success: function (msg) {
-                            alert("保存完成")
+                            //alert("保存完成")
+                            $("#Name").attr('disabled', 'disabled');
+                            $("#Name").val("");
+                            $("#DepCode").attr('disabled', 'disabled');
+                            $("#DepCode").val("");
                             LoadCostCenters("");
                         }
                     })
@@ -153,7 +186,11 @@
                     type: "Get",
                     url: _url,
                     success: function () {
-                        alert("删除成功");
+                        //alert("删除成功");
+                        $("#Name").attr('disabled', 'disabled');
+                        $("#Name").val("");
+                        $("#DepCode").attr('disabled', 'disabled');
+                        $("#DepCode").val("");
                         LoadCostCenters("");
                     }
                 })

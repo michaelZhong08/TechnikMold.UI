@@ -9,21 +9,26 @@ namespace MoldManager.WebUI.Models.ViewModel
     public class POViewModel
     {
         public IEnumerable<POContent> POContents;
-        public User PuUser;
         public PurchaseOrder PurchaseOrder;
         public Supplier Supplier;
         public Contact Contact;
+        public string Buyer, Chker, Approval;
+        public User PuUser;
         public POViewModel(IEnumerable<POContent> Contents, 
             PurchaseOrder Order, 
-            User Responisble, 
             Supplier POSupplier, 
-            Contact POContact)
+            Contact POContact,
+            User puUser,
+            string buyer,string chker,string approval)
         {
             POContents = Contents;
             PurchaseOrder = Order;
-            PuUser = Responisble;
             Supplier = POSupplier;
             Contact = POContact;
+            Buyer = buyer;
+            Chker = chker;
+            Approval = approval;
+            PuUser = puUser;
         }
     }
 }

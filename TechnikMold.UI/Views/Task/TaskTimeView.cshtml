@@ -14,10 +14,7 @@
         depID = 0;
     }
 }
-@section Header{
-    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
-    <script src="~/Scripts/bootstrap-switch.js"></script>
-}
+
 <style>
     #TaskTimeGrid td {
         margin: 0px !important;
@@ -41,16 +38,23 @@
         margin: 0px !important;
         width: 20px;
         height: 20px;
-        /*display: block !important;*/
     }
 
     .td_cb{
         padding-left:10px!important;
     }
 </style>
+<style>
+    .td_cb{
+        border:1px solid rgba(0,0,0,0.2);
+        box-shadow:rgba(0,0,0,0.1) 0px 0px 1px 1px;
+    }
+    
+</style>
 
 <script src="~/Scripts/Task.js"></script>
 
+<h2 style="margin-top:60px;">预估工时</h2>
 <div class="FatherDiv">
     <div class="LeftDiv">
         <button class="btn btn-primary  LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
@@ -61,20 +65,14 @@
         <div class="RightDiv_TopDiv">
             <table>
                 <tr>
-                    <td><input type="text" class="col-sm-1 form-control" id="TaskKeyword" placeholder="任务名关键字" /></td>
-                    <td><button class="btn btn-primary" id="QueryTask">查询</button></td>
-
-                    <td style="font-weight:bold;">预估工时</td>
+                    <td style="font-weight:bold;">预估工时：</td>
                     <td>
-                        <div class="switch">
+                        <div class="switch" >
                             <input id="TaskTimeState" type="hidden" value="true"/>
                             <input id="TaskTimeSwitch" type="checkbox" data-on-color="primary" data-off-color="warning" />
                         </div>
                     </td>
-
-                    <td style="font-weight:bold;">
-                        设置优先级
-                    </td>
+                    <td style="font-weight:bold">优先级：</td>
                     <td>
                         <select class="form-control" id="Sel_priority">
                             <option value="0">-</option>
@@ -91,7 +89,10 @@
                     <td class="td_cb" id="td_task_3" hidden><input class="tdchkBox" type="checkbox" id="task_3" /> 线切割</td>
                     <td class="td_cb" id="td_task_4" hidden><input class="tdchkBox" type="checkbox" id="task_4" /> 铣铁</td>
                     <td class="td_cb" id="td_task_6" hidden><input class="tdchkBox" type="checkbox" id="task_6" /> 铣磨</td>
-                    
+
+                    <td><input type="text" class="col-sm-1 form-control" id="TaskKeyword" placeholder="任务名关键字" /></td>
+                    <td><button class="btn btn-info" id="QueryTask"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+
                     @if (ViewBag.DepList == depID)
                     {
                         <td><input id="SaveTaskTime" type="button" class="btn btn-success" value="调整预估工时" /></td>
@@ -251,8 +252,7 @@
         });
 
         $('#TaskTimeSwitch').bootstrapSwitch({
-            size: 'normal',
-            //state: false,
+            size: 'normal',//normal
             onText: '有',
             offText: '无',
             onSwitchChange: function (event, state) { switchChange(event, state) },

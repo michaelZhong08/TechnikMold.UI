@@ -186,14 +186,16 @@
     $("#AssignSupplier").on("click", function () {
         if (Number($("#TotalPrice").val()) > 0 || Number($("#TotalPriceWT").val())>0) {
             $("#SupplierName").val($("#AssignedSupplier option:selected").text());
-            console.log($("#TotalPrice").val());
+            //console.log($("#TotalPrice").val());
             $("#Total").val($("#TotalPrice").val());
-            console.log($("#TotalPriceWT").val());
+            //console.log($("#TotalPriceWT").val());
             $("#TotalWT").val($("#TotalPriceWT").val());
             $("#AssignSupplierDialog").modal("show");
             $("#SupplierID").val($("#AssignedSupplier option:selected").val());
         } else {
             alert("该供应商尚未报价");
+            var qrID = $('#QuotationRequestID').val();
+            redirectTo_QuotationInput(qrID);
         }
     })
 
@@ -481,13 +483,8 @@
     })
 
     $("#QuotationInput").on("click", function () {
-        $.get("/Purchase/Service_QR_GetQRSuppliers?quotationID=" + $('#QuotationRequestID').val(), function (msg) {
-            if (msg.length > 0) {
-                location.href = "/Purchase/QuotationInput?QuotationRequestID=" + $("#QuotationRequestID").val();
-            } else {
-                alert('请选择包含有供应商的报价组！');
-            }
-        });       
+        var qrID = $('#QuotationRequestID').val();
+        redirectTo_QuotationInput(qrID);
     })
     $("#RestartQR").on("click", function () {
         if (confirm("确定要重新询价？")) {
@@ -586,7 +583,16 @@
         LoadMoldNumbers($("#MoldKeyword").val())
     })
 });
-
+//
+function redirectTo_QuotationInput(qrID) {
+    $.get("/Purchase/Service_QR_GetQRSuppliers?quotationID=" + qrID, function (msg) {
+        if (msg.length > 0) {
+            location.href = "/Purchase/QuotationInput?QuotationRequestID=" + qrID;
+        } else {
+            alert('数据异常：该报价组不包含任何供应商！');
+        }
+    });
+}
 ///同步且获取没有erp料号的零件
 function GetERPID() {
     var rowData = $("#PRContentGrid").jqGrid("getRowData");
@@ -1807,7 +1813,7 @@ function LoadSupplierNames(QuotationRequestID) {
                 $('#QREmail').remove();               
             }
             var _qrID = $('#QuotationRequestID').val();
-            var _html = '<a id="QREmail" class="btn btn-primary" href="' + FormatHrefStr(_fval) + '" onclick="ShowDialog()" ><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>';//href=MoldSysPlugin:'+res+_qrID +'
+            var _html = '<a id="QREmail" class="btn btn-info" href="' + FormatHrefStr(_fval) + '" onclick="ShowDialog()" ><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>';//href=MoldSysPlugin:'+res+_qrID +'
             $('#td_GenerateLink').append(_html);
         }
     })
@@ -1932,7 +1938,7 @@ function ReviewPO() {
         url: "/Purchase/ReviewPO?PurchaseOrderID=" + _id + "&ResponseType=" + $("#ReviewResponse").val() + "&Memo=" + _memo,
         success: function (msg) {
             if (msg == "") {
-                alert("订单审核完成");
+                //alert("订单审核完成");
                 location.href = "/Purchase/PurchaseOrderList";
             } else {
                 alert(msg);
@@ -2374,7 +2380,7 @@ function SupplierListImport(_suplistID,isWF) {
 }
 
 //调整采购项计划日期
-function PurItenChangePlan(purItemID, planDate) {
+function PurItemChangePlan(purItemID, planDate) {
     console.log(purItemID);
     console.log(planDate);
     if (Number(purItemID) > 0) {
@@ -2399,21 +2405,6 @@ function BindRowAction(id, iCol) {
     $("#" + id + "_Time").on("keyup", function () {
         UpdateTotal(id);
     })
-    //focus
-    //$("#" + id + "_Quantity").on("focus", function () {
-    //    $("#ActiveCol").val(4);
-    //    //$("#" + id + "_Quantity").attr("type", "number");
-    //})
-
-    //$("#" + id + "_UnitPrice").on("focus", function () {
-    //    $("#ActiveCol").val(5);
-    //    //$("#" + id + "_UnitPriceWT").attr("type", "number");
-    //})
-
-    //$("#" + id + "_UnitPriceWT").on("focus", function () {
-    //    $("#ActiveCol").val(6);
-    //    //$("#" + id + "_UnitPriceWT").attr("type", "number");
-    //})
 
     //UpdateUnit
     $("#" + id + "_TotalPriceWT").on("keyup", function () {
@@ -2423,33 +2414,43 @@ function BindRowAction(id, iCol) {
     $("#" + id + "_TotalPrice").on("keyup", function () {
         UpdateUnitByTotal(id);
     })
-    //$("#" + id + "_TotalPriceWT").on("focus", function () {
-    //    $("#ActiveCol").val(7);
-    //    //$("#" + id + "_TotalPriceWT").attr("type", "number");
-    //})
-
     
-    //if (iCol == undefined) {
-    //    iCol = Number($("#ActiveCol").val());
-    //}
-
-    //switch (iCol) {
-    //    case 4:
-    //        _inputID = "#" + id + "_Quantity";
-    //        break;
-    //    case 5:
-    //        _inputID = "#" + id + "_UnitPriceWT";
-    //        break;
-    //    case 6:
-    //        _inputID = "#" + id + "_TotalPriceWT";
-    //        break;
-    //    default:
-    //        _inputID = "#" + id + "_Quantity";
-    //        break;
-    //}
-
-    //setTimeout("$(_inputID).focus()", 1);
+    //
+    switch (iCol) {
+        case 5:
+            _inputID = "#" + id + "_Quantity";
+            break;
+        case 7:
+            _inputID = "#" + id + "_UnitPrice";
+            break;
+        case 8:
+            _inputID = "#" + id + "_TotalPrice";
+            break;
+        case 9:
+            _inputID = "#" + id + "_UnitPriceWT";
+            break;
+        case 10:
+            _inputID = "#" + id + "_TotalPriceWT";
+            break;
+        case 11:
+            _inputID = "#" + id + "_RequestTime";
+            break;
+        case 12:
+            _inputID = "#" + id + "_Memo";
+            break;
+        //default:
+        //    _inputID = "#" + id + "_Quantity";
+        //    break;
+    }
+    var fn = '$("' + _inputID + '").focus()';
+    setTimeout(fn, 1);
     //$(_inputID).select();
+    $(_inputID).on('keydown', function (e) {
+        if (e.keyCode == '13') {
+            POContentEnterEvt(this,id, iCol);
+            //alert('你输入的内容为：' + $('#dataInput').val());
+        }
+    });
 }
 
 //更新含税单价
@@ -2493,6 +2494,7 @@ function UpdateUnitByTotalWT(id) {
 
     $("#" + id + "_TotalPrice").val((Number($("#" + id + "_TotalPriceWT").val()) / (1 + Number(_taxRate) / 100)).toFixed(2));
 }
+//更新未税单价
 function UpdateUnitByTotal(id) {
     //console.log('更新单价：');
     //console.log('总价:'+$("#" + id + "_TotalPriceWT").val());
@@ -2504,4 +2506,44 @@ function UpdateUnitByTotal(id) {
     $("#" + id + "_UnitPrice").val(((Number($("#" + id + "_TotalPrice").val()) / Number($("#" + id + "_Quantity").val()) / Number($("#" + id + "_Time").val()))).toFixed(2));
 
     $("#" + id + "_TotalPriceWT").val((Number($("#" + id + "_TotalPrice").val()) * (1 + Number(_taxRate) / 100)).toFixed(2));
+}
+
+//采购订单明细行 回车事件
+function POContentEnterEvt(thisInpt,rowid, iCol) {
+    //console.log(rowid);
+    //console.log(iCol);
+    //行保存
+    for (i = 1; i <= $("#POContentGrid").jqGrid("getDataIDs").length ; i++) {
+        $('#POContentGrid').jqGrid('saveRow', i);
+    }
+    //更新单据数据 总价
+    var _total = 0;
+    var _totalwt = 0;
+    for (i = 0; i < $("#POContentGrid").jqGrid("getDataIDs").length ; i++) {
+        var rowData = $('#POContentGrid').jqGrid('getRowData', $("#POContentGrid").jqGrid("getDataIDs")[i]);
+        _total = Number(Number(_total) + Number(rowData.TotalPrice)).toFixed(2);
+        _totalwt = Number(Number(_totalwt) + Number(rowData.TotalPriceWT)).toFixed(2);
+    }
+    $('#TotalPrice').val(_total);
+    $('#TotalPriceWT').val(_totalwt);
+
+    var rowNums = $('#POContentGrid').jqGrid('getGridParam', 'records');
+
+    //下一行状态为 可编辑
+    rowid = Number(rowid);
+    var id = thisInpt.id;//1_Quantity
+    //console.log(id);
+    if (rowid < rowNums) {
+        var nextRowid = rowid + 1;
+        var nextInptid = String(nextRowid) + '_' + id.split('_')[1];
+        $('#POContentGrid').jqGrid('editRow', nextRowid, true);
+        BindRowAction(nextRowid, iCol);
+        if (nextInptid != undefined) {
+            if (iCol != 11 && iCol != 12) {
+                $(nextInptid).val('');
+            }
+            var fn = '$("' + nextInptid + '").focus()';
+            setTimeout(fn, 1);
+        }
+    }
 }

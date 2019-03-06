@@ -36,11 +36,11 @@
                         <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;" />
                     </td>
                     <td style="width:400px!important;">
-                        <button class="btn btn-primary" id="Query">查询</button>
+                        <button class="btn btn-info" id="Query"><span class="glyphicon glyphicon-search"></span> 查询</button>
                         @if ((ViewBag.State == 30) && (DeptID == 4))
                         {
-                            <button class="btn btn-primary" id="Quotation">开始询价</button>
-                            <button class="btn btn-primary" id="PruchaseOrder">创建订单</button>
+                            <button class="btn btn-info" id="Quotation"><span class="glyphicon glyphicon-earphone"></span> 开始询价</button>
+                            <button class="btn btn-success" id="PruchaseOrder" disabled><span class="glyphicon glyphicon-plus"></span> 创建订单</button>
                         }
                     </td>
                 </tr>

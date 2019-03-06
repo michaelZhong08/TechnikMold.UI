@@ -6,6 +6,7 @@ using TechnikSys.MoldManager.Domain.Entity;
 using TechnikSys.MoldManager.Domain.Output;
 using MoldManager.QC.Common;
 using Newtonsoft.Json;
+using TechnikSys.MoldManager.Domain.ViewModel;
 
 namespace MoldManager.QC.QCCheck
 {
@@ -48,13 +49,13 @@ namespace MoldManager.QC.QCCheck
         /// </summary>
         /// <param name="Keyword">查询关键字， 不带*号</param>
         /// <returns>QC任务集合</returns>
-        public List<QCTask> QueryQCTask(string MoldNumber, string Keyword, string State)
+        public List<EleQcTaskModel> QueryQCTask(string MoldNumber, string Keyword, string State)
         {
             string _url = "/Task/GetQCTasks?MoldNumber=" + MoldNumber + "&TaskType=2&Keyword=" + Keyword + "&State=" + State;
-            List<QCTask> _qcTasks = JsonConvert.DeserializeObject<List<QCTask>>(_server.ReceiveStream(_url));
-            foreach (QCTask _task in _qcTasks)
+            List<EleQcTaskModel> _qcTasks = JsonConvert.DeserializeObject<List<EleQcTaskModel>>(_server.ReceiveStream(_url));
+            foreach (EleQcTaskModel _task in _qcTasks)
             {
-                _task.FinishTime = _task.FinishTime.AddHours(8);
+                _task.QcTask.FinishTime = _task.QcTask.FinishTime.AddHours(8);
             }
             return _qcTasks;
         }
@@ -65,10 +66,10 @@ namespace MoldManager.QC.QCCheck
         /// </summary>
         /// <param name="Keyword">关键字</param>
         /// <returns></returns>
-        public List<QCTask> QueryEleQCTask(string MoldNumber, string Keyword, string State)
+        public List<EleQcTaskModel> QueryEleQCTask(string MoldNumber, string Keyword, string State)
         {
             string _url = "/Task/GetQCTasks?MoldNumber=" + MoldNumber + "&TaskType=1&Keyword=" + Keyword + "&State=" + State;
-            List<QCTask> _qcTasks = JsonConvert.DeserializeObject<List<QCTask>>(_server.ReceiveStream(_url));
+            List<EleQcTaskModel> _qcTasks = JsonConvert.DeserializeObject<List<EleQcTaskModel>>(_server.ReceiveStream(_url));
             return _qcTasks;
         }
 
@@ -471,7 +472,7 @@ namespace MoldManager.QC.QCCheck
         public string GetRaw(string ELE_IndexCode)
         {
             string _url = "/Task/GetEleTaskRaw?ELE_IndexCode="+ ELE_IndexCode;
-            return JsonConvert.DeserializeObject<string>(_server.ReceiveStream(_url));
+            return (_server.ReceiveStream(_url).ToString());
         }
     }
 }

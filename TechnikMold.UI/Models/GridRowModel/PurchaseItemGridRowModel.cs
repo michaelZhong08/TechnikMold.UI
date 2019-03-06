@@ -18,9 +18,10 @@ namespace MoldManager.WebUI.Models.GridRowModel
             string PurchaseType,
             string RequestUser,
             string htmlTitle,
-            string pocreateDate)
+            string pocreateDate,
+            string prcreDate)
         {
-            cell = new string[27];
+            cell = new string[28];
 
             cell[0] = PurchaseItem.PurchaseItemID.ToString();
             cell[1] = PurchaseItem.Name;
@@ -32,7 +33,8 @@ namespace MoldManager.WebUI.Models.GridRowModel
 
             if (PurchaseItem.PurchaseRequestID > 0)
             {
-                cell[7] = "<a href='/Purchase/PRDetail?PurchaseRequestID=" + PurchaseItem.PurchaseRequestID + "'>"+PRNO+"</a>";
+                //cell[7] = "<a href='/Purchase/PRDetail?PurchaseRequestID=" + PurchaseItem.PurchaseRequestID + "'>"+PRNO+"</a>";
+                cell[7] = "<a onclick=\"windowOpen('/Purchase/PRDetail?PurchaseRequestID=" + PurchaseItem.PurchaseRequestID + "')\">" + PRNO + "</a>";
             }
             else
             {
@@ -40,7 +42,8 @@ namespace MoldManager.WebUI.Models.GridRowModel
             }
             if (PurchaseItem.QuotationRequestID > 0)
             {
-                cell[8] = "<a href='/Purchase/QRDetail?QuotationRequestID=" + PurchaseItem.QuotationRequestID + "'>"+QRNO+"</a>";
+                //cell[8] = "<a href='/Purchase/QRDetail?QuotationRequestID=" + PurchaseItem.QuotationRequestID + "'>"+QRNO+"</a>";
+                cell[8] = "<a onclick=\"windowOpen('/Purchase/QRDetail?QuotationRequestID=" + PurchaseItem.QuotationRequestID + "')\">" + QRNO + "</a>";
             }
             else
             {
@@ -49,7 +52,8 @@ namespace MoldManager.WebUI.Models.GridRowModel
 
             if (PurchaseItem.PurchaseOrderID > 0)
             {
-                cell[9] = "<a href='/Purchase/PODetail?PurchaseOrderID=" + PurchaseItem.PurchaseOrderID + "'>"+PONO+"</a>";
+                //cell[9] = "<a href='/Purchase/PODetail?PurchaseOrderID=" + PurchaseItem.PurchaseOrderID + "'>"+PONO+"</a>";
+                cell[9] = "<a onclick=\"windowOpen('/Purchase/PODetail?PurchaseOrderID=" + PurchaseItem.PurchaseOrderID + "')\">" + PONO + "</a>";
             }
             else
             {
@@ -69,13 +73,14 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[18] = PurchaseItem.PlanTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanTime.ToString("yyyy-MM-dd");
             cell[19] = "<label class='Lab_PlanAJDate' title='"+htmlTitle+"'>" +(PurchaseItem.PlanAJTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.PlanAJTime.ToString("yyyy-MM-dd"))+"</label>";
 
-            cell[20] = pocreateDate;
-            cell[21] = RequestUser;
-            cell[22] = PurchaseItem.DeliveryTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.DeliveryTime.ToString("yyyy-MM-dd");
-            cell[23] = PurchaseItem.InStockQty.ToString();
-            cell[24] = PurchaseItem.UnitPriceWT.ToString();
-            cell[25] = PurchaseItem.Memo;
-            cell[26] = PurchaseItem.PurchaseType.ToString();
+            cell[20] = prcreDate;
+            cell[21] = pocreateDate;
+            cell[22] = RequestUser;
+            cell[23] = PurchaseItem.DeliveryTime == new DateTime(1900, 1, 1) ? "-" : PurchaseItem.DeliveryTime.ToString("yyyy-MM-dd");
+            cell[24] = PurchaseItem.InStockQty.ToString();
+            cell[25] = PurchaseItem.UnitPriceWT.ToString();
+            cell[26] = PurchaseItem.Memo;
+            cell[27] = PurchaseItem.PurchaseType.ToString();
         }
     }
 }

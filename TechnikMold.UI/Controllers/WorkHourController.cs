@@ -315,6 +315,7 @@ namespace TechnikMold.UI.Controllers
         }
 
         #endregion
+
         #region 其它功能
         public JsonResult Service_WH_GetWorkType()
         {

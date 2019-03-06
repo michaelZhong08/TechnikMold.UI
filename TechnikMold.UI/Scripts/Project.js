@@ -97,7 +97,12 @@ $(document).ready(function () {
     
 
     $("#SaveMemo").on("click", function () {
-        $("#MemoEdit").submit();
+        var formSerilize=$('#MemoEdit').serialize();
+        $.post('/Project/Memo', formSerilize, function () {
+            $('#ProjectMemo').modal('hide');
+            ReloadProJGrid();
+        });
+        //$("#MemoEdit").submit();
     });
 
 
@@ -117,7 +122,8 @@ $(document).ready(function () {
     })
 
     $("#ProjectSearchBtn").on("click", function () {
-        var _url = '/Project/JsonProjects?keyword=' + $("#keyword").val() + "&state=" + $("#state").val() + "&type=" + $("#Type").val();
+        //var _url = '/Project/JsonProjects?keyword=' + $("#keyword").val()+ "&state=" + $("#state").val() + "&type=" + $("#Type").val() + '&DepID=' + $('#DepID').val() + '&isDepFinish=' + $('#ProjectState').val();
+        var _url = '/Project/SERVICE_JSONTMPL_Projects?keyword=' + $("#keyword").val() + "&type=" + $("#Type").val() + '&DepID=' + $('#DepID').val() + '&isDepFinish=' + $('#ProjectState').val();
         $('#ProjectGrid').jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger('reloadGrid');
     })
 
@@ -383,7 +389,7 @@ function FinishPhaseModify() {
                 case "0":
                     alert("项目" + name + "阶段结束");
                     $("#FinishPhaseDialog").modal("hide");
-                    $("#ProjectGrid").jqGrid().trigger("reloadGrid");
+                    //$("#ProjectGrid").jqGrid().trigger("reloadGrid");
                     break;
                 case "1":
                     alert("项目阶段结束出现错误，请稍后重试");
@@ -525,56 +531,29 @@ function PauseProject() {
                 alert("项目暂停完成");
             }
             $("#PauseProjectDialog").modal("hide");
-            $("#ProjectGrid").jqGrid().trigger("reloadGrid");
+            //$("#ProjectGrid").jqGrid().trigger("reloadGrid");
+            ReloadProJGrid();
             $("#PauseMemo").val("")
         }
 
     })
 }
-
-
 function DeleteProject() {
     var _data;
     _data = "ProjectID=" + $("#DeleteProjectID").val() + "&Memo=" + $("#DeleteMemo").val();
-    //$.ajax({
-    //    dataType: "html",
-    //    url: "/Project/SubProjectCount?ProjectID=" + $("#DeleteProjectID").val(),
-    //    error: function () { },
-    //    success: function (msg) {
-    //        if (msg == 0) {
-    //            $.ajax({
-    //                dataType: "html",
-    //                url: "/Project/DeleteProject?" + _data,
-    //                error: function () { },
-    //                success: function (msg) {
-    //                    if (msg == 1) {
-    //                        alert("项目已删除");
-    //                        $("#DeleteProjectDialog").modal("hide");
-    //                        $("#ProjectGrid").jqGrid().trigger("reloadGrid");
-    //                        $("#DeleteMemo").val("");
-    //                    } else {
-    //                        alert("仅管理部门和项目创建者可以删除项目！");
-    //                    }
-    //                }
-    //            })
-    //        } else {
-    //            alert("主项目下还有(新/修)模具项目，无法删除。请先删除全部子项目");
-    //        }
-    //    }
-    //})
     $.ajax({
         dataType: "html",
         url: "/Project/DeleteProject?" + _data,
         success: function (msg) {
-            if (msg == 1) {
-                alert("项目已删除");
+            if (msg == '') {
+                //alert("项目已删除");
                 $("#DeleteProjectDialog").modal("hide");
-                $("#ProjectGrid").jqGrid().trigger("reloadGrid");
+                ReloadProJGrid();
+                //$("#ProjectGrid").jqGrid().trigger("reloadGrid");
+                $("#DeleteProjectID").val('0');
                 $("#DeleteMemo").val("");
-            } else if (msg == -99) {
-                alert("仅管理部门和项目创建者可以删除项目！");
-            } else if (msg == -100) {
-                alert("项目下还有(新/修)模具项目，无法删除。请先删除全部子项目");
+            } else {
+                alert(msg);
             }
         }
     })

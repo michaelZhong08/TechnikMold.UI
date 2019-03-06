@@ -1,7 +1,4 @@
 ﻿$("document").ready(function () {
-    $("#QueryUser").on("click", function () {
-        ShowQuery();
-    })
 
     $("#QueryUserBtn").on("click", function () {
         location.href = "/User/Index?Keyword=" + $("#UserKeyword").val();

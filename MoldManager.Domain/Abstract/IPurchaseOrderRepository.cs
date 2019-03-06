@@ -21,6 +21,6 @@ namespace TechnikSys.MoldManager.Domain.Abstract
 
         void PartialClosePO(int PurchaseOrderID);
 
-        void Submit(int PurchaseOrderID, int State, string Memo="");
+        void Submit(int PurchaseOrderID, int State, string Memo="",int approval=0);
     }
 }

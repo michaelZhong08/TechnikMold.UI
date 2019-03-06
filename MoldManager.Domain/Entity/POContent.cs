@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +35,8 @@ namespace TechnikSys.MoldManager.Domain.Entity
         public int PurchaseItemID { get; set; }
         public DateTime RequireTime { get; set; }
         public string unit { get; set; }
-
+        [NotMapped]
+        public string PRNumber { get; set; }
 
         public POContent()
         {

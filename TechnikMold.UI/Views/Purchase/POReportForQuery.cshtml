@@ -27,13 +27,19 @@
         <div class="RightDiv_TopDiv">
             <table>
                 <tr>
+                    <td style="font-weight:bold;">
+                        预警：
+                    </td>
                     <td>
+                        <input type="checkbox" id="planDateDelayStatus" style="width:30px;height:30px;margin-right:10px;"/>
+                    </td>
+                    <td style="font-weight:bold;">
                         创建时间(.从)
                     </td>
                     <td style="width:200px">
                         <input id="dateFr" type="date" class="form-control" />
                     </td>
-                    <td>
+                    <td style="font-weight:bold;">
                         创建时间(.到)
                     </td>
                     <td style="width:200px">
@@ -87,18 +93,28 @@
         $("#MoldSelect").on("change", function () {
             $('#ItemKeyword').val('');
             $("#MoldNumber").val($("#MoldSelect option:selected").val());
-            //QueryPurchaseitem("", $("#MoldNumber").val(),'','');
-            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val(),String($('#dateFr').val()),String($('#dateTo').val()));
+            var checked=$('#planDateDelayStatus')[0].checked;
+            //console.log(checked);
+            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val(),String($('#dateFr').val()),String($('#dateTo').val()),checked);
         });
 
         $("#Query").on("click", function () {
-            console.log($('#dateFr').val());
-            console.log($('#dateTo').val());
-            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val(),String($('#dateFr').val()),String($('#dateTo').val()));
+            //console.log($('#dateFr').val());
+            //console.log($('#dateTo').val());
+            var checked=$('#planDateDelayStatus')[0].checked;
+            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val(),String($('#dateFr').val()),String($('#dateTo').val()),checked);
         });
 
         $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
 
+        $('#planDateDelayStatus').on('change',function(){
+            var checked=this.checked;
+            //console.log(checked);
+            QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val(),String($('#dateFr').val()),String($('#dateTo').val()),checked);
+            //if(checked){
+                
+            //}
+        })
     })
 
     function LoadMoldNumber(Keyword) {
@@ -146,16 +162,15 @@
                     @:$("#PurchaseItemGrid").setGridParam().showHideCol("DeliveryDate");
                 }
 
-        $("#PurchaseItemGrid").setGridParam().showHideCol("CreateDate");
         $("#PurchaseItemGrid").setGridParam().showHideCol("UnitPrice");
         $("#PurchaseItemGrid").setGridParam().showHideCol("TotalPrice");
         $("#PurchaseItemGrid").setGridParam().showHideCol("TotalPriceWT");
         $("#PurchaseItemGrid").setGridParam().showHideCol("UnitPriceWT");
-        $("#PurchaseItemGrid").setGridParam().showHideCol("CreateDate");
     }
 </script>
 <script>
     $(function(){
+        //调整计划到货日期记录表
         PlanChangeRecordGrid();
 
         @if (ViewBag.State == 10)
@@ -165,10 +180,10 @@
 
     })
 
-    function QueryPurchaseitem(Keyword, MoldNumber,dateFr,dateTo) {
+    function QueryPurchaseitem(Keyword, MoldNumber,dateFr,dateTo,isDelay) {
         var _condition='';
         var _url = "/Purchase/Service_Json_PORepotForQuery?MoldNumber=" + $("#MoldNumber").val()
-            + "&Keyword=" + Keyword;
+            + "&Keyword=" + Keyword+'&isDelay='+String(isDelay);
 
         if(dateFr!=''){
             _condition=_condition+'&dateFr='+dateFr;

@@ -10,6 +10,7 @@ using System.Text;
 using MoldManager.WebUI.Models.EditModel;
 using System.Data.SqlClient;
 using System.Configuration;
+using Common;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -108,7 +109,7 @@ namespace MoldManager.WebUI.Controllers
                 _displayName = Request.Cookies["User"]["FullName"]
                     +"("+Request.Cookies["User"]["DepartmentName"]
                     +"-"+Request.Cookies["User"]["PositionName"]+")";
-            }    
+            }
             return HttpUtility.UrlDecode(_displayName, Encoding.GetEncoding("UTF-8"));
         }
 
@@ -295,7 +296,7 @@ namespace MoldManager.WebUI.Controllers
                     DisplayName = DisplayName + "(默认)";
                 }
 
-                _viewModel.Add( new UserRoleEditModel(_role.UserRoleID, DisplayName));
+                _viewModel.Add( new UserRoleEditModel(_role.UserRoleID,_role.DepartmentID,_role.PositionID, DisplayName));
             }
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
@@ -363,16 +364,18 @@ namespace MoldManager.WebUI.Controllers
 
         public void ReloadCookie(int UserRoleID)
         {
-            HttpCookie _cookie = new HttpCookie("User");
-            _cookie.Expires = DateTime.Now.AddDays(-1);
-            Response.Cookies.Add(_cookie);
+            //HttpCookie _cookie = new HttpCookie("User");
+            //_cookie.Expires = DateTime.Now.AddDays(-1);
+            //Response.Cookies.Add(_cookie);
+            //删除Cookie
+            CookieOpera.delCookie("User");
 
             UserRole _userRole = _userRoleRepository.QueryByID(UserRoleID);
             string _user = _userRepository.GetUserByID(_userRole.UserID).FullName;
             string _department = _departmentRepository.GetByID(_userRole.DepartmentID).Name;
             string _position = _posRepository.QueryByID(_userRole.PositionID).Name;
 
-            _cookie = new HttpCookie("User");
+            HttpCookie _cookie = new HttpCookie("User");
             _cookie.Values.Add("UserID", _userRole.UserID.ToString());
             _cookie.Values.Add("FullName", HttpUtility.UrlEncode(_user, Encoding.GetEncoding("UTF-8")));
 

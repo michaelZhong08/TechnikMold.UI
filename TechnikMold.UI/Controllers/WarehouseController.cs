@@ -1391,15 +1391,15 @@ namespace MoldManager.WebUI.Controllers
             _request.State = (int)ReturnRequestStatus.待审批;
             _returnRequestRepository.Save(_request);
 
-            IEnumerable<ReturnItem> _items = _returnItemRepository.QueryByRequest(ReturnRequestID);
-            foreach (ReturnItem _item in _items)
-            {
-                //WHStock _stock = _whStockRepository.QueryByID(_item.WarehouseItemID);
-                //_stock.Quantity = _stock.Quantity - _item.Quantity;
-                //_stock.InStockQty = _stock.InStockQty - _item.Quantity;
-                //_warehouseStockRepository.Save(_stock);
-                _whStockRepository.StockReturn(_item.WarehouseItemID, _item.Quantity);
-            }
+            //IEnumerable<ReturnItem> _items = _returnItemRepository.QueryByRequest(ReturnRequestID);
+            //foreach (ReturnItem _item in _items)
+            //{
+            //    WHStock _stock = _whStockRepository.QueryByID(_item.WarehouseItemID);
+            //    _stock.Quantity = _stock.Quantity - _item.Quantity;
+            //    _stock.InStockQty = _stock.InStockQty - _item.Quantity;
+            //    _warehouseStockRepository.Save(_stock);
+            //    _whStockRepository.StockReturn(_item.WarehouseItemID, _item.Quantity);
+            //}
             return "";
         }
 
@@ -1409,7 +1409,16 @@ namespace MoldManager.WebUI.Controllers
             if (Approve)
             {
                 _request.State = (int)ReturnRequestStatus.通过;
-                
+                IEnumerable<ReturnItem> _items = _returnItemRepository.QueryByRequest(ReturnRequestID);
+                //扣减库存
+                foreach (ReturnItem _item in _items)
+                {
+                    PurchaseItem _purchaseItem = _purchaseItemRepository.QueryByID(_item.PurchaseItemID);
+                    _purchaseItem.InStockQty = _purchaseItem.InStockQty - _item.Quantity;
+                    _purchaseItemRepository.Save(_purchaseItem);
+
+                    _whStockRepository.StockIncrease(_item.WarehouseItemID, -_item.Quantity);
+                }
             }
             else
             {
@@ -1419,19 +1428,6 @@ namespace MoldManager.WebUI.Controllers
             _request.ApprovalUserID = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
             _returnRequestRepository.Save(_request);
 
-            if (!Approve)
-            {
-                IEnumerable<ReturnItem> _items = _returnItemRepository.QueryByRequest(ReturnRequestID);
-                foreach (ReturnItem _item in _items)
-                {
-                    //WarehouseStock _stock = _warehouseStockRepository.QueryByID(_item.WarehouseItemID);
-                    //_stock.Quantity = _stock.Quantity + _item.Quantity;
-                    //_stock.InStockQty = _stock.InStockQty + _item.Quantity;
-                    //_warehouseStockRepository.Save(_stock);
-                    _whStockRepository.StockIncrease(_item.WarehouseItemID, _item.Quantity);
-                }
-            }
-            
             return "";
         }
 
@@ -1462,14 +1458,17 @@ namespace MoldManager.WebUI.Controllers
                     foreach (ReturnItem _rrItem in _rrItems)
                     {
                         PurchaseItem _purchaseItem = _purchaseItemRepository.QueryByID(_rrItem.PurchaseItemID);
-                        _purchaseItem.InStockQty = _purchaseItem.InStockQty - _rrItem.Quantity;
+                        _purchaseItem.InStockQty = _purchaseItem.InStockQty + _rrItem.Quantity;
                         _purchaseItemRepository.Save(_purchaseItem);
+
+                        //归还库存
+                        _whStockRepository.StockIncrease(_rrItem.WarehouseItemID, _rrItem.Quantity);
 
                         WarehouseRecord _record = new WarehouseRecord();
 
                         _record.UserID = Convert.ToInt32(Request.Cookies["User"]["UserID"]);
                         _record.Name = _rrItem.Name;
-                        _record.POContentID =0;
+                        _record.POContentID = _rrItem.WarehouseItemID;
                         _record.PurchaseOrderID = _purchaseItem.PurchaseOrderID;
                         _record.RecordType = 3;
                         _record.Quantity = _rrItem.Quantity;

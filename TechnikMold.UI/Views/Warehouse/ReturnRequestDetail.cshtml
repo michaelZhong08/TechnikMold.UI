@@ -32,65 +32,73 @@
         padding: 0px;
     }
 </style>
-<div style="margin-top:60px">
+<div>
+    <input type="hidden" id="Editable" value="true" />
+    <input type="hidden" id="ReturnRequestID" value="@Model.ReturnRequestID" />
+    <input type="hidden" id="PurchaseOrderID" value="@Model.PurchaseOrderID" />
+    <input type="hidden" id="SupplierID" value="@Model.SupplierID" />
+    <input type="hidden" id="SupplierName" value="@Model.SupplierName" />
+</div>
+<div style="margin-top:60px;">
     <h2>退货单 @Model.ReturnRequestNumber</h2>
-    <div class="col-sm-11">
-        <div id="ToolBar">
-            @switch (Model.State)
-            {
-                case (int)ReturnRequestStatus.新建:
-                    if (DeptID==20){
-                        <input type="hidden" id="Editable" value="true" />
-                        <button class="btn btn-primary" id="SaveRequest">保存退货单</button>
-                        if (Model.ReturnRequestID > 0)
+</div>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                @switch (Model.State)
+                {
+                    case (int)ReturnRequestStatus.新建:
+                        if (DeptID == 20)
                         {
-                            <button class="btn btn-primary" id="SubmitRequest">提交退货单</button>
-
-                            @*<button class="btn btn-primary" id="AddContent">添加退货项</button>*@
-
-                            <button class="btn btn-warning" id="DeleteItem">删除退货项</button>
+                            <td><button class="btn btn-success" id="SaveRequest"><span class="glyphicon glyphicon-save"></span> 保存</button></td>
+                            if (Model.ReturnRequestID > 0)
+                            {
+                                <td><button class="btn btn-warning" id="SubmitRequest"><span class="glyphicon glyphicon-lock"></span> 提交</button></td>
+                                <td><button class="btn btn-danger" id="DeleteItem"><span class="glyphicon glyphicon-trash"></span> 删除</button></td>
+                            }
                         }
-                    }
 
-                    break;
-                case (int)ReturnRequestStatus.待审批:
-                    if (DeptID == 4)
-                    {
-                        <button class="btn btn-primary" id="ApproveRequest">审批通过</button>
-                        <button class="btn btn-warning" id="DeclineRequest">审批拒绝</button>
-                    }
+                        break;
+                    case (int)ReturnRequestStatus.待审批:
+                        if (DeptID == 4)
+                        {
+                            <td><button class="btn btn-success" id="ApproveRequest"><span class="glyphicon glyphicon-ok"></span> 通过</button></td>
+                            <td><button class="btn btn-danger" id="DeclineRequest"><span class="glyphicon glyphicon-remove"></span> 拒绝</button></td>
+                        }
 
-                    break;
-                case (int)ReturnRequestStatus.通过:
-                    if (DeptID == 20)
-                    {
-                        <button class="btn btn-primary" id="CloseRequest">关闭退货单</button>
-                    }
+                        break;
+                    case (int)ReturnRequestStatus.通过:
+                        if (DeptID == 20)
+                        {
+                            <td><button class="btn btn-warning" id="CloseRequest"><span class="glyphicon glyphicon-ban-circle"></span> 关闭</button></td>
+                        }
 
-                    break;
-                case (int)ReturnRequestStatus.拒绝:
-                    if (DeptID == 20)
-                    {
-                        <button class="btn btn-primary" id="CloseRequest">关闭退货单</button>
-                        <button class="btn btn-primary" id="RestartRequest">重启退货单</button>
-                    }
-                    break;
-
-            }
-            <input type="hidden" id="ReturnRequestID" value="@Model.ReturnRequestID" />
-            <input type="hidden" id="PurchaseOrderID" value="@Model.PurchaseOrderID" />
-            <input type="hidden" id="SupplierID" value="@Model.SupplierID" />
-            <input type="hidden" id="SupplierName" value="@Model.SupplierName" />
-        </div>
+                        break;
+                    case (int)ReturnRequestStatus.拒绝:
+                        if (DeptID == 20)
+                        {
+                            <td><button class="btn btn-warning" id="CloseRequest"><span class="glyphicon glyphicon-ban-circle"></span> 关闭</button></td>
+                            <td><button class="btn btn-info" id="RestartRequest"><span class="glyphicon glyphicon-retweet"></span> 重启</button></td>
+                        }
+                        break;
+                }
+            </tr>
+        </table>
     </div>
-
-    <div class="col-sm-12" style="float:left;">
+    <div class="UD_TableDiv">
         <table id="ReturnItemGrid"></table>
         <div id="jqGridPager"></div>
     </div>
-    
 </div>
 <script src="~/Scripts/JqGridTemplate.js"></script>
+
+<script>
+    $(document).ready(function(){
+        $('#ReturnItemGrid').setGridWidth($('.UD_TableDiv').eq(0).width());
+        $('#ReturnItemGrid').setGridHeight($('.UD_TableDiv').eq(0).height()-40);
+    })
+</script>
 <script>
     $("document").ready(function () {
         ReturnItemGrid(@Model.ReturnRequestID, "@ViewBag.PurchaseItemIDs");
@@ -219,7 +227,7 @@
                         if (Submit){
                             SubmitRequest();
                         }else{
-                            alert("退货单保存成功");
+                            //alert("退货单保存成功");
                             location.href="/Warehouse/ReturnRequestDetail?ReturnRequestID="+msg;
                         }
                         
@@ -309,7 +317,7 @@
             type:"Get",
             success:function(msg){
                 if (msg==""){
-                    alert("退货单关闭成功")
+                    //alert("退货单关闭成功")
                     location.href="/Warehouse/ReturnRequestList";
                 }
             }

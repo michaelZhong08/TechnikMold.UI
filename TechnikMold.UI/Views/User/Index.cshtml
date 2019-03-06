@@ -15,26 +15,37 @@
 <script src="~/Scripts/Administrator.js"></script>
 <script src="~/Scripts/User.js"></script>
 
-<div style="margin-top:20px">
-    <div class="col-sm-10">
-        <h2 class="page-header">@ViewBag.Title</h2>
-            
+<h2 style="margin-top:60px;">@ViewBag.Title</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
+                    <input type="text" id="UserKeyword" class="form-control" placeholder="用户代码/用户名" style="width:200px;"/>
+                </td>
+                <td>
+                    <button class="btn btn-info" id="QueryUser"><span class="glyphicon glyphicon-search"></span> 查询</button>
+                </td>
+                <td>
+                    <button class="btn btn-success" id="CreateUser"><span class="glyphicon glyphicon-plus"></span> 添加</button>
+                </td>
+                <td>
+                    <button class="btn btn-danger" id="DeleteUser"><span class="glyphicon glyphicon-trash"></span> 删除</button>
+                </td>
+                <td>
+                    <button class="btn btn-primary" id="SetRole"><span class="glyphicon glyphicon-pencil"></span> 设置角色</button>
+                </td>
+                <td>
+                    <button class="btn btn-warning hr" id="UptUserCode"><span class="glyphicon glyphicon-refresh"></span> 同步信息</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
+        <table id="UserGrid"></table>
+    </div>
+</div>
 
-        <div class="col-sm-12">
-            @*@if (_Dept == 1)
-            {*@
-            <ul class="nav nav-pills">
-                <li><button class="btn btn-success" id="CreateUser">创建用户</button></li>
-                <li><button class="btn btn-primary" id="SetRole">设置角色</button></li>
-                <li><button class="btn btn-primary" id="QueryUser">查找用户</button></li>
-                <li><button class="btn btn-danger" id="DeleteUser">删除用户</button></li>
-                <li><button class="btn btn-primary hr" id="UptUserCode">同步用户信息</button></li>
-            </ul>
-            @* } *@
-            <table id="UserGrid"></table>
-        </div>
-    </div>
-    </div>
     @*创建/编辑用户对话框*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="EditUserModal" tabindex="-1" role="dialog" aria-labelledby="EditUserLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -81,7 +92,7 @@
                         </tr>
                         <tr>
                             <td class="col-sm-4"><label>电子邮件地址</label></td>
-                            <td class="col-sm-8"><input type="email" id="Email" maxlength="40" name="Email" class="form-control required" /></td>
+                            <td class="col-sm-8"><input type="email" id="Email" maxlength="40" name="Email" class="form-control" placeholder="xxx@xx.com"/></td>
                         </tr>
                         <tr>
                             <td class="col-sm-4"><label>电话号码</label></td>
@@ -140,7 +151,7 @@
                     <input type="hidden" id="RUserID" />
                     <input type="hidden" id="UserRoleID" />
                     <input type="hidden" id="DefaultRole" />
-                    <select class="form-control" size="10" id="UserRoleList"></select>
+                    <select class="form-control" size="9" id="UserRoleList"></select>
                 </div>
                 <div class="col-sm-8">
                     <table class="table table-striped">
@@ -158,10 +169,11 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <button class="btn btn-primary" id="NewUserRole">新建角色</button>
-                                <button class="btn btn-warning" id="DeleteUserRole">删除角色</button>
-                                <button class="btn btn-primary" id="DefaultUserRole">默认角色</button>
-                                <button class="btn btn-primary" style="float:right" id="SaveRole">保存</button>
+                                <button class="btn btn-success" id="NewUserRole"><span class="glyphicon glyphicon-plus"></span> 添加</button>
+                                <button class="btn btn-danger" id="DeleteUserRole"><span class="glyphicon glyphicon-trash"></span> 删除</button>
+                                <button class="btn btn-primary" id="SaveRole"><span class="glyphicon glyphicon-pencil"></span> 保存</button>
+                                <button class="btn btn-warning" id="DefaultUserRole" style="float:right"><span class="glyphicon glyphicon-user"></span> 默认</button>
+                                
                             </td>
                         </tr>
                     </table>
@@ -329,16 +341,29 @@
 
 <script>
     $(document).ready(function () {
+
+        $(window).resize(function () {
+            $("#UserGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#UserGrid").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+        });
+
         $('#UptUserCode').on('click', function () {
             $.get('/User/Service_Usr_UptUserCodeByProc', function () {
                 alert('同步成功！');
                 LoadUserGrid();
             })
         });
+
+        $("#QueryUser").on("click", function () {
+            //ShowQuery();
+            //var _url = '/User/Users?Keyword=' + $("#UserKeyword").val();
+            //$('#UserGrid').jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger('reloadGrid');
+            LoadUserGrid();
+        })
     })
 
     function LoadUserGrid() {
-        var _url = '/User/Users?Keyword=';
+        var _url = '/User/Users?Keyword=' + $("#UserKeyword").val();
         $('#UserGrid').jqGrid('setGridParam', {datatype:'json',url:_url}).trigger('reloadGrid');
     }
 </script>

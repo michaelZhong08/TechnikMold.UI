@@ -150,12 +150,12 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             string _memoTitle=DateTime.Now.ToString("yyyy-MM-dd")+" "+Memo;
             if (_dbEntry.ProjectStatus == 0)
             {
-                _dbEntry.ProjectStatus = 1;
+                _dbEntry.ProjectStatus = (int)ProjectStatus.暂停;
                 _memoTitle = "项目暂停:<br>"+_memoTitle;
             }
             else
             {
-                _dbEntry.ProjectStatus = 0;
+                _dbEntry.ProjectStatus = (int)ProjectStatus.启动;
                 _memoTitle = "项目重启:<br>"+_memoTitle ;
             }
             if (PauseSubs)

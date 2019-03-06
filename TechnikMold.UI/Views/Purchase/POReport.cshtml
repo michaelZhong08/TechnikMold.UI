@@ -1,6 +1,6 @@
 ﻿
 @{
-    ViewBag.Title = "POReport";
+    ViewBag.Title = "对账记录";
 }
 <style>
     tr:nth-child(even) {
@@ -13,9 +13,9 @@
     <div class="UD_ToolBarDiv">
         <table>
             <tr>
-                <td>开始日期</td>
+                <td style="font-weight:bold;">开始日期(.从)</td>
                 <td><input type="date" id="StartDate" class="form-control" /></td>
-                <td>结束日期</td>
+                <td style="font-weight:bold;">结束日期(.到)</td>
                 <td><input type="date" id="EndDate" class="form-control" /></td>
                 <td><button class="btn btn-info" id="GetReport"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
                 <td><button class="btn btn-primary" id="CatchPDReport"><span class="glyphicon glyphicon-share-alt"></span> 导出</button></td>
@@ -37,7 +37,7 @@
         });
 
         PurchaseOrderReport($("#StartDate").val(), $("#EndDate").val());
-
+        //报表数据源
         $("#GetReport").on("click", function () {
             var startdate = '';
             var enddate = ''
@@ -57,7 +57,7 @@
             _url = _url + "&EndDate=" + enddate;
             $("#POReport").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
         })
-
+        //导出报表
         $('#CatchPDReport').on('click', function () {
             var startdate = '';
             var enddate = ''

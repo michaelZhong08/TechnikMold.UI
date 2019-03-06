@@ -173,8 +173,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public void PlanDateAdjust(int purchaseitemID,DateTime planDate)
         {
             PurchaseItem dbEntry = _context.PurchaseItems.Where(p => p.PurchaseItemID == purchaseitemID && p.State < (int)PurchaseItemStatus.完成).FirstOrDefault();
+            if (dbEntry.PlanAJTime.ToString("yyyy-MM-dd") == "1900-01-01")
+            {
+                dbEntry.Memo = dbEntry.Memo + "\r\n原计划到货日期：" + dbEntry.PlanTime.ToString("yyyy-MM-dd");
+            }
+            dbEntry.PlanTime = planDate;
             dbEntry.PlanAJTime = planDate;
             _context.SaveChanges();
+            
         }
         public void PlanDateAdjustRecordSave(PurItemChangeDateRecord model)
         {

@@ -14,13 +14,13 @@ namespace DAL
     public class WorkHourDal
     {
         static string constr;
+        DataAccess db;
         public WorkHourDal(string conStr)
         {
             constr = conStr;
+            db =new DataAccess(constr, CommandType.StoredProcedure);
         }
-        //= ConfigurationManager.ConnectionStrings["EFDbContext"].ToString();
-        public DataAccess db = new DataAccess(constr, CommandType.StoredProcedure);
-
+        
         #region 人工工时
         public int Save_EmpWHRecords(TaskHoursEmp model)
         {

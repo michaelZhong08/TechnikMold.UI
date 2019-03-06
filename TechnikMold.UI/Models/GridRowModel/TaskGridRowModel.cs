@@ -16,7 +16,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
         public TaskGridRowModel(Task Task, string CAD, string CAM, string Workshop, string QC, string FilePath, string PlanDate, SetupTaskStart _setupTask, CNCMachInfo Machinfo,WEDMSetting wedmsetting,MGSetting mgsetting,string taskType)
         {
             Helpers.TaskStatus _status = new Helpers.TaskStatus();
-            cell = new string[44];
+            cell = new string[45];
             //TaskID
             cell[0] = Task.TaskID.ToString();
             //图纸
@@ -182,6 +182,7 @@ namespace MoldManager.WebUI.Models.GridRowModel
             cell[42] = taskType;
 
             cell[43] = Task.TaskType.ToString();
+            cell[44] = Task.Creator;
         }
 
         public TaskGridRowModel(Task Task, string FilePath, string Creator)

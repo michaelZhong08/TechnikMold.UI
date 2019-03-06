@@ -5,7 +5,7 @@ using System.Web;
 using MoldManager.WebUI.Models.GridRowModel;
 using TechnikSys.MoldManager.Domain.Entity;
 using TechnikSys.MoldManager.Domain.Abstract;
-
+using System.Data;
 
 namespace MoldManager.WebUI.Models.GridViewModel
 {
@@ -20,14 +20,15 @@ namespace MoldManager.WebUI.Models.GridViewModel
             IProjectRoleRepository ProjectRoleRepository,
             IAttachFileInfoRepository AttachFileInfoRepository,
             IProjectRepository ProjectRepository,
-            List<Phase> Phases, 
-            int TotalProjects=0, 
-            int PageNo=1, 
-            int PageCount=30)
+            List<Phase> Phases)
         {
-            page = PageNo;
-            total = TotalProjects / PageCount + 1;
-            records = TotalProjects * 3;
+            //int TotalProjects = 3000;
+            ////int PageNo = 1,
+            //int PageCount = 300;
+            ////page = PageNo;
+            //total = TotalProjects / PageCount + 1;
+            //records = TotalProjects * 3;
+
             rows = new List<ProjectGridRowModel>();
             List<ProjectRole> _role;
             string _flitter;
@@ -55,6 +56,17 @@ namespace MoldManager.WebUI.Models.GridViewModel
                     _mainProJName = _mainProJ.Name;
                 }
                 rows.AddRange(new ProjectGridRowModels(_project, ProjectPhaseRepository.GetProjectPhases(_project.ProjectID), _role, Phases, _attQty, _mainProJName).ProjectRows);
+            }
+        }
+        public ProjectGridViewModel(DataTable dt)
+        {
+            rows = new List<ProjectGridRowModel>();
+            if (dt.Rows.Count > 0)
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    rows.Add(new ProjectGridRowModel(dr));
+                }
             }
         }
     }

@@ -12,20 +12,77 @@
     <link href="/Content/bootstrap.css" rel="stylesheet" />
     <link href="/Content/site.css" rel="stylesheet" />
     <link href="/Content/ui.jqgrid-bootstrap.css" rel="stylesheet" />
+    <style>
+        .UD_FatherDiv {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 30px;
+            bottom: 0px;
+            width: 100%;
+            /*border:1px solid rgba(0,0,0,0.1);*/
+        }
 
+        .UD_ToolBarDiv {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 10px;
+            height: 40px;
+            /*border:1px solid rgba(0,0,0,0.1);*/
+        }
+
+        .UD_TableDiv {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            top: 50px;
+            bottom: 10px;
+            /*border:1px solid red;*/
+        }
+
+        input[type="checkbox"], button, a, select {
+            cursor: pointer;
+        }
+
+        p, td, input, select, div {
+            font-family: "微软雅黑" !important;
+        }
+        .cbox {
+            margin: 0px !important;
+            width: 90% !important;
+            height: 100% !important;
+            /*margin-left: 20% !important;*/
+            display: block !important;
+
+        }
+        h2{
+            margin:0px;
+            padding:0px;
+            line-height:40px;
+            font-size:18px;
+            text-indent:10px;
+            font-weight:bold;
+            font-family:"微软雅黑"!important;
+        }
+    </style>
 </head>
 <body>
-    <div class="col-sm-12" style="float:left;">
-        <div id="Toolbar">
-            <ul class="nav nav-pills">
-                @if (ViewBag.Type == 0)
-                {
-                    <li><button class="btn btn-primary" id="PrintLabel">打印标签</button></li>
-                }
-            </ul>
+    <h2>电极标签信息</h2>
+    <div class="UD_FatherDiv">
+        <div class="UD_ToolBarDiv">
+            <table>
+                <tr>
+                    <td>
+                        <button class="btn btn-warning" id="PrintLabel"><span class="glyphicon glyphicon-print"></span> 打印标签</button>
+                    </td>
+                </tr>
+            </table>
         </div>
-        <table id="TaskItemGrid"></table>
-        <div id="jqGridPager"></div>
+        <div class="UD_TableDiv">
+            <table id="TaskItemGrid"></table>
+            <div id="jqGridPager"></div>
+        </div>
     </div>
 
     <script src="/Scripts/modernizr-2.6.2.js"></script>
@@ -40,6 +97,10 @@
     <script>
         $("document").ready(function () {
             CNCItemList("@ViewBag.TaskIDs");
+            $(window).resize(function () {
+                $("#TaskItemGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+                $("#TaskItemGrid").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+            });
         });
     </script>
     @*右键菜单*@

@@ -1,6 +1,14 @@
 ﻿@using MoldManager.WebUI.Models.Helpers;
 @{
-    ViewBag.Title = "任务点检";
+    if(ViewBag.TaskType == 1)
+    {
+        ViewBag.Title = "电极任务点检";
+    }
+    else
+    {
+        ViewBag.Title = "铣铁任务点检";
+    }
+
 }
 @{
     TaskTypeModelHelper _taskType = new TaskTypeModelHelper();
@@ -14,20 +22,12 @@
 
     }
 }
-<h2>任务点检</h2>
-
-
-
-<div>
-    <h2 class="page-header">
-        任务点检
-    </h2>
-
-    <div class="col-sm-11">
-        <div id="Toolbar" class="col-sm-11" style="float:left;">
-            <ul class="nav nav-pills">
-                <li class="dropdown all-camera-dropdown">
-
+<h2 style="margin-top:60px;">@ViewBag.Title</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
                     <button class="dropdown-toggle btn btn-default" data-toggle="dropdown" href="#">
                         选择任务类型
                         <b class="caret"></b>
@@ -42,25 +42,27 @@
                             }
                         }
                     </ul>
-                </li>
-                @if (DeptID == 7)
-                {
-                    if (@ViewBag.TaskType == 1)
-                    {
-                        <li class="btn btn-primary PointCheck" id="ElePointCheck">点检</li>
+                </td>
+                <td>
+                    @{
+                        if (ViewBag.TaskType == 1)
+                        {
+                            <button class="btn btn-warning PointCheck" id="ElePointCheck"><span class="glyphicon glyphicon-barcode"></span> 点检</button>
+                        }
+                        else if (ViewBag.TaskType == 4)
+                        {
+                            <button class="btn btn-warning PointCheck" id="SteelPointCheck"><span class="glyphicon glyphicon-lock"></span> 点检</button>
+                        }
                     }
-                    else if (@ViewBag.TaskType == 4)
-                    {
-                        <li class="btn btn-primary PointCheck" id="SteelPointCheck">点检</li>
-                    }
-                }
-            </ul>
-        </div>
-        <div class="col-sm-11" style="float:left;">
-            <table id="TaskGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+                </td>
+            </tr>
+        </table>
     </div>
+    <div class="UD_TableDiv">
+        <table id="TaskGrid"></table>
+        <div id="jqGridPager"></div>
+    </div>
+
 </div>
 
 @if (ViewBag.TaskType == 1)
@@ -103,7 +105,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                    <button type="button" id="SpotCheckBtn" class="btn btn-primary">点检</button>
+                    <button type="button" id="SpotCheckBtn" class="btn btn-primary"><span class="glyphicon glyphicon-check"></span> 确认</button>
                 </div>
             </div>
         </div>
@@ -127,12 +129,10 @@ else if (ViewBag.TaskType == 4)
                             </td>
                         </tr>
                     </table>
-
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                    <button type="button" id="SpotCheckBtn" class="btn btn-primary">点检</button>
+                    <button type="button" id="SpotCheckBtn" class="btn btn-primary"><span class="glyphicon glyphicon-check"></span> 确认</button>
                 </div>
             </div>
         </div>
@@ -148,6 +148,11 @@ else if (ViewBag.TaskType == 4)
     var ItemIDs = new Array();
     var _timer = {};
     $("document").ready(function () {
+
+        $(window).resize(function () {
+            $("#TaskGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#TaskGrid").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+        });
         //点检
         $(".PointCheck").on("click", function () {
             @if (ViewBag.TaskType == 1)

@@ -13,6 +13,7 @@
         DeptID = 0;
     }
 }
+
 <h2 style="margin-top:60px;">@ViewBag.Title</h2>
 <div class="FatherDiv">
     <div class="LeftDiv">
@@ -22,6 +23,7 @@
         <input type="hidden" id="MoldNumber" />
         <input type="hidden" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID" />
         <input type="hidden" id="PurchaseTypeName" value="@ViewBag.PurchaseTypeName" />
+        <input type="hidden" id="Status" value="@ViewBag.State" />
     </div>
     <div class="RightDiv">
         <div class="RightDiv_TopDiv">
@@ -29,8 +31,19 @@
                 <tr>
                     <td style="width:200px!important;">
                         <select id="ChargePurType" class="form-control" style="width:200px;">
-                            <option value="2">模具耗材</option>
-                            <option value="4">固定资产</option>
+                            @{
+                                if (ViewBag.Types != null)
+                                {
+                                    foreach (TechnikSys.MoldManager.Domain.Entity.PurchaseType pt in ViewBag.Types)
+                                    {
+                                        if (pt != null)
+                                        {
+                                            <option value="@(pt.PurchaseTypeID)">@(pt.Name)</option>
+                                        }
+
+                                    }
+                                }
+                            }
                         </select>
                     </td>
                     <td style="width:200px!important;">
@@ -40,11 +53,11 @@
                         <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;" />
                     </td>
                     <td style="width:400px!important;">
-                        <button class="btn btn-primary" id="Query">查询</button>
+                        <button class="btn btn-info" id="Query"><span class="glyphicon glyphicon-search"></span> 查询</button>
                         @if ((ViewBag.State == 30) && (DeptID == 4))
                         {
-                            <button class="btn btn-primary" id="Quotation">开始询价</button>
-                            <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
+                            <button class="btn btn-info" id="Quotation"><span class="glyphicon glyphicon-earphone"></span> 开始询价</button>
+                            <button class="btn btn-success" id="PruchaseOrder" disabled><span class="glyphicon glyphicon-plus"></span> 创建订单</button>
                         }
                     </td>
                 </tr>
@@ -170,7 +183,7 @@
     function LoadMoldNumber(Keyword, MoldNumber, PurchaseType) {
         if (PurchaseType == undefined)
             PurchaseType = $('#PurchaseTypeID').val();
-        var _url = "/Purchase/JsonMoldNumber?State=@ViewBag.State&Keyword=" + $("#Keyword").val() + "&PurchaseType=" + $('#PurchaseTypeID').val();
+        var _url = "/Purchase/JsonMoldNumber?State=" + $('#Status').val() + "&Keyword=" + $("#Keyword").val() + "&PurchaseType=" + $('#PurchaseTypeID').val();
 
         if (Keyword != "" && Keyword != undefined) {
             _url = _url + "?Keyword=" + Keyword;

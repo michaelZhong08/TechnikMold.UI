@@ -111,10 +111,11 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
 
 
-        public void Submit(int PurchaseOrderID, int State, string Memo)
+        public void Submit(int PurchaseOrderID, int State, string Memo,int approval)
         {
             PurchaseOrder _order = QueryByID(PurchaseOrderID);
             _order.State = State;
+            _order.Approval = approval;
             if (Memo != "") { 
                 _order.Memo = Memo;
             }

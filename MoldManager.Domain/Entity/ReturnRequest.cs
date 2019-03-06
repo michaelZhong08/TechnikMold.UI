@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechnikSys.MoldManager.Domain.Status;
 
 namespace TechnikSys.MoldManager.Domain.Entity
 {
@@ -31,7 +32,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             ReturnDate=new DateTime(1900,1,1);
             WarehouseUserID=0;
             ApprovalUserID=0;
-            State=-90;
+            State=(int)ReturnRequestStatus.新建;
             Enabled=true;
             SupplierID=0;
             SupplierName = "";
@@ -47,7 +48,7 @@ namespace TechnikSys.MoldManager.Domain.Entity
             ReturnDate = new DateTime(1900, 1, 1);
             WarehouseUserID = 0;
             ApprovalUserID = 0;
-            State = -90;
+            State = (int)ReturnRequestStatus.新建;
             Enabled = true;
             SupplierID = PurchaseOrder.SupplierID;
             SupplierName = PurchaseOrder.SupplierName;

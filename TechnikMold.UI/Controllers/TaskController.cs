@@ -23,6 +23,7 @@ using TechnikMold.UI.Models;
 using TechnikMold.UI.Controllers;
 using DAL;
 using System.Configuration;
+using TechnikSys.MoldManager.Domain.ViewModel;
 
 namespace MoldManager.WebUI.Controllers
 {
@@ -4945,11 +4946,15 @@ namespace MoldManager.WebUI.Controllers
         /// </param>
         /// <param name="Keyword"></param>
         /// <returns></returns>
-        public ActionResult GetQCTasks(string MoldNumber, int TaskType, string Keyword, string State = "0")
+        public JsonResult GetQCTasks(string MoldNumber, int TaskType=1, string Keyword="", string State = "0")
         {
             IEnumerable<QCTask> _qcTasks = _qcTaskRepository.QCTasks
                 .Where(q => q.MoldNumber == MoldNumber)
                 .Where(q => q.Enabled == true);
+            string[] _states = State.Split(',');
+            List<QCTask> _tasks = new List<QCTask>();
+            List<QCTask> _temp;
+            List<EleQcTaskModel> _qcModelList = new List<EleQcTaskModel>();
             if (TaskType == 1)
             {
                 _qcTasks = _qcTasks.Where(q => q.TaskType == 1);
@@ -4962,10 +4967,6 @@ namespace MoldManager.WebUI.Controllers
             {
                 _qcTasks = _qcTasks.Where(q => q.TaskName.Contains(Keyword));
             }
-
-            string[] _states = State.Split(',');
-            List<QCTask> _tasks = new List<QCTask>();
-            List<QCTask> _temp;
             for (int i = 0; i < _states.Length; i++)
             {
                 int _state = Convert.ToInt16(_states[i]);
@@ -4973,8 +4974,21 @@ namespace MoldManager.WebUI.Controllers
                 _tasks.AddRange(_temp);
             }
             _tasks = _tasks.OrderBy(t => t.TaskName).ToList();
-
-            return Json(_tasks, JsonRequestBehavior.AllowGet);
+            if (_tasks.Count > 0)
+            {
+                foreach (var t in _tasks)
+                {
+                    CNCItem _item = (_cncItemRepository.QueryByLabel(t.TaskName) ?? new CNCItem());
+                    _qcModelList.Add(new EleQcTaskModel
+                    {
+                        QcTask = t,
+                        Material = _item.Material,
+                        CNCFinishTime = Toolkits.CheckZero(_item.CNCFinishTime) ? new DateTime(1900, 1, 1) : _item.CNCFinishTime,
+                        Gap = _item.Gap
+                    });
+                }
+            }
+            return Json(_qcModelList, JsonRequestBehavior.AllowGet);
         }
 
         /// <summary>
@@ -5120,9 +5134,9 @@ namespace MoldManager.WebUI.Controllers
                     QCTask _qcTask = _qcTaskRepository.QueryByID(Convert.ToInt32(_qcTaskIDs[i]));
                     if (_qcTask != null)
                     {
-                        if (_qcTask.State < (int)QCStatus.确认)
+                        if (_qcTask.State < (int)QCStatus.合格)
                         {
-                            _qcTask.State = (int)QCStatus.确认;
+                            _qcTask.State = (int)QCStatus.合格;
                             _qcTask.QCUser = _qcUserID;
                             _qcTask.FinishTime = DateTime.Now;
                             _qcTaskRepository.Save(_qcTask);
@@ -5130,11 +5144,11 @@ namespace MoldManager.WebUI.Controllers
 
                         QCSteelPoint _steelPoint = _qcSteelPointRepository
                             .QueryByName(_qcTask.TaskName, _qcTask.Version)
-                            .Where(q => q.Status < (int)QCStatus.确认)
+                            .Where(q => q.Status < (int)QCStatus.合格)
                             .FirstOrDefault();
                         if (_steelPoint != null)
                         {
-                            _steelPoint.Status = (int)QCStatus.确认;
+                            _steelPoint.Status = (int)QCStatus.合格;
                             _qcSteelPointRepository.Save(_steelPoint);
                         }
                     }
@@ -5408,32 +5422,32 @@ namespace MoldManager.WebUI.Controllers
         #endregion
 
         #region 电极确认
-        public ActionResult GetEleQCResult(int Status = -99, string Keyword = "")
+        public ActionResult GetEleQCResult(int Status = (int)QCStatus.合格, string Keyword = "")
         {
             ViewBag.Status = Status;
             ViewBag.Keyword = Keyword;
             return View();
         }
 
-        public ActionResult JsonEleInfo(int Status = 10, string Keyword = "")
+        public ActionResult JsonEleInfo(int Status = (int)QCStatus.合格, string Keyword = "")
         {
 
             IEnumerable<CNCItem> _cncItems;
-
-            //if (Keyword != "")
-            //{
-            //    _cncItems = _cncItemRepository.CNCItems.Where(c => c.Status == Status).Where(c => c.LabelName.Contains(Keyword)).Take(50);
-            //}
-            //else
-            //{
-            //    _cncItems = _cncItemRepository.CNCItems.Where(c => c.Status == Status).Where(c => c.LabelName.Contains(Keyword)).Take(50);
-            //}
             List<string> _labelNames = _qcTaskRepository.QCTasks.Where(q => q.State == Status && q.Enabled).Select(q=>q.TaskName).ToList();
             _cncItems = _cncItemRepository.CNCItems.Where(c=>_labelNames.Contains(c.LabelName)).Where(c => c.LabelName.Contains(Keyword)).Where(c => !c.Destroy && c.Status >= (int)CNCItemStatus.未开始);
             ElectrodeGridViewModel _model = new ElectrodeGridViewModel(_cncItems, _taskRepository, _qcTaskRepository);
             return Json(_model, JsonRequestBehavior.AllowGet);
         }
 
+        public JsonResult Service_QC_GetQCStatus()
+        {
+            Dictionary<string, int> _StatusDic = new Dictionary<string, int>();
+            foreach (var v in Enum.GetValues(typeof(QCStatus)))
+            {
+                _StatusDic.Add(v.ToString(), ((int)v));
+            }
+            return Json(_StatusDic, JsonRequestBehavior.AllowGet);
+        }
 
         public void ElectrodeConfirm(int CNCItemID, double ZCompensation, double GapCompensation, bool Result)
         {
@@ -5660,7 +5674,7 @@ namespace MoldManager.WebUI.Controllers
                                     isFinish = false;
                                 }
                             }
-                            if (isFinish)
+                            if (isFinish && !_CanEedtaskhourList.Contains(t))
                             {
                                 _CanEedtaskhourList.Add(t);
                             }
@@ -6747,11 +6761,28 @@ namespace MoldManager.WebUI.Controllers
                         _UnEndtaskhourList = _UnEndtaskhourList.Distinct().ToList();
                         DateTime _startTime = DateTime.Now;
                         DateTime _earliestTime = _CanEedtaskhourList.Min(h => h.StartTime);
-                        List<TaskHour> _UnEndtaskhourList1 = _UnEndtaskhourList.Where(h => h.StartTime <= _earliestTime).ToList();
-                        List<TaskHour> _UnEndtaskhourList2 = _UnEndtaskhourList.Where(h => h.StartTime > _earliestTime).ToList();
-                        #region 工时记录开始时间早于 可以关闭的工时中最早的开始时间 ##赶尽杀绝##
+                        List<TaskHour> _UnEndtaskhourList1 = _UnEndtaskhourList.Where(h => h.StartTime <= _earliestTime).Distinct().ToList();
+                        List<TaskHour> _UnEndtaskhourList2 = _UnEndtaskhourList.Where(h => h.StartTime > _earliestTime).Distinct().ToList();
+                        #region 工时记录开始时间早于 可以关闭的工时(_CanEedtaskhourList)中最早的开始时间 ##赶尽杀绝##
                         if (_UnEndtaskhourList1.Count > 0)
                         {
+                            foreach(var _th in _UnEndtaskhourList1)
+                            {
+                                string _labelNames = _th.SemiTaskFlag;
+                                bool _isFinished = false;
+                                foreach(var labelName in _labelNames.Split(','))
+                                {
+                                    CNCItem _item1 = _cncItemRepository.QueryByLabel(labelName);
+                                    if (!new List<int> { (int)CNCItemStatus.CNC结束 }.Contains(_item1.Status))//工时记录下的全部电极点检则完成工时记录
+                                    {
+                                        _isFinished = false;
+                                    }
+                                }
+                                if (!_isFinished)
+                                {
+                                    _UnEndtaskhourList1.Remove(_th);
+                                }
+                            }
                             CloseTaskHours(_UnEndtaskhourList1);
                         }
                         #endregion
@@ -7072,7 +7103,7 @@ namespace MoldManager.WebUI.Controllers
                 {
                     string _cncname = e.Substring(0, e.IndexOf("_V"));
                     int _version = Convert.ToInt16(e.Substring(e.IndexOf("_V") + 2));
-                    Task _eleTask = _taskRepository.QueryByNameVersion(_cncname, _version, 1);//_taskRepository.Tasks.Where(t => t.DrawingFile == e).FirstOrDefault();
+                    Task _eleTask = (_taskRepository.QueryByNameVersion(_cncname, _version, 1) ?? new Task());//_taskRepository.Tasks.Where(t => t.DrawingFile == e).FirstOrDefault();
                     EleInfoViewModel model = new EleInfoViewModel
                     {
                         CncItemID = 0,

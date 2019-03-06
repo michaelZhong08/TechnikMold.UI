@@ -21,31 +21,48 @@
     }
 }
 
-<div style="margin-top:60px">
-    <div class="col-sm-11">
-        <h2>@ViewBag.Title</h2>
+<div></div>
 
+<div style="margin-top:60px;">
+    <h2>@ViewBag.Title</h2>
+</div>
 
-        <div class="col-sm-4">
-            @if ((DeptID == 2) && (PosID > 1)) { 
-            <div id="ToolBarWH" style="margin:2px">
-                <button id="AddMaterial" class="btn btn-primary">新增材料</button>
-                <button id="DelMaterial" class="btn btn-warning">删除材料</button>
-            </div>
-            }
-            <select id="MaterialID" class="form-control" size="20"></select>
+<div class="LR_FatherDiv">
+    <div class="LR_LeftDiv">
+        <div class="LR_Left_ToolbarDiv">
+            <table>
+                @if ((DeptID == 2) && (PosID > 1))
+                {
+                    <tr>
+                        <td><button id="AddMaterial" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> 新增材料</button></td>
+                        <td><button id="DelMaterial" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> 删除材料</button></td>
+                    </tr>
+                }
+            </table>
         </div>
-        <div class="col-sm-4">
-            @if ((DeptID == 2) && (PosID > 1)) {
-            <div id="ToolBarWH" style="margin:2px">
-                <button id="AddHardness" class="btn btn-primary">新增硬度</button>
-                <button id="DelHardness" class="btn btn-warning">删除硬度</button>
-            </div>
-            }
-            <select id="HardnessID" class="form-control" size="20"></select>
+        <div class="LR_Left_BodyDiv">
+            <select id="MaterialID" class="form-control LR_Body_Sel" size="20"></select>
+        </div>
+    </div>
+    <div class="LR_RightDiv">
+        <div class="LR_Right_ToolbarDiv">
+            <table>
+                @if ((DeptID == 2) && (PosID > 1))
+                {
+                    <tr>
+                        <td><button id="AddHardness" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> 新增硬度</button></td>
+                        <td><button id="DelHardness" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> 删除硬度</button></td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="LR_Right_BodyDiv">
+            <select id="HardnessID" class="form-control LR_Body_Sel" size="20"></select>
         </div>
     </div>
 </div>
+
+
 
 
 <div class="modal" data-backdrop="static" data-keyboard="false" id="EditMaterialDialog" tabindex="-1" role="dialog" aria-labelledby="EditMaterialLable" aria-hidden="true">

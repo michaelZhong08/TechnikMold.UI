@@ -17,11 +17,15 @@ using TechnikSys.MoldManager.Domain.Output;
 using TechnikMold.UI.Models;
 using MoldManager.WebUI.Models.Helpers;
 using TechnikSys.MoldManager.Domain.Status;
+using DAL;
+using TechnikMold.UI.Controllers;
+using System.Data;
 
 namespace MoldManager.WebUI.Controllers
 {
-    public class ProjectController : Controller
+    public class ProjectController : BaseController
     {
+        ProjectInfoDAL dal = new ProjectInfoDAL(constr);
         #region region
         private IProjectRepository _projectRepository;
         private IProjectPhaseRepository _projectPhaseRepository;
@@ -372,9 +376,7 @@ namespace MoldManager.WebUI.Controllers
             string UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], Encoding.GetEncoding("UTF-8"));
 
             //string _memo = UserName +"添加备注:"+ MemoEdit.Memo;
-            string _memo = UserName + "<br>" + DateTime.Now.ToString("yyyy-MM-dd") + "<br>" + MemoEdit.Memo;
-
-
+            string _memo = UserName + "<br> 添加备注——" + MemoEdit.Memo;
 
             _projectRepository.AddMemo(MemoEdit.MemoProject, MemoEdit.Memo);
 
@@ -850,7 +852,6 @@ namespace MoldManager.WebUI.Controllers
             return Json(_customers, JsonRequestBehavior.AllowGet);
         }
 
-
         /// <summary>
         /// Retrives json format project list
         /// </summary>
@@ -913,7 +914,7 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="isDepFinish">true 部门未结案 false 项目未结案</param>
         /// <returns></returns>
 
-        public ActionResult JsonProjects(string Keyword = "", int State = 1, int Type = 1, int DepID = 18, int PageCount = 30, int Page = 1, bool isDepFinish = false)
+        public JsonResult JsonProjects(string Keyword = "", int State = 1, int Type = 1, int DepID = 18, int PageCount = 30, int Page = 1, bool isDepFinish = false)
         {
             IQueryable<Project> _projects;
             List<Phase> _phases;
@@ -974,8 +975,8 @@ namespace MoldManager.WebUI.Controllers
                 _projectsByDep = _projectRepository.GetProjectsByDep(DepID,isDepFinish).Where(_kwexp).Where(_typeexp).OrderBy(p => p.ProjectNumber).ThenBy(p => p.CreateTime).ToList();
                 //_projectsByDep = _projects.Where(p => p.ProjectNumber != "Sinnotech" && p.ProjectStatus >= 0);
                 #region 分页   
-                _totalprojects = _projectsByDep.Count();
-                _projectsByDep = _projectsByDep.Skip(_skipcount).Take(_takeCount).ToList();
+                //_totalprojects = _projectsByDep.Count();
+                //_projectsByDep = _projectsByDep.Skip(_skipcount).Take(_takeCount).ToList();
                 #endregion
             }
             else
@@ -985,24 +986,37 @@ namespace MoldManager.WebUI.Controllers
                             .Where(_kwexp)
                             .OrderBy(p => p.ProjectNumber).ThenBy(p => p.CreateTime);
                 _projectsByDep = _projects.ToList();
-                _totalprojects = _projects.Count();
-                _projectsByDep = _projects.Skip(_skipcount).Take(_takeCount).ToList();
+                //_totalprojects = _projects.Count();
+                //_projectsByDep = _projects.Skip(_skipcount).Take(_takeCount).ToList();
             }
             //_projects = GetProjectsByDep(_projects, DepID, _skipcount, _takeCount).OrderBy(p => p.ProjectNumber).ThenBy(p => p.MoldNumber).ToList();
             //IEnumerable<Project> _projectsByDepNow = _projectsByDep.Skip(_skipcount).Take(_takeCount);
 
-
+            //_totalprojects,
+            //    Page,
+            //    _takeCount
 
             _gridViewModel = new ProjectGridViewModel(_projectsByDep,
                 _projectPhaseRepository,
                 _projectRoleRepository,
                 _attachFileInfoRepository,
                 _projectRepository,
-                _phases,
-                _totalprojects,
-                Page,
-                _takeCount);
+                _phases);
             return Json(_gridViewModel, JsonRequestBehavior.AllowGet);
+        }
+        public JsonResult SERVICE_JSONTMPL_Projects(string Keyword = "",int Type = 1, int DepID = 18,bool isDepFinish = false)
+        {
+            try
+            {
+                DataTable dt = dal.Get_TBTMPL_PROJ(Keyword, Type, DepID, isDepFinish);
+                ProjectGridViewModel _gridViewModel = new ProjectGridViewModel(dt);
+                return Json(_gridViewModel, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                LogRecord("DataError", "GET项目计划列表数据失败——"+ex.ToString());
+            }
+            return null;
         }
         /// <summary>
         /// 规划项目计划首页-划部门
@@ -1276,30 +1290,55 @@ namespace MoldManager.WebUI.Controllers
         /// <param name="ProjectID"></param>
         /// <param name="Memo"></param>
         /// <returns></returns>
-        public int DeleteProject(int ProjectID, string Memo)
+        public string DeleteProject(int ProjectID, string Memo)
         {
-            try
+            string res = string.Empty;
+            Project _pj = _projectRepository.QueryByID(ProjectID);
+            List<Project> unClosedProJ = new List<Project>();
+            List<string> _depNames1 = new List<string>() { "管理" };
+            string _username = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], Encoding.GetEncoding("UTF-8"));
+            string _depname = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"], Encoding.GetEncoding("UTF-8"));
+
+            if (_username==_pj.Creator || _depNames1.Contains(_depname))
             {
-                int _depid = Convert.ToInt32(Request.Cookies["User"]["Department"]);
-                string _username = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], Encoding.GetEncoding("UTF-8"));
-
-                List<string> _depNames1 = new List<string>() { "管理" };
-                List<int> _depIds1 = _deptRepository.Departments.Where(d => _depNames1.Contains(d.Name) && d.Enabled == true).Select(d => d.DepartmentID).ToList();
-
-                Project _project = _projectRepository.GetByID(ProjectID);
-                List<Project> _childProjects = _projectRepository.Projects.Where(p => p.Enabled == true && p.ParentID == _project.ProjectID).ToList();
-                if (_childProjects.Count > 0)
+                if (_pj.Type == 0)
                 {
-                    return -100;
+                    List<Project> _projects = _projectRepository.QueryByMainProject(_pj.ProjectID).ToList();
+                    if (_projects.Count > 0)
+                    {
+                        res = "以下新模项目还未删除——\n";
+                        foreach (var p in _projects)
+                        {
+                            res = res + "模号：" + p.MoldNumber + ";版本：" + p.Version.ToString() + "\n";
+                        }
+                    }
+                    else
+                    {
+                        _projectRepository.DeleteProject(ProjectID, Memo);
+                    }
                 }
-                if ((_depIds1.Contains(_depid) || _username == _project.Creator) && _project.ProjectStatus != (int)ProjectStatus.完成)
+                else if (_pj.Type == 1)
+                {
+                    List<Project> _projects = _projectRepository.QueryByMainProject(_pj.ProjectID).ToList();
+                    if (_projects.Count > 0)
+                    {
+                        res = "以下修模项目还未删除——\n";
+                        foreach (var p in _projects)
+                        {
+                            res = res + "模号：" + p.MoldNumber + ";版本：" + p.Version.ToString() + "\n";
+                        }
+                    }
+                    else
+                    {
+                        _projectRepository.DeleteProject(ProjectID, Memo);
+                    }
+                }
+                else
                 {
                     _projectRepository.DeleteProject(ProjectID, Memo);
-                    return 1;
                 }
             }
-            catch { }
-            return -99;
+            return res;
         }
 
         public int FinishPhase(int ProjectID, int PhaseID)
@@ -1733,29 +1772,71 @@ namespace MoldManager.WebUI.Controllers
             Project _proj = _projectRepository.QueryByID(proJectID);
             return Json(_proj, JsonRequestBehavior.AllowGet);
         }
-        public int Service_PJ_ClosedProject(int proJectID)
+        public string Service_PJ_ClosedProject(int proJectID)
         {
-            int res = _projectRepository.CloseProject(proJectID);
-            Project _proj = _projectRepository.QueryByID(proJectID);
-            #region 关闭主项目
-            if (_proj.Type == 1)
+            string res = string.Empty;
+            Project _pj = _projectRepository.QueryByID(proJectID);
+            List<Project> unClosedProJ = new List<Project>();
+            if (_pj.Type == 0)
             {
-                List<Project> _projects = _projectRepository.QueryByMainProject(_proj.ParentID).ToList();
+                List<Project> _projects = _projectRepository.QueryByMainProject(proJectID).ToList();
                 bool isAllClosed = true;
                 foreach (var p in _projects)
                 {
                     if (p.ProjectStatus != (int)ProjectStatus.完成)
                     {
+                        //res = res + "模号：" + p.MoldNumber + ";版本：" + p.Version.ToString() + "\n";
+                        unClosedProJ.Add(p);
                         isAllClosed = false;
                     }
                 }
+                #region 关闭主项目
                 if (isAllClosed)
                 {
-                    _projectRepository.CloseProject(_proj.ParentID);
+                    _projectRepository.CloseProject(proJectID);
                 }
+                else
+                {
+                    res = "以下新模项目还未结束——\n";
+                    foreach(var p in unClosedProJ)
+                    {
+                        res = res + "模号：" + p.MoldNumber + ";版本：" + p.Version.ToString() + "\n";
+                    }
+                }
+                #endregion
             }
-            #endregion
-
+            else if (_pj.Type == 1)
+            {
+                List<Project> _projects = _projectRepository.QueryByMainProject(proJectID).ToList();
+                bool isAllClosed = true;
+                foreach (var p in _projects)
+                {
+                    if (p.ProjectStatus != (int)ProjectStatus.完成)
+                    {
+                        //res = res + "模号：" + p.MoldNumber + ";版本：" + p.Version.ToString() + "\n";
+                        unClosedProJ.Add(p);
+                        isAllClosed = false;
+                    }
+                }
+                #region 关闭主项目
+                if (isAllClosed)
+                {
+                    _projectRepository.CloseProject(proJectID);
+                }
+                else
+                {
+                    res = "以下修模项目还未结束——\n";
+                    foreach (var p in unClosedProJ)
+                    {
+                        res = res + "模号：" + p.MoldNumber + ";版本：" + p.Version.ToString() + "\n";
+                    }
+                }
+                #endregion
+            }
+            else
+            {
+                _projectRepository.CloseProject(proJectID);
+            }
             return res;
         }
     }

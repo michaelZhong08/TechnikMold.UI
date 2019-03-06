@@ -10,6 +10,8 @@ namespace MoldManager.WebUI.Controllers
     {
         public ActionResult Index()
         {
+            //List<int> intList = new List<int> { 0 };
+            //intList[1] = 10;
             return RedirectToAction("Index", "Project");
         }
 
@@ -29,6 +31,20 @@ namespace MoldManager.WebUI.Controllers
 
         public ActionResult Data()
         {
+            return View();
+        }
+        /// <summary>
+        /// 异常处理页面
+        /// </summary>
+        /// <param name="controllername"></param>
+        /// <param name="actionname"></param>
+        /// <param name="exMessage"></param>
+        /// <returns></returns>
+        public ViewResult ErrorHandler(string controllername,string actionname,string exMessage)
+        {
+            ViewBag.ErrorController = controllername;
+            ViewBag.ErrorAction = actionname;
+            ViewBag.ErrorMessage = exMessage;
             return View();
         }
     }

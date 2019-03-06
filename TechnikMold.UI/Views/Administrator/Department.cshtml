@@ -3,61 +3,74 @@
 
 @model IEnumerable<Department>
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "部门管理";
 }
-<div style="margin-top:50px">
 
+<div>
+    
+</div>
+<div style="margin-top:60px;">
+    <h2>部门管理</h2>
+</div>
 
-    <div class="col-sm-11">
-        <h3 class="page-header">部门管理</h3>
-        <ul class="nav nav-pills">
-            <li><button class="btn btn-primary" id="CreateDept">新建部门</button></li>
-            <li><button class="btn btn-primary" id="DeleteDept">删除部门</button></li>
-            <li><button class="btn btn-primary" id="ShowDepPhase">部门阶段关联</button></li>
-        </ul>
-        <div class="col-sm-2">
-            <div class="panel panel-info">
-                <div class="panel-heading"><h3 class="panel-title">部门列表</h3></div>
-                <div class="panel-body">
-                    <div>
-                        <select class="form-control" size="25" id="DepartmentList">
-                            @foreach (Department _dept in Model)
-                            {
-                                <option value="@_dept.DepartmentID">@_dept.Name</option>
-                            }
-
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-5">
-            <div class="panel panel-info">
-                <div class="panel-heading"><h3 class="panel-title">部门信息</h3></div>
-                <div class="panel-body" style="height:460px">
-                    <div>
-                        @using (Html.BeginForm("DepartmentSave", "Administrator", FormMethod.Post, new { id = "SaveDepartmentForm" }))
+<div class="BaseData_FatherDiv">
+    <div class="BaseData_LeftDiv">
+        <div class="panel panel-info">
+            <div class="panel-heading" style="height:40px;"><h3 class="panel-title">部门列表</h3></div>
+            <div class="panel-body" style="padding:0px!important;">
+                <div>
+                    <select class="form-control BaseData_Left_Sel" id="DepartmentList" size="3">
+                        @foreach (Department _dept in Model)
                         {
-                            <table class="table table-striped">
-                                <tr>
-                                    <td class="col-sm-2"><label>部门名称</label></td>
-                                    <td class="col-sm-4">
-                                        <input type="hidden" id="DepartmentID" name="DepartmentID" />
-
-                                        <input type="text" maxlength="20" id="Name" name="Name" class="form-control required" />
-                                        <input type="hidden" id="Enabled" name="Enabled" value="true" />
-
-                                    </td>
-                                </tr>
-                            </table>
+                            <option value="@_dept.DepartmentID">@_dept.Name</option>
                         }
-                        <button id="SaveDepartment" class="btn btn-primary">保存</button>
-                    </div>
+
+                    </select>
                 </div>
             </div>
         </div>
     </div>
+    <div class="BaseData_RightDiv">
+        <div class="BaseData_Right_ToolbarDiv">
+            <table style="margin-left:20px;">
+                <tr>
+                    <td>
+                        <button class="btn btn-success" id="CreateDept"><span class="glyphicon glyphicon-plus"></span> 新建</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" id="DeleteDept"><span class="glyphicon glyphicon-trash"></span> 删除</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning" id="ShowDepPhase"><span class="glyphicon glyphicon-list"></span> 部门-项目阶段</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="BaseData_Right_TableDiv">
+            <div class="BaseData_Right_FormDiv">
+                @using (Html.BeginForm("DepartmentSave", "Administrator", FormMethod.Post, new { id = "SaveDepartmentForm" }))
+                {
+                    <table class="table table-striped" style="text-align:center;vertical-align:central;">
+                        <colgroup><col width="20%" /><col width="80%" /></colgroup>
+                        <tr>
+                            <td><label>部门名称</label></td>
+                            <td>
+                                <input type="hidden" id="DepartmentID" name="DepartmentID" />
+                                <input type="hidden" id="Enabled" name="Enabled" value="true" />
+                                <input type="text" maxlength="20" id="Name" name="Name" class="form-control required" disabled/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><button id="SaveDepartment" class="btn btn-primary" style="float:right;"><span class="glyphicon glyphicon-pencil"></span> 保存</button></td>
+                        </tr>
+                    </table>
+                }
+            </div>
+
+        </div>
+    </div>
 </div>
+
 
 @* 部门/项目阶段权限关联 *@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="DepPhaseEdit" tabindex="-1" role="dialog" aria-labelledby="SupplierBrandLabel">
@@ -67,35 +80,42 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
             </div>
             <div class="modal-body" style="height:250px">
-                <div>
-                    <div class="col-sm-5">
-                        <select class="form-control" id="PhaseList" size="10"></select>
-                        <input type="hidden" id="PhaseID" />
+                <div class="modal_LMR_FatherDiv">
+                    <div class="modal_LMR_LeftDiv">
+                        <div class="modal_SelTitle">
+                            <label>其它阶段:</label>
+                        </div>
+                        <div>
+                            <select class="form-control modal_Sel" id="PhaseList" size="10"></select>
+                            <input type="hidden" id="PhaseID" />
+                        </div>
                     </div>
-                    <div class="col-sm-1">
-                        <button class="btn btn-primary" id="Add">></button>
-                        <button class="btn btn-primary" id="Remove"><</button>
+                    <div class="modal_LMR_MiddleDiv">
+                        <div style="position:absolute;top:30%;left:20%;">
+                            <button class="btn btn-primary" id="Add"> > </button>
+                            <button class="btn btn-primary" id="Remove" style="margin-top:20px;"> < </button>
+                        </div>
+                        
                     </div>
-                    <div class="col-sm-5">
-                        <select class="form-control" id="DepPhaseList" size="10"></select>
+                    <div class="modal_LMR_RightDiv">
+                        <div class="modal_SelTitle">
+                            <label>已添加阶段:</label>
+                        </div>
+                        <div>
+                            <select class="form-control modal_Sel" id="DepPhaseList" size="10"></select>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="SaveBrand" class="btn btn-primary">保存</button>
+                <button type="button" id="SaveBrand" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span> 保存</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="~/Scripts/Project.js"></script>
-
-
-
-
-
-
 <script src="~/Scripts/Administrator.js"></script>
 <script type="text/javascript">
     $(document).ready(function () {
@@ -177,7 +197,9 @@
             type: "Get",
             url: _url,
             success: function () {
-                alert("保存成功")
+                //alert("保存成功")
+                $('#Name').val('');
+                $('#Name').attr('disabled', 'disabled');
                 $("#DepPhaseEdit").modal("hide");
             }
         })

@@ -92,11 +92,11 @@
                         <input type="text" class="form-control" id="ItemKeyword" placeholder="采购项 零件名/物料号/规格" style="width:400px;" />
                     </td>
                     <td style="width:400px!important;">
-                        <button class="btn btn-primary" id="Query">查询</button>
+                        <button class="btn btn-info" id="Query"><span class="glyphicon glyphicon-search"></span> 查询</button>
                         @if ((ViewBag.State == 30) && (DeptID == 4))
                         {
-                            <button class="btn btn-primary" id="Quotation">开始询价</button>
-                            <button class="btn btn-primary" id="PruchaseOrder" disabled>创建订单</button>
+                            <button class="btn btn-info" id="Quotation"><span class="glyphicon glyphicon-earphone"></span> 开始询价</button>
+                            <button class="btn btn-success" id="PruchaseOrder" disabled><span class="glyphicon glyphicon-plus"></span> 创建订单</button>
                         }
                     </td>
                 </tr>
@@ -119,15 +119,8 @@
 <script src="~/Scripts/jquery.ba-throttle-debounce.js"></script>
 <script>
     $("document").ready(function () {
-
-        LoadMoldNumber("")
-
-        @*@if (ViewBag.State == 30)
-        {
-            @:LoadPurchaseType();
-        }*@
-
         PurchaseItem("","", @ViewBag.State);
+
         @if ((ViewBag.State==10)||(ViewBag.State==40) || (ViewBag.State == 0))
         {
             @:ShowPOCol();
@@ -141,34 +134,26 @@
             LoadMoldNumber($("#Keyword").val());
         })
 
+        $("#RefreshMold").on("click", function () {
+            LoadMoldNumber($("#ItemKeyword").val());
+        })
+
         $("#MoldSelect").on("change", function () {
             $('#ItemKeyword').val('');
-            console.log($("#MoldSelect option:selected").val());
+            //console.log($("#MoldSelect option:selected").val());
             $("#MoldNumber").val($("#MoldSelect option:selected").val());
-            console.log($("#MoldNumber").val());
+            //console.log($("#MoldNumber").val());
             QueryPurchaseitem("", $("#MoldNumber").val());
         })
 
         $("#Query").on("click", function () {
+            LoadMoldNumber($("#ItemKeyword").val());
             QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
         })
 
         $("#Quotation").on("click", function(){
             StartQuotation();
         })
-
-        //$("#PurchaseType").on("change", function(){
-        //    var _purchaseTypeID = $('#PurchaseType').val();
-        //    var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+_purchaseTypeID;
-        //    $.getJSON(_url, function (msg) {
-        //        if (msg.ParentTypeID == 0) {
-        //            $('#PruchaseOrder').attr('disabled', 'disabled');
-        //        } else {
-        //            $('#PruchaseOrder').removeAttr('disabled');
-        //        }
-        //    });
-        //    QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
-        //})
 
         $("#PruchaseOrder").on("click", function(){
             var _ids = GetMultiSelectedIDs("PurchaseItemGrid");
@@ -187,29 +172,6 @@
         $("#PurchaseItemGrid").setGridParam().showHideCol("ShipDate");
     })
 
-
-    function LoadMoldNumber(Keyword) {
-        var _url = "/Purchase/JsonMoldNumber?State=@ViewBag.State";
-        if (Keyword != "") {
-            _url = _url + "&Keyword=" + Keyword;
-        }
-        $("#MoldSelect option").remove();
-        $.ajaxSettings.async=false;
-        $.getJSON(_url, function (msg) {
-            if(msg.length>0){
-                $("#MoldSelect").append($("<option/>",{
-                    value:"ALL",
-                    text:"ALL"
-                }))
-            }
-            $.each(msg, function (i, n) {
-                $("#MoldSelect").append($("<option/>",{
-                    value:n,
-                    text:n
-                }))
-            })
-        })
-    }
     function ShowPOCol(){
         $("#PurchaseItemGrid").setGridParam().showHideCol("QuotationRequest");
         $("#PurchaseItemGrid").setGridParam().showHideCol("PurchaseOrder");
@@ -259,6 +221,9 @@
 </script>
 <script>
     $(function(){
+        LoadMainPurType();
+        LoadSemiPurType();
+        LoadMoldNumber("");
         PlanChangeRecordGrid();
 
         @if (ViewBag.State == 10)
@@ -266,15 +231,15 @@
             @:$("#PurchaseItemGrid").setGridParam().showHideCol("PlanAJDate");
                 }
 
-        LoadMainPurType();
-
         $('#PurchaseType').on('change',function(){
             LoadSemiPurType();
+            LoadMoldNumber($("#ItemKeyword").val());
             QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
         });
 
         $('#SemiPurchaseType').on('change',function(){
             //LoadSemiPurType();
+            LoadMoldNumber($("#ItemKeyword").val());
             QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
             var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+$('#SemiPurchaseType').val();
             $.getJSON(_url, function (msg) {
@@ -288,37 +253,37 @@
     })
 
     function LoadMainPurType(){
+        $.ajaxSettings.async=false;
         if(@ViewBag.State==30){
             $.get('/Purchase/Service_PurType_GetByName?TypeName=模具直接材料',function(res){
-                $("#PurchaseType").append($("<option/>",{
-                    value:res.PurchaseTypeID,
-                    text:res.Name,
-                }));
-            })            
-            LoadSemiPurType();
+                $("#PurchaseType").append('<option value="'+res.PurchaseTypeID+'" selected="selected">'+res.Name+'</option>');
+            })
         }else{
-            $.ajaxSettings.async=false;
             $.get('/Purchase/Service_PT_GetMainPurType',function(res){
                 $.each(res,function(i,n){
-                    $("#PurchaseType").append($("<option/>",{
-                        value:n.PurchaseTypeID,
-                        text:n.Name
-                    }));
-                    if(i==1){
-                        LoadSemiPurType();
+                    if(i==0){
+                        $("#PurchaseType").append($("<option/>",{
+                            value:n.PurchaseTypeID,
+                            text:n.Name,
+                        }));
+                    }
+                    else{
+                        $("#PurchaseType").append($("<option/>",{
+                            value:n.PurchaseTypeID,
+                            text:n.Name
+                        }));
                     }
                 });
-                QueryPurchaseitem($("#ItemKeyword").val(), $("#MoldNumber").val());
             })
         }}
     function LoadSemiPurType(){
         $('#SemiPurchaseType').html('');
-        var _mainType=$('#PurchaseType').val();
+        var _mainType=$('#PurchaseType').find("option:selected").val();
         $.ajaxSettings.async=false;
         $.get('/Purchase/JsonPurchaseTypeLevel?ParentID='+_mainType,function(res){
             $('#SemiPurchaseType').append($('<option/>',{
                 value:_mainType,
-                text:'-'
+                text:'-',
             }))
             $.each(res,function(i,n){
                 $('#SemiPurchaseType').append($('<option/>',{
@@ -342,5 +307,28 @@
             height: 300,
             width:400,
         });
+    }
+
+    function LoadMoldNumber(Keyword) {
+        var _url = "/Purchase/JsonMoldNumber?State=@ViewBag.State"+'&PurchaseType='+$('#SemiPurchaseType').val();
+        if (Keyword != "") {
+            _url = _url + "&Keyword=" + Keyword;
+        }
+        $("#MoldSelect option").remove();
+        $.ajaxSettings.async=false;
+        $.getJSON(_url, function (msg) {
+            if(msg.length>0){
+                $("#MoldSelect").append($("<option/>",{
+                    value:"ALL",
+                    text:"ALL"
+                }))
+            }
+            $.each(msg, function (i, n) {
+                $("#MoldSelect").append($("<option/>",{
+                    value:n,
+                    text:n
+                }))
+            })
+        })
     }
 </script>

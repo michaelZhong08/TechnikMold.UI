@@ -1,0 +1,22 @@
+GET项目计划列表数据失败——System.Data.SqlClient.SqlException (0x80131904): 过程或函数 'Proc_GETTBTMPLCONTENT_PROJECTS' 需要参数 '@Keyword'，但未提供该参数。
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at System.Data.SqlClient.SqlDataReader.get_MetaData()
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   at System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   at System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   at System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   at System.Data.Common.DbDataAdapter.Fill(DataSet dataSet, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   at System.Data.Common.DbDataAdapter.Fill(DataSet dataSet, String srcTable)
+   at Common.DataAccess.RunProcReturn(String procName, SqlParameter[] prams, String tbName) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\ClassLibrary1\DataAccess.cs:line 147
+   at DAL.ProjectInfoDAL.Get_TBTMPL_PROJ(String Keyword, Int32 Type, Int32 DepID, Boolean isDepFinish) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\DAL\ProjectInfoDAL.cs:line 32
+   at MoldManager.WebUI.Controllers.ProjectController.SERVICE_JSONTMPL_Projects(String Keyword, Int32 Type, Int32 DepID, Boolean isDepFinish) in D:\Project\MoldManager\TechnikMold.UI_v5.0\TechnikMold.UI\TechnikMold.UI\Controllers\ProjectController.cs:line 1011
+ClientConnectionId:0e071e66-fd91-4092-b080-e3aea58e1937
+Error Number:201,State:4,Class:16

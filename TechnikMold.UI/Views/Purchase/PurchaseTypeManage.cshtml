@@ -17,70 +17,95 @@
         _deptID = 0;
     }
 }
-<div style="margin-top:60px">
+
+<div>
+
+</div>
+<div style="margin-top:60px;">
     <h2>采购类型管理</h2>
-    <div class="col-sm-2">
-        <select id="PurchaseTypeList" class="form-control" size="30"></select>
+</div>
+<div class="BaseData_FatherDiv">
+    <div class="BaseData_LeftDiv">
+        <div class="panel panel-info">
+            <div class="panel-heading" style="height:40px;"><h3 class="panel-title">采购类型列表</h3></div>
+            <div class="panel-body" style="padding:0px!important;">
+                <div>
+                    <select class="form-control BaseData_Left_Sel" id="PurchaseTypeList" size="3">
+                    </select>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="col-sm-6">
-        
-        @if (_deptID == 4)
-        {
-            <ul class="nav nav-pills">
-                <li><button class="btn btn-primary" id="NewType">新建采购类型</button></li>
-                <li><button class="btn btn-warning" id="DeleteType">删除采购类型</button></li>
-            </ul>
-        }     
-        <form id="SavePurchaseTypeForm">
-            <table class="col-sm-12 table table-striped">
-                <tr id="purType_ShortName" hidden>
-                    <td class="col-sm-4"><label>代码</label></td>
-                    <td class="col-sm-8">
-                        <input type="text" id="ShortName" name="ShortName" class="form-control" />
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-sm-4"><label>名称</label></td>
-                    <td class="col-sm-8">
-                        <input type="text" id="Name" name="Name" class="form-control" />
-                        <input type="hidden" id="PurchaseTypeID" name="PurchaseTypeID" />
-                        <input type="hidden" id="TaskType" name="TaskType" />
-                        <input type="hidden" id="Enabled" name="Enabled" />
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>上级类型</label></td>
-                    <td>
-                        <select id="ParentTypeID" class="form-control" name="ParentTypeID">
-                            <option value="0">-</option>
-                            @foreach (PurchaseType _type in Model)
-                            {
-                                <option value="@_type.PurchaseTypeID">@_type.Name</option>
-                            }
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>默认采购周期（天）</label></td>
-                    <td><input type="number" class="form-control" id="DefaultPeriod" name="DefaultPeriod" min="1" /></td>
-                </tr>
-                <tr id="purType_BelongDep" hidden>
-                    <td colspan="2">
-                        <table id="tb_purType_BelongDep">
-                            @*<tr id="purType_BelongDep">
-                                <td><input type="checkbox" id="TaskType_ELE" class="form-control" /> &nbsp;<label>电极</label></td>
-                            </tr>*@
-                        </table>
-                    </td>
-                </tr>
-
+    <div class="BaseData_RightDiv">
+        <div class="BaseData_Right_ToolbarDiv">
+            <table style="margin-left:20px;">
+                @if (_deptID == 4)
+                {
+                    <tr>
+                        <td>
+                            <button class="btn btn-success" id="NewType"><span class="glyphicon glyphicon-plus"></span> 新建</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" id="DeleteType"><span class="glyphicon glyphicon-trash"></span> 删除</button>
+                        </td>
+                    </tr>
+                }
+                
             </table>
-        </form>
-
-        @if (_deptID == 4)
-        {
-        <button id="SaveType" class="btn btn-primary">保存</button>
-        }
+        </div>
+        <div class="BaseData_Right_TableDiv">
+            <div class="BaseData_Right_FormDiv">
+                <form id="SavePurchaseTypeForm">
+                    <table class="table table-striped" style="text-align:center;vertical-align:central;">
+                        <colgroup><col width="20%" /><col width="80%" /></colgroup>
+                        <tr id="purType_ShortName" hidden>
+                            <td class="col-sm-4"><label>代码</label></td>
+                            <td class="col-sm-8">
+                                <input type="text" id="ShortName" name="ShortName" class="form-control" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-sm-4"><label>名称</label></td>
+                            <td class="col-sm-8">
+                                <input type="text" id="Name" name="Name" class="form-control" />
+                                <input type="hidden" id="PurchaseTypeID" name="PurchaseTypeID" />
+                                <input type="hidden" id="TaskType" name="TaskType" />
+                                <input type="hidden" id="Enabled" name="Enabled" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label>上级类型</label></td>
+                            <td>
+                                <select id="ParentTypeID" class="form-control" name="ParentTypeID">
+                                    <option value="0">-</option>
+                                    @foreach (PurchaseType _type in Model)
+                                    {
+                                        <option value="@_type.PurchaseTypeID">@_type.Name</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label>默认采购周期（天）</label></td>
+                            <td><input type="number" class="form-control" id="DefaultPeriod" name="DefaultPeriod" min="1" /></td>
+                        </tr>
+                        <tr id="purType_BelongDep" hidden>
+                            <td colspan="2">
+                                @*对应部门Radio*@
+                                <table id="tb_purType_BelongDep"></table>
+                            </td>
+                        </tr>
+                        @if (_deptID == 4)
+                        {
+                            <tr>
+                                <td colspan="2"><button id="SaveType" class="btn btn-primary" style="float:right;"><span class="glyphicon glyphicon-pencil"></span> 保存</button></td>
+                            </tr>
+                        }
+                        
+                    </table>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 

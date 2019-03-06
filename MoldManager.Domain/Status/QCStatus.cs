@@ -11,7 +11,7 @@ namespace TechnikSys.MoldManager.Domain.Status
         暂停 = -1 ,
         准备 = 0 ,
         测量结束 = 1 ,        
-        确认 = 2 ,
+        合格 = 2 ,
         返工 = 4, 
         有条件利用 = 10, 
         取消 = 200,

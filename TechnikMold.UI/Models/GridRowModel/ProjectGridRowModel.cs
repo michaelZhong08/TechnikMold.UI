@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Web;
 using TechnikSys.MoldManager.Domain.Entity;
@@ -189,6 +190,24 @@ namespace MoldManager.WebUI.Models.GridRowModel
                 _phaseSeq = _phaseSeq + 1;
             }
             cell[cell.Length - 1] = Project.Memo;
+        }
+
+        public ProjectGridRowModel(DataRow dr)
+        {
+            cell = new string[19];
+            cell[0] = dr["ProjectID"].ToString();
+            cell[1] = dr["ProjectNumber"].ToString();
+            cell[2] = dr["btnContnet"].ToString();
+            cell[3] = dr["PLANTYPE"].ToString();
+            for(var i = 1; i <= 14; i++)
+            {
+                try
+                {
+                    cell[i + 3] = dr[i.ToString()].ToString();
+                }
+                catch { cell[i + 3] = ""; }
+            }
+            cell[18] = dr["Memo"].ToString();
         }
 
         private bool PhaseFinish(ProjectPhase Phase){

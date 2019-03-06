@@ -50,13 +50,16 @@ $(document).ready(
             $("#DepartmentID").val(0);
             $("#Name").val("");
             $("#Enabled").val("true");
-            alert("请在右侧输入部门信息");
+            $('#Name').removeAttr('disabled');
+            //alert("请在右侧输入部门信息");
         })
 
 
         $("#DeleteDept").on("click", function () {
             if ($("#DepartmentList").val() != null) {
                 if (confirm("确认要删除部门？")) {
+                    $('#Name').val('');
+                    $('#Name').attr('disabled', 'disabled');
                     DeleteDepartment($("#DepartmentList").val());
                 }
             } else {
@@ -65,6 +68,7 @@ $(document).ready(
         })
 
         $("#DepartmentList").on("change", function () {
+            $('#Name').removeAttr('disabled');
             $("#DepartmentID").val($("#DepartmentList option:selected").val());
             $("#Name").val($("#DepartmentList option:selected").text());
             $("#Enabled").val("true");

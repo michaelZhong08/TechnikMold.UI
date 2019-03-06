@@ -57,185 +57,191 @@
         padding: 0px;
     }
 </style>
-<div style="margin-top:60px">   
-    <div class="col-sm-11">
-        @if (ViewBag.QuotationRequestID != 0)
+
+<div>
+    <input type="hidden" id="tempID" value="-1" />
+    <input type="hidden" id="row" />
+    @if (ViewBag.QuotationRequestID == 0)
+    {
+        using (Html.BeginForm("QRSave", "Purchase", FormMethod.Post, new { id = "QRCreate" }))
         {
-            <input type="hidden" id="QuotationRequestID" value="@ViewBag.QuotationRequestID" />
-            <h2>询价单号：@Model.QuotationNumber</h2>
-        }
-        else
-        {
-            <input type="hidden" id="QuotationRequestID" value="0" />
-            <h2>创建询价单</h2>
-        }
-        <div id="Toolbar">
-
-            <table>
-                <tr>
-                    @if (Model == null)
+            if (ViewBag.PurchaseRequestID != 0)
             {
-                        <td>
-                            <button class="btn btn-success" id="SaveQR">保存询价单</button>
-                        </td>
-                        <td><button class="btn btn-primary" id="AddQRContent">添加零件</button></td>
-                        <td>
-                            <button class="btn btn-primary" id="DeleteQRContent">删除零件</button>
-                        </td>
-                    }
-                    else
-                    {
-                        if (DeptID == 4)
-                        {
-                            switch (Model.State)
-                            {
-                                case (int)QuotationRequestStatus.新建:
-                                    <td><button class="btn btn-primary" id="AddQRContent">添加零件</button></td>
-                                    <td><button class="btn btn-primary" id="DeleteQRContent">删除零件</button></td>
-                                    <td><button class="btn btn-primary" id="SaveQR">保存询价单</button></td>
-                                    <td><button class="btn btn-warning" id="CancelQR">取消</button></td>
-                                    <td><button class="btn btn-primary" id="SelectQRSupplier">选择报价组</button></td>
-                                    <td><button class="btn btn-primary" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span> 询价文件</button></td>
-                                    <td id="td_GenerateLink"></td>
-                                    break;
-                                case (int)QuotationRequestStatus.发出:
-                                    <td>
-                                        <button class="btn btn-primary" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span> 询价文件</button>
-                                    </td>
-                                    <td id="td_GenerateLink">
-
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-primary" id="SelectQRSupplier">选择报价组</button>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-primary" id="QuotationInput">输入供应商报价</button>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-primary" id="CompareQuotation">报价对比&供应商指定</button>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-warning" id="CloseQR">关闭询价单</button>
-                                    </td>
-                                    break;
-                                case (int)QuotationRequestStatus.完成:
-                                    <td>
-                                        <button class="btn btn-warning" id="RestartQR">重新询价</button>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-primary" id="CompareQuotation">报价对比&生成订单</button>
-                                    </td>
-                                    break;
-                            }
-                        }
-                    }
-                </tr>
-            </table>
-
-        </div>
-        <div id="Basic" class="col-sm-10 PRInfo">
-            @if (ViewBag.QuotationRequestID == 0)
-            {
-
-                using (Html.BeginForm("QRSave", "Purchase", FormMethod.Post, new { id = "QRCreate" }))
-                {
-                    if (ViewBag.PurchaseRequestID != 0)
-                    {
-                        <input type="hidden" id="PurchaseRequestID" name="PurchaseRequestID" value="@ViewBag.PurchaseRequestID" />
-                    }
-                    else
-                    {
-                        <input type="hidden" id="PurchaseRequestID" name="PurchaseRequestID" value="0" />
-                    }
-                }
+                <input type="hidden" id="PurchaseRequestID" name="PurchaseRequestID" value="@ViewBag.PurchaseRequestID" />
             }
             else
             {
-                <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
-                if (Model.State == 1)
-                {
-                    using (Html.BeginForm("QRSave", "Purchase", FormMethod.Post, new { id = "QRCreate" }))
-                    {
-                        <input type="hidden" id="ProjectID" name="ProjectID" value="@Model.ProjectID" />
+                <input type="hidden" id="PurchaseRequestID" name="PurchaseRequestID" value="0" />
+            }
+        }
+    }
+    else
+    {
+        <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
+        if (Model.State == 1)
+        {
+            using (Html.BeginForm("QRSave", "Purchase", FormMethod.Post, new { id = "QRCreate" }))
+            {
+                <input type="hidden" id="ProjectID" name="ProjectID" value="@Model.ProjectID" />
                         <input type="hidden" id="PurchaseRequestID" name="PurchaseRequestID" value="@Model.PurchaseRequestID" />
-                    }
+            }
+        }
+        else
+        {
+            <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
+        }
+    }
+</div>
+
+<div style="margin-top:60px;">
+    @if (ViewBag.QuotationRequestID != 0)
+    {
+        <input type="hidden" id="QuotationRequestID" value="@ViewBag.QuotationRequestID" />
+        <h2>询价单号：@Model.QuotationNumber</h2>
+    }
+    else
+    {
+        <input type="hidden" id="QuotationRequestID" value="0" />
+        <h2>新建询价单</h2>
+    }
+</div>
+
+<div class="Form_FatherDiv">
+    <div class="Form_ToolbarDiv" style="height: 40px;">
+        <table>
+            <tr>
+                @if (Model == null)
+                {
+
+                    @*<td>
+                        <button class="btn btn-success" id="AddQRContent"><span class="glyphicon glyphicon-plus"></span> 添加零件</button>
+                    </td>*@
+                    <td>
+                        <button class="btn btn-danger" id="DeleteQRContent"><span class="glyphicon glyphicon-trash"></span> 删除零件</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-success" id="SaveQR"><span class="glyphicon glyphicon-save"></span> 保存询价</button>
+                    </td>
                 }
                 else
                 {
-                    <input type="hidden" id="ProjectID" value="@ViewBag.ProjectID" />
+                    if (DeptID == 4)
+                    {
+                        switch (Model.State)
+                        {
+                            case (int)QuotationRequestStatus.新建:
+                                @*<td><button class="btn btn-success" id="AddQRContent"><span class="glyphicon glyphicon-plus"></span> 添加零件</button></td>*@
+                                <td><button class="btn btn-danger" id="DeleteQRContent"><span class="glyphicon glyphicon-trash"></span> 删除零件</button></td>
+                                <td><button class="btn btn-success" id="SaveQR"><span class="glyphicon glyphicon-save"></span> 保存询价</button></td>
+                                <td><button class="btn btn-warning" id="CancelQR"><span class="glyphicon glyphicon-ban-circle"></span> 取消询价</button></td>
+                                <td><button class="btn btn-success" id="SelectQRSupplier"><span class="glyphicon glyphicon-book"></span> 选择报价组</button></td>
+                                @*<td><button class="btn btn-info" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span>&nbsp; 询价文件</button></td>*@
+                                <td id="td_GenerateLink"></td>
+                                break;
+                            case (int)QuotationRequestStatus.发出:
+                                    <td>
+                                        <button class="btn btn-success" id="SelectQRSupplier"><span class="glyphicon glyphicon-book"></span> 选择报价组</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-info" id="SendQR"><span class="glyphicon glyphicon-folder-open"></span>&nbsp; 询价文件</button>
+                                    </td>
+                                    <td id="td_GenerateLink"></td>
+                                    <td>
+                                        <button id="QShowRFileModal" class="btn btn-info"><span class="glyphicon glyphicon-paperclip"></span> 报价单附件</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" id="QuotationInput"><span class="glyphicon glyphicon-pencil"></span> 输入供应商报价</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" id="CompareQuotation"><span class="glyphicon glyphicon-hand-right"></span> 报价对比&供应商指定</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-warning" id="CloseQR"><span class="glyphicon glyphicon-ban-circle"></span> 取消询价</button>
+                                    </td>
+                                break;
+                            case (int)QuotationRequestStatus.完成:
+                                @*<td>
+                                    <button class="btn btn-info" id="RestartQR"><span class="glyphicon glyphicon-repeat"></span> 重新询价</button>
+                                </td>*@
+                                <td>
+                                    <button class="btn btn-primary" id="CompareQuotation"><span class="glyphicon glyphicon-hand-right"></span> 报价对比</button>
+                                </td>
+                                break;
+                        }
+                    }
                 }
-            }
-            <table>
-
-                <tr>
-                    @if (ViewBag.PurchaseNumber != "")
+            </tr>
+        </table>
+    </div>
+    <div class="Form_HeadDiv">
+        <table class="Form_HeadTable">
+            <colgroup>
+                <col width="5%"/><col width="20%"/>
+                <col width="5%" /><col width="20%" />
+                <col width="5%" /><col width="20%" />
+                <col width="5%" /><col width="20%" />
+            </colgroup>
+            <tr>
+                @if (ViewBag.PurchaseNumber != "")
+                {
+                    <td class="headTb_label">关联申请单</td>
+                    <td><input type="text" class="form-control" value="@ViewBag.PurchaseNumber" readonly /></td>
+                }
+                else
+                {
+                    <td class="headTb_label">关联申请单</td>
+                    <td><input type="text" class="form-control" value="-" readonly /></td>
+                }
+                 @if ((ViewBag.DueDate != null) && (ViewBag.DueDate != "1900-01-01"))
+                 {
+                    <td class="headTb_label">需求日期</td>
+                    <td><input type="date" class="form-control" id="DueDate" value="@ViewBag.DueDate" readonly /></td>
+                 }
+                 else
+                 {
+                    <td class="headTb_label">报价需求日期</td>
+                    <td><input type="date" id="DueDate" class="form-control  required" value="@DateTime.Now.ToString("yyyy-MM-dd")" /></td>
+                 }
+                @if (ViewBag.QuotationRequestID != 0)
+                {
+                    string status = Enum.GetName(typeof(QuotationRequestStatus), Model.State);
+                    <td class="headTb_label">状态</td>
+                    <td><input type="text" id="QuotationRequestStatus" class="form-control" value="@status" readonly></td>
+                    <td class="headTb_label">已选报价组</td>
+                    <td><select id="ExistingSuppliers" class="form-control"></select></td>
+                }
+                else
+                {
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                }
+            </tr>
+            <tr>
+                @{
+                    if (ViewBag.QuotationRequestID != 0)
                     {
-                        <td class="col-sm-1"><label>关联申请单</label></td>
-                        <td class="col-sm-2">
-                            <input type="text" class="form-control" value="@ViewBag.PurchaseNumber" readonly />
-                        </td>
-                    }
-                    else
-                    {
-                        <td class="col-sm-1"><label>关联申请单</label></td>
-                        <td class="col-sm-2">
-                            <input type="text" class="form-control" value="-" readonly />
-                        </td>
-                    }
-                    <td class="col-sm-1"><label>报价需求日期 </label></td>
-                    <td class="col-sm-2">
-                        @if ((ViewBag.DueDate != null)&&(ViewBag.DueDate!="1900-01-01"))
-                        {
-                            <input type="date" class="form-control" id="DueDate" value="@ViewBag.DueDate" readonly />
-                        }
-                        else
-                        {
-                            <input type="date" id="DueDate" class="form-control  required" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                        }
-                    </td>
-                </tr>
-                    @if (ViewBag.QuotationRequestID != 0)
-                    {
-                        string status = Enum.GetName(typeof(QuotationRequestStatus), Model.State);
-                        <tr>
-                            <td class="col-sm-1"><label>状态</label></td>
-                            <td class="col-sm-2"><input type="text" id="QuotationRequestStatus" class="form-control" value="@status" readonly></td>
-                            <td class="col-sm-1"><label>已选择报价组</label></td>
-                            <td class="col-sm-2">
-                                @*<input type="text" id="ExistingSuppliers" class="form-control" readonly />*@
-                                <select id="ExistingSuppliers" class="form-control" ></select>
-                            </td>
-                        </tr>
                         if (Model.State >= (int)QuotationRequestStatus.发出)
                         {
-                            <tr>
-                                <td class="col-sm-1"><label>备注</label></td>
-                                <td colspan="3" class="col-sm-5"><input type="text" id="Memo" class="form-control" placeholder="备注" value="@ViewBag.Memo" readonly /></td>
-                            </tr>
+                            <td class="headTb_label">备注</td>
+                            <td colspan="7"><input type="text" id="Memo" class="form-control" placeholder="备注" value="@ViewBag.Memo" readonly /></td>
                         }
                         else
                         {
-                            <tr>
-                                <td class="col-sm-1"><label>备注</label></td>
-                                <td colspan="3" class="col-sm-5"><input type="text" id="Memo" class="form-control" placeholder="备注" value="@ViewBag.Memo" /></td>
-                            </tr>
+                            <td class="headTb_label">备注</td>
+                            <td colspan="7"><input type="text" id="Memo" class="form-control" placeholder="备注" value="@ViewBag.Memo" /></td>
                         }
                     }
-
-            </table>
-        </div>
-
-        <div class="col-sm-12" style="float:left;">
-            <table id="QRContentGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+                }
+            </tr>
+        </table>
+    </div>
+    <div class="Form_TableDiv">
+        <table id="QRContentGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
-
-<input type="hidden" id="tempID" value="-1" />
-
-<input type="hidden" id="row" />
-
 
 @*修改零件数量*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="ModiyfContentQtyDialog" tabindex="-1" role="dialog" aria-labelledby="ModiyfContentQtyLabel">
@@ -338,24 +344,38 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="SupplierSelectLabel">选择报价组</h4>
+                <h4 class="modal-title"></h4>
             </div>
             <div class="modal-body" style="height:300px">
-                <div class="col-sm-5">
-                    <select id="AvailableQRGroups" class="form-control" size="10"></select>
-                </div>
-                <div class="col-sm-1">
-                    <button class="btn btn-primary" id="Select">></button>
-                    <button class="btn btn-primary" id="Remove"><</button>
+                <div class="modal_LMR_FatherDiv">
+                    <div class="modal_LMR_LeftDiv">
+                        <div class="modal_SelTitle">
+                            <label>其它报价组:</label>
+                        </div>
+                        <div>
+                            <select id="AvailableQRGroups" class="form-control modal_Sel" size="10"></select>
+                        </div>
+                    </div>
+                    <div class="modal_LMR_MiddleDiv">
+                        <div style="position:absolute;top:30%;left:20%;">
+                            <button class="btn btn-primary" id="Select"> > </button>
+                            <button class="btn btn-primary" id="Remove" style="margin-top:20px;"> < </button>
+                        </div>
+                    </div>
+                    <div class="modal_LMR_RightDiv">
+                        <div class="modal_SelTitle">
+                            <label>已添加报价组:</label>
+                        </div>
+                        <div>
+                            <select id="QGroupList" class="form-control modal_Sel" size="10"></select>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-sm-5">
-                    <select id="QGroupList" class="form-control" size="10"></select>
-                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="SaveQRSuppliers" class="btn btn-primary">保存</button>
+                <button type="button" id="SaveQRSuppliers" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span> 确认</button>
             </div>
         </div>
     </div>
@@ -465,6 +485,34 @@
         </div>
     </div>
 </div>
+
+@*附件保存*@
+<div class="modal" data-backdrop="static" data-keyboard="false" id="QRFileDialog" tabindex="-1" role="dialog" aria-labelledby="ProjectFileLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:700px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title">报价文件</h4>
+            </div>
+            <div class="modal-body">
+                <form id="modal_QRAttachForm" method="post" enctype="multipart/form-data">
+                    <div id="modal_fileInputGroup" class="input-group">
+                        <input id="ObjID" name="ObjID" hidden />
+                        <input id="ObjType" name="ObjType" value="QRQotations" hidden />
+                        <input id="Files" name="Files" type="file" class="form-control" placeholder="选择文件..." multiple="multiple">
+                        <span class="input-group-btn">
+                            <button id="modal_QRAttachSubmitbtn" class="btn btn-warning" type="button" style="width: 72px;"><span class="glyphicon glyphicon-upload"></span> 提交</button>
+                        </span>
+                    </div>
+                    <table id="modal_tb_ProJFiles"></table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
+            </div>
+        </div>
+    </div>
+</div>
 @if (ViewBag.ProjectID == 0)
 {
     Html.RenderAction("MoldSelect", "Dialog");
@@ -472,18 +520,24 @@
 
 <script src="~/Scripts/Purchase.js"></script>
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
+
+<script>
+    $(document).ready(function(){
+        InitialView();
+
+        $(window).resize(function () {
+            InitialView();
+            $("#QRContentGrid").setGridWidth($('.Form_TableDiv').eq(0).width());
+            $("#QRContentGrid").setGridHeight($('.Form_TableDiv').eq(0).height() - 40);
+        });
+    })
+</script>
+
 <script type="text/javascript">
     $(document).ready(function () {
         $('#GenerateLink').on('click',function(){
-            //var tableContent=PJTable();
-            //$.get('/Purchase/Service_GetPJStr',tableContent, function (res) {
-            //    var aStr = PJHref('QWERYRO', 'micheal_zhong@outlook.com', 'subject', res);
-            //    $('#Toolbar').append(aStr);
-            //    document.getElementById("qrMail").click();
-            //});
-            //alert('请耐心等待Outlook程序打开！');
-            $.jAlert({ //this is the normal usage
-                //'title': 'Test',
+            $.jAlert({ 
+                //this is the normal usage
                 'content': '请耐心等待Outlook程序打开！',
                 //'theme': 'green',
                 'autoClose' : 5000,
@@ -515,8 +569,6 @@
         else if (ViewBag.PurchaseItemIDs != "")
         {
             @:QRContentGrid("", 0, 0, "@ViewBag.PurchaseItemIDs");
-            //@:var _url = "/Purchase/JsonQRPurchaseItems?PurchaseItemIDs=@ViewBag.PurchaseItemIDs";
-            //@:$("#QRContentGrid").jqGrid('setGridParam', {datatype: "json", url:_url}).trigger("reloadGrid");
 
 
         }else
@@ -659,7 +711,7 @@
             console.log('询价单id:'+$("#QuotationRequestID").val()+' // 报价组ids:'+qGroupIDs);
             $.get('/Purchase/Service_QR_SaveQGroups?quotationID='+$("#QuotationRequestID").val()+'&qGroupIDs='+qGroupIDs,function(res){
                 if(res=='' || res==null){
-                    alert('保存成功！');
+                    //alert('保存成功！');
                     $('#SelectSupplierDialog').modal('hide');
                     LoadSupplierNames($("#QuotationRequestID").val());
                 }else{
@@ -715,5 +767,57 @@
             _href= 'MoldSysPlugin:'+res+_qrID+','+_fval;
         });  
         return _href;
+    }
+</script>
+
+<script>
+    $(document).ready(function(){
+        AttachFiles();
+
+        $('#QShowRFileModal').on('click',function(){
+            var qrID=$('#QuotationRequestID').val();
+            $('#ObjID').val(qrID);
+            $('#QRFileDialog').modal('show');
+            ReloadFileGrid(qrID);
+        });
+
+        $('#modal_QRAttachSubmitbtn').on('click',function(){
+            if ($('#Files').val() == '') {
+                alert('请选择上传表单！');
+                $('#Files').val('');
+                return false;
+            }
+            $('#modal_QRAttachForm').ajaxSubmit({
+                url: '/Attachment/Service_FileUpload/',
+                type: 'post',
+                async:false,
+                dataType: 'json',
+                success: function (msg) {
+                    if (msg.Code == 1) {
+                        $('#Files').val("");
+                        ReloadFileGrid($("#ObjID").val());
+                    }
+                    else
+                        alert(msg.Message);
+                }
+            })
+        }); 
+    })
+    //重载列表
+    function ReloadFileGrid(qrID){
+        var _url = "/Attachment/Service_GetFilesByObj?ObjID=" + qrID +"&ObjType="+$('#ObjType').val();
+        $("#modal_tb_ProJFiles").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");        
+    };
+
+    function DeleteAttach(ObjID,ObjType,FileName,FileType){
+        $.ajaxSettings.async = false;//同步请求
+        $.get('/Attachment/Service_DelAttach?ObjID='+ObjID+'&ObjType='+ObjType+'&FileName='+FileName+'&FileType='+FileType,function(res){
+            if(res.Code==-1){
+                alert('只允许上传附件本人删除！');
+                return false;
+            }
+            else
+                ReloadFileGrid(ObjID);           
+        })
     }
 </script>

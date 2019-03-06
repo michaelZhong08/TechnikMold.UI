@@ -19,7 +19,7 @@
     <div class="col-sm-12">
         @*@using (Html.BeginForm("SaveQuotation", "Purchase", FormMethod.Post, new { id = "QRQuotationInput" }))
             {*@
-        <h3>供应商报价输入</h3>
+        <h2>供应商报价输入</h2>
         <div class="col-sm-12 PRInfo">
             <table>
                 <tr>
@@ -47,7 +47,7 @@
                     @if (DeptID == 4)
                     {
                         <td>
-                            <button class="btn btn-primary" id="DateSet">到货日期</button>
+                            <button class="btn btn-info" id="DateSet"><span class="glyphicon glyphicon-calendar"></span> 到货日期</button>
                         </td>
                     }
 
@@ -72,10 +72,12 @@
 
                     @if (DeptID == 4)
                     {
-                        <td class="col-sm-2"><label>附件</label></td>
-                        <td class="col-sm-2"><input id="QShowRFileModal" class="btn btn-primary" value="报价单附件(0)" style="width:100%;" /></td>
+                        @*<td class="col-sm-2"><label>附件</label></td>*@
+                        @*<td class="col-sm-2"><input id="QShowRFileModal" class="btn btn-info" value="报价单附件(0)" style="width:100%;" /></td>*@
+                        <td></td>
+                        <td></td>
                         <td >
-                            <button class="btn btn-primary" id="SaveQuotation" style="float:right;">保存报价</button>
+                            <button class="btn btn-success" id="SaveQuotation" style="float:right;"><span class="glyphicon glyphicon-save"></span> 保存报价</button>
                         </td>
                     }
 

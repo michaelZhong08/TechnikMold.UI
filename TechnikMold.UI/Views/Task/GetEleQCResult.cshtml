@@ -3,48 +3,57 @@
     ViewBag.Title = "电极确认";
 }
 
-<div class="col-sm-12" style="margin-top:60px">
-    <h2>电极确认 </h2>
-    <div class="col-sm-12">
-        <ul class="nav nav-pills">
-            <li class="dropdown all-camera-dropdown">
-                <button class="dropdown-toggle btn btn-primary" data-toggle="dropdown" href="#">
-                    @if (ViewBag.Status == 4)
-                    {
-                        @:CNC返修
+<div>
+    <input type="hidden" id="Status" value="@ViewBag.Status" />
+</div>
+<h2 style="margin-top:60px;">电极确认</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
+                    <select id="qcResultSel" class="form-control"></select>
+                    @*<button class="dropdown-toggle btn btn-warning" data-toggle="dropdown" href="#">
+                        @if (ViewBag.Status == 4)
+                        {
+                            @:CNC返修
                     }
-                    else if (ViewBag.Status == 2)
-                    {
-                        @:合格
+                        else if (ViewBag.Status == 2)
+                        {
+                            @:合格
                     }
-                    else if (ViewBag.Status == 10)
-                    {
-                        @:有条件利用
+                        else if (ViewBag.Status == 10)
+                        {
+                            @:有条件利用
                     }
-                    else
-                    {
-                        @:-
+                        else
+                        {
+                            @:-
                     }
-                    <b class="caret"></b>
-                </button>
-                <ul class="dropdown-menu">
-                    <li role="presentation">
-                        <a href="/Task/GetEleQCResult?Status=10">有条件利用</a>
-                    </li>
-                    <li role="presentation">
-                        <a href="/Task/GetEleQCResult?Status=2">合格</a>
-                    </li>
-                    <li role="presentation">
-                        <a href="/Task/GetEleQCResult?Status=4">CNC返修</a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <button class="btn btn-primary" id="Search">关键字搜索</button>
-            </li>
-        </ul>
+                        <b class="caret"></b>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li role="presentation">
+                            <a href="/Task/GetEleQCResult?Status=2">合格</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="/Task/GetEleQCResult?Status=10">有条件利用</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="/Task/GetEleQCResult?Status=4">CNC返修</a>
+                        </li>
+                    </ul>*@
+                </td>
+                <td>
+                    <input type="text" id="Keyword" class="form-control" placeholder="模号/电极名/标签名" value="" style="width:300px;"/>
+                </td>
+                <td>
+                    <button class="btn btn-info" id="SearchElectrode"><span class="glyphicon glyphicon-search"></span> 查询</button>
+                </td>
+            </tr>
+        </table>
     </div>
-    <div class="col-sm-12">
+    <div class="UD_TableDiv">
         <table id="ElectrodeGrid"></table>
     </div>
 </div>
@@ -92,7 +101,6 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="SaveElectrode" class="btn btn-primary">保存</button>
-                @*<button type="button" id="test" class="btn btn-primary">保存</button>*@
             </div>
         </div>
     </div>
@@ -111,8 +119,8 @@
                     <tr>
                         <td class="col-sm-4"><label>关键字</label></td>
                         <td>
-                            <input type="text" id="Keyword" class="form-control" />
-                            <input type="hidden" id="Status" value="@ViewBag.Status" />
+                            @*<input type="text" id="Keyword" class="form-control" />
+                            <input type="hidden" id="Status" value="@ViewBag.Status" />*@
                         </td>
                     </tr>
 
@@ -132,19 +140,49 @@
     $("document").ready(function () {
         ElectrodeQCResult(@ViewBag.Status,"@ViewBag.Keyword")
 
-        $("#ItemStatus").on("change", function(){
-            location.href = "/Task/GetEleQCResult?Status=" + $("#Status").val();
-        })
+        $(window).resize(function () {
+            $("#ElectrodeGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#ElectrodeGrid").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+        });
+
+        //$("#ItemStatus").on("change", function(){
+        //    location.href = "/Task/GetEleQCResult?Status=" + $("#Status").val();
+        //})
 
         $("#SearchElectrode").on("click", function(){
-            location.href="/Task/GetEleQCResult?Status=" + $("#Status").val()+"&Keyword="+$("#Keyword").val();
+            ReloadEleItemTable($('#Status').val());
+            //location.href="/Task/GetEleQCResult?Status=" + $("#Status").val()+"&Keyword="+$("#Keyword").val();
         })
 
-        $("#Search").on("click", function(){
-            $("#SearchDialog").modal("show");
+        //$("#Search").on("click", function(){
+        //    $("#SearchDialog").modal("show");
+        //})
+        $('#qcResultSel').on('change',function(){
+            ReloadEleItemTable($('#qcResultSel').val());
         })
 
+        LoadQcStatus();
     })
+
+    function LoadQcStatus(){
+        var statusArry=[2,4,10];
+        $.get('/Task/Service_QC_GetQCStatus',function(res){
+            $.each(res,function(i,n){
+                if(statusArry.indexOf(n)>=0){
+                    var _html='';
+                    if(Number($('#Status').val())==n){
+                        _html='<option value="'+n+'" selected>'+i+'</option>';
+                    }else{
+                        _html='<option value="'+n+'">'+i+'</option>';
+                    }
+                    $('#qcResultSel').append(_html);
+                }
+            })
+        })
+    }
+
+    function ReloadEleItemTable(state){
+        var _url="/Task/JsonEleInfo?Status=" + state+'&Keyword='+$('#Keyword').val();
+        $('#ElectrodeGrid').jqGrid('setGridParam',{datatype:'json',url:_url}).trigger('reloadGrid');
+    }
 </script>
-
-

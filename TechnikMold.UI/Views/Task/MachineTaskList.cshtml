@@ -2,14 +2,15 @@
 @{
     TaskTypeModelHelper _taskType = new TaskTypeModelHelper();
     int type = Convert.ToInt32(ViewBag.TaskType);
-    int DeptID = 0;
-    int PosID = 0;
+    int CkDeptID = 0, CkPosID = 0;
+    string CkDepName = string.Empty;
     Dictionary<int,string> taskStatus =new Dictionary<int, string>();
     taskStatus.Add(0, "当前任务");
     taskStatus.Add(1, "历史任务");
     try
     {
-        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+        CkDeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+        CkDepName = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]);
     }
     catch
     {
@@ -17,7 +18,7 @@
     }
     try
     {
-        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+        CkPosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
     }
     catch
     {
@@ -74,18 +75,17 @@
 
 <script src="~/Scripts/Task.js"></script>
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
-
 <input type="hidden" id="CurrentTaskType" value="@ViewBag.TaskType" />
-<div class="FatherDiv">
-    @if (ViewBag.State == 0)
+
+@if (ViewBag.State == 0)
     {
-        <h2>@ViewBag.Title</h2>
+        <h2 style="margin-top:60px;">@(ViewBag.Title)当前状态</h2>
     }
     else
     {
-        <h2>@ViewBag.Title 历史</h2>
+        <h2 style="margin-top:60px;">@(ViewBag.Title)历史状态</h2>
     }
-
+<div class="FatherDiv">
     <div class="LeftDiv">
         <button class="btn btn-primary LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
         <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
@@ -116,23 +116,6 @@
                                 }
                             }
                         </select>
-                        @*<button class="dropdown-toggle btn btn-info" data-toggle="dropdown" href="#">
-                            @ViewBag.Title
-                            <b class="caret"></b>
-                        </button>
-                        <ul class="dropdown-menu">
-                            @for (int i = 1; i <= 6; i++)
-                            {
-                                if (i != 5)
-                                {
-                                    <li role="presentation">
-                                        <a class="TaskTypeLink" href="/Task/MachineTaskList?TaskType=@i&State=@ViewBag.State&MoldNumber=@ViewBag.MoldNumber">
-                                            @_taskType.GetTypeName(i)
-                                        </a>
-                                    </li>
-                                }
-                            }
-                        </ul>*@
                     </td>
                     <td>
                         <select id="sel_TaskStatus" class="form-control">
@@ -151,67 +134,138 @@
                     </td>
                     @if (ViewBag.State == 0)
                     {
-                        if (_wsDep.Contains(DeptID))
+                        if (_wsDep.Contains(CkDeptID))
                         {
-                            <td>
-                                设置优先级
-                            </td>
-                            <td>
-                                <select class="form-control" id="Sel_priority">
-                                    <option value="0">-</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                </select>
-                            </td>
                             switch (type)
                             {
                                 case 1://电极任务
-                                    <td><button class="btn btn-primary" id="CNCItemList">电极信息</button></td>
-                                    <td class="sinno" hidden><button class="btn btn-primary" id="AddToQueue">电极扫描</button></td>
-                                    <td><button class="btn btn-primary" id="PointCheck">任务点检</button></td>
+                                    if (CkDepName.Equals("CNC"))
+                                    {
+                                        <td>
+                                            <select class="form-control" id="Sel_priority">
+                                                <option value="0">-</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                        </td>
+                                        <td><button class="btn btn-info" id="CNCItemList"><span class="glyphicon glyphicon-hand-right"></span> 电极信息</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-primary" id="AddToQueue"><span class="glyphicon glyphicon-barcode"></span> 电极加工</button></td>
+                                        <td><button class="btn btn-warning" id="PointCheck"><span class="glyphicon glyphicon-user"></span> 任务点检</button></td>
+                                        <td><button class="btn btn-danger" id="FinishTask"><span class="glyphicon glyphicon-lock"></span> 结束加工</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-primary" id="OutSource1"><span class="glyphicon glyphicon-ok-circle"></span> 任务外发</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-warning" id="CancelOutSource"><span class="glyphicon glyphicon-ban-circle"></span> 取消外发</button></td>
+                                    }
                                     break;
                                 case 2://EDM任务
-                                    <td class="sinno" hidden><button class="btn btn-primary" id="EDMProcessList">加工选中任务</button></td>
-                                    <td><button class="btn btn-primary" id="EleQCResult">电极确认</button></td>
-                                    <td><button class="btn btn-primary" id="EleInStock">电极库存</button></td>
+                                    if (CkDepName.Equals("EDM"))
+                                    {
+                                        <td>
+                                            <select class="form-control" id="Sel_priority">
+                                                <option value="0">-</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                        </td>
+                                        <td><button class="btn btn-warning" id="EleQCResult"><span class="glyphicon glyphicon-check"></span> 确认电极</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-primary" id="EDMProcessList"><span class="glyphicon glyphicon-edit"></span> 加工任务</button></td>
+                                        <td><button class="btn btn-danger" id="FinishTask"><span class="glyphicon glyphicon-lock"></span> 结束加工</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-primary" id="OutSource1"><span class="glyphicon glyphicon-ok-circle"></span> 任务外发</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-warning" id="CancelOutSource"><span class="glyphicon glyphicon-ban-circle"></span> 取消外发</button></td>
+                                    }
+                                    break;
+                                case 3:
+                                    if (CkDepName.Equals("WEDM"))
+                                    {
+                                        <td>
+                                            <select class="form-control" id="Sel_priority">
+                                                <option value="0">-</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                        </td>
+                                        <td><button class="btn btn-primary" id="AddToQueue"><span class="glyphicon glyphicon-edit"></span> 开始加工</button></td>
+                                        <td><button class="btn btn-danger" id="FinishTask"><span class="glyphicon glyphicon-lock"></span> 结束加工</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-primary" id="OutSource1"><span class="glyphicon glyphicon-ok-circle"></span> 任务外发</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-warning" id="CancelOutSource"><span class="glyphicon glyphicon-ban-circle"></span> 取消外发</button></td>
+                                    }
                                     break;
                                 case 4://铣铁任务
-                                    <td class="sinno" hidden><button class="btn btn-primary" id="AddToQueue">开始加工</button></td>
-                                    <td><button class="btn btn-primary" id="PointCheck">任务点检</button></td>
+                                    if (CkDepName.Equals("CNC"))
+                                    {
+                                        <td>
+                                            <select class="form-control" id="Sel_priority">
+                                                <option value="0">-</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                        </td>
+                                        <td class="sinno" hidden><button class="btn btn-primary" id="AddToQueue"><span class="glyphicon glyphicon-edit"></span> 开始加工</button></td>
+                                        <td><button class="btn btn-warning" id="PointCheck"><span class="glyphicon glyphicon-user"></span> 任务点检</button></td>
+                                        <td><button class="btn btn-danger" id="FinishTask"><span class="glyphicon glyphicon-lock"></span> 结束加工</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-primary" id="OutSource1"><span class="glyphicon glyphicon-ok-circle"></span> 任务外发</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-warning" id="CancelOutSource"><span class="glyphicon glyphicon-ban-circle"></span> 取消外发</button></td>
+                                    }
                                     break;
-                                default:
-                                    <td><button class="btn btn-primary" id="AddToQueue">设置加工开始</button></td>
+                                case 6:
+                                    if (CkDepName.Equals("MG"))
+                                    {
+                                        <td>
+                                            <select class="form-control" id="Sel_priority">
+                                                <option value="0">-</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                        </td>
+                                        <td><button class="btn btn-primary" id="AddToQueue"><span class="glyphicon glyphicon-edit"></span> 开始加工</button></td>
+                                        <td><button class="btn btn-danger" id="FinishTask"><span class="glyphicon glyphicon-lock"></span> 结束加工</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-primary" id="OutSource1"><span class="glyphicon glyphicon-ok-circle"></span> 任务外发</button></td>
+                                        <td class="sinno" hidden><button class="btn btn-warning" id="CancelOutSource"><span class="glyphicon glyphicon-ban-circle"></span> 取消外发</button></td>
+                                    }
                                     break;
                             }
-                            <td><button class="btn btn-primary" id="FinishTask">设置加工结束</button></td>
                             @*只有主管以上级别可以设置加工设备信息*@
-                    if ((PosID >= 2) && (type == 1 || type == 4))
+                    if (CkDepName.Equals("CNC") && (type == 1 || type == 4))
                     {
-                        <td><button class="btn btn-primary" id="MachineSetting">加工设备管理</button></td>
+                        <td><button class="btn btn-success" id="AddCNCTask"><span class="glyphicon glyphicon-plus"></span> 新建手工任务</button></td>
                     }
-                    if ((DeptID == 7) && (type == 1 || type == 4))
+                    else if (CkDepName.Equals("EDM") && type == 2)
                     {
-                        <td><button class="btn btn-primary" id="AddCNCTask">新建CNC加工任务</button></td>
-                            }
-                            else if (DeptID == 8 && type == 2)
+                        <td>
+                            <a class="btn btn-success" href="/Task/AddEDMTask"><span class="glyphicon glyphicon-plus"></span> 新建手工任务</a>
+                        </td>
+                    }
+                            if ((CkPosID >= 2) && (type == 1 || type == 4))
                             {
-                                <td>
-                                    <a class="btn btn-primary" href="/Task/AddEDMTask">新建EDM加工任务</a>
-                                </td>
+                                <td><button class="btn btn-default" id="MachineSetting"><span class="glyphicon glyphicon-th-list"></span> 设备管理</button></td>
                             }
-                            <td class="sinno" hidden><button class="btn btn-primary" id="OutSource1">任务外发</button></td>
-                            <td class="sinno" hidden><button class="btn btn-primary" id="CancelOutSource">取消外发</button></td>
+                            if (CkDepName.Equals("EDM") && type == 2)
+                            {
+                                <td><button class="btn btn-default" id="EleInStock"><span class="glyphicon glyphicon-inbox"></span> 电极库存</button></td>
+                            }
                         }
 
                     }
                     else
                     {
                         <td><input type="text" class="col-sm-1 form-control" id="TaskKeyword" placeholder="任务名关键字" /></td>
-                        <td><button class="btn btn-primary" id="QueryTask">查询</button></td>
+                        <td><button class="btn btn-info" id="QueryTask"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
                     }
+                    
                 </tr>
             </table>
         </div>
@@ -321,7 +375,7 @@
     {
         <div class="contextMenu dropdown" id="MachineTaskContextMenu" style="display:none">
             <ul style="width:200px">
-                @if (_wsDep.Contains(DeptID))
+                @if (_wsDep.Contains(CkDeptID))
              {
                 <li id="SetAccept">
                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
@@ -334,7 +388,7 @@
              }
                 @if (ViewBag.TaskType == 1)
              {
-                 if (DeptID == 7)
+                 if (CkDepName.Equals("CNC"))
                  {
                 @*<li id="EditCNCTask">
                         <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
@@ -348,7 +402,7 @@
              }
                 @if (ViewBag.TaskType == 2)
              {
-                 if (DeptID == 8)
+                 if (CkDepName.Equals("EDM"))
                  {
                 <li id="SetWaiting">
                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
@@ -362,7 +416,7 @@
              }
                 @if (ViewBag.TaskType == 4)
              {
-                 if (DeptID == 7)
+                 if (CkDepName.Equals("CNC"))
                  {
                 @*<li id="DeleteTask">
                         <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/EditProject.png" /></span>
@@ -532,7 +586,7 @@
              $("#TaskGrid").setGridParam().showHideCol("Operater");
              $("#TaskGrid").setGridParam().showHideCol("Machine");
              $("#TaskGrid").setGridParam().showHideCol("FinishTime");
-             if ((@ViewBag.TaskType==1)||(@ViewBag.TaskType==2)){
+             if ((@ViewBag.TaskType==1)){
                     $("#TaskGrid").setGridParam().showHideCol("Surface");
                     $("#TaskGrid").setGridParam().showHideCol("Obit");
                     $("#TaskGrid").setGridParam().showHideCol("ELEPos");
@@ -847,7 +901,6 @@
                              //删除行
                              //var _rowid=$('#taskhourTbCurRowid').val();
                              $("#tb_SetupWFTaskHour").jqGrid("delRowData", row);
-                                 
                              $('#SetupTaskPeriodHourModal').modal('hide');
                          }
                          else{

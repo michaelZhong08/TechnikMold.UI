@@ -1,58 +1,152 @@
 ﻿
 @{
-    ViewBag.Title = "AddEDMTask";
+    ViewBag.Title = "新建EDM任务";
 }
+<style>
+    .AddEDMTask_FatherDiv{
+        position:absolute;
+        top:100px;
+        right:10px;
+        left:10px;
+        bottom:10px;
+    }
+    .AddEDMTask_LeftDiv{
+        position:absolute;
+        left:0px;
+        width:10%;
+        height:100%;
+        
+    }
+    .AddEDMTask_RightDiv{
+        position:absolute;
+        left:10%;
+        right:0px;
+        height:100%; 
+    }
 
+    .AddEDMTask_LeftDiv_Sel {
+        position: absolute;
+        left: 0px;
+        top: 5%;
+        bottom: 0px;
+        width: 100%;
+    }
 
+    option {
+        font-size: 16px;
+        padding: 2px;
+        cursor: pointer;
+        width: 100% !important;
+    }
+
+    option:hover {
+        background-color: rgba(0,0,0,0.1);
+        font-size: 22px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .AddEDMTask_Right_TopDiv{
+        position: absolute;
+        top: 0px;
+        height:5%;
+        width: 100%;
+    }
+    .AddEDMTask_Right_MidDiv{
+        position: absolute;
+        top: 5%;
+        height:40%;
+        width: 100%;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .AddEDMTask_Right_BottomDiv{
+        position: absolute;
+        top: 45%;
+        bottom:0px;
+        width: 100%;
+    }
+
+    .AddEDMTask_Right_Bottom_LeftDiv{
+        position: absolute;
+        height:100%;
+        left:0px;
+        width:33%;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .AddEDMTask_Right_Bottom_MiddleDiv{
+        position: absolute;
+        height:100%;
+        left:33%;
+        width:33%;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .AddEDMTask_Right_Bottom_RightDiv{
+        position: absolute;height:100%;
+        left:66%;
+        right:0px;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .AddEDMTask_Right_TopDivTable{
+        height:100%;
+    }
+    .AddEDMTask_Right_TopDivTable td{
+        vertical-align:bottom;
+        font-weight:bold;
+    }
+    .AddEDMTask_Right_Bottom_LeftDiv_Sel{
+        position: absolute;
+        left: 0px;
+        top: 5%;
+        bottom: 0px;
+        width: 100%;
+    }
+    .AddEDMTask_Right_Bottom_MiddleDiv_Sel{
+        position: absolute;
+        left: 0px;
+        top: 5%;
+        bottom: 0px;
+        width: 100%;
+    }
+    .AddEDMTask_Right_Bottom_RightDiv_Sel{
+        position: absolute;
+        left: 0px;
+        top: 5%;
+        bottom: 0px;
+        width: 100%;
+    }
+</style>
 <div class="hidden">
+    @using (Html.BeginForm("ReaddEDMTask", "Task", FormMethod.Post, new { id = "AAA" }))
+    {
+        <input type="hidden" id="OldTaskID" name="OldTaskID">
+        <input type="hidden" id="TaskName" name="TaskName" />
+        <input type="hidden" id="Version" name="Version" />
+        <input type="hidden" id="EleDetail" name="EleDetail" />
+        <input type="hidden" id="CADDetail" name="CADDetail" />
+        <input type="hidden" id="TaskMemo" name="Memo" />
+        <input type="hidden" id="TaskPriority" name="Priority" />
+    }
     <input id="TaskType" value="2" hidden />
 </div>
-<div class="col-sm-11" style="margin-top:50px">
+
+<div style="margin-top:60px;">
     <h2>添加EDM加工任务</h2>
-    <div class="col-sm-12">
-        <div class="col-sm-2">
-            <table>
-                <tr>
-                    <td>
-                        <input type="text" id="Keyword" class="form-control" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <select id="MoldList" class="form-control" size="10"></select>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div class="col-sm-10">
-            <table id="TaskGrid"></table>
-        </div>
+</div>
+
+<div class="AddEDMTask_FatherDiv">
+    <div class="AddEDMTask_LeftDiv">
+        <input type="text" id="Keyword" class="form-control" style="width:100%;height:5%;"/>
+        <select id="MoldList" class="form-control AddEDMTask_LeftDiv_Sel" size="10"></select>
     </div>
-    <div class="col-sm-12">
-        <div class="col-sm-3">
-            <label>电极任务</label>
-            <select id="AvailableElectrodeList" class="form-control" size="10"></select>
-        </div>
-        <div class="col-sm-3">
-            <label>电极标签</label>
-            <select id="SelectedElectrodeList" class="form-control" size="10"></select>
-        </div>
-        <div class="col-sm-4">
-            <table class="table">
+    <div class="AddEDMTask_RightDiv">
+        <div class="AddEDMTask_Right_TopDiv">
+            <table class="AddEDMTask_Right_TopDivTable">
                 <tr>
-                    <td class="col-sm-12" colspan="2"><label>工件</label></td>
-                </tr>
-                <tr>
-                    <td class="col-sm-12" colspan="2">
-                        <select id="ItemList" size="3" class="form-control" multiple>
-                            
-                        </select>
+                    <td>
+                        优先级
                     </td>
-                </tr>
-                <tr>
-                    <td class="col-sm-4"><label>优先级</label></td>
-                    <td class="col-sm-8">
-                        <select id="Priority" class="form-control">
+                    <td>
+                        <select id="Priority" class="form-control" style="height:100%">
                             <option value="0">0</option>
                             <option value="1">1</option>
                             <option value="2">2</option>
@@ -61,43 +155,48 @@
                             <option value="5">5</option>
                         </select>
                     </td>
-                </tr>
-                <tr>
-                    <td class="col-sm-1">
-                        <label>备注</label>
+                    <td>
+                        备注
                     </td>
-                    <td class="col-sm-4">
-                        <select id="Memo" name="Memo" class="form-control">
+                    <td>
+                        <select id="Memo" name="Memo" class="form-control" style="height:100%">
                             <option>此次任务为修烧焊</option>
                             <option>此次任务为修尺寸</option>
                         </select>
                     </td>
-                </tr>
-                <tr>
-                    <td class="col-sm-12" colspan="2">
-                        <button class="btn btn-primary" id="CreateEDM">创建EDM任务</button>
+                    <td>
+                        <button class="btn btn-success" id="CreateEDM" style="height:100%"><span class="glyphicon glyphicon-plus"></span> 创建EDM任务</button>
                     </td>
                 </tr>
             </table>
         </div>
-
+        <div class="AddEDMTask_Right_MidDiv">
+            <table id="TaskGrid"></table>
+        </div>
+        <div class="AddEDMTask_Right_BottomDiv">
+            <div class="AddEDMTask_Right_Bottom_LeftDiv">
+                <label>电极任务</label>
+                <select id="AvailableElectrodeList" class="form-control AddEDMTask_Right_Bottom_LeftDiv_Sel" size="10"></select>
+            </div>
+            <div class="AddEDMTask_Right_Bottom_MiddleDiv">
+                <label>电极标签</label>
+                <select id="SelectedElectrodeList" class="form-control AddEDMTask_Right_Bottom_MiddleDiv_Sel" size="10"></select>
+            </div>
+            <div class="AddEDMTask_Right_Bottom_RightDiv">
+                <label>工件</label>
+                <select id="ItemList" size="3" class="form-control AddEDMTask_Right_Bottom_RightDiv_Sel" multiple></select>
+            </div>
+        </div>
     </div>
 </div>
 
-@using (Html.BeginForm("ReaddEDMTask", "Task", FormMethod.Post, new { id = "AAA" }))
-{
-    <input type="hidden" id="OldTaskID" name="OldTaskID">
-    <input type="hidden" id="TaskName" name="TaskName" />
-    <input type="hidden" id="Version"  name="Version" />
-    <input type="hidden"  id="EleDetail" name="EleDetail" />
-    <input type="hidden" id="CADDetail" name="CADDetail" />
-    <input type="hidden"  id="TaskMemo" name="Memo" />
-    <input type="hidden" id="TaskPriority" name="Priority" />
-}
-
 <script src="~/Scripts/Task.js"></script>
 <script>
-    $("document").ready(function(){
+    $("document").ready(function () {
+        $(window).resize(function () {
+            $('#TaskGrid').setGridWidth($('.AddEDMTask_Right_MidDiv').eq(0).width());
+            $('#TaskGrid').setGridHeight($('.AddEDMTask_Right_MidDiv').eq(0).height() - 40);
+        })
         TaskRecreateGrid(0, 2, true);
 
         $("#Keyword").on("keyup", function () {

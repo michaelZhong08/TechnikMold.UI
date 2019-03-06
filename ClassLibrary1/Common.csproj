@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CookieOpera.cs" />
     <Compile Include="DataAccess.cs" />
     <Compile Include="DtToList.cs" />
     <Compile Include="JsonHelper.cs" />

@@ -1,8 +1,16 @@
 ﻿@using MoldManager.WebUI.Models.Helpers;
 @{
     TaskTypeModelHelper _taskType = new TaskTypeModelHelper();
+    int type = Convert.ToInt32(ViewBag.TaskType);
     int DeptID = 0;
     int PosID = 0;
+    Dictionary<int, string> taskStatus = new Dictionary<int, string>();
+
+    taskStatus.Add(0,"当前任务");
+    taskStatus.Add(1,"历史任务");
+    Dictionary<int, string> camsetStatus = new Dictionary<int, string>();
+    camsetStatus.Add(-99,"当前图纸");
+    camsetStatus.Add(0,"历史图纸");
     try
     {
         DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
@@ -20,90 +28,115 @@
 
     }
 }
+<style>
+    #MGUptVerTb td {
+        margin: 0px !important;
+        padding: 0px !important;
+        height: 30px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 12px;
+        /*position:absolute;*/
+    }
 
+    #MGUptVerTb input {
+        height: 24px;
+        border-style: none;
+        outline: none;
+        font-size: 12px;
+        margin: 0px;
+        padding: 0px;
+    }
+</style>
 
-
+<div>
+    <input type="hidden" id="FMoldNumber" />
+    <input type="hidden" id="FTaskType" value="@ViewBag.TaskType" />
+    <input type="hidden" id="FState" value="@ViewBag.State" />
+    <input type="hidden" id="FCAM" value="@ViewBag.CAM" />
+    <input type="hidden" id="MoldNum" value="@ViewBag.MoldNumber" />
+</div>
+<h2 style="margin-top:60px;">@ViewBag.Title</h2>
 <div class="FatherDiv">
-    <h2>@ViewBag.Title</h2>
-
     <div class="LeftDiv">
         <button class="btn btn-primary  LeftDiv_Btn" id="RefreshMold" >刷新模号列表</button>
         <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" placeholder="模具号关键字" />
-        <input type="hidden" id="FMoldNumber" />
-        <input type="hidden" id="FTaskType" value="@ViewBag.TaskType" />
-        <input type="hidden" id="FState" value="@ViewBag.State" />
-        <input type="hidden" id="FCAM" value="@ViewBag.CAM" />
         <select class="form-control LeftDiv_Sel" id="MoldSelect" size="3"></select>
     </div>
 
     <div class="RightDiv">
         <div id="Toolbar" class="RightDiv_TopDiv">
-            <input type="hidden" id="MoldList" value="@ViewBag.MoldNumber" />
-            <ul class="nav nav-pills">
-                <li><button class="btn btn-info" id="UnReleaseList">图纸发布</button></li>
-                <li><button class="btn btn-info" id="WorkshopTaskList">加工任务</button></li>
-
-                <li class="dropdown all-camera-dropdown">
-
-                    <button class="dropdown-toggle btn btn-info" data-toggle="dropdown" href="#">
-                        @ViewBag.TaskTypeName
-                        <b class="caret"></b>
-                    </button>
-                    <ul class="dropdown-menu">
-                        @for (int i = 1; i <= 6; i++)
-                        {
-                            if (i != 5)
+            <table>
+                <tr>
+                    <td>
+                        @*<div class="switch">
+                            <input type="hidden" id="CAMSetState" value="1" />
+                            <input id="CAMSetSwitch" type="checkbox" data-size="large" data-on-color="primary" data-off-color="warning" />
+                        </div>*@
+                        <button class="btn btn-warning" id="UnReleaseList"><span class="glyphicon glyphicon-hand-right"></span> 图纸发布</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary" id="WorkshopTaskList"><span class="glyphicon glyphicon-list"></span> 加工任务</button>
+                    </td>
+                    <td>
+                        <select id="sel_TaskType" class="form-control">
+                            @for (int i = 1; i <= 6; i++)
                             {
-                                <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@i&State=@ViewBag.State&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">@_taskType.GetTypeName(i)</a></li>
+                                if (i != 5)
+                                {
+                                    if (ViewBag.TaskType == i)
+                                    {
+                                        <option value="@i" selected>@_taskType.GetTypeName(i)</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@i">@_taskType.GetTypeName(i)</option>
+                                    }
+                                }
                             }
-                        }
-                    </ul>
-                </li>
-                <li class="dropdown all-camera-dropdown">
-                    <button class="dropdown-toggle btn btn-info" data-toggle="dropdown" href="#">
-                        @if (ViewBag.CAM == 1)
-                        {
-                            if (ViewBag.State == -99)
-                            {
-                                @:当前任务
+                        </select>
+                    </td>
+                    <td>
+                        <select id="sel_TaskStatus" class="form-control">
+                            @{
+                                if (ViewBag.CAM == 1)
+                                {
+                                    foreach (var t in camsetStatus)
+                                    {
+                                        if (t.Key == ViewBag.State)
+                                        {
+                                            <option value="@t.Key" selected>@t.Value</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@t.Key">@t.Value</option>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (var t in taskStatus)
+                                    {
+                                        if (t.Key == ViewBag.State)
+                                        {
+                                            <option value="@t.Key" selected>@t.Value</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@t.Key">@t.Value</option>
+                                        }
+                                    }
+                                }
                             }
-                            else
-                            {
-                                @:历史任务
-                            }
-                        }
-                        else
-                        {
-                            if (ViewBag.State == 0)
-                            {
-                                @:当前任务
-                            }
-                            else
-                            {
-                                @:历史任务
-                            }
-                        }
-                        <b class="caret"></b>
-                    </button>
-                    <ul class="dropdown-menu">
-                        @if (ViewBag.CAM == 1)
-                        {
-                            <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=-99&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">当前任务</a></li>
-                            <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=0&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">历史任务</a></li>
-                        }
-                        else
-                        {
-                            <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&MoldNumber=&State=0&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">当前任务</a></li>
-                            <li role="presentation"><a class="TaskTypeLink" href="/Task/CAMTaskList?TaskType=@ViewBag.TaskType&State=1&CAM=@ViewBag.CAM&MoldNumber=@ViewBag.MoldNumber">历史任务</a></li>
-                        }
-
-                    </ul>
-                </li>
-                <li>
-                    <input type="text" class="col-sm-1 form-control" id="TaskKeyword" placeholder="任务名关键字" />
-                </li>
-                <li><button class="btn btn-primary" id="QueryTask">查询</button></li>
-            </ul>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="col-sm-1 form-control" id="TaskKeyword" placeholder="任务名关键字" />
+                    </td>
+                    <td><button class="btn btn-info" id="QueryTask"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
+                </tr>
+            </table>
+            
         </div>
         <div class="RightDiv_BottomDiv">
             <table id="TaskGrid"></table>
@@ -146,7 +179,7 @@
                 </li>
             }
 
-            @if ((ViewBag.State > 0) && (ViewBag.CAM == 0))
+            @if ((ViewBag.State > 0) && (ViewBag.CAM == 0) && (ViewBag.TaskType ==6))
             {
                 <li id="NewTask">
                     <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/task-new.png" /></span>
@@ -161,7 +194,7 @@
 
 
 
-@if ((ViewBag.TaskType == 3) || (ViewBag.TaskType == 6))
+@if ((ViewBag.TaskType == 6))
 {
     <div class="modal" data-backdrop="static" data-keyboard="false" id="MoldSelectDialog" tabindex="-1" role="dialog" aria-labelledby="MoldSelectLabel">
         <div class="modal-dialog">
@@ -347,7 +380,7 @@
         })
 
 
-        LoadMoldList(1, @ViewBag.State, @ViewBag.TaskType, "", "@ViewBag.MoldNumber");
+        LoadMoldList(@ViewBag.CAM, @ViewBag.State, @ViewBag.TaskType, "", "@ViewBag.MoldNumber");
 
 
 
@@ -436,12 +469,11 @@
                 case 6:
                     TaskListGrind();
             }
-            if ((@ViewBag.TaskType==1)||(@ViewBag.TaskType==2)){
+            if ((@ViewBag.TaskType==1)){
                 $("#TaskGrid").setGridParam().showHideCol("Surface");
                 $("#TaskGrid").setGridParam().showHideCol("Obit");
                 $("#TaskGrid").setGridParam().showHideCol("ELEPos");
             }
-            //$("#TaskGrid").setGridWidth(document.body.clientWidth * 0.75);
         }
 
         $("#MoldSelect").on("change", function(){
@@ -493,6 +525,32 @@
             $("#TaskGrid").setGridWidth($('.RightDiv_BottomDiv').eq(0).width());
             $("#TaskGrid").setGridHeight($('.RightDiv_BottomDiv').eq(0).height()-40);
         })
+    })
+</script>
+<script>
+    $(document).ready(function(){
+        $('#sel_TaskType').on('change',function(){
+            location.href='/Task/CAMTaskList?TaskType='+$('#sel_TaskType').val()+'&State='+$('#FState').val()+'&MoldNumber='+$('#MoldNum').val()+'&CAM='+$('#FCAM').val();
+        });
+
+        $('#sel_TaskStatus').on('change',function(){
+            location.href='/Task/CAMTaskList?TaskType='+$('#FTaskType').val()+'&State='+$('#sel_TaskStatus').val()+'&MoldNumber='+$('#MoldNum').val()+'&CAM='+$('#FCAM').val();
+        });
+
+        $('#CAMSetSwitch').bootstrapSwitch({
+            size:'large',
+            state:true,
+            onText: '图纸发布',
+            offText: '加工任务',
+            onSwitchChange:function(event,state){switchChange(event,state)},
+        });
+        function switchChange(event,state){
+            if(state){
+                $('#CAMSetState').val('1');
+            }else{
+                $('#CAMSetState').val('0');
+            }
+        }
     })
 </script>
 

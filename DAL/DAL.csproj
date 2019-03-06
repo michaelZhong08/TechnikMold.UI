@@ -42,6 +42,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProjectInfoDAL.cs" />
+    <Compile Include="UserInfoDal.cs" />
     <Compile Include="WorkHourDal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

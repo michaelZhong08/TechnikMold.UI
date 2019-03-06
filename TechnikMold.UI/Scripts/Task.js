@@ -339,7 +339,8 @@
     })
 
     $("#PointCheck").on("click", function () {
-        location.href = "/Task/TaskFinishList?TaskType=1";
+        //window.open("/Task/TaskFinishList?TaskType=" + $('#FTaskType').val(), "_blank", width = 1920, height = 1080);
+        location.href = "/Task/TaskFinishList?TaskType=" + $('#FTaskType').val();
     })
 
     $("#EleQCResult").on("click", function () {
@@ -397,10 +398,11 @@
 function TaskListCAM(TaskType) {
     $("#TaskGrid").setGridParam().showHideCol("CreateTime");
     $("#TaskGrid").setGridParam().showHideCol("PlanTime");
-    $("#TaskGrid").setGridParam().showHideCol("CAM");
+    //$("#TaskGrid").setGridParam().showHideCol("CAM");
     $("#TaskGrid").setGridParam().showHideCol("State");
     $("#TaskGrid").setGridParam().showHideCol("Time");
     $("#TaskGrid").setGridParam().showHideCol("Quantity");
+    $("#TaskGrid").setGridParam().showHideCol("Creator");
     switch (TaskType) {
         case 1:
             $("#TaskGrid").setGridParam().showHideCol("QCPoints");
@@ -420,6 +422,7 @@ function TaskListCAM(TaskType) {
         case 6:
             $("#TaskGrid").setGridParam().showHideCol("Material");
             $("#TaskGrid").setGridParam().showHideCol("HRC");
+            $("#TaskGrid").setGridParam().showHideCol("ProcessName");
             break;
 
     }
@@ -968,8 +971,12 @@ function SetPriority(TaskIDs, Level) {
                         location.reload();
                     }
                 });
+            } else {
+                $('#Sel_priority').val(0);
+                return false;
             }
         } else {
+            $('#Sel_priority').val(0);
             return false;
         }
     } else {
@@ -977,7 +984,6 @@ function SetPriority(TaskIDs, Level) {
         $('#Sel_priority').val(0);
         return false;
     }
-    
 }
 
 function Outsource(ids,itemData) {

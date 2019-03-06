@@ -3,31 +3,34 @@
     ViewBag.Title = "加工设备管理";
 }
 
-@section Header{
-    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
-    <script src="~/Scripts/bootstrap-switch.js"></script>
-}
-<div style="margin-top:40px">
-    <div class="col-sm-11 col-sm-offset-1">
-        <h3 class="page-header">设备管理</h3>
-        <ul class="nav nav-pills">
-            <li>
-                <input type="text" class="col-sm-1 form-control" id="MInfoKeyword" placeholder="设备信息(代码/名称/品牌)" />
-            </li>
-            <li>
-                <button class="btn btn-default" id="QueryMInfo"><span class="glyphicon glyphicon-refresh"></span> 重载表格</button>
-            </li>
-            <li>
-                <button class="btn btn-success btn" id="AddMInfo"><span class="glyphicon glyphicon-plus-sign"></span> 新增设备</button>
-            </li>
-            <li>
-                <button class="btn btn-danger" id="DelMInfo"><span class="glyphicon glyphicon-remove-circle"></span> 删除设备</button>
-            </li>
-        </ul>
+<div>
+    <input id="switchState" value="false" hidden />
+</div>
+<h2 style="margin-top:60px;">设备管理</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td>
+                    <button class="btn btn-success btn" id="AddMInfo"><span class="glyphicon glyphicon-plus"></span> 新增设备</button>
+                </td>
+                <td>
+                    <button class="btn btn-danger" id="DelMInfo"><span class="glyphicon glyphicon-trash"></span> 删除设备</button>
+                </td>
+                <td>
+                    <input type="text" class="col-sm-1 form-control" id="MInfoKeyword" placeholder="设备信息(代码/名称/品牌)"  style="width:400px;"/>
+                </td>
+                <td>
+                    <button class="btn btn-info" id="QueryMInfo"><span class="glyphicon glyphicon-search"></span> 查询</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="UD_TableDiv">
         <table id="tb_MachinesInfo"></table>
-        <input id="switchState" value="false" hidden/>
     </div>
 </div>
+
 @*设备信息编辑*@
 <div class="modal fade" id="EditMInfoModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" >
@@ -45,7 +48,10 @@
                     <tr class="wfSwitch">
                         <td class="col-sm-4"><label>虚拟委外设备</label></td>
                         <td>
-                            <input id="isWF_chkbox" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" data-handle-width="50" />
+                            <div class="switch">
+                                <input type="hidden" id="IsWF" value="false" />
+                                <input id="isWF_chkbox" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" />
+                            </div>
                         </td>
                     </tr>
                     <tr class="tr_false">
@@ -57,7 +63,7 @@
                         <td><input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" placeholder="请输入设备名称/首字母" />
                             <datalist id="SupplierIDD"></datalist></td>
                     </tr>
-                    <tr class="tr_false">@* class="tr_false"*@
+                    <tr class="tr_false">
                         <td class="col-sm-4"><label>设备品牌</label></td>
                         <td><input type="text" id="EquipBrand" name="EquipBrand" class="form-control required" placeholder="请输入设备品牌" /> </td>
                     </tr>
@@ -125,6 +131,11 @@
 <script>
     $(document).ready(function () {
 
+        $(window).resize(function () {
+            $("#tb_MachinesInfo").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#tb_MachinesInfo").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+        });
+
         SupplierListImport();
         //配置设备信息表格
         MachinesInfoGrid();
@@ -137,15 +148,7 @@
             LoadDepList();
             LoadStatusList('Yes');
             ClearModalForm();
-            //默认状态下开关设置为off
-            //$('.wfSwitch').show();            
-            //$('.tr_true').hide();
-            //$('.tr_false').show();
-
-            //var _chkval = $('#isWF_chkbox')[0].checked;
-            //if (_chkval) {
-            //    $('.switch-right').click();//模拟右侧开关点击事件 (样式是由左 span 中 label 右 span 组成的) chkbox值为 true
-            //}           
+            $('.wfSwitch').show();        
             console.log($('#switchState').val());
             switchChange(null,$('#switchState').val());
 
@@ -198,7 +201,7 @@
                     _code='';
                 minfo.MachineCode = _code;
                 ////是否委外供应商
-                var bool = $('#isWF_chkbox')[0].checked;
+                var bool = $('#IsWF').val();//$('#isWF_chkbox')[0].checked;
                 var _brand = $('#EquipBrand').val();
                 if (!bool && _brand.indexOf('委外')>=0) {
                     $('#EquipBrand').val('');
@@ -227,7 +230,7 @@
                     //res = JSON.parse(res);
                     if (res.Code == 0){                     
                         $('#EditMInfoModal').modal('hide');
-                        alert('保存成功！');
+                        //alert('保存成功！');
                         ReloadMInfoGrid();
                     }                       
                     else {
@@ -250,7 +253,7 @@
                         });
                     }
                     if (sname == '') {
-                        alert('删除成功！');
+                        //alert('删除成功！');
                         ReloadMInfoGrid();
                     }
                     else
@@ -260,24 +263,6 @@
                     alert('请在列表中选择需要删除的信息！');
             }          
         })
-        //chkbox 控制外发
-        //$('#isWF_chkbox').on('change', function () {
-        //    var bool = $('#isWF_chkbox')[0].checked;//true 委外 false 正常设备
-        //    if (bool) {
-        //        $('.tr_true').show();
-        //        $('.tr_false').hide();
-        //        $('#MName').val('');
-        //        $('#SupplierName').val('');
-        //        $('#EquipBrand').val('委外');
-        //    }
-        //    else {
-        //        $('.tr_true').hide();
-        //        $('.tr_false').show();
-        //        $('#MName').val('');
-        //        $('#SupplierName').val('');
-        //        $('#EquipBrand').val('');
-        //    }
-        //})
         //supplier 失去焦点
         $('#SupplierName').on('blur', function () {
             //var name = $('#MName').val() == '' ? $('#SupplierName').val() : $('#MName').val();
@@ -335,7 +320,8 @@
             //$("#EquipBrand").attr('readonly', true);
             $("#SupplierName").val(_name);
             $("#SupplierName").attr('readonly', true);
-            $('#isWF_chkbox')[0].checked = true;
+            $('#IsWF').val('true');
+            //$('#isWF_chkbox')[0].checked = true;
 
         }            
         else {
@@ -343,7 +329,8 @@
             $('.tr_false').show();           
             //$("#EquipBrand").attr('readonly', false);
             $("#MName").val(_name);
-            $('#isWF_chkbox')[0].checked = false;
+            $('#IsWF').val('false');
+            //$('#isWF_chkbox')[0].checked = false;
         }
         $("#Capacity").val($("#tb_MachinesInfo").getCell(row, "Capacity"));
         $("#Downtime").val($("#tb_MachinesInfo").getCell(row, "Downtime"));
@@ -495,32 +482,33 @@
             }
         });
     }
+</script>
+<script>
+    $(function () {
+        $('#isWF_chkbox').bootstrapSwitch({
+            size: 'large',
+            state:false,
+            onText: '委外供应商',
+            offText: '正常设备',
+            onSwitchChange: function (event, state) { switchChange(event, state) },
+        });
+    });
     function switchChange(event, state) {
-        $('#switchState').val(state);
-        //var bool = $('#isWF_chkbox')[0].checked;//true 委外 false 正常设备
         if (String(state)=='true') {
+            $('#IsWF').val('true');
             $('.tr_true').show();
             $('.tr_false').hide();
             $('#MName').val('');
             $('#SupplierName').val('');
             $('#EquipBrand').val('委外');
-        }
-        else {
+        } else {
+            $('#IsWF').val('false');
             $('.tr_true').hide();
             $('.tr_false').show();
             $('#MName').val('');
             $('#SupplierName').val('');
             $('#EquipBrand').val('');
         }
-    }
-</script>
-<script>
-    $(function() {
-        $('#isWF_chkbox').bootstrapSwitch({
-            onText: '是',
-            offText: '否',
-            onSwitchChange: function (event, state) { switchChange(event, state) },
-        });
-    })
+    };
 </script>
 

@@ -61,7 +61,7 @@ namespace TechnikMold.UI.Controllers
         #region 日志记录
         public void LogRecord(string filename, string content)
         {
-            string logPath = Server.MapPath("~/Log/") + filename + "_" + DateTime.Now.ToString("yyMMddHHmmss") + ".txt";
+            string logPath = Server.MapPath("~/Log/") + filename + "_" + DateTime.Now.ToString("yyMMddHH") + ".txt";
             Toolkits.WriteLog(logPath, content);
         }
         #endregion

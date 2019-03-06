@@ -7,7 +7,6 @@
     {
         UserID = Request.Cookies["User"]["UserID"];
         UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
-
     }
     catch
     {
@@ -36,129 +35,151 @@
     }
 }
 <style>
-    #SupplierIDD option{
-        color:rgba(0,0,0,0)!important;
-        font-size:44px!important;
-    }
      #modal_tb_PurchaseItemFiles td {
             text-align: center;
-            /*height:60px!important;*/
             padding: 0px !important;
         }
 </style>
+
+<div>
+    <input type="hidden" value="@ViewBag.TaskType" id="TaskType" />
+    @if (ViewBag.PurchaseRequestID != 0)
+    {
+        <input type="hidden" id="PRModified" value="false" />
+    }
+    else
+    {
+        <input type="hidden" id="PRModified" value="true" />
+    }
+    <input type="hidden" id="tempID" value="-1" />
+    <input type="hidden" id="parentPurType" value="0" />
+    <input type="hidden" id="row" />
+    <input type="hidden" name="PurchaseTypeID" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID" />
+    <input type="hidden" id="PurchaseRequestID" value="@ViewBag.PurchaseRequestID" />
+</div>
 <div style="margin-top:60px">
-
-    <input type="hidden" value="@ViewBag.TaskType" id="TaskType"/>
-    <div class="col-sm-11">
-        <h2>采购申请单 @ViewBag.RequestNumber  </h2>
-        @if (ViewBag.PurchaseRequestID != 0)
-        {
-            <input type="hidden" id="PRModified" value="false" />
-        }
-        else
-        {
-            <input type="hidden" id="PRModified" value="true" />
-        }
-
-        <div id="Toolbar">
-
-            @if (Model == null)
+    <h2>采购申请单 @ViewBag.RequestNumber</h2>
+</div>
+<div class="Form_FatherDiv">
+    <div class="Form_ToolbarDiv" style="height:40px;">
+        <table>
+            <tr>
+                @if (Model == null)
             {
-                <button class="btn btn-primary" id="AddContent" disabled>添加零件</button>
-                <button class="btn btn-primary" id="DeleteContent">删除零件</button>
-                <button class="btn btn-success" id="CreatePR">保存申请单</button>
-            }
-            else
-            {
-                <button class="btn btn-primary" id="PRHistory">申请单历史</button>
-                switch (Model.State)
-                {
-                    case (int)PurchaseRequestStatus.新建:
-                        if (Model.DepartmentID == DeptID)
-                        {
-                            <button class="btn btn-primary" id="AddContent">添加零件</button>                            
-                            <button class="btn btn-primary" id="DeleteContent">删除零件</button>
-                            <button class="btn btn-info sinno" id="ShowAttachFileModal" style="display:none;">添加附件</button>
-                            <button class="btn btn-success" id="CreatePR">保存申请单</button>
-                            <button class="btn btn-success" id="SubmitPR">提交申请单</button>
-                            <button class="btn btn-warning" id="CancelPR">取消申请单</button>
-                        }
-
-                        break;
-                    case (int)PurchaseRequestStatus.待审批:
-                        if (PosID > 1)
-                        {
-                            <button class="btn btn-primary" id="ReviewPR">审批</button>
-                        }
-                        break;
-                    case (int)PurchaseRequestStatus.审批通过:
-                        if (DeptID == 4)
-                        {
-                            <button class="btn btn-primary sinno" id="CreateQR" style="display:none;">生成询价单</button>
-
-                        }
-                        if (Model.DepartmentID == DeptID)
-                        {
-                            <button class="btn btn-primary" id="RemoveCancel">移除订单取消项</button>
-                        }
-                        <button class="btn btn-info sinno" id="ShowAttachFileModal" style="display:none;">添加附件</button>
-                        
-                        <input type="button" class="btn btn-success hr" id="GetERPID" value="同步ERP料号" style="display:none;">
-                        <input type="button" class="btn btn-danger" id="PRSyncFlagBtn" value="已同步状态标记" style="display:none;">
-                        break;
-                    case (int)PurchaseRequestStatus.完成:
-                        break;
-                    case (int)PurchaseRequestStatus.拒绝:
-                        if (Model.DepartmentID == DeptID)
-                        {
-                            <button class="btn btn-primary" id="RestartPR">重启申请单</button>
-                        }
-                        break;
+                    <td><button class="btn btn-success" id="CreatePR"><span class="glyphicon glyphicon-download-alt"></span> 保存申请单</button></td>
+                    <td><button class="btn btn-info" id="AddContent" disabled><span class="glyphicon glyphicon-plus"></span> 添加零件</button></td>
+                    <td><button class="btn btn-danger" id="DeleteContent"><span class="glyphicon glyphicon-trash"></span> 删除零件</button></td>
                 }
-            }
-        </div>
-        <div id="Basic" class="col-sm-10 PRInfo">
-            <table>
-                @if (ViewBag.PurchaseRequestID != 0)
+                else
                 {
-                    string status = Enum.GetName(typeof(PurchaseRequestStatus), Model.State);
-                    <tr>
-                        <td class="col-sm-2">
-                            <label>采购类型</label>
-                            <input type="hidden" name="PurchaseType" id="PurchaseType" value="@ViewBag.PurchaseTypeID" />
-                            <input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" style="display:inline;float:right;width:80%" disabled />
-                        </td>
-
-                        <td class="col-sm-2">
-                            @if (Model.State == 1)
-                            {                               
-                                <label>推荐供应商</label>
-                                @*<select id="SupplierID" name="SupplierID" class="form-control" style="display:inline;float:right;width:70%"></select>*@
-                                <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:80%" readonly/>                              
-                                <datalist id="SupplierIDD"></datalist>
-                                <input id="SupplierID" hidden>
-                            }
-                            else
+                    switch (Model.State)
+                    {
+                        case (int)PurchaseRequestStatus.新建:
+                            if (Model.DepartmentID == DeptID)
                             {
-                                <label>推荐供应商</label>
-                                <input type="text" id="RecommandSupplierName" class="form-control" style="display:inline;float:right;width:80%" readonly />
-                                <input type="hidden" id="SupplierID" name="SupplierID" value="0" />
+                                <td><button class="btn btn-success" id="CreatePR"><span class="glyphicon glyphicon-download-alt"></span> 保存申请单</button></td>
+                                <td><button class="btn btn-info" id="AddContent"><span class="glyphicon glyphicon-plus"></span> 添加零件</button></td>
+                                <td><button class="btn btn-warning" id="DeleteContent"><span class="glyphicon glyphicon-trash"></span> 删除零件</button></td>
+                                <td><button class="btn btn-warning" id="SubmitPR"><span class="glyphicon glyphicon-lock"></span> 提交申请单</button></td>
+                                <td><button class="btn btn-info sinno" id="ShowAttachFileModal" style="display:none;"><span class="glyphicon glyphicon-paperclip"></span> 添加附件</button></td>
+                                <td><button class="btn btn-danger" id="CancelPR"><span class="glyphicon glyphicon-ban-circle"></span> 取消申请单</button></td>
                             }
 
-                        </td>                       
-
-                        <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="@status" readonly></td>
-                    </tr>
-                    <tr>
-                        <td id="hr_ApprovalUser" class="col-sm-2 hr" style="display:none;">
-                            <label>申请人</label>
-                            @if (Model.State == 1)
+                            break;
+                        case (int)PurchaseRequestStatus.待审批:
+                            if (PosID > 1)
                             {
-                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:80%">
+                                <td><button class="btn btn-warning" id="ReviewPR"><span class="glyphicon glyphicon-lock"></span> 审批</button></td>
+                            }
+                            break;
+                        case (int)PurchaseRequestStatus.审批通过:
+                            <td><button class="btn btn-info sinno" id="ShowAttachFileModal" style="display:none;"><span class="glyphicon glyphicon-paperclip"></span> 添加附件</button></td>
+                            <td class="hr" style="display:none;"><button class="btn btn-success" id="GetERPID"><span class="glyphicon glyphicon-refresh"></span> 同步ERP料号</button></td>
+                            if (DeptID == 4)
+                            {
+                                <td><button class="btn btn-info sinno" id="CreateQR" style="display:none;"><span class="glyphicon glyphicon-earphone"></span> 开始询价</button></td>
+
+                            }
+                            if (Model.DepartmentID == DeptID)
+                            {
+                                <td><button class="btn btn-warning" id="RemoveCancel"><span class="glyphicon glyphicon-move"></span> 移除订单取消项</button></td>
+                            }
+                            <td style="display:none;"><button class="btn btn-danger" id="PRSyncFlagBtn">已同步状态标记</button></td>
+                            break;
+                        case (int)PurchaseRequestStatus.完成:
+                            break;
+                        case (int)PurchaseRequestStatus.拒绝:
+                            if (Model.DepartmentID == DeptID)
+                            {
+                                <td><button class="btn btn-success" id="RestartPR"><span class="glyphicon glyphicon-retweet"></span> 重启申请单</button></td>
+                            }
+                            break;
+                    }
+                    <td><button class="btn btn-primary" id="PRHistory"><span class="glyphicon glyphicon-log-out"></span> 申请单历史</button></td>
+                }
+            </tr>
+        </table>
+    </div>
+    <div class="Form_HeadDiv">
+        <table class="Form_HeadTable">
+            <colgroup>
+                <col width="5%" />
+                <col width="20%" />
+                <col width="5%" />
+                <col width="20%" />
+                <col width="5%" />
+                <col width="20%" />
+                <col width="5%" />
+                <col width="20%" />
+            </colgroup>
+            @if (ViewBag.PurchaseRequestID != 0)
+            {
+                string status = Enum.GetName(typeof(PurchaseRequestStatus), Model.State);
+                <tr>
+                    <td class="headTb_label">
+                        采购类型
+                    </td>
+                    <td><input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" disabled /></td>
+                    <td class="headTb_label">供应商</td>
+                    <td>
+                        @if (Model.State == 1)
+                        {
+                            <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" readonly />
+                            <datalist id="SupplierIDD"></datalist>
+                            <input id="SupplierID" hidden>
+                        }
+                        else
+                        {
+                            <input type="text" id="RecommandSupplierName" class="form-control" readonly />
+                            <input type="hidden" id="SupplierID" name="SupplierID" value="0" />
+                        }
+                    </td>
+
+                    <td class="headTb_label">
+                        状态
+                    </td>
+                    <td>
+                        <input type="text" id="PurchaseRequestStatus" class="form-control" value="@status" readonly>
+                    </td>
+                    <td class="headTb_label">
+                        创建人
+                    </td>
+                    <td>
+                        <input type="text" id="CreUser" class="form-control" value="@ViewBag.CreUserName" readonly />
+                    </td>
+                </tr>
+                if (ViewBag.State < (int)PurchaseRequestStatus.待审批 && ViewBag.State >= (int)PurchaseRequestStatus.新建)
+                {
+                    <tr>
+                        <td class="headTb_label hr" style="display:none;">申请人</td>
+                        <td class="hr" style="display:none;">
+                            @if (Model.State == (int)PurchaseRequestStatus.新建)
+                            {
+                                <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID">
                                     <option value="0">-</option>
                                     @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
                                     {
-                                        if (@ViewBag.ApprovalUserName == @ApprovalUser.FullName)
+                                        if (ViewBag.ApprovalUserName == ApprovalUser.FullName)
                                         {
                                             <option value="@ApprovalUser.UserCode" selected>@ViewBag.ApprovalUserName</option>
                                         }
@@ -171,71 +192,73 @@
                             }
                             else
                             {
-                                <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" style="display:inline;float:right;width:80%" readonly />
+                                <input id="ApprovalUserID" name="ApprovalERPUserID" class="form-control" value="@ViewBag.ApprovalUserName" readonly />
                             }
                         </td>
-
-                        <td class="col-sm-2">
-                            <label>创建人</label>
-                            <input type="text" id="CreUser" class="form-control" value="@ViewBag.CreUserName" style="display:inline;float:right;width:80%" readonly />
+                        <td class="headTb_label">归属部门</td>
+                        <td>
+                            <select id="CostCenterID" class="form-control"></select>
                         </td>
-                        <td class="col-sm-2">
-                            <label>申请单号</label>
-                            <input type="text" id="PurchaseRequestNumber" class="form-control" value="" style="display:inline;float:right;width:80%" readonly />
-                            <input type="hidden" id="PurchaseRequestID" value="@ViewBag.PurchaseRequestID" />
+                        <td class="headTb_label">
+                            需求日期
                         </td>
-                    </tr>
-                    if (@ViewBag.State < (int)PurchaseRequestStatus.待审批 && @ViewBag.State >= (int)PurchaseRequestStatus.新建)
-                    {
-                        <tr>
-                            <td class="col-sm-2"></td>
-                            <td class="col-sm-2">
-                                <label>归属部门</label>
-                                <select id="CostCenterID" class="form-control" style="display:inline;float:right;width:80%"></select>
-                            </td>
-
-                            <td class="col-sm-2">
-                                <label>需求日期</label>
-                                <input type="date" class="form-control" id="RequireDateVal" style="display:inline;float:right;width:80%" />
-                            </td>
-                        </tr>
-                    }
-
-                    <tr>
-                        <td colspan="3" class="col-sm-6">
-                            @if (@ViewBag.State < (int)PurchaseRequestStatus.待审批)
-                            {
-                                <label>备注信息</label>
-                                <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" maxlength="99" style="display:inline;float:right;width:90%" />
-                            }
-                            else
-                            {
-                                <label>备注信息</label>
-                                <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" maxlength="99" style="display:inline;float:right;width:90%" readonly />
-                            }
+                        <td>
+                            <input type="date" class="form-control" id="RequireDateVal" />
+                        </td>
+                        <td class="headTb_label">
+                            申请单号
+                        </td>
+                        <td>
+                            <input type="text" id="PurchaseRequestNumber" class="form-control" value="" readonly />
+                            
                         </td>
                     </tr>
                 }
-                else
-                {
+                <tr>
+                    <td class="headTb_label">
+                        备注信息
+                    </td>
+                    <td colspan="7">
+                        @if (@ViewBag.State < (int)PurchaseRequestStatus.待审批)
+                        {
+                            <input type="text" id="PRMemo" value="@Model.Memo" class="form-control"/>
+                        }
+                        else
+                        {
+                            <input type="text" id="PRMemo" value="@Model.Memo" class="form-control" readonly />
+                        }
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td class="headTb_label">
+                        采购类型
+                    </td>
+                    <td>
+                        <select id="PurchaseType" class="form-control" name="PurchaseType"></select>
+                        <input type="hidden" id="PurchaseTypeName" readonly />
+                    </td>
+                    <td class="headTb_label">
+                        供应商
+                    </td>
+                    <td>
+                        <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control"  disabled />
+                        <datalist id="SupplierIDD"></datalist>
+                        <input id="SupplierID" hidden>
+                    </td>
+                    <td class="headTb_label">状态</td>
+                    <td>
+                        <input type="text" id="PurchaseRequestStatus" class="form-control" value="新建" readonly>
+                    </td>
+                </tr>
                     <tr>
-                        <td class="col-sm-2">
-                            <label>采购类型</label>
-                            <select id="PurchaseType" class="form-control" name="PurchaseType" style="display:inline;float:right;width:80%"></select>
-                            <input type="hidden" id="PurchaseTypeName" readonly />
+                        <td class="headTb_label hr" style="display:none;">
+                            申请人
                         </td>
-                        <td class="col-sm-2">
-                            <label style="float:left">推荐供应商</label>
-                            <input id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" style="display:inline;float:right;width:80%" disabled />
-                            <datalist id="SupplierIDD"></datalist>
-                            <input id="SupplierID" hidden>
-                        </td>                        
-                        <td class="col-sm-2"><label>状态</label><input type="text" id="PurchaseRequestStatus" class="form-control" style="display:inline;float:right;width:80%" value="新建" readonly></td>
-                    </tr>
-                    <tr>
-                        <td id="hr_ApprovalUser" class="col-sm-2 hr" style="display:none;">
-                            <label>申请人</label>
-                            <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID" style="display:inline;float:right;width:80%">
+                        <td class="hr" style="display:none;">
+                            <select id="ApprovalUserID" class="form-control" name="ApprovalERPUserID">
                                 <option value="0">-</option>
                                 @foreach (var ApprovalUser in ViewBag.ApprovalUserIDList)
                                 {
@@ -243,37 +266,34 @@
                                 }
                             </select>
                         </td>
-
-                        <td class="col-sm-2">
-                            <label>归属部门</label>
-                            <select id="CostCenterID" class="form-control" style="display:inline;float:right;width:80%"></select>
+                        <td class="headTb_label">
+                            归属部门
                         </td>
-
-                        <td class="col-sm-2">
-                            <label>需求日期</label>
-                            <input type="date" class="form-control" id="RequireDateVal" style="display:inline;float:right;width:80%" />
+                        <td>
+                            <select id="CostCenterID" class="form-control"></select>
                         </td>
-
+                        <td class="headTb_label">
+                            需求日期
+                        </td>
+                        <td>
+                            <input type="date" class="form-control" id="RequireDateVal"/>
+                        </td>
                     </tr>
                     <tr>
-                        <td colspan="3" class="col-sm-6">
-                            <label>备注信息</label>
-                            <input type="text" id="PRMemo" value="" class="form-control" style="display:inline;float:right;width:90%" maxlength="99" />
+                        <td class="headTb_label">
+                            备注
                         </td>
+                        <td colspan="7"><input type="text" id="PRMemo" value="" class="form-control"/></td>
                     </tr>
-                }
-            </table>
-        </div>
-
-        <div class="col-sm-12" style="float:left;">
-            <table id="PRContentGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+            }
+        </table>
+    </div>
+    <div class="Form_TableDiv">
+        <table id="PRContentGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
-<input type="hidden" id="tempID" value="-1" />
-<input type="hidden" id="parentPurType" value="0" />
-<input type="hidden" id="row" />
+
 @*手工添加/编辑采购项信息对话框*@
 <div class="modal" id="PRContentAdd" tabindex="-1" role="dialog" aria-labelledby="PRContentAddLabel">
     <div class="modal-dialog">
@@ -405,7 +425,7 @@
             <div class="modal-body">
                 <table>
                     <tr>
-                        <td class="col-sm-2"><label>备注</label></td>
+                        <td class="headTb_label"><label>备注</label></td>
                     </tr>
                     <tr>
                         <td class="col-sm-4">
@@ -428,36 +448,29 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="PRReviewModalLabel">申请单审批</h4>
             </div>
             <div class="modal-body">
-                <table class="table">
+                <table style="width:100%;text-align:center;margin:0px;padding:0px;">
+                    <colgroup>
+                        <col width="20%" /><col width="40%" /><col width="40%" />
+                    </colgroup>
                     <tr>
-                        <td class="col-sm-2"><label>审批结果</label></td>
-                        <td class="col-sm-4">
-                            <select class="form-control" id="ReviewResponse">
-                                @{
-                                    int response = (int)PurchaseRequestStatus.审批通过;
-                                }
-                                <option value="@response">通过</option>
-                                @{
-                                    response = (int)PurchaseRequestStatus.拒绝;
-                                }
-                                <option value="@response">拒绝</option>
-                            </select>
+                        <td style="font-weight:bold;float:left;">
+                            审核结果
+                            <input type="hidden" id="ReviewResponse" value="10"/>
                         </td>
+                        <td style="color:green;"><input id="whchk_ok" name="approvalRadio" checked="checked" type="radio" /> 通过</td>
+                        <td style="color:red;"><input id="whchk_ng" name="approvalRadio" type="radio" /> 拒绝</td>
                     </tr>
                     <tr>
-                        <td class="col-sm-2"><label>备注</label></td>
-                        <td class="col-sm-4">
-                            <textarea id="ReviewMemo" class="form-control" rows="5" style="resize:none" maxlength="99"></textarea>
-                        </td>
+                        <td style="font-weight:bold;float:left;">备注</td>
+                        <td colspan="2"><textarea id="ReviewMemo" class="form-control" rows="5" style="resize:none" maxlength="99"></textarea></td>
                     </tr>
                 </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" id="PRReviewButton">确定</button>
+                <button type="button" class="btn btn-warning" data-dismiss="modal" id="PRReviewButton"><span class="glyphicon glyphicon-check"></span> 确定</button>
             </div>
         </div>
     </div>
@@ -469,11 +482,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="RestartPRLabel">重启申请单</h4>
             </div>
             <div class="modal-body" style="height:300px">
                 <h4>重启原因</h4>
-                <textarea id="RestartMemo" name="Memo" rows="5" class="form-control" maxlength="99" style="resize:none"></textarea>
+                <textarea id="RestartMemo" name="Memo" rows="10" class="form-control" maxlength="99" style="resize:none"></textarea>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
@@ -570,8 +582,8 @@
                         <tr>                          
                             <td>
                                 <select id="modal_sel_purFileModal" name="purFileModal" class="form-control">
-                                    <option value="1">单附件</option>
-                                    <option value="2">多附件</option>
+                                    <option value="1">单附件模式</option>
+                                    <option value="2">多附件模式</option>
                                 </select>
                             </td>                            
                             <td>
@@ -605,6 +617,35 @@
 }
 
 <script src="~/Scripts/Purchase.js"></script>
+
+<script>
+    $(document).ready(function(){
+        InitialView();
+
+        $(window).resize(function () {
+            InitialView();
+            $("#PRContentGrid").setGridWidth($('.Form_TableDiv').eq(0).width());
+            $("#PRContentGrid").setGridHeight($('.Form_TableDiv').eq(0).height() - 40);
+        });
+
+        $('#whchk_ok').on('change',function(){
+            approRadioChange();
+        })
+        $('#whchk_ng').on('change',function(){
+            approRadioChange();
+        })
+    })
+    function approRadioChange(){
+        var okres = $('#whchk_ok')[0].checked;
+        var ngres = $('#whchk_ng')[0].checked;
+        if(okres){
+            $('#ReviewResponse').val('10');
+        }else if(ngres){
+            $('#ReviewResponse').val('-99');
+        }
+    }
+</script>
+
 <script type="text/javascript">
     $(document).ready(function () {
         LoadMaterials();
@@ -1213,11 +1254,6 @@
             $("#PRContentGrid").setGridParam().showHideCol("BrandName");
             //$('#brandtr').show();
         }
-    }
-
-    function _hrConfig(){
-        $('#GetERPID').hide();
-        $('#hr_ApprovalUser').hide();
     }
 </script>
 

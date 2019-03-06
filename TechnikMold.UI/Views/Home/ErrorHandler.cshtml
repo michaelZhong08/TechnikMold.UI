@@ -1,0 +1,51 @@
+﻿
+@{
+    ViewBag.Title = "异常处理";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .ErrorInfoTb td{
+        font-family:"微软雅黑";
+        font-weight:bold;
+        text-align:center;
+        vertical-align:central;
+        height:100px;
+    }
+    .infoTh{
+        font-size:20px;
+        background-color: rgba(0,0,0,0.8);
+        color:white;
+        border:1px solid white;
+    }
+    .infoTd{
+        font-size:18px;
+        height:100px;
+        border:1px solid rgba(0,0,0,0.2);
+    }
+</style>
+
+<h2 style="margin-top:60px;">异常处理</h2>
+
+<div style="width:90%;margin-left:5%;margin-right:5%;" >
+    <button class="btn btn-default" style="height:40px;" onclick="javascript:history.back(-1);"><span class="glyphicon glyphicon-backward"></span> 返回上一页</button>
+    <table class="ErrorInfoTb" style="width:100%;margin-top:10px;">
+        <colgroup>
+            <col width="20%"/>
+            <col width="20%" />
+            <col width="60%" />
+        </colgroup>
+        <tr>
+            <td class="infoTh">异常控制器</td>
+            <td class="infoTh">异常函数</td>
+            <td class="infoTh">异常信息</td>
+        </tr>
+        <tr>
+            <td class="infoTd">@ViewBag.ErrorController</td>
+            <td class="infoTd">@ViewBag.ErrorAction</td>
+            <td class="infoTd" style="color:red;">@ViewBag.ErrorMessage</td>
+        </tr>
+    </table>
+</div>
+
+

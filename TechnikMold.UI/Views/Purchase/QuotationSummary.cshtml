@@ -98,6 +98,7 @@
 
 
 <div style="margin-top:60px;overflow:hidden;">
+    <h2>@ViewBag.Title</h2>
     <div>
         <div id="Basic" style="width:100%;height:40px;margin-top:10px;">
             <table style="margin-left:10px;">
@@ -108,7 +109,7 @@
                             <option value="2">未税</option>
                         </select>
                     </td>
-                    <td style="width:120px;text-align:center;">选择供应商:</td>
+                    <td style="width:120px;text-align:center;font-weight:bold;">选择供应商：</td>
                     <td style="width:200px;">
                         <select id="AssignedSupplier" name="SupplierName" class="form-control">
                             @foreach (QRSupplier _qrsup in Model.QRSuppliers)
@@ -117,21 +118,20 @@
                             }
                         </select>
                     </td>
-                    <td style="width:120px;text-align:center;" class="total">总价(未税):</td>
+                    <td style="width:120px;text-align:center;font-weight:bold;" class="total">总价(未税)：</td>
                     <td style="width:200px;" class="total"><input type="text" class="form-control" id="TotalPrice" name="TotalPrice" readonly /></td>
 
-                    <td style="width:120px;text-align:center;" class="totalWT">总价(含税):</td>
+                    <td style="width:120px;text-align:center;font-weight:bold;" class="totalWT">总价(含税)：</td>
                     <td style="width:200px;" class="totalWT"><input type="text" class="form-control" id="TotalPriceWT" name="TotalPrice" readonly/></td>
                     @if (Model.QRState == (int)QuotationRequestStatus.发出)
                     {
-                        <td style="width:200px;"><button class="btn btn-primary" id="AssignSupplier" style="margin-left:30px;">选定供应商</button></td>
+                        <td style="width:200px;"><button class="btn btn-info" id="AssignSupplier" style="margin-left:30px;"><span class="glyphicon glyphicon-hand-right"></span> 选定供应商</button></td>
                     }
                 </tr>
-                
             </table>
         </div>
 
-        <div id="TableDiv" style="border:1px solid rgba(0,0,0,0.1);position:absolute;top:110px;left:10px;">
+        <div id="TableDiv" style="border:1px solid rgba(0,0,0,0.1);position:absolute;top:150px;left:10px;">
             <div>
                 <div id="div1" style="position:absolute;top:0px;left:0px;width:800px;">
                     <table cellspacing="0">
@@ -358,7 +358,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="ConfirmSupplier" class="btn btn-primary">确定</button>
+                <button type="button" id="ConfirmSupplier" class="btn btn-primary"><span class="glyphicon glyphicon-save"></span> 确定</button>
             </div>
         </div>
     </div>
@@ -462,11 +462,11 @@
         $('#div2').css('width', _clientWidth - 20 - 14 - 850);
         $('#div4').css('width', _clientWidth - 20 - 850);
 
-        $('#div3').css('height', _clientHeight - 14 - 150 -130);
-        $('#div4').css('height', _clientHeight - 150 - 130);
+        $('#div3').css('height', _clientHeight - 14 - 150 -130-40);
+        $('#div4').css('height', _clientHeight - 150 - 130 - 40);
 
         $('#TableDiv').css('width', _clientWidth -15 );
-        $('#TableDiv').css('height', _clientHeight - 110 - 20);
+        $('#TableDiv').css('height', _clientHeight - 150 - 20);
 
         $(window).resize(function () {
             var _clientWidth = document.documentElement.clientWidth;
@@ -474,11 +474,11 @@
             $('#div2').css('width', _clientWidth - 20 - 14 - 850);
             $('#div4').css('width', _clientWidth - 20 - 850);
 
-            $('#div3').css('height', _clientHeight - 14 - 150 - 130);
-            $('#div4').css('height', _clientHeight - 150 - 130);
+            $('#div3').css('height', _clientHeight - 14 - 150 - 130 - 40);
+            $('#div4').css('height', _clientHeight - 150 - 130 - 40);
 
             $('#TableDiv').css('width', _clientWidth - 15);
-            $('#TableDiv').css('height', _clientHeight - 110 - 20);
+            $('#TableDiv').css('height', _clientHeight - 150 - 20);
         });
 
         $("#div4").scroll(function () {

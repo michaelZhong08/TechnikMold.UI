@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+//using System.Data;
 using System.Linq;
 using System.Web;
 using TechnikSys.MoldManager.Domain.Entity;
@@ -10,6 +11,11 @@ namespace MoldManager.WebUI.Models.GridRowModel
     public class ProjectGridRowModels
     {
         public ProjectGridRowModel[] ProjectRows;
+        //public ProjectGridRowModels(DataRow dr)
+        //{
+        //    ProjectRows=new ProjectGridRowModel[1];
+        //    ProjectRows[0] = new ProjectGridRowModel(dr);
+        //}
 
         public ProjectGridRowModels(Project Project, IQueryable<ProjectPhase> ProjectPhase, List<ProjectRole> Flitter, List<Phase> Phases, int attQty,string _mainProJName)
         {
@@ -79,17 +85,17 @@ namespace MoldManager.WebUI.Models.GridRowModel
                         if ((_datediff >= 0) && (_datediff < 3))
                         {
                             //"<p style='background-color:#00ff00;'>" + cell[_phaseSeq + 4] + "</p>";
-                            ProjectRows[0].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,127,36,1), rgba(255,127,36,0.1) 50% ,rgba(255,127,36,1)   );'>" + ProjectRows[0].cell[_phaseSeq + 4] + "</p>";
+                            ProjectRows[0].cell[_phaseSeq + 4] = "<p class='td_planDate' style='background: linear-gradient(rgba(255,127,36,1), rgba(255,127,36,0.1) 50% ,rgba(255,127,36,1)   );'>" + ProjectRows[0].cell[_phaseSeq + 4] + "</p>";
                             if (!CheckZero(_prjPhase.PlanCFinish))
-                                ProjectRows[1].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,127,36,1), rgba(255,127,36,0.1) 50% ,rgba(255,127,36,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
+                                ProjectRows[1].cell[_phaseSeq + 4] = "<p class='td_planDate' style='background: linear-gradient(rgba(255,127,36,1), rgba(255,127,36,0.1) 50% ,rgba(255,127,36,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
                             //ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
                         }
                         else if (_datediff < 0)
                         {
                             //"<p style='background-color:#ff0000'>" + cell[_phaseSeq + 4] + "</p>";
-                            ProjectRows[0].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[0].cell[_phaseSeq + 4] + "</p>";
+                            ProjectRows[0].cell[_phaseSeq + 4] = "<p class='td_planDate' style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[0].cell[_phaseSeq + 4] + "</p>";
                             if (!CheckZero(_prjPhase.PlanCFinish))
-                                ProjectRows[1].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
+                                ProjectRows[1].cell[_phaseSeq + 4] = "<p class='td_planDate' style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[1].cell[_phaseSeq + 4] + "</p>";
                             //ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
                         }
                     }
@@ -98,11 +104,11 @@ namespace MoldManager.WebUI.Models.GridRowModel
                         _datediffAc = (_dateval - _prjPhase.ActualFinish).Days;
                         if (_datediffAc >= 0)
                         {
-                            ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
+                            ProjectRows[2].cell[_phaseSeq + 4] = "<p class='td_planDate' style='background: linear-gradient(rgba(51,153,0,1), rgba(0,255,0,0.1) 50% ,rgba(51,153,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
                         }
                         else
                         {
-                            ProjectRows[2].cell[_phaseSeq + 4] = "<p style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
+                            ProjectRows[2].cell[_phaseSeq + 4] = "<p class='td_planDate' style='background: linear-gradient(rgba(255,0,0,1), rgba(255,0,0,0.1) 50% ,rgba(255,0,0,1)   );'>" + ProjectRows[2].cell[_phaseSeq + 4] + "</p>";
                         }
                     }
                 }
@@ -120,7 +126,6 @@ namespace MoldManager.WebUI.Models.GridRowModel
             {
                 ProjectRows[i].cell[ProjectRows[i].cell.Length - 1] = Project.Memo;
             }
-
 
         }
 
@@ -162,16 +167,12 @@ namespace MoldManager.WebUI.Models.GridRowModel
                     _title = _title+ _name + Flitter[i - 1].UserName + "&#10;";
                 }
                 //样式备注：文字块占上方64% 与上方留余10px空间; button占下方34% 并贴底;
-                _cellContent = "<div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;;'><div style='top:5px;height:62%!important;'title='" + _title + "'><label>" + Project.MoldNumber + "(" + _version + ")" + "</label>" + "<br>" + "<label>" + Project.Name + "</label>" + "<br><label >钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</label></div>";//" < div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;;'><div style='top:5px;height:62%!important;'title='" + _title + "'>" + Project.MoldNumber + "(" + _version + ")" + "<br>" + Project.Name + "<br>钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</div>";
-                //<div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;;'><div style='top:5px;height:62%!important;'><label>" + Project.MoldNumber + "(" + _version + ")" + "</label>" + "<br>" + "<label>" + Project.Name + "</label>" + "<br><label title='" + _title + "'>钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</label></div>
-                //_cellContent = "<table class='qrtb' style=\"padding: 0px; margin: 0px; height: 30px; font - size:5px; \"><tr><td style=\"padding: 0px; \"><label style=\"margin: 0px; \">" + Project.MoldNumber + "(" + _version + ")" + "</label></td></tr>";
-                //_cellContent = _cellContent + "<tr><td style=\"padding: 0px; \"><label style=\"margin: 0px; \">" + Project.Name + "</label></td></tr>";
-                //_cellContent= _cellContent+ "<tr><td style=\"padding: 0px; \"><label style=\"margin: 0px; \" title='" + _title + "'>钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</label></td></tr></table>";
+                _cellContent = "<div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;'><div style='top:5px;height:62%!important;'title='" + _title + "'><label>" + Project.MoldNumber + "(" + _version + ")" + "</label>" + "<br>" + "<label>" + Project.Name + "</label>" + "<br><label >钳工:" + Flitter.Where(p => p.RoleID == 3).FirstOrDefault().UserName + "</label></div>";
             }
             else
             {
                 string _version = Project.Version < 10 ? "0" + Project.Version.ToString() : Project.Version.ToString();
-                _cellContent = "<div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;;'><div style='top:5px;height:62%!important;'>"+ Project.MoldNumber+"(" + _version + ")"+" </div>";//Project.MoldNumber;//+ "(" + Project.Version + ")";
+                _cellContent = "<div style='font-size:10px;line-height:10px;height:100%!important;padding-top:10px!important;'><div style='top:5px;height:62%!important;'>"+ Project.MoldNumber+"(" + _version + ")"+" </div>";//Project.MoldNumber;//+ "(" + Project.Version + ")";
             }
             #region region
             //string button = Project.Attachment;

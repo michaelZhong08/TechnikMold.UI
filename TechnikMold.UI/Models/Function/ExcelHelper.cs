@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using TechnikMold.UI.Models.ViewModel;
 
 namespace TechnikMold.UI.Models.Function
 {
@@ -42,10 +43,11 @@ namespace TechnikMold.UI.Models.Function
             int _count;
             Type type = typeof(T);
             PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var propByOrder = Toolkits.GetPropsArrayByOrder(props);
             if (_headList != null)
                 _count = _headList.Count;
             else
-                _count = props.Count();
+                _count = propByOrder.Count();
 
             using (FileStream fs = System.IO.File.Open(TempletFileName, FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -86,7 +88,7 @@ namespace TechnikMold.UI.Models.Function
                     {                        
                         for (j = 0; j < _count; ++j)
                         {
-                            string name = props[j].Name;
+                            string name = propByOrder[j].Name;
                             ICell _cell = row.CreateCell(j);
                             _cell.SetCellValue(name.ToString());
                             //row.GetCell(j).SetCellValue(name);
@@ -115,7 +117,7 @@ namespace TechnikMold.UI.Models.Function
                     T _t = _excelContent[i];                  
                     for (j = 0; j < _count; ++j)
                     {
-                        string name = props[j].Name;
+                        string name = propByOrder[j].Name;
                         PropertyInfo p = typeof(T).GetProperty(name);
                         string value = p.GetValue(_t, null) == null ? "" : p.GetValue(_t, null).ToString();
                         row.CreateCell(j).SetCellValue(value);

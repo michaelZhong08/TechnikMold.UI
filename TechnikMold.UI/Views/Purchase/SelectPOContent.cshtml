@@ -7,13 +7,14 @@
 }
 <style>
     #POContentGrid td {
-        margin:0px!important;
-        padding:0px!important;
-        height:30px;
-        text-align:center;
-        vertical-align:middle;
-        font-size:12px;
+        margin: 0px !important;
+        padding: 0px !important;
+        height: 30px;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 12px;
     }
+
     #POContentGrid input {
         height: 24px;
         border-style: none;
@@ -22,29 +23,30 @@
         margin: 0px;
         padding: 0px;
     }
-    td{
-        text-align:center;
-        padding:0px!important;
+
+    td {
+        text-align: center;
+        padding: 0px !important;
     }
-    td input{
-        height:30px;
-        margin-top:2px;
-        margin-left:2px;
-    }
-    td button{
-        width:90%;
-        margin-left:5%;
-        height:30px;
-        margin-top:2px;
-    }
-        td select {
+
+        /*td input {
             height: 30px;
             margin-top: 2px;
             margin-left: 2px;
         }
-    /*td span{
-        position:absolute;
-    }*/
+
+        td button {
+            width: 90%;
+            margin-left: 5%;
+            height: 30px;
+            margin-top: 2px;
+        }
+
+        td select {
+            height: 30px;
+            margin-top: 2px;
+            margin-left: 2px;
+        }*/
 
     .bootstrap-switch-Normal {
         height: 30px !important;
@@ -63,135 +65,142 @@
             font-size: 20px !important;
         }
 </style>
-<div style="position:absolute;left:10px;top:60px;bottom:10px;right:10px;border:1px rgba(0,0,0,0.1) solid;min-width:1920px;">
-    <h2>采购订单维护 </h2>
-    <div style="position:absolute;left:0px;top:40px;bottom:0px;width:43%;border:1px rgba(0,0,0,0.1) solid;">
-        <div style="position:absolute;left:0px;top:0px;width:100%;height:40px;">
-            <table>
-                <colgroup>
-                    <col width='20%' />
-                    <col width='10%' />
-                    <col width="10%" />
 
-                    <col width='10%' />
-                    <col width='20%' />                    
-                    <col width='10%' />
-                    <col width='20%' />                    
-                </colgroup>
+<style>
+    .LMR_FatherDiv{
+        position:absolute;
+        top:100px;
+        left:10px;
+        right:10px;
+        bottom:10px;
+    }
+    .LMR_LeftDiv{
+        position:absolute;
+        top:0px;
+        bottom:0px;
+        left:0px;
+        width:47%;
+        /*border:1px solid blue;*/
+    }
+    .LMR_Left_ToolbarDiv{
+        position:absolute;
+        top:0px;
+        bottom:0px;
+        left:0px;
+        width:100%;
+        height:40px;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .LMR_Left_TableDiv{
+        position:absolute;
+        top:40px;
+        bottom:0px;
+        left:0px;
+        width:100%;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .LMR_MiddleDiv{
+        position:absolute;
+        top:0px;
+        bottom:0px;
+        left:47%;
+        width:6%;
+        min-width:91px;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .LMR_RightDiv{
+        position:absolute;
+        top:0px;
+        bottom:0px;
+        right:0px;
+        width:47%;
+        /*border:1px solid yellow;*/
+    }
+    .LMR_Right_ToolbarDiv{
+        position:absolute;
+        top:0px;
+        bottom:0px;
+        right:0px;
+        width:100%;
+        height:40px;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+    .LMR_Right_TableDiv{
+        position:absolute;
+        top:40px;
+        bottom:0px;
+        right:0px;
+        width:100%;
+        border:1px solid rgba(0,0,0,0.1);
+    }
+</style>
+
+<div>
+    <input type="number" id="pr_tempID" value="-1" hidden />
+    <input type="number" id="po_tempID" value="-1" hidden />
+    <input type="hidden" id="po_purType" value="0" hidden />
+    <input type="hidden" id="ActiveCol" />
+</div>
+
+<div style="margin-top:60px;">
+    <h2>采购订单维护 </h2>
+</div>
+<div class="LMR_FatherDiv">
+    <div class="LMR_LeftDiv">
+        <div class="LMR_Left_ToolbarDiv">
+            <table>
                 <tr>
                     <td>
-                        <input style="height:34px;" type="text" class="form-control" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword" />
+                        <input type="text" class="form-control" placeholder="模具号/零件名关键字" id="Keyword" value="@ViewBag.Keyword" />
                     </td>
                     <td>
-                        <button class="btn btn-primary" id="Search">查询</button>
+                        <button class="btn btn-info" id="Search"><span class="glyphicon glyphicon-search"></span> 查询</button>
                     </td>
-                    <td></td>
                     <td>采购类型</td>
                     <td>
                         @if (ViewBag.PurchaseItemIDs == "")
                         {
-                            <select style="height:34px;" class="form-control" id="PurchaseType"></select>
+                            <select class="form-control" id="PurchaseType"></select>
                         }
                         else
                         {
-                            <select style="height:34px;" class="form-control" id="PurchaseType" disabled></select>
+                            <select class="form-control" id="PurchaseType" disabled></select>
                         }
                     </td>
-                    <td>询价结果</td>   
+                    <td>询价结果</td>
                     <td>
                         <input id="PurchaseState" value="2" hidden />
-                        <div class="switch">                          
+                        <div class="switch">
                             <input id="PurchaseStateSwitch" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" />
                         </div>
-                        
-                        @*<select style="height:34px;width:90%;float:right;" class="form-control" id="PurchaseState">
-                            <option value="1">有</option>
-                            <option value="2">无</option>
-                        </select>*@
-                    </td>                                   
+                    </td>
                 </tr>
             </table>
         </div>
-
-        <div id="div_tb_left" style="position:absolute;left:0px;top:40px;width:100%;bottom:0px;">
+        <div class="LMR_Left_TableDiv">
             <table id="PRContentGrid"></table>
         </div>
     </div>
-
-    <div  style="position:absolute;left:43%;top:40px;bottom:0px;width:5%;border:1px rgba(0,0,0,0.1) solid;border-style:solid none solid none;">
+    <div class="LMR_MiddleDiv">
         <p id="poContentAdd" style="cursor:pointer;width:80%;margin-left:10%;line-height:120px;float:left;border:1px rgba(0,0,0,0) solid;text-align:center;font-size:80px;font-weight:bold;margin-top:60px;background-color:rgba(0,0,0,0);color:rgba(220,220,220,1);text-shadow:2px 2px 8px rgba(0,0,0,1); padding:0px;"><span class="glyphicon glyphicon-arrow-right"></span></p>
         <p id="poContentDecrease" style="cursor:pointer;width:80%;margin-left:10%;line-height:80px;float:left;border:1px rgba(0,0,0,0) solid;text-align:center;font-size:80px;font-weight:bold;margin-top:20px;background-color:rgba(0,0,0,0);color:rgba(220,220,220,1);text-shadow:2px 2px 8px rgba(0,0,0,1);padding:0px;"><span class="glyphicon glyphicon-arrow-left"></span></p>
     </div>
-
-    <div  style="position:absolute;left:48%;top:40px;bottom:0px;width:52%;border:1px rgba(0,0,0,0.1) solid;">
-        <div style="position:absolute;left:0px;top:0px;width:100%;height:40px;">
-            <table style="width:100%;">
-                <colgroup>
-                    <col width="10%" />
-                    <col width="15%" />
-                    <col width="10%" />
-                    <col width="10%"/>
-                    <col width="30%" />                   
-                    <col width="10%" />
-                    <col width="15%" />
-                </colgroup>
+    <div class="LMR_RightDiv">
+        <div class="LMR_Right_ToolbarDiv">
+            <table>
                 <tr>
                     <td>
-                        <button class="btn btn-primary" id="CreatePO" style="float:right;">创建订单</button>
-                        @*币种*@
-                        @*供应商*@
-                    </td>
-                    <td>
-                        @*<select style="height:34px;" id="Currency" class="form-control">
-                            <option value="人民币">人民币</option>
-                            <option value="美元">美元</option>
-                            <option value="日元">日元</option>
-                            <option vlaue="欧元">欧元</option>
-                        </select>*@
-                        @*<input style="height:34px;" id="SupplierName" list="SupplierIDD" type="text" name="SupplierName" class="form-control" />
-                        <datalist id="SupplierIDD"></datalist>*@
-                    </td>
-                    <td>
-                        @*<button class="btn btn-primary" id="CreatePO" style="float:right;">创建订单</button>*@
-                        @*币种*@
-                    </td>
-                    <td>
-                        @*<select style="height:34px;" id="Currency" class="form-control">
-                            <option value="人民币">人民币</option>
-                            <option value="美元">美元</option>
-                            <option value="日元">日元</option>
-                            <option vlaue="欧元">欧元</option>
-                        </select>*@
-                    </td>
-                    <td>
-                        @*税率*@
-                    </td>
-                    <td>
-                        @*<select style="height:34px;" id="TaxRate" class="form-control">
-                            <option value="17">17%</option>
-                            <option value="6">6%</option>
-                            <option value="5">5%</option>
-                            <option value="4">4%</option>
-                            <option value="3">3%</option>
-                            <option value="0">0%</option>
-                        </select>*@
-                    </td>
-                    <td>
-                        @*<button class="btn btn-primary" id="CreatePO" style="float:right;">创建订单</button>*@
+                        <button class="btn btn-success" id="CreatePO"><span class="glyphicon glyphicon-plus"></span> 新建订单</button>
                     </td>
                 </tr>
             </table>
         </div>
-        <div id="div_tb_right" style="position:absolute;left:0px;top:40px;width:100%;bottom:0px;">
-            <input type="hidden" id="ActiveCol" />
+        <div class="LMR_Right_TableDiv">
             <table id="POContentGrid"></table>
         </div>
     </div>
-
 </div>
-<input type="number" id="pr_tempID" value="-1" hidden/>
-<input type="number" id="po_tempID" value="-1" hidden/>
-<input type="hidden" id="po_purType" value="0" hidden />
+
 
 @*待采购项右键菜单*@
 <div class="contextMenu dropdown" id="PurchaseItemContextMenu" style="display:none">
@@ -299,11 +308,28 @@
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/JqGridTemplate.js"></script>
 <script src="~/Scripts/Purchase.js"></script>
+
 <script>
-    $("document").ready(function () {
-        console.log(document.body.clientWidth);
+    $(document).ready(function(){
+
         PRContent_PO_T("",0);
         POContent_PO_T("@ViewBag.PurchaseItemIDs");
+
+        $(window).resize(function () {
+            $("#PRContentGrid").setGridWidth($('.LMR_Left_TableDiv').eq(0).width());
+            $("#PRContentGrid").setGridHeight($('.LMR_Left_TableDiv').eq(0).height() - 40);
+            $("#POContentGrid").setGridWidth($('.LMR_Right_TableDiv').eq(0).width());
+            $("#POContentGrid").setGridHeight($('.LMR_Right_TableDiv').eq(0).height() - 40);
+        });
+        $("#CreatePO").on("click", function () {
+            TransferPO();
+        })
+    });
+</script>
+
+<script>
+    $("document").ready(function () {
+        
         LoadSuppliers();
         LoadPurchaseTypes();
         
@@ -759,15 +785,13 @@
 
 <script>
     $(document).ready(function(){   
-        //LoadPRContents('', $("#PurchaseType").val());
+        //window.onresize=function(){  
+        //    $("#PRContentGrid").jqGrid("setGridHeight", $('#div_tb_left').height() - 42);
+        //    $("#POContentGrid").jqGrid("setGridHeight", $('#div_tb_right').height() - 42);
 
-        window.onresize=function(){  
-            $("#PRContentGrid").jqGrid("setGridHeight", $('#div_tb_left').height() - 42);
-            $("#POContentGrid").jqGrid("setGridHeight", $('#div_tb_right').height() - 42);
-
-            $("#PRContentGrid").jqGrid("setGridWidth", $('#div_tb_left').width() - 2);
-            $("#POContentGrid").jqGrid("setGridWidth", $('#div_tb_right').width() - 2);
-        } 
+        //    $("#PRContentGrid").jqGrid("setGridWidth", $('#div_tb_left').width() - 2);
+        //    $("#POContentGrid").jqGrid("setGridWidth", $('#div_tb_right').width() - 2);
+        //}
         $('#PurchaseStateSwitch').bootstrapSwitch({
             onText: '有',
             offText: '无',
@@ -783,13 +807,4 @@
             LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
         }
     })
-</script>
-
-<script>
-    $(document).ready(function(){
-        $("#CreatePO").on("click", function () {
-            //CreatePO();
-            TransferPO();
-        })
-    });
 </script>

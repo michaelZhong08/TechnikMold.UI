@@ -61,12 +61,6 @@
         margin-left:10px!important;
     }
 </style>
-@section Header{
-    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
-    <link rel="stylesheet" href="~/Content/datepicker.css" />
-    <script src="~/Scripts/bootstrap-switch.js"></script>
-    <script src="~/Scripts/bootstrap-datepicker.js"></script>
-}
 @{ 
     int DepID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
     int Position = Convert.ToInt32(Request.Cookies["User"]["Position"]);
@@ -177,14 +171,14 @@
                 <table style="width:300px;text-align:center;margin:0px;padding:0px;">
                     <tr>
                         <td style="width:100px;font-weight:bold;float:left;">审核结果</td>
-                        <td style="width:100px;float:left;color:green;"><input id="whchk_ok" name="approvalRadio" checked="checked" type="radio"/>通过</td>
-                        <td style="width:100px;float:left;color:red;"><input id="whchk_ng" name="approvalRadio" type="radio" />拒绝</td>
+                        <td style="width:100px;float:left;color:green;"><input id="whchk_ok" name="approvalRadio" checked="checked" type="radio"/> 通过</td>
+                        <td style="width:100px;float:left;color:red;"><input id="whchk_ng" name="approvalRadio" type="radio" /> 拒绝</td>
                     </tr>
                 </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button id="modal_confirm_whApproval" type="button" class="btn btn-primary">确认</button>
+                <button id="modal_confirm_whApproval" type="button" class="btn btn-warning"><span class="glyphicon glyphicon-check"></span> 确认</button>
             </div>
         </div>
     </div>

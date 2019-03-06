@@ -28,43 +28,34 @@
         padding:0px;
     }
 </style>
-<h2>POContentList</h2>
-    <div class="col-sm-11" style="margin-top:30px">   
-        
-        <div class="col-sm-12" style="float:left;">
-            <h2>订单号:@ViewBag.PONumber</h2>
-            <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
-            <input type="hidden" id="ReturnRequestID" value="@ViewBag.ReturnRequestID" />
-            <ul class="nav nav-pills">
-                <li><button class="btn btn-success" id="SaveWHStock">保存收货单</button></li>
-                <li><button class="btn btn-primary" id="ClosePO">关闭订单</button> </li>
+
+<div>
+    <input type="hidden" id="PurchaseOrderID" value="@ViewBag.PurchaseOrderID" />
+    <input type="hidden" id="ReturnRequestID" value="@ViewBag.ReturnRequestID" />
+</div>
+<div style="margin-top:60px"><h2>订单号:@ViewBag.PONumber</h2></div>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
+        <table>
+            <tr>
+                <td><button class="btn btn-success" id="SaveWHStock"><span class="glyphicon glyphicon-save"></span> 保存收货单</button></td>
+                <td hidden><button class="btn btn-primary" id="ClosePO">关闭订单</button></td>
                 @if (DeptID == 20)
                 {
-                    @*if (ViewBag.State < (int)PurchaseOrderStatus.完成)
-                    {
-                        <li><button class="btn btn-primary" id="ClosePO">返回</button> </li>
-                    }*@                    
                     if ((ViewBag.State == (int)PurchaseOrderStatus.部分收货) || (ViewBag.State == (int)PurchaseOrderStatus.完成))
                     {
-                        if (ViewBag.ReturnRequestID > 0)
-                        {
-                            <li><button class="btn btn-primary" id="CreateReturnRequest">添加到退货单</button></li>
-                        }
-                        else
-                        {
-                            <li><button class="btn btn-primary" id="CreateReturnRequest">创建退货单</button></li>
-                        }
+                        <td><button class="btn btn-info" id="CreateReturnRequest"><span class="glyphicon glyphicon-plus"></span> 新建退货单</button></td>
                     }
-
-
-                }             
-                <li><button class="btn btn-primary" id="ShowHistory">显示订单历史</button></li>
-            </ul>
-            <table id="POContentGrid"></table>
-            <div id="jqGridPager"></div>
-        </div>
+                }
+                <td><button class="btn btn-primary" id="ShowHistory"><span class="glyphicon glyphicon-log-out"></span> 订单历史</button></td>
+            </tr>
+        </table>
     </div>
-
+    <div class="UD_TableDiv">
+        <table id="POContentGrid"></table>
+        <div id="jqGridPager"></div>
+    </div>
+</div>
 
 @*订单项收货对话框*@
 @if (DeptID == 20)
@@ -164,6 +155,14 @@
 
 <script src="~/Scripts/Warehouse.js"></script>
 
+<script>
+    $(document).ready(function () {
+        $(window).resize(function () {
+            $('#POContentGrid').setGridWidth($('.UD_TableDiv').eq(0).width());
+            $('#POContentGrid').setGridHeight($('.UD_TableDiv').eq(0).height()-40);
+        })
+    })
+</script>
 <script>
     $("document").ready(function () {
         WarehouseAcceptGrid(@ViewBag.PurchaseOrderID);

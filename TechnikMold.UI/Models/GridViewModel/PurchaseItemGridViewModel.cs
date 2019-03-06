@@ -25,23 +25,27 @@ namespace MoldManager.WebUI.Models.GridViewModel
             rows = new List<PurchaseItemGridRowModel>();
             foreach (PurchaseItem _item in PurchaseItems)
             {
-                string _prNo, _qrNo, _poNo, _pocreateDate;
+                string _prNo, _qrNo, _poNo, _pocreateDate,_prcreDate;
                 string _purchaseUser;
                 #region region
                 try
                 {
                     if (_item.PurchaseRequestID > 0)
                     {
-                        _prNo = PurchaseRequestRepo.GetByID(_item.PurchaseRequestID).PurchaseRequestNumber;
+                        PurchaseRequest purRequest = PurchaseRequestRepo.GetByID(_item.PurchaseRequestID);
+                        _prNo = purRequest.PurchaseRequestNumber;
+                        _prcreDate = purRequest.CreateDate.ToString("yyyy-MM-dd HH:mm");
                     }
                     else
                     {
                         _prNo = "";
+                        _prcreDate = "";
                     }
                 }
                 catch
                 {
                     _prNo = "";
+                    _prcreDate = "";
                 }
 
 
@@ -67,7 +71,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
                     if (_item.PurchaseOrderID > 0)
                     {
                         _poNo = PurchaseOrderRepo.QueryByID(_item.PurchaseOrderID).PurchaseOrderNumber;
-                        _pocreateDate= PurchaseOrderRepo.QueryByID(_item.PurchaseOrderID).CreateDate.ToString("yyyy-MM-dd HH:mm:ss");
+                        _pocreateDate= PurchaseOrderRepo.QueryByID(_item.PurchaseOrderID).CreateDate.ToString("yyyy-MM-dd HH:mm");
                     }
                     else
                     {
@@ -145,7 +149,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
                     _htmlTitle = "";
                 }
 
-                PurchaseItemGridRowModel _row = new PurchaseItemGridRowModel(_item, _prNo, _qrNo, _poNo, _purchaseUser, _purchaseType, _requestUser, _htmlTitle, _pocreateDate);
+                PurchaseItemGridRowModel _row = new PurchaseItemGridRowModel(_item, _prNo, _qrNo, _poNo, _purchaseUser, _purchaseType, _requestUser, _htmlTitle, _pocreateDate, _prcreDate);
                 rows.Add(_row);
             }
             Records = PurchaseItems.Count();

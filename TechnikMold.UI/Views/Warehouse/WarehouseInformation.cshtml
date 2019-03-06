@@ -3,41 +3,53 @@
 }
 @{
     int DeptID = 0;
+    string DepName = string.Empty;
     try
     {
         DeptID = Convert.ToInt16(Request.Cookies["User"]["Department"]);
+        DepName = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]);
     }catch{
         DeptID=0;
     }
 }
 
-
-<div style="margin-top:60px">
-    <div class="col-sm-11">
-        <h2>@ViewBag.Title</h2>
-
-
-        <div class="col-sm-4">
-            @if (DeptID == 20)
-            {
-                <div id="ToolBarWH" style="margin:2px">
-                    <button id="AddWarehouse" class="btn btn-primary">新增仓库</button>
-                    <button id="DelWarehouse" class="btn btn-warning">删除仓库</button>
-                </div>
-            }
-            
-            <select id="WarehouseList" class="form-control" size="20"></select>
+<div></div>
+<div style="margin-top:60px;">
+    <h2>@ViewBag.Title</h2>
 </div>
-        <div class="col-sm-4">
-            @if (DeptID == 20)
-            {
-            <div id="ToolBarWH" style="margin:2px">
-                <button id="AddPosition" class="btn btn-primary">新增库位</button>
-                <button id="DelPosition" class="btn btn-warning">删除库位</button>
-            </div>
+
+<div class="LR_FatherDiv">
+    <div class="LR_LeftDiv">
+        <div class="LR_Left_ToolbarDiv">
+            <table>
+                @if ((DepName=="仓库"))
+                {
+                    <tr>
+                        <td><button id="AddWarehouse" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> 新增仓库</button></td>
+                        <td><button id="DelWarehouse" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> 删除仓库</button></td>
+                    </tr>
                 }
-            <select id="WarehousePositionList" class="form-control" size="20"></select>
-            </div>
+            </table>
+        </div>
+        <div class="LR_Left_BodyDiv">
+            <select id="WarehouseList" class="form-control LR_Body_Sel" size="20"></select>
+        </div>
+    </div>
+    <div class="LR_RightDiv">
+        <div class="LR_Right_ToolbarDiv">
+            <table>
+                @if ((DepName == "仓库"))
+                {
+                    <tr>
+                        <td><button id="AddPosition" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> 新增库位</button></td>
+                        <td><button id="DelPosition" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> 删除库位</button></td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="LR_Right_BodyDiv">
+            <select id="WarehousePositionList" class="form-control LR_Body_Sel" size="20"></select>
+        </div>
     </div>
 </div>
 

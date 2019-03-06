@@ -5,9 +5,11 @@
 
 @{
     int DeptID = 0;
+    string DepName = string.Empty;
     try
     {
         DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+        DepName = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]);
     }
     catch
     {
@@ -15,42 +17,65 @@
     }
 }
 
-<div style="margin-top:60px">
-    <h2>@ViewBag.Title</h2>
-    <div class="col-sm-2">
-        <input type="text" class="form-control" id="Keyword" />
-        <select class="form-control" id="BrandList"></select>
-    </div>
-    <div class="col-sm-4">
-        <ul class="nav nav-pills">
-            <li><button class="btn btn-primary" id="NewBrand">添加品牌</button></li>
-            <li><button class="btn btn-warning" id="DeleteBrand">删除品牌</button></li>
-        </ul>
-        <table class="table-striped col-sm-12">
-            <tr id="tr_brandType" class="sinno" style="height:80px;display:none !important;">
-                <td class="col-sm-4">
-                    <label>品牌类型</label>
-                </td>
-                <td class="col-sm-4"><input type="checkbox" id="brandType_1" value="模具材料" /> &nbsp;<label>模具材料</label></td>
-                <td class="col-sm-4"><input type="checkbox" id="brandType_2" value="生产耗材" /> &nbsp;<label>生产耗材</label></td>
-            </tr>
-            <tr style="height:80px;">
-                <td class="col-sm-4"><label>品牌名称</label></td>
-                <td class="col-sm-8" colspan="2">
-                    <input type="text" class="form-control" id="Name" disabled />
-                    <input type="hidden" id="BrandID" />
-                </td>
-            </tr>
-            <tr style="height:80px;">
-                <td colspan="3">
-                    <button class="btn btn-primary" id="SaveBrand">保存</button>
-                </td>
-            </tr>
-        </table>
-
-    </div>
+<div>
 
 </div>
+<div style="margin-top:60px;">
+    <h2>@ViewBag.Title</h2>
+</div>
+<div class="BaseData_FatherDiv">
+    <div class="BaseData_LeftDiv">
+        <div class="panel panel-info">
+            <div class="panel-heading" style="height:40px;"><h3 class="panel-title">品牌列表</h3></div>
+            <div class="panel-body" style="padding:0px!important;">
+                <div>
+                    <select class="form-control BaseData_Left_Sel" id="BrandList"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="BaseData_RightDiv">
+        <div class="BaseData_Right_ToolbarDiv">
+            <table style="margin-left:20px;">
+                @if (DepName == "采购" || DepName == "CAD")
+                {
+                    <tr>
+                        <td>
+                            <button class="btn btn-success" id="NewBrand"><span class="glyphicon glyphicon-plus"></span> 新建</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" id="DeleteBrand"><span class="glyphicon glyphicon-trash"></span> 删除</button>
+                        </td>
+                    </tr>
+                }
+                
+            </table>
+        </div>
+        <div class="BaseData_Right_TableDiv">
+            <div class="BaseData_Right_FormDiv">
+                <table class="table table-striped" style="text-align:center;vertical-align:central;">
+                    <colgroup><col width="20%" /><col width="40%" /><col width="40%" /></colgroup>
+                    <tr id="tr_brandType" class="sinno">
+                        <td><label>品牌类型</label></td>
+                        <td><input type="checkbox" id="brandType_1" value="模具材料" /> &nbsp;<label>模具材料</label></td>
+                        <td><input type="checkbox" id="brandType_2" value="生产耗材" /> &nbsp;<label>生产耗材</label></td>
+                    </tr>
+                    <tr>
+                        <td><label>品牌名称</label></td>
+                        <td colspan="2">
+                            <input type="text" class="form-control" id="Name" disabled />
+                            <input type="hidden" id="BrandID" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><button id="SaveBrand" class="btn btn-primary" style="float:right;"><span class="glyphicon glyphicon-pencil"></span> 保存</button></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <script>
@@ -125,7 +150,6 @@
         var _chkType = '0';
         var _chk = $('#tr_brandType input:checked');
         $.each(_chk, function (i, n) {
-            //console.log( n.value);
             _chkType = _chkType + ',' + n.value;
         });
         return _chkType;
@@ -167,7 +191,11 @@
                         type: "Get",
                         url: _url,
                         success: function (msg) {
-                            alert("保存完成")
+                            //alert("保存完成")
+                            $('#Name').val('');
+                            $('#Name').attr('disabled','disabled');
+                            $('#brandType_1')[0].checked=false;
+                            $('#brandType_2')[0].checked=false;
                             LoadBrands("");
                         }
                     })
@@ -187,7 +215,9 @@
                     type: "Get",
                     url: _url,
                     success: function () {
-                        alert("删除成功");
+                        //alert("删除成功");
+                        $('#Name').val('');
+                        $('#Name').attr('disabled','disabled');
                         LoadBrands("");
                     }
                 })

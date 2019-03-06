@@ -394,6 +394,7 @@
     <Compile Include="Status\TaskHourStatus.cs" />
     <Compile Include="Status\WarehouseRequestStatus.cs" />
     <Compile Include="Status\WEDMStatus.cs" />
+    <Compile Include="ViewModel\EleQcTaskModel.cs" />
     <Compile Include="ViewModel\TaskHourEmpViewModel.cs" />
     <Compile Include="WebServiceModel\POMailModel.cs" />
     <Compile Include="WebServiceModel\QRMailModel.cs" />

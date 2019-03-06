@@ -12,8 +12,8 @@
     }
 }
 
+<h2 style="margin-top:60px;">设计清单</h2>
 <div class="FatherDiv">
-    <h2>设计清单</h2>
     <div  class="LeftDiv">
         <button class="btn btn-primary LeftDiv_Btn" id="RefreshMold">刷新模号列表</button>
         <input type="text" id="Keyword" class="form-control LeftDiv_Inpt" />
@@ -21,19 +21,18 @@
     </div>
     <div class="RightDiv">
         <div id="Toolbar" class="RightDiv_TopDiv">
-            <select id="sltVersion" style="width:100px;height:32px;border:1px solid #ccc;margin-right:4px;"></select>
-            @*///CAD User Operation*@
-            @if (DeptID == 2)
-            {
-                
-                <button class="btn btn-success" id="PLImport">外部导入</button>
-                <button class="btn btn-primary" id="PublishModel">发布PartList</button>
-                <button class="btn btn-warning" id="UpgradeModel">升级PartList</button>
-                <button class="btn btn-primary" id="CreatePart">创建零件</button>
-                <button class="btn btn-danger" id="DeletePart">删除零件</button>
-                <button class="btn btn-warning" id="UpdradePart">升级Part</button>
-                <button class="btn btn-info" id="CreatePR">创建采购申请</button>
-            }
+            <table>
+                <tr>
+                    <td><select id="sltVersion" style="width:100px;height:32px;border:1px solid #ccc;margin-right:4px;"></select></td>
+                    <td class="td_cadBtn"><button class="btn btn-info" id="CreatePR"><span class="glyphicon glyphicon-share"></span> 创建PR</button></td>
+                    <td class="td_cadBtn"><button class="btn btn-success" id="CreatePart"><span class="glyphicon glyphicon-plus"></span> 添加Part</button></td>
+                    <td class="td_cadBtn"><button class="btn btn-danger" id="DeletePart"><span class="glyphicon glyphicon-trash"></span> 移除Part</button></td>
+                    <td class="td_cadBtn"><button class="btn btn-warning" id="PublishModel"><span class="glyphicon glyphicon-lock"></span> 发布PartList</button></td>
+                    <td class="td_cadBtn"><button class="btn btn-warning" id="UpgradeModel"><span class="glyphicon glyphicon-arrow-up"></span> 升级PartList</button></td>
+                    <td class="td_cadBtn"><button class="btn btn-warning" id="UpdradePart"><span class="glyphicon glyphicon-arrow-up"></span> 升级Part</button></td>
+                    <td class="td_cadBtn"><button class="btn btn-primary" id="PLImport"><span class="glyphicon glyphicon-paperclip"></span> Excel导入</button></td>
+                </tr>
+            </table>
         </div>
         <div class="RightDiv_BottomDiv" id="PartGridDiv" style="overflow-x:auto;overflow-y:hidden;">
             <table id="PartGrid" style="width:100%"></table>
@@ -307,4 +306,13 @@
         }
     });
 
+</script>
+<script>
+    $(document).ready(function () {
+        if(@DeptID==2){
+            $('.td_cadBtn').show();
+        }else{
+            $('.td_cadBtn').hide();
+        }
+    })
 </script>

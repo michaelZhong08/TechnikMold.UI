@@ -216,3 +216,18 @@ function B_forbiden_menu() { //禁用鼠标右键
         return false;
     }
 }
+
+function InitialView() {
+    var fatherDivHeight = $('.Form_FatherDiv').eq(0).height();
+    var fatherDivWidth = $('.Form_FatherDiv').eq(0).width();
+    var toolbarDivHeight = $('.Form_ToolbarDiv').eq(0).height();
+    var headDivHeight = $('.Form_HeadDiv').eq(0).height();
+    $('.Form_TableDiv').eq(0).css('height', fatherDivHeight - toolbarDivHeight - headDivHeight - 10);
+    $('.Form_TableDiv').eq(0).css('width', fatherDivWidth);
+    $('.Form_HeadDiv').eq(0).css('top', toolbarDivHeight);
+    $('.Form_TableDiv').eq(0).css('top', toolbarDivHeight + headDivHeight + 10);
+}
+
+function windowOpen(url) {
+    window.open(url, "_blank", width = 1920, height = 1080);
+}

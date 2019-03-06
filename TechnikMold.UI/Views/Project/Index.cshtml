@@ -6,12 +6,7 @@
         var YJHEditedCellList=[];
     </script>
 }
-@section Header{
-    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
-    <link rel="stylesheet" href="~/Content/datepicker.css" />
-    <script src="~/Scripts/bootstrap-switch.js"></script>
-    <script src="~/Scripts/bootstrap-datepicker.js"></script>
-}
+
 @{
     int DeptID;
     int PosID;
@@ -83,58 +78,59 @@
         font-size:5px!important;
         height:10px!important;
     }*/
-
+    .td_planDate{
+        font-weight:bold;
+    }
 </style>
 
-<div style="margin-top:60px">
-    <div class="col-sm-12">
+<div>
+    <input id="_oldPhaseID" hidden />
+    <input id="_oldPhaseCFDate" hidden />
+    <input id="DepID" value="@DeptID" hidden/>
+    <input type="hidden" id="selPhase" />
+</div>
+
+<h2 style="margin-top:60px;">项目计划</h2>
+<div class="UD_FatherDiv">
+    <div class="UD_ToolBarDiv">
         <table>
             <tr>
                 <td>
-                    <table>
-                        <tr>
-                            <td>
-                                <div class="switch">
-                                    <input type="hidden" id="ProjectState" value="false"/>
-                                    <input id="ProjectStateSwitch" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" />
-                                </div>
-                            </td>
-                            <td class="td_CreateProject">
-                                <button class="btn btn-success" id="CreateProject" hidden><span class="glyphicon glyphicon-plus-sign"></span> 创建主项目</button>
-                            </td>
-                            <td class="td_SaveProjectDate">
-                                <button class="btn btn-primary" id="YJHCellSave" disabled><span class="glyphicon glyphicon-pencil"></span> 保存计划 </button>
-                            </td>
-                            @*<td>
-                                <button class="btn btn-default" id="SearchProject"><span class="glyphicon glyphicon-search"></span> 查找项目</button>
-                            </td>*@
-                            @if (ViewBag.Type == 1)
-                            {
-                                <td>
-                                    <button class="btn btn-default" id="FixMoldProject"><span class="glyphicon glyphicon-wrench"></span> 修模项目 </button>
-                                </td>
-                            }
-                            else
-                            {
-                                <td>
-                                    <button class="btn btn-default" id="MoldProject"><span class="glyphicon glyphicon-tower"></span> 新模项目 </button>
-                                </td>
-                            }
-                            <td>
-                                <input type="text" class="form-control" id="keyword" placeholder="项目号/模具号"/>
-                            </td>
-                            <td>
-                                <button type="button" id="ProjectSearchBtn" class="btn btn-default">查询</button>
-                            </td>
-                        </tr>
-                    </table>
-                    <table id="ProjectGrid"></table>
-                    <div id="jqGridPager"></div>
-                    <input id="_oldPhaseID" hidden />
-                    <input id="_oldPhaseCFDate" hidden />
+                    <div class="switch">
+                        <input type="hidden" id="ProjectState" value="false" />
+                        <input id="ProjectStateSwitch" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" />
+                    </div>
+                </td>
+                @if (ViewBag.Type == 1)
+                {
+                    <td>
+                        <button class="btn btn-default" id="FixMoldProject"><span class="glyphicon glyphicon-wrench"></span> 修模项目 </button>
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        <button class="btn btn-default" id="MoldProject"><span class="glyphicon glyphicon-tower"></span> 新模项目 </button>
+                    </td>
+                }
+                <td class="td_CreateProject">
+                    <button class="btn btn-success" id="CreateProject" hidden><span class="glyphicon glyphicon-plus-sign"></span> 创建主项目</button>
+                </td>
+                <td class="td_SaveProjectDate">
+                    <button class="btn btn-primary" id="YJHCellSave" disabled><span class="glyphicon glyphicon-pencil"></span> 保存计划 </button>
+                </td>
+                <td>
+                    <input type="text" class="form-control" id="keyword" style="width:400px;" placeholder="项目号/模具号" />
+                </td>
+                <td>
+                    <button type="button" id="ProjectSearchBtn" class="btn btn-info"><span class="glyphicon glyphicon-search"></span> 查询</button>
                 </td>
             </tr>
         </table>
+    </div>
+    <div class="UD_TableDiv">
+        <table id="ProjectGrid"></table>
+        <div id="jqGridPager"></div>
     </div>
 </div>
 
@@ -158,17 +154,9 @@
                 <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">编辑项目</span>
             </li>
-            <li id="PauseProject">
-                <img src="~/Images/EditProject.png" />
-                <span style="font-size:12px; font-family:Verdana">启动/暂停项目</span>
-            </li>
             <li id="CloseProject">
                 <img src="~/Images/EditProject.png" />
                 <span style="font-size:12px; font-family:Verdana">项目完成</span>
-            </li>
-            <li id="DeleteProject">
-                <img src="~/Images/EditProject.png" />
-                <span style="font-size:12px; font-family:Verdana">删除项目</span>
             </li>
         }
         @if (DepName == "管理")
@@ -190,6 +178,10 @@
             </li>
             if (ViewBag.Type == 2)
             {
+                <li id="CloseProject">
+                    <img src="~/Images/EditProject.png" />
+                    <span style="font-size:12px; font-family:Verdana">项目完成</span>
+                </li>
                 <li id="DeleteProject">
                     <img src="~/Images/EditProject.png" />
                     <span style="font-size:12px; font-family:Verdana">删除项目</span>
@@ -207,8 +199,6 @@
 
     </ul>
 </div>
-
-<input type="hidden" id="selPhase" />
 
 @*项目备注*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="ProjectMemo" tabindex="-1" role="dialog" aria-labelledby="ProjectMemoLabel" aria-hidden="true">
@@ -333,7 +323,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="PauseProjectLabel">项目暂停</h4>
+                <h4 class="modal-title" id="PauseProjectLabel">项目启动/暂停</h4>
             </div>
             <div class="modal-body">
                 <h4>备注信息</h4>
@@ -451,24 +441,21 @@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="PhaseTaskDialog" tabindex="-1" role="dialog" aria-labelledby="PhaseTaskLabel" aria-hidden="true">
     <div class="modal-dialog" style="width:800px;">
         <div class="modal-content">
-            @*<div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                    <h4 class="modal-title" id="PhaseTaskLabel">加工任务</h4>
-                </div>*@
             <div class="modal-body">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <ul id="PhaseTaskmodal_tabs" class="nav nav-tabs"></ul>
-
-                <select id="MoldNumber" class="form-control"></select>
-
-                <input type="hidden" id="TaskType" />
-                <input type="hidden" id="State" />@*hidden*@
-                <table id="TaskGrid"></table>
-                <table id="PurchaseItemGrid"></table>
+                <div>
+                    <input type="hidden" id="TaskType" />
+                    <input type="hidden" id="State" />
+                </div>
+                <table style="width:100%;">
+                    <tr><td><button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button></td></tr>
+                    <tr><td><ul id="PhaseTaskmodal_tabs" class="nav nav-tabs"></ul></td></tr>
+                    <tr><td><select id="MoldNumber" class="form-control"></select></td></tr>
+                    <tr><td><table id="TaskGrid"></table></td></tr>
+                    <tr><td><table id="PurchaseItemGrid"></table></td></tr>
+                </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                @*<button type="button" id="PauseProjectBtn" class="btn btn-primary">确定</button>*@
             </div>
         </div>
     </div>
@@ -484,23 +471,18 @@
         GetPhases("PhaseID", @ViewBag.Type);
         GetPhases("FinishPhaseID", @ViewBag.Type);
 
-
-        ProjectGrid("@ViewBag.Keyword", @ViewBag.State, @ViewBag.Type,@DeptID,YJHEditedCellList);
-        ReloadProJGrid();
+        ProjectGrid($('#keyword').val(), @ViewBag.State, @ViewBag.Type,'@DeptID',YJHEditedCellList);
 
         TaskList("", 0, 0, 1);//任务列表
-        $("#TaskGrid").setGridWidth('740');
+        $("#TaskGrid").setGridWidth('756');
         PurchaseItem('','',0,0,true);//采购列表
-        $("#PurchaseItemGrid").setGridWidth('740');
+        $("#PurchaseItemGrid").setGridWidth('756');
 
         @if (ViewBag.Type == 1)
         {
             @:$("#ProjectGrid").setGridParam().showHideCol("ProjectNo");
                     @:$("#ProjectGrid").setGridParam().setLabel('FOT', 'FOT','','');
                 }
-
-        $("#ProjectGrid").setGridWidth(document.body.clientWidth*0.98);
-
         $("#SavePhaseModify").on("click", function () {
             if (ValidateForm("PhaseModify")) {
 
@@ -866,7 +848,8 @@
         if(isDepFinished==undefined){
             isDepFinished='false';
         }
-        var _url = '/Project/JsonProjects?keyword=' + $("#keyword").val() + "&state=" + $("#state").val() + "&type=" + $("#Type").val() + "&DepID=" + @DeptID+"&isDepFinish="+isDepFinished;
+        //var _url = '/Project/JsonProjects?keyword=' + $("#keyword").val() + "&state=" + $("#state").val() + "&type=" + $("#Type").val() + "&DepID=" + '@DeptID'+"&isDepFinish="+$('#ProjectState').val();
+        var _url = '/Project/SERVICE_JSONTMPL_Projects?keyword=' + $("#keyword").val() + "&type=" + $("#Type").val() + "&DepID=" + '@DeptID'+"&isDepFinish="+$('#ProjectState').val();
         $("#ProjectGrid").jqGrid('setGridParam', { datatype: "json", url: _url }).trigger("reloadGrid");
     }
     function DownloadAttach(ObjID,ObjType,FileName,FileType){
@@ -877,6 +860,15 @@
 
 <script>
     $(document).ready(function(){
+
+        $(window).resize(function(){
+            $("#ProjectGrid").setGridWidth($('.UD_TableDiv').eq(0).width());
+            $("#ProjectGrid").setGridHeight($('.UD_TableDiv').eq(0).height() - 40);
+        });
+
+        //取消列头点击事件
+        $('.ui-th-ltr').unbind('click');
+
         if(sessionStorage['SpecKey']=='hr'){
             if('@DepName'=='项目' || '@DepName'=='管理'){
                 $('.td_CreateProject').show();
@@ -890,6 +882,7 @@
                 $('.td_CreateProject').hide();
             }
         }
+
         if('@DepName'=='CAD' ||'@DepName'=='项目' || '@DepName'=='管理' ||'@DepName'=='CAM'){
             $('.td_SaveProjectDate').show();
         }else{
@@ -903,15 +896,14 @@
             offText: '历史项目',
             onSwitchChange:function(event,state){switchChange(event,state)},
         });
-        //$('#ProjectStateSwitch').bootstrapSwitch('state',true);
-        function switchChange(event,state){
-            if(state){
-                $('#ProjectState').val('false');
-                ReloadProJGrid('false');//当前
-            }else{
-                $('#ProjectState').val('true');
-                ReloadProJGrid('true');//历史
-            }
-        }
     })
+    function switchChange(event,state){
+        if(state){
+            $('#ProjectState').val('false');
+            ReloadProJGrid('false');//当前
+        }else{
+            $('#ProjectState').val('true');
+            ReloadProJGrid('true');//历史
+        }
+    };
 </script>

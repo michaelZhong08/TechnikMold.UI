@@ -93,7 +93,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         }
         public bool DeleteSettingByName(string partname, int rev)
         {
-            MGSetting dbentity = _context.MGSettings.Where(m => m.DrawName == partname).Where(m => m.Rev == rev).FirstOrDefault() ?? new MGSetting();
+            MGSetting dbentity = _context.MGSettings.Where(m => m.DrawName == partname && m.active).Where(m => m.Rev == rev).FirstOrDefault() ?? new MGSetting();
             if (dbentity.ID > 0)
             {
                 dbentity.active = false;
@@ -131,6 +131,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 dbentity.ReleaseBy = ReleaseBy;
                 dbentity.State = (int)MGSettingStatus.已发布但任务未发布;
                 #endregion
+                User _userRe = (_context.Users.Where(u => u.FullName == ReleaseBy).FirstOrDefault() ?? new User());
+                User _userCr = (_context.Users.Where(u => u.FullName == dbentity.CreateBy).FirstOrDefault() ?? new User());
                 MGTypeName typename = _context.MGTypeNames.Where(m => m.ID == dbentity.ProcessType).FirstOrDefault() ?? new MGTypeName();
                 WarehouseRecord whrecord = _context.WarehouseRecords.Where(w => w.Name == dbentity.ItemNO).Where(w => w.Quantity > 0).FirstOrDefault() ?? new WarehouseRecord();
                 #region 版本号>0
@@ -150,14 +152,20 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     var mgtasks = from t in _context.Tasks
                                   join m in _context.MGSettings
                                   on t.ProgramID equals m.ID
-                                  where m.DrawName == dbentity.DrawName && m.Rev < dbentity.Rev && t.TaskType == 6 && t.Enabled == true && t.State < 7
+                                  where m.DrawName == dbentity.DrawName && m.Rev < dbentity.Rev && t.TaskType == 6 && t.Enabled == true && (t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.未发布)
                                   select t;
-                    if (mgtasks != null && mgtasks.Count() > 0)
+                    if(mgtasks != null)
                     {
-                        foreach (var mgt in mgtasks)
+                        if (mgtasks.Count() > 0)
                         {
-                            //任务状态设置为 完成
-                            mgt.State = 90;
+                            foreach (var mgt in mgtasks)
+                            {
+                                //任务状态设置为 完成
+                                mgt.FinishBy = _userRe.UserID;
+                                mgt.FinishTime = DateTime.Now;
+                                mgt.State = (int)TaskStatus.完成;
+                                mgt.StateMemo = string.IsNullOrEmpty(mgt.StateMemo) ? "设定升版，低版本任务关闭。" : mgt.StateMemo + ";设定升版，低版本任务关闭。";
+                            }
                         }
                     }
                 }
@@ -169,10 +177,14 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 #endregion
                 #region 生成加工任务
                 int lenNote = typename.Note.Length;
+                ////
+                var _noteArry = typename.Note.Split(',');
+                double _time = Convert.ToDouble(Math.Round(dbentity.Time / _noteArry.Length, 1));
+                ////
                 int? Process = null;
                 string str = "";
                 int strStart = 1;
-                DateTime PlanDate;
+                DateTime PlanDate= new DateTime(1900,1,1);
                 for (int i = 1; i <= lenNote; i++)
                 {
                     if (typename.Note.Substring(i - 1, 1) == "," || i == lenNote)
@@ -196,13 +208,9 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     {
                         PlanDate = ph4.PlanFinish;
                     }
-                    else
+                    else if(Process == 1)
                     {
                         PlanDate = ph7.PlanFinish;
-                    }
-                    if (PlanDate == null)
-                    {
-                        PlanDate = DateTime.Parse("1900/1/1");
                     }
                     //User user = _context.Users.Where(u => u.FullName == ReleaseBy).FirstOrDefault() ?? new User();
                     #region 检索图纸
@@ -225,7 +233,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     #endregion
                     //关键 TaskType->6 铣磨任务; OldID字段用于记录旧表(MG_Task)Process信息-> 0:铣床任务 1:磨床任务
                     MGTypeName _mgtype = _context.MGTypeNames.Where(t => t.Note == Process.ToString()).FirstOrDefault() ?? new MGTypeName();
-                    Task mgtask = new Task { TaskName = TaskName,DrawingFile= DrawName, Version = dbentity.Rev, ProgramID = dbentity.ID, Creator = ReleaseBy, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = Memo, Quantity = dbentity.Qty, OldID = Convert.ToInt32(Process), PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 6, MoldNumber = dbentity.MoldName, HRC = dbentity.HRC, ProcessName = _mgtype.Name, Time = Convert.ToDouble(dbentity.Time),Material=dbentity.Material,Raw=dbentity.RawSize ,CAMUser=0};
+                    Task mgtask = new Task { TaskName = TaskName,DrawingFile= DrawName, Version = dbentity.Rev, ProgramID = dbentity.ID, Creator = ReleaseBy, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = Memo, Quantity = dbentity.Qty, OldID = Convert.ToInt32(Process), PlanTime = PlanDate, StartTime = new DateTime(1900, 1, 1), ProjectID = proj.ProjectID, TaskType = 6, MoldNumber = dbentity.MoldName, HRC = dbentity.HRC, ProcessName = _mgtype.Name, Time = _time, Material=dbentity.Material,Raw=dbentity.RawSize ,CAMUser= _userCr .UserID};
                     if (Process != null)
                     {
                         _context.Tasks.Add(mgtask);

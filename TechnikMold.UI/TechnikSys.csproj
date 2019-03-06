@@ -112,6 +112,18 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="MiniProfiler, Version=3.2.0.157, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">
+      <HintPath>..\packages\MiniProfiler.3.2.0.157\lib\net40\MiniProfiler.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MiniProfiler.EntityFramework6, Version=3.0.11.0, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">
+      <HintPath>..\packages\MiniProfiler.EF6.3.0.11\lib\net40\MiniProfiler.EntityFramework6.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MiniProfiler.Mvc, Version=3.0.11.0, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">
+      <HintPath>..\packages\MiniProfiler.MVC4.3.0.11\lib\net40\MiniProfiler.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -238,6 +250,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Infrastructure\NinjectControllerFactory.cs" />
+    <Compile Include="Models\Attribute\ExcelFieldAttribute.cs" />
     <Compile Include="Models\EditModel\PartEditModel.cs" />
     <Compile Include="Models\EditModel\ProjectEditModel.cs" />
     <Compile Include="Models\EditModel\ProjectMemoEditModel.cs" />
@@ -247,6 +260,12 @@
     <Compile Include="Models\EditModel\TaskHourCostEditModel.cs" />
     <Compile Include="Models\EditModel\UserRoleEditModel.cs" />
     <Compile Include="Models\EditModel\WarehousePositionEditModel.cs" />
+    <Compile Include="Models\Filter\ActionFilter\HandleErrorFilter.cs" />
+    <Compile Include="Models\Filter\ActionFilter\MoldSysActionFilterAttribute.cs" />
+    <Compile Include="Models\Filter\Authorize\MoldSysAuthorizeAttribute.cs" />
+    <Compile Include="Models\Filter\Principal\MoldSysPrincipal.cs" />
+    <Compile Include="Models\Filter\Principal\MoldSysIdentity.cs" />
+    <Compile Include="Models\Filter\Principal\UserPrincipal.cs" />
     <Compile Include="Models\Function\ExcelHelper.cs" />
     <Compile Include="Models\GridRowModel\AttachGridRowModel.cs" />
     <Compile Include="Models\GridRowModel\CAMTaskGridRowModel.cs" />
@@ -330,6 +349,7 @@
     <Compile Include="Models\Helpers\TaskStatus.cs" />
     <Compile Include="Models\Helpers\TaskTypeModelHelper.cs" />
     <Compile Include="Models\Toolkits.cs" />
+    <Compile Include="Models\ViewModel\CkUserData.cs" />
     <Compile Include="Models\ViewModel\EDMItemViewModel.cs" />
     <Compile Include="Models\ViewModel\EleInfoViewModel.cs" />
     <Compile Include="Models\ViewModel\MGTaskUptVerViewModel.cs" />
@@ -417,6 +437,7 @@
     <Content Include="Images\exitbak.png" />
     <Content Include="Images\Filter.png" />
     <Content Include="Images\List.png" />
+    <Content Include="Images\loading-1.gif" />
     <Content Include="Images\logo.png" />
     <Content Include="Images\memo.png" />
     <Content Include="Images\money-2.png" />
@@ -602,6 +623,8 @@
     <Content Include="Views\WorkHour\EmpWorkHourSubmit.cshtml" />
     <Content Include="Views\WorkHour\EmpWorkHourSubmitA.cshtml" />
     <Content Include="Views\WorkHour\EmpWorkHourRecord.cshtml" />
+    <Content Include="Views\Home\ErrorHandler.cshtml" />
+    <Content Include="Views\Purchase\POFormTemplate.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

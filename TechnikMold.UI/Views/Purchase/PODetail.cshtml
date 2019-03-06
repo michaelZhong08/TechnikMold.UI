@@ -42,7 +42,7 @@
         text-align: center;
     }
 
-    #Toolbar button {
+    /*#Toolbar button {
         height: 30px;
         width: 120px;
         margin-top: 5px;
@@ -57,7 +57,7 @@
         float: left;
         font-size: 14px;
         font-weight: bold;
-    }
+    }*/
     #POContentGrid td {
         margin:0px!important;
         padding:0px!important;
@@ -87,16 +87,24 @@
         _tdState = "hidden";
     }
 }
-<div style="position:absolute;left:0px;top:60px;right:0px;bottom:0px;min-width:1920px;">
+<div>
+    <input type="hidden" id="tempID" value="-1" />
+    <input type="hidden" id="row" />
+    <input type="hidden" id="ActiveCol" />
+    <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
+</div>
+<div style="margin-top:60px;">
     @if (Model.PurchaseOrderID > 0)
     {
-        <h2 style="line-height:40px;font-size:24px;margin:0px;padding:0px;text-indent:10px;">订单 @Model.PurchaseOrderNumber </h2>
+        <h2>订单 @Model.PurchaseOrderNumber </h2>
     }
     else
     {
         <h2>新建订单</h2>
     }
-    <div id="Toolbar" style="position:absolute;left:10px;height:40px;border:1px rgba(0,0,0,0.2) solid;border-style:none none none none;overflow:hidden;">
+</div>
+<div style="position:absolute;left:0px;top:100px;right:0px;bottom:0px;min-width:1920px;">
+    <div id="Toolbar" style="position:absolute;left:10px;top:0px;height:40px;border:1px rgba(0,0,0,0.2) solid;border-style:none none none none;overflow:hidden;">
         <table>
             <tr>
                 @if (Model.PurchaseOrderID > 0)
@@ -106,49 +114,47 @@
                         case (int)PurchaseOrderStatus.新建:
                             if (DeptID == 4)
                             {
-                                <td><button class="btn btn-primary" id="DeletePOContent">删除零件</button></td>
-                                @*<td><button class="btn btn-primary" id="PurchaseTypeBatch">采购类型</button></td>*@
-                                <td><button class="btn btn-info" id="SubmitPO">提交审批</button></td>
-                                <td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>
+                                <td><button class="btn btn-danger" id="DeletePOContent"><span class="glyphicon glyphicon-trash"></span> 删除零件</button></td>
+                                <td><button class="btn btn-warning" id="SubmitPO"><span class="glyphicon glyphicon-lock"></span> 提交审批</button></td>
+                                <td><button class="btn btn-warning" id="CancelPO"><span class="glyphicon glyphicon-ban-circle"></span> 取消订单</button></td>
                             }
                             break;
                         case (int)PurchaseOrderStatus.待审批:
-                            if (PosID == 3)
-                            {
-                                <td><button class="btn btn-primary" id="ReviewPO">审批</button></td>
-                            }
                             if (DeptID == 4)
                             {
-                                <td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>
+                                if (PosID > 1)
+                                {
+                                    <td><button class="btn btn-warning" id="ReviewPO"><span class="glyphicon glyphicon-lock"></span> 审批</button></td>
+                                }
+                                @*<td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>*@
                             }
                             break;
                         case (int)PurchaseOrderStatus.发布:
                             if (DeptID == 4)
                             {
                                 <td id="td_GenerateLink"></td>
-                                <td><button class="btn btn-primary" id="SendPO">生成订单</button></td>
-                                <td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>
+                                <td><button class="btn btn-primary" id="SendPO"><span class="glyphicon glyphicon-folder-open"></span>&nbsp; 订单文件</button></td>
+                                <td><button class="btn btn-warning" id="CancelPO"><span class="glyphicon glyphicon-ban-circle"></span> 取消订单</button></td>
                             }
                             break;
                         case (int)PurchaseOrderStatus.拒绝:
                             if (DeptID == 4)
                             {
-                                <td><input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" /></td>
-                                <td><button class="btn btn-primary" id="QuotationAgain">重新询价</button></td>
-                                <td><button class="btn btn-warning" id="CancelPO">取消订单</button></td>
+                                @*<td><button class="btn btn-primary" id="QuotationAgain"><span class="glyphicon glyphicon-repeat"></span> 重新询价</button></td>*@
+                                <td><button class="btn btn-warning" id="CancelPO"><span class="glyphicon glyphicon-ban-circle"></span> 取消订单</button></td>
                             }
                             break;
                     }
                 }
                 else
                 {
-                    <td><button class="btn btn-success" id="SaveOrder">保存订单</button></td>
+                    <td><button class="btn btn-success" id="SaveOrder"><span class="glyphicon glyphicon-save"></span> 保存订单</button></td>
                 }
 
             </tr>
         </table>
     </div>
-    <div id="Basic" style="position:absolute;left:10px;top:90px;right:10px;height:50px;border:1px rgba(0,0,0,0.2) solid;border-style:solid none solid none;">
+    <div id="Basic" style="position:absolute;left:10px;top:40px;right:10px;height:50px;border:1px rgba(0,0,0,0.2) solid;border-style:solid none solid none;">
         <table style="margin-top:5px;">
             <colgroup>
                 <col width="80" />
@@ -273,16 +279,11 @@
 
     </div>
 
-    <div id="tb_div" style="position:absolute;left:10px;top:140px;right:10px;bottom:0px;border:1px rgba(0,0,0,0.2) solid;overflow:hidden;">
-        <input type="hidden" id="ActiveCol" />
+    <div id="tb_div" style="position:absolute;left:10px;top:90px;right:10px;bottom:0px;border:1px rgba(0,0,0,0.2) solid;overflow:hidden;">
         <table id="POContentGrid"></table>
         <div id="jqGridPager"></div>
     </div>
 </div>
-
-<input type="hidden" id="tempID" value="-1" />
-<input type="hidden" id="row" />
-
 
 @*订单提交*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="POSubmitModal" tabindex="-1" role="dialog" aria-labelledby="POSubmitModalLabel">
@@ -316,41 +317,35 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="POReviewModalLabel">订单审批</h4>
             </div>
             <div class="modal-body">
-                <table class="table">
+                <table style="width:100%;text-align:center;margin:0px;padding:0px;">
+                    <colgroup>
+                        <col width="20%" />
+                        <col width="40%" />
+                        <col width="40%" />
+                    </colgroup>
                     <tr>
-                        <td class="col-sm-2"><label>审批结果</label></td>
-                        <td class="col-sm-4">
-                            <select class="form-control" id="ReviewResponse">
-                                @{
-                                    int response = (int)PurchaseOrderStatus.发布;
-                                }
-                                <option value="@response">通过</option>
-                                @{
-                                    response = (int)PurchaseOrderStatus.拒绝;
-                                }
-                                <option value="@response">拒绝</option>
-                            </select>
+                        <td style="font-weight:bold;float:left;">
+                            审核结果
+                            <input type="hidden" id="ReviewResponse" value="3" />
                         </td>
+                        <td style="color:green;"><input id="whchk_ok" name="approvalRadio" checked="checked" type="radio" /> 通过</td>
+                        <td style="color:red;"><input id="whchk_ng" name="approvalRadio" type="radio" /> 拒绝</td>
                     </tr>
                     <tr>
-                        <td class="col-sm-2"><label>备注</label></td>
-                        <td class="col-sm-4">
-                            <textarea id="ReviewMemo" class="form-control" rows="5" style="resize:none" maxlength="50"></textarea>
-                        </td>
+                        <td style="font-weight:bold;float:left;">备注</td>
+                        <td colspan="2"><textarea id="ReviewMemo" class="form-control" rows="5" style="resize:none" maxlength="99"></textarea></td>
                     </tr>
                 </table>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" id="POReviewBtn">确定</button>
+                <button type="button" class="btn btn-warning" data-dismiss="modal" id="POReviewBtn"><span class="glyphicon glyphicon-check"></span> 确定</button>
             </div>
         </div>
     </div>
 </div>
-
 
 @*更新明细采购类型*@
 <div class="modal fade" id="PurchaseTypeModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="PurchaseTypeModal-label">
@@ -416,7 +411,7 @@
         }
 
         $("#CancelPO").on("click", function(){
-            if (confirm("确认取消订单?")){
+            if (confirm("确认取消订单(取消之后无法重新下订单)?")){
                 CancelPO();
             }
 
@@ -443,8 +438,24 @@
         $("#SetType").on('click', function(){
             SetType();
         })
+
+        $('#whchk_ok').on('change',function(){
+            approRadioChange();
+        })
+        $('#whchk_ng').on('change',function(){
+            approRadioChange();
+        })
     });
 
+    function approRadioChange(){
+        var okres = $('#whchk_ok')[0].checked;
+        var ngres = $('#whchk_ng')[0].checked;
+        if(okres){
+            $('#ReviewResponse').val('3');
+        }else if(ngres){
+            $('#ReviewResponse').val('-100');
+        }
+    }
 
     function CancelPO(){
         var _url = "/Purchase/CancelPO?PurchaseOrderID="+$("#PurchaseOrderID").val();
@@ -453,7 +464,7 @@
             type:"Get",
             success:function(msg){
                 if (msg==""){
-                    alert("订单取消成功");
+                    //alert("订单取消成功");
                     location.href="/Purchase/PurchaseOrderList";
                 }else{
                     alert("订单取消错误,请重试");
@@ -511,7 +522,7 @@
     $(document).ready(function(){
         SupplierListImport('SupplierIDD');
 
-        var _strHtml='<a id="POEmail" class="btn btn-primary" href="' + FormatHrefStr() + '" onclick="ShowDialog()"><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>';
+        var _strHtml='<a id="POEmail" class="btn btn-info" href="' + FormatHrefStr() + '" onclick="ShowDialog()"><span class="glyphicon glyphicon-envelope"></span> 发送邮件</a>';
         $('#td_GenerateLink').append(_strHtml);
 
         $('#SaveOrder').on('click',function(){

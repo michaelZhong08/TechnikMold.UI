@@ -10,15 +10,11 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <title>POForm</title>
+    <title>模具管理系统-采购订单PDF页面</title>
     <link href="~/Content/Site.css" rel="stylesheet" />
 </head>
 <body>
     <div width="100%">
-        <center><h2 style="color:blue;margin:0px;">Purchase Order</h2></center>
-        <center><h2 style="color:blue;margin:0px;">采购订单</h2></center>
-        <p>生成日期:@DateTime.Now.ToString("yyyy-MM-dd")</p>
-        @*<p>订单号:@Model.PurchaseOrder.PurchaseOrderNumber</p>*@
         <table class="pdfTable" border="1" cellspacing="0" cellpadding="0" width="100%">
             <tr>
                 <td width="20%">P/O No 订单号码</td>
@@ -30,49 +26,25 @@
                 <td>Buyer 买方</td>
                 <td>苏州星诺奇科技股份有限公司</td>
                 <td>Vendor 供方</td>
-                @try{
-                <td>@Model.Supplier.FullName</td>
-                }
-                catch
-                {
-                   @: </td>
-                }
+                <td>@(Model.Supplier.FullName ?? "")</td>
             </tr>
             <tr>
                 <td height="30">Contact 联系人</td>
                 <td>@Model.PuUser.FullName</td>
                 <td>Contact 联系人</td>
-@try{
-                <td>@Model.Contact.FullName</td>
-}
-catch
-{
-   @:</td>
-}
+                <td>@(Model.Contact.FullName ?? "")</td>
             </tr>
             <tr>
                 <td>Tel 电话</td>
-                <td>@Model.PuUser.Extension</td>
+                <td>@(Model.PuUser.Extension ?? "")</td>
                 <td>Tel 电话</td>
-                @try { 
-                <td>@Model.Contact.Telephone</td>
-                }
-                catch
-                {
-                @:</td>
-                }
+                <td>@(Model.Contact.Telephone ?? "")</td>
             </tr>
             <tr>
                 <td>Email 邮件</td>
                 <td>@Model.PuUser.Email</td>
                 <td>Email 邮件</td>
-                @try {
-                    <td>@Model.Contact.Email</td>
-                }
-                catch
-                {
-                    @:</td>
-                }
+                <td>@(Model.Contact.Email ?? "")</td>
             </tr>
             <tr>
                 <td>Delivery Term贸易条款</td>
@@ -81,8 +53,7 @@ catch
                 <td>月结60天</td>
             </tr>
         </table>
-        <h4>订单内容</h4>
-
+        <br />
         <table class="pdfTable" border="1" cellspacing="0" cellpadding="0" width="100%">
             <thead>
                 <tr>
@@ -115,6 +86,26 @@ catch
                     int qty = 0;
                     double amount= 0;
                 }
+                @*@for (int j = 0; j <= 10; j++)
+                {
+                    POContent _content = (Model.POContents.ToList())[0];
+                    <tr>
+                        <td>@j</td>
+                        <td>@_content.PartNumber</td>
+                        <td align="center">@_content.PartSpecification</td>
+
+                        <td>@_content.Quantity</td>
+                        <td>件</td>
+                        <td>@_content.UnitPrice.ToString("0.00")</td>
+                        @{
+                            double sub = _content.Quantity * _content.UnitPrice;
+                        }
+                        <td>@sub.ToString("0.00")</td>
+
+                        <td></td>
+                        <td>@_content.Memo</td>
+                    </tr>
+                            }*@
                 @foreach (POContent _content in Model.POContents)
                 {
                     <tr>

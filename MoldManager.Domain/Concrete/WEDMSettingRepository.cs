@@ -132,20 +132,24 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             {
                 #region 版本 >0
                 string FullPartName = "";
+                User user = _context.Users.Where(u => u.FullName == ws.CreateBy && u.Enabled).FirstOrDefault() ?? new User();
                 if (ws.Rev > 0)
                 {
-                    //TaskType->3 WEDM State->7 外发
                     var mgtasks = from t in _context.Tasks
                                   join m in _context.WEDMSettings
                                   on t.ProgramID equals m.ID
-                                  where m.DrawName == ws.DrawName && m.Rev < ws.Rev && t.TaskType == 3 && t.Enabled == true && t.State >=(int)TaskStatus.等待 && t.State <= (int)TaskStatus.正在加工
+                                  where m.DrawName == ws.DrawName && m.Rev < ws.Rev && t.TaskType == 3 && t.Enabled == true && t.State >=(int)TaskStatus.未发布 && t.State < (int)TaskStatus.完成
                                   select t;
                     if (mgtasks != null)
                     {
                         foreach (var mgt in mgtasks)
                         {
                             //任务状态设置为 完成
+                            int _userID = (_context.Users.Where(u => u.FullName == user.FullName).FirstOrDefault() ?? new User()).UserID;
+                            mgt.FinishBy = _userID;
+                            mgt.FinishTime = DateTime.Now;
                             mgt.State = (int)TaskStatus.完成;
+                            mgt.StateMemo = string.IsNullOrEmpty(mgt.StateMemo) ? "设定升版，低版本任务关闭。" : mgt.StateMemo + ";设定升版，低版本任务关闭。";
                         }
                     }
                     if (ws.Rev < 10)
@@ -163,20 +167,16 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                         {
                             cd.Lock = true;
                             cd.ReleaseDate = DateTime.Now;
-                            cd.ReleaseBy = ReleaseBy;
+                            cd.ReleaseBy = user.FullName;
                         }
                     }
                 }
                 #endregion
                 #region 生成WEDM加工任务
-                DateTime PlanDate;
+                DateTime PlanDate=new DateTime(1900,1,1);
                 Project proj = _context.Projects.Where(p => p.MoldNumber == ws.MoldName && p.Enabled == true).FirstOrDefault() ?? new Project();
                 ProjectPhase ph10 = _context.ProjectPhases.Where(p => p.ProjectID == proj.ProjectID && p.PhaseID == 10).FirstOrDefault() ?? new ProjectPhase();//WEDM阶段
-                if (ph10.PlanFinish == null)
-                {
-                    PlanDate = DateTime.Parse("1900/1/1");
-                }
-                else
+                if (ph10.PlanFinish != null)
                 {
                     PlanDate = ph10.PlanFinish;
                 }
@@ -184,8 +184,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 ws.ReleaseFlag = true;
                 ws.ReleaseDate = DateTime.Now;
                 #endregion
-                //User user = _context.Users.Where(u => u.FullName == ReleaseBy && u.Enabled == true).FirstOrDefault() ?? new User();
-                Task WEDMtask = new Task { TaskName = ws.DrawName,Version = ws.Rev, ProgramID = ws.ID, Creator = ReleaseBy, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = "Create by CAM", Quantity = Qty, PlanTime = PlanDate, StartTime = DateTime.Now, ProjectID = proj.ProjectID, TaskType = 3, MoldNumber = ws.MoldName, ProcessName = ws.Precision, Time = Convert.ToDouble(ws.Time),CAMUser=0,Raw=""};//ws.DrawName.Substring(ws.DrawName.IndexOf('(') + 1, ws.DrawName.Length - ws.DrawName.IndexOf('(') - 2)
+                
+                Task WEDMtask = new Task { TaskName = ws.DrawName,Version = ws.Rev, ProgramID = ws.ID, Creator = ws.CreateBy, CreateTime = DateTime.Now, Enabled = true, Priority = 0, State = (int)TaskStatus.未发布,PrevState= (int)TaskStatus.未发布, Memo = "Create by CAM", Quantity = Qty, PlanTime = PlanDate, StartTime = new DateTime(1900, 1, 1), ProjectID = proj.ProjectID, TaskType = 3, MoldNumber = ws.MoldName, ProcessName = ws.Precision, Time = Convert.ToDouble(ws.Time),CAMUser= user.UserID, Raw=""};//ws.DrawName.Substring(ws.DrawName.IndexOf('(') + 1, ws.DrawName.Length - ws.DrawName.IndexOf('(') - 2)
                 _context.Tasks.Add(WEDMtask);
                 #endregion
                 _context.SaveChanges();
@@ -206,11 +206,11 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 //所有未完成且没有暂停的WEDM任务
                 if (Status == -1 && MoldNo != "所有新任务")
                 {
-                    tlist = _context.Tasks.Where(t => t.TaskType == 3 && t.Enabled == true && t.State < (int)TaskStatus.完成 && t.State > (int)TaskStatus.暂停 && t.MoldNumber == MoldNo).ToList();
+                    tlist = _context.Tasks.Where(t => t.TaskType == 3 && t.Enabled == true && t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.暂停 && t.MoldNumber == MoldNo).ToList();
                 }
                 else if (Status == -1 && MoldNo == "所有新任务")
                 {
-                    tlist = _context.Tasks.Where(t => t.TaskType == 3 && t.Enabled == true && t.State < (int)TaskStatus.完成 && t.State > (int)TaskStatus.暂停).ToList();
+                    tlist = _context.Tasks.Where(t => t.TaskType == 3 && t.Enabled == true && t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.暂停).ToList();
                 }
                 else if (Status == -2)
                 {
@@ -226,11 +226,11 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 //所有未完成且没有暂停的WEDM任务
                 if (Status == -1 && MoldNo != "所有新任务")
                 {
-                    tlist = _context.Tasks.Where(t => t.TaskType == 3 && t.Enabled == true && t.State < (int)TaskStatus.完成 && t.State > (int)TaskStatus.暂停 && t.MoldNumber == MoldNo && t.ProjectID == PlanID).ToList();
+                    tlist = _context.Tasks.Where(t => t.TaskType == 3 && t.Enabled == true && t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.暂停 && t.MoldNumber == MoldNo && t.ProjectID == PlanID).ToList();
                 }
                 else if (Status == -1 && MoldNo == "所有新任务")
                 {
-                    tlist = _context.Tasks.Where(t => t.TaskType == 3 && t.Enabled == true && t.State < (int)TaskStatus.完成 && t.State > (int)TaskStatus.暂停 && t.ProjectID == PlanID).ToList();
+                    tlist = _context.Tasks.Where(t => t.TaskType == 3 && t.Enabled == true && t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.暂停 && t.ProjectID == PlanID).ToList();
                 }
                 else if (Status == -2)
                 {
@@ -269,11 +269,11 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     //所有未完成且没有暂停的WEDM任务
                     if (Status == -1 && MoldNo != "所有新任务")
                     {
-                        AskTaskinfo = AllTaskinfo.Where(t => t.State < 90 && t.State != 6 && t.MoldNumber == MoldNo).ToList();
+                        AskTaskinfo = AllTaskinfo.Where(t => t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.暂停 && t.MoldNumber == MoldNo).ToList();
                     }
                     else if (Status == -1 && MoldNo == "所有新任务")
                     {
-                        AskTaskinfo = AllTaskinfo.Where(t => t.State < 90 && t.State != 6).ToList();
+                        AskTaskinfo = AllTaskinfo.Where(t => t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.暂停).ToList();
                     }
                     else if (Status == -2)
                     {
@@ -289,11 +289,11 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                     //所有未完成且没有暂停的WEDM任务
                     if (Status == -1 && MoldNo != "所有新任务")
                     {
-                        AskTaskinfo = AllTaskinfo.Where(t =>  t.State < 90 && t.State != 6 && t.MoldNumber == MoldNo && t.Plan == PlanID).ToList();
+                        AskTaskinfo = AllTaskinfo.Where(t => t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.暂停 && t.MoldNumber == MoldNo && t.Plan == PlanID).ToList();
                     }
                     else if (Status == -1 && MoldNo == "所有新任务")
                     {
-                        AskTaskinfo = AllTaskinfo.Where(t => t.State < 90 && t.State != 6 && t.Plan == PlanID).ToList();
+                        AskTaskinfo = AllTaskinfo.Where(t => t.State < (int)TaskStatus.完成 && t.State >= (int)TaskStatus.暂停 && t.Plan == PlanID).ToList();
                     }
                     else if (Status == -2)
                     {
