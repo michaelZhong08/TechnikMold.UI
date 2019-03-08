@@ -23,7 +23,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
             {
                 string _partSpec = _part.Specification;
                 string _partMaterial = _part.MaterialName;
-                int _stock = WarehouseRepository.GetTotalStock(_partSpec);
+                int _stock = 0;//WarehouseRepository.GetTotalStock(_partSpec);
                 rows.Add(new PartGridRowModel(i, _part, _stock));
                 i++;
             }

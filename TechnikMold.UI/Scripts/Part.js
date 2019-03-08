@@ -644,7 +644,6 @@ function LoadMoldList(Keyword, MoldNumber) {
     })
 }
 
-
 function LoadMoldVer(MoldNumber) {
     var _url_ver = "/Part/GetMoldVerList?MoldNumber=" + MoldNumber;
     console.log(_url_ver);
@@ -662,9 +661,9 @@ function LoadMoldVer(MoldNumber) {
         SetToolBar();
         var _PartListID = $("#sltVersion").val();
         //加载零件清单
-        var _url = "/Part/GetJsonPartsByBomID?PartListID=" + _PartListID + "&MoldNumber=" + MoldNumber;
-
-        $("#PartGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
+        ReloadGrid();
+        //var _url = "/Part/GetJsonPartsByBomID?PartListID=" + _PartListID + "&MoldNumber=" + MoldNumber;
+        //$("#PartGrid").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
     })
 }
 

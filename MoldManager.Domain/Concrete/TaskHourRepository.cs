@@ -82,9 +82,17 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             TaskHour _taskhour = _context.TaskHours.Where(h => h.SemiTaskFlag.Equals(SemiTaskFlag) && h.Enabled && h.State == (int)TaskHourStatus.开始).OrderByDescending(h => h.TaskHourID).FirstOrDefault();
             return _taskhour;
         }
-        public List<TaskHour> GetCurTHsBySemiTaskFlag(string SemiTaskFlag)
+        public List<TaskHour> GetCurTHsBySemiTaskFlag(string SemiTaskFlag,int TaskType)
         {
-            List<TaskHour> _taskhours = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && h.Enabled && h.State == (int)TaskHourStatus.开始).OrderByDescending(h => h.TaskHourID).ToList();
+            List<TaskHour> _taskhours;
+            if (TaskType.Equals(0))
+            {
+                _taskhours = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && h.Enabled && h.State == (int)TaskHourStatus.开始).OrderByDescending(h => h.TaskHourID).ToList();
+            }
+            else
+            {
+                _taskhours = _context.TaskHours.Where(h => h.SemiTaskFlag.Contains(SemiTaskFlag) && h.Enabled && h.State == (int)TaskHourStatus.开始 && h.TaskType== TaskType).OrderByDescending(h => h.TaskHourID).ToList();
+            }
             return _taskhours;
         }
         public decimal GetTotalHourByTaskID(int TaskID)

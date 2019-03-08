@@ -1,27 +1,26 @@
-﻿
-@{
-    ViewBag.Title = "材料库管理";
-    int DeptID = 0;
-    int PosID = 0;
-    try
-    {
-        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
-    }
-    catch
-    {
+﻿<script>
+    @{
+        ViewBag.Title = "材料库管理";
+        int DeptID = 0;
+        int PosID = 0;
+        try
+        {
+            DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+        }
+        catch
+        {
 
-    }
-    try
-    {
-        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
-    }
-    catch
-    {
+        }
+        try
+        {
+            PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+        }
+        catch
+        {
 
+        }
     }
-}
-
-<div></div>
+</script>
 
 <div style="margin-top:60px;">
     <h2>@ViewBag.Title</h2>

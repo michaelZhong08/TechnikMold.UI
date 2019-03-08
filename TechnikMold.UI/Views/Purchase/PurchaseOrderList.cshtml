@@ -140,7 +140,7 @@
             QueryPO();
         })
 
-        LoadPurchaseType();
+        //LoadPurchaseType();
 
         if(@_dept==4){
             $('#td_CreatePO').show();
@@ -173,9 +173,9 @@
             _url = _url == "" ? "Supplier=" + $("#AvailableSuppliers").val() : _url + "&Supplier=" + $("#AvailableSuppliers").val();
         }
 
-        if ($("#PurchaseType").val()!=0){
-            _url = _url == "" ? "PurchaseType=" + $("#PurchaseType").val() : _url + "&PurchaseType=" + $("#PurchaseType").val();
-        }
+        //if ($("#PurchaseType").val()!=0){
+        //    _url = _url == "" ? "PurchaseType=" + $("#PurchaseType").val() : _url + "&PurchaseType=" + $("#PurchaseType").val();
+        //}
         _url =_url==""?"/Purchase/PurchaseOrderList": "/Purchase/PurchaseOrderList?" + _url;
 
         location.href = _url;

@@ -27,6 +27,7 @@
     //加工部门ID集合 —— 5: MG;6: NC;7: CNC;8: EDM;9: WEDM
     List<int> _wsDep = (List<int>)ViewBag.wsDepID;
 }
+
 <style>
     .EleInfoDiv {
         position: absolute;
@@ -531,7 +532,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal" id="modal_btn_CloseWindowTPHour"><span class="glyphicon glyphicon glyphicon-off"></span>返回</button>
-                    <button type="button" class="btn btn-primary" id="modal_btn_SubmitTPHour" disabled="disabled"><span class="glyphicon glyphicon glyphicon-save"></span>提交</button>
+                    <button type="button" class="btn btn-primary" id="modal_btn_SubmitTPHour" disabled="disabled"><span class="glyphicon glyphicon glyphicon-floppy-saved"></span>提交</button>
                 </div>
             </div>
         </div>
@@ -539,11 +540,10 @@
 
 <script>
      $(document).ready(function () {
-         $("#target").val("/Task/MachineTaskList?State=@ViewBag.State&TaskType=@ViewBag.TaskType&MoldNumber=")
+         //$("#target").val("/Task/MachineTaskList?State=@ViewBag.State&TaskType=@ViewBag.TaskType&MoldNumber=")
 
          $("#Keyword").on("keyup", function(){
-             $.debounce(100,LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()))
-             //delay_till_last("MachineTask", LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()), 500);
+             $.debounce(100,LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, $("#Keyword").val()))//延时搜索 适合键入操作
          })
 
          LoadMoldList(0, @ViewBag.State, @ViewBag.TaskType, "", "@ViewBag.MoldNumber");
@@ -685,23 +685,6 @@
          })
          //设置加工结束
          $("#FinishTask").on("click", function () {
-             //var selr = $('#TaskGrid').jqGrid('getGridParam', 'selarrrow');
-             //var _ids = "";//正在加工 任务
-             //var _wfids='';//外发 任务
-             //var _ycids='';//其它状态 任务
-             //for (var i = 0; i < selr.length; i++) {
-             //    var _state=$("#TaskGrid").getCell(selr[i], 'State');
-             //    if(_state=='正在加工'){
-             //        _ids=addColumnlists(_ids,'TaskGrid',selr[i],'ID');
-             //    }
-             //    else if(_state=='外发'){
-             //        _wfids=addColumnlists(_wfids,'TaskGrid',selr[i],'ID');
-             //    }
-             //    else{
-             //        _ycids=addColumnlists(_ycids,'TaskGrid',selr[i],'TaskName');
-             //    }
-             //}
-             //if(_ycids==''){
              var _jgIDs=GetMultiSelectedIDs('TaskGrid');
              if(_jgIDs==''){
                  alert('请选择需要结束的任务！');
@@ -713,56 +696,9 @@
                  var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _jgIDs + '&type=' + 2;
                  $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
              }
-             ////正常加工任务结束
-             //if(_ids!=''&& _wfids=='')
-             //    FinishTask(_ids);
-             ////外发任务结束
-             //if(_wfids!=''){
-             //    //正常任务结束
-             //    if(_ids!='')
-             //        $.get("/Task/SetTaskFinish?TaskIDs=" + _ids);
-             //    //外发任务列表
-             //    //clear table data
-             //    $('#tb_SetupWFTaskHour').jqGrid("clearGridData");
-             //    $('#SetupWFTaskHourModal').modal('show');
-             //    var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _wfids + '&type=' + 2;
-             //    $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
-             //}
-             //}
-             //else
-             //    alert('以下任务['+_ycids+']尚未开始加工，不允许结束！');
          })
          //结束任务
          $('#modal_btn_FinishTask').on('click',function(){
-             ////获取第2行(除表头)第2个单元格(第一个默认隐藏)
-             //var firsttdobj= $('#tb_SetupWFTaskHour td:eq(8)');
-             ////模拟单元格点击事件
-             //firsttdobj.trigger("click");
-
-             //var _rows = $('#tb_SetupWFTaskHour').jqGrid('getRowData');
-             //var msg='';
-             //var _taskids=GetAllValues('tb_SetupWFTaskHour','ID');
-             //for(var i=0;i<_rows.length;i++){
-             //    var _taskid=_rows[i].ID;
-             //    var _tasktime=_rows[i].TotalTime;
-             //    if(_taskid>0){
-             //        $.get('/Task/SetWFTaskFinish?TaskID='+_taskid+'&Time='+_tasktime,function(res){
-             //            if (res != "") {
-             //                msg=msg+res+';';
-             //            }
-             //        })
-             //    }
-             //}
-             //if(msg==''){
-             //    location.reload();
-             //    $('#SetupWFTaskHourModal').modal('hide');
-             //}
-             //else{
-             //    //重载表格
-             //    var _url = '/Task/Service_Json_GetTaskByIDs?TaskIDs=' + _taskids + '&type=' + 2;
-             //    $("#tb_SetupWFTaskHour").jqGrid('setGridParam', { datatype: 'json', url: _url }).trigger("reloadGrid");
-             //    alert(msg+'——任务结束失败！');
-             //}
              if (confirm("确认结束任务？")) {
                  var itemData=compactTSObj(2,'_viewmodel');
                  if(itemData!='' && itemData!=undefined){
@@ -836,15 +772,6 @@
              }
              $('#modalinput_AssignedTime').val(_curtime);
          })
-         //
-         //$('#formTable_tph').on('change','#modalinput_AssignedTime',function(){
-         //    var _time=$('#modalinput_AssignedTime').val();
-         //    alert(_time);
-         //    if(_time==0)
-         //        document.getElementById("modal_btn_SubmitTPHour").disabled=true;
-         //    else
-         //        document.getElementById("modal_btn_SubmitTPHour").disabled=false;
-         //})
 
          //工时提交
          $('#modal_btn_SubmitTPHour').on('click',function(){
@@ -899,7 +826,6 @@
                              //保存人工工时
                              $.get('/Task/Service_EmpWH_SaveRecordByMachTH?taskhourID='+res);
                              //删除行
-                             //var _rowid=$('#taskhourTbCurRowid').val();
                              $("#tb_SetupWFTaskHour").jqGrid("delRowData", row);
                              $('#SetupTaskPeriodHourModal').modal('hide');
                          }
@@ -982,23 +908,6 @@
          } else {
              alert("请选择一个任务");
          }
-     }
-
-     function chk_griddata_TaskStart(){
-         //var rowData = $("#tb_TaskStart").jqGrid("getRowData");
-         //for(var i=0;i<rowData.length;i++){
-         //    if (rowData[i].TotalTime == "" || rowData[i].TotalTime==0) {
-
-         //        alert('工时未输入！');
-         //        return false;
-         //    }
-         //    if (rowData[i].MachinesCode == "" || rowData[i].MachinesCode==undefined) {
-
-         //        alert('未选择机器！');
-         //        return false;
-         //    }
-         //}
-         //return true;
      }
 
     //type 1 开始加工 2 结束加工

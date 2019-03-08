@@ -17,7 +17,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Total;
         public int Records;
 
-        public POListGridViewModel(IEnumerable<PurchaseOrder> Orders,
+        public POListGridViewModel(List<PurchaseOrder> Orders,
             IProjectRepository ProjectRepository,
             ISupplierRepository SupplierRepository, 
             IPurchaseTypeRepository PurchaseTypeRepository, 
@@ -28,15 +28,18 @@ namespace MoldManager.WebUI.Models.GridViewModel
             int count = Orders.Count();
             if (count > 0)
             {
+                List<PurchaseType> _types = PurchaseTypeRepository.PurchaseTypes.ToList();
+                List<Supplier> _sups = SupplierRepository.Suppliers.ToList();
+                List<User> _users = UserRepository.Users.ToList();
                 foreach (PurchaseOrder _order in Orders)
                 {
                     string Supplier = "";
-                    if (SupplierRepository.QueryByID(_order.SupplierID)!=null)
-                        Supplier = SupplierRepository.QueryByID(_order.SupplierID).Name;
+                    if (SupplierRepository.QueryByID(_order.SupplierID) != null)
+                        Supplier = (_sups.Where(s => s.SupplierID == _order.SupplierID && s.Enabled == true).FirstOrDefault() ?? new TechnikSys.MoldManager.Domain.Entity.Supplier()).Name;//SupplierRepository.QueryByID(_order.SupplierID).Name;
                     string PurchaseType;
                     try
                     {
-                        PurchaseType = PurchaseTypeRepository.QueryByID(_order.PurchaseType).Name;
+                        PurchaseType = (_types.Where(t => t.Enabled == true && t.PurchaseTypeID == _order.PurchaseType).FirstOrDefault() ?? new TechnikSys.MoldManager.Domain.Entity.PurchaseType()).Name;//PurchaseTypeRepository.QueryByID(_order.PurchaseType).Name;
                     }
                     catch
                     {
@@ -46,7 +49,7 @@ namespace MoldManager.WebUI.Models.GridViewModel
                     string _user = "";
                     try
                     {
-                        _user = UserRepository.GetUserByID(_order.UserID).FullName;
+                        _user = (_users.Where(u => u.Enabled && u.UserID == _order.UserID).FirstOrDefault() ?? new User()).FullName;// UserRepository.GetUserByID(_order.UserID).FullName;
                     }
                     catch
                     {

@@ -88,23 +88,6 @@
 }
 
 
-.pdfTable {
-    border-right: 1px solid;
-    border-bottom: 1px solid;
-    width: 1000px;
-}
-
-    .pdfTable td {
-        border-left: 1px solid;
-        border-top: 1px solid;
-        padding: 4px;
-    }
-
-
-    .pdfTable thead tr {
-        height: 50px;
-    }
-
 .ui-jqgrid tr.jqgrow td {
     white-space: normal !important;
     height: auto;
@@ -116,14 +99,6 @@
 .ManualPart {
     background-color: #fffec9;
 }
-
-/*.table td { 
-
-text-align: center; 
-
-height:38px;
-
-}*/
 
 
 td[role='gridcell'] {
@@ -142,8 +117,4 @@ td[role='gridcell'] {
 
 .jqgrow:nth-child(even) {
     background-color: #eeeeee;
-}
-
-h2 {
-    line-height: 30px;
 }

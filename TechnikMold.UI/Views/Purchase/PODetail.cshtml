@@ -1,63 +1,61 @@
 ﻿@model TechnikSys.MoldManager.Domain.Entity.PurchaseOrder
 @using MoldManager.WebUI.Models.Helpers
-@{
-    string UserID = "";
-    string UserName = "";
-    try
-    {
-        UserID = Request.Cookies["User"]["UserID"];
-        UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
+<script>
+    @{
+        string UserID = "";
+        string UserName = "";
+        try
+        {
+            UserID = Request.Cookies["User"]["UserID"];
+            UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
 
-    }
-    catch
-    {
-        UserID = "";
-        UserName = "";
-    }
-}
-
-@{
-    int DeptID;
-    int PosID;
-    try
-    {
-        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
-    }
-    catch
-    {
-        DeptID = 0;
+        }
+        catch
+        {
+            UserID = "";
+            UserName = "";
+        }
     }
 
-    try
-    {
-        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+    @{
+        int DeptID;
+        int PosID;
+        try
+        {
+            DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+        }
+        catch
+        {
+            DeptID = 0;
+        }
+
+        try
+        {
+            PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+        }
+        catch
+        {
+            PosID = 0;
+        }
     }
-    catch
-    {
-        PosID = 0;
+    @{ 
+        var _inptState = "";
+        var _tdState = "";
+        if (Model.PurchaseOrderID > 0)
+        {
+            _inptState = "readonly";
+        }
+        else
+        {
+            _tdState = "hidden";
+        }
     }
-}
+</script>
+
 <style>
     #Basic td {
         text-align: center;
     }
-
-    /*#Toolbar button {
-        height: 30px;
-        width: 120px;
-        margin-top: 5px;
-        float: left;
-        font-size: 14px;
-        font-weight: bold;
-    }
-    #Toolbar a {
-        height: 30px;
-        width: 120px;
-        margin-top: 5px;
-        float: left;
-        font-size: 14px;
-        font-weight: bold;
-    }*/
     #POContentGrid td {
         margin:0px!important;
         padding:0px!important;
@@ -75,24 +73,14 @@
         padding: 0px;
     }
 </style>
-@{ 
-    var _inptState = "";
-    var _tdState = "";
-    if (Model.PurchaseOrderID > 0)
-    {
-        _inptState = "readonly";
-    }
-    else
-    {
-        _tdState = "hidden";
-    }
-}
+
 <div>
     <input type="hidden" id="tempID" value="-1" />
     <input type="hidden" id="row" />
     <input type="hidden" id="ActiveCol" />
     <input type="hidden" id="QuotationRequestID" value="@Model.QuotationRequestID" />
 </div>
+
 <div style="margin-top:60px;">
     @if (Model.PurchaseOrderID > 0)
     {
@@ -148,7 +136,7 @@
                 }
                 else
                 {
-                    <td><button class="btn btn-success" id="SaveOrder"><span class="glyphicon glyphicon-save"></span> 保存订单</button></td>
+                    <td><button class="btn btn-success" id="SaveOrder"><span class="glyphicon glyphicon-floppy-saved"></span> 保存订单</button></td>
                 }
 
             </tr>

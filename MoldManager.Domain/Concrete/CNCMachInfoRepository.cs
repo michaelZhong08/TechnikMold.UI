@@ -11,7 +11,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
     public class CNCMachInfoRepository:ICNCMachInfoRepository
     {
         private EFDbContext _context = new EFDbContext();
-
         public IQueryable<CNCMachInfo> CNCMachInfoes
         {
             get { return _context.CNCMachInfoes; }

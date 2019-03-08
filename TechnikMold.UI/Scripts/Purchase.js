@@ -18,7 +18,6 @@
             $("#DueDate").addClass("invalidefield");
             alert("请输入需求日期！");
         }
-
     });
     $("#GetERPID").on("click", function () {
         GetERPID();
@@ -31,14 +30,6 @@
 
     //Display the  add Purchase request content dialog
     $("#AddContent").on("click", function () {
-        //$("#MaterialID option:first-child").attr("selected", "true");
-        //LoadHardness($("#MaterialID option:selected").val());
-        //ClearPRContent();
-        //$("#row").val(0);
-        //if ($("#PurchaseType").val() == 2) {
-        //    $("#MoldNumber").val("XX")
-        //}
-        //$("#PRContentAdd").modal("show");
         console.log($("#row").val());
         $('#tb_PartSearch').jqGrid('clearGridData');
         $("#SpecKeyword").val('');
@@ -65,7 +56,6 @@
                 AddPRContent(Number($("#row").val()));
                 $("#PRContentAdd").modal("hide");
             } else {
-
                 alert("零件数量不能为0");
             }
         } else {
@@ -73,9 +63,6 @@
         }
         $("#PRModified").val("true");
     })
-
-
-
 
     ////Display  the project select modal and load the mold numbers
     $("#MoldNumber").on("click", function () {
@@ -97,9 +84,7 @@
         } else {
             alert("请填写黄色必填项");
         }
-
     })
-
 
     //Display the supplier select dialog
     $("#SelectSupplier").on("click", function () {
@@ -123,11 +108,6 @@
 
     $("#SupplierList").on("dblclick", function () {
         RemoveSupplier();
-    })
-
-    //Save the supplier selection
-    $("#SelectSuppliers").on("click", function () {
-
     })
 
     $("#DeleteSupplier").on("click", function () {
@@ -768,7 +748,7 @@ function CreatePR(Submit) {
         return false;
     }
     if (Submit) {
-        $("#SubmitPR").attr("disabled", true);
+        //$("#SubmitPR").attr("disabled", true);
     } else {
         //添加外发任务工时记录创建逻辑 michael
         var _wfFlag = true;

@@ -5,66 +5,6 @@
     <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
     <script src="~/Scripts/bootstrap-switch.js"></script>
 }
-<style>
-    #POContentGrid td {
-        margin: 0px !important;
-        padding: 0px !important;
-        height: 30px;
-        text-align: center;
-        vertical-align: middle;
-        font-size: 12px;
-    }
-
-    #POContentGrid input {
-        height: 24px;
-        border-style: none;
-        outline: none;
-        font-size: 12px;
-        margin: 0px;
-        padding: 0px;
-    }
-
-    td {
-        text-align: center;
-        padding: 0px !important;
-    }
-
-        /*td input {
-            height: 30px;
-            margin-top: 2px;
-            margin-left: 2px;
-        }
-
-        td button {
-            width: 90%;
-            margin-left: 5%;
-            height: 30px;
-            margin-top: 2px;
-        }
-
-        td select {
-            height: 30px;
-            margin-top: 2px;
-            margin-left: 2px;
-        }*/
-
-    .bootstrap-switch-Normal {
-        height: 30px !important;
-    }
-
-    .bootstrap-switch-container {
-        height: 32px !important;
-        margin-top: 2px;
-    }
-
-        .bootstrap-switch-container span {
-            line-height: 32px !important;
-            width: 32px !important;
-            margin: 0px !important;
-            padding: 0px !important;
-            font-size: 20px !important;
-        }
-</style>
 
 <style>
     .LMR_FatherDiv{
@@ -79,8 +19,7 @@
         top:0px;
         bottom:0px;
         left:0px;
-        width:47%;
-        /*border:1px solid blue;*/
+        width:50%;
     }
     .LMR_Left_ToolbarDiv{
         position:absolute;
@@ -103,7 +42,7 @@
         position:absolute;
         top:0px;
         bottom:0px;
-        left:47%;
+        left:50%;
         width:6%;
         min-width:91px;
         border:1px solid rgba(0,0,0,0.1);
@@ -113,7 +52,7 @@
         top:0px;
         bottom:0px;
         right:0px;
-        width:47%;
+        width:44%;
         /*border:1px solid yellow;*/
     }
     .LMR_Right_ToolbarDiv{
@@ -141,7 +80,6 @@
     <input type="hidden" id="po_purType" value="0" hidden />
     <input type="hidden" id="ActiveCol" />
 </div>
-
 <div style="margin-top:60px;">
     <h2>采购订单维护 </h2>
 </div>
@@ -156,7 +94,7 @@
                     <td>
                         <button class="btn btn-info" id="Search"><span class="glyphicon glyphicon-search"></span> 查询</button>
                     </td>
-                    <td>采购类型</td>
+                    <td style="padding-left:10px!important;">采购类型：</td>
                     <td>
                         @if (ViewBag.PurchaseItemIDs == "")
                         {
@@ -167,12 +105,10 @@
                             <select class="form-control" id="PurchaseType" disabled></select>
                         }
                     </td>
-                    <td>询价结果</td>
+                    <td style="padding-left:10px;">询价结果：</td>
                     <td>
                         <input id="PurchaseState" value="2" hidden />
-                        <div class="switch">
-                            <input id="PurchaseStateSwitch" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" />
-                        </div>
+                        <div id="PurchaseStateSwitch"></div>
                     </td>
                 </tr>
             </table>
@@ -206,17 +142,17 @@
 <div class="contextMenu dropdown" id="PurchaseItemContextMenu" style="display:none">
     <ul style="width:200px">
 
-        <li id="AddItem">
+        @*<li id="AddItem">
             <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/arrow-right.png" /></span>
             <span style="font-size:12px; font-family:Verdana">加入订单</span>
-        </li>
+        </li>*@
       </ul>
 </div>
 
 @*采购项右键菜单*@
 <div class="contextMenu dropdown" id="POItemContextMenu" style="display:none">
     <ul style="width:200px">
-        <li id="DeliveryDate">
+        @*<li id="DeliveryDate">
             <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/calendar.png" /></span>
             <span style="font-size:12px; font-family:Verdana">设置交货日期</span>
         </li>
@@ -231,7 +167,7 @@
         <li id="RemoveItem">
             <span class="ui-icon ui-icon-pencil" style="float:left"><img src="~/Images/Delete.png" /></span>
             <span style="font-size:12px; font-family:Verdana">移除订单项</span>
-        </li>
+        </li>*@
     </ul>
 </div>
 
@@ -306,7 +242,6 @@
 
 
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
-<script src="~/Scripts/JqGridTemplate.js"></script>
 <script src="~/Scripts/Purchase.js"></script>
 
 <script>
@@ -330,11 +265,9 @@
 <script>
     $("document").ready(function () {
         
-        LoadSuppliers();
+        //LoadSuppliers();
         LoadPurchaseTypes();
-        
-
-        SupplierListImport('SupplierIDD');
+        //SupplierListImport('SupplierIDD');
 
         $("#Search").on("click", function () {
             if ($("#Keyword").val() != "") {
@@ -785,26 +718,15 @@
 
 <script>
     $(document).ready(function(){   
-        //window.onresize=function(){  
-        //    $("#PRContentGrid").jqGrid("setGridHeight", $('#div_tb_left').height() - 42);
-        //    $("#POContentGrid").jqGrid("setGridHeight", $('#div_tb_right').height() - 42);
-
-        //    $("#PRContentGrid").jqGrid("setGridWidth", $('#div_tb_left').width() - 2);
-        //    $("#POContentGrid").jqGrid("setGridWidth", $('#div_tb_right').width() - 2);
-        //}
-        $('#PurchaseStateSwitch').bootstrapSwitch({
-            onText: '有',
-            offText: '无',
-            onSwitchChange:function(event,state){switchChange(event,state)},
-        });
-        function switchChange(event,state){
-            if(state){
-                $('#PurchaseState').val(1);
-            }else{
-                $('#PurchaseState').val(2);
-            }
-            console.log($('#PurchaseState').val());
-            LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
-        }
+        CusSwitchConfig(switchChange, 'PurchaseStateSwitch', '有', '无', false);
     })
+    function switchChange(state){
+        if(state=='true'){
+            $('#PurchaseState').val(1);
+        }else{
+            $('#PurchaseState').val(2);
+        }
+        //console.log($('#PurchaseState').val());
+        LoadPRContents($("#Keyword").val(), $("#PurchaseType").val());
+    }
 </script>

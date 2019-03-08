@@ -31,7 +31,6 @@ $(document).ready(function () {
     });
 
     $("#MoldNumber").on("blur", function () {
-        
             CheckMoldNumer();
 
     });

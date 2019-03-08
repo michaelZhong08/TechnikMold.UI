@@ -1,39 +1,42 @@
 ﻿@model TechnikSys.MoldManager.Domain.Entity.PurchaseRequest
 @using MoldManager.WebUI.Models.Helpers
-@{
-    string UserID = "";
-    string UserName = "";
-    try
-    {
-        UserID = Request.Cookies["User"]["UserID"];
-        UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
-    }
-    catch
-    {
-        UserID = "";
-        UserName = "";
-    }
+<script>
+    @{
+        string UserID = "";
+        string UserName = "";
+        try
+        {
+            UserID = Request.Cookies["User"]["UserID"];
+            UserName = HttpUtility.UrlDecode(Request.Cookies["User"]["FullName"], System.Text.Encoding.UTF8);
+        }
+        catch
+        {
+            UserID = "";
+            UserName = "";
+        }
 
-    int DeptID;
-    int PosID;
-    try
-    {
-        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
-    }
-    catch
-    {
-        DeptID = 0;
-    }
+        int DeptID;
+        int PosID;
+        try
+        {
+            DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+        }
+        catch
+        {
+            DeptID = 0;
+        }
 
-    try
-    {
-        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+        try
+        {
+            PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+        }
+        catch
+        {
+            PosID = 0;
+        }
     }
-    catch
-    {
-        PosID = 0;
-    }
-}
+</script>
+
 <style>
      #modal_tb_PurchaseItemFiles td {
             text-align: center;
@@ -54,11 +57,10 @@
     <input type="hidden" id="tempID" value="-1" />
     <input type="hidden" id="parentPurType" value="0" />
     <input type="hidden" id="row" />
-    <input type="hidden" name="PurchaseTypeID" id="PurchaseTypeID" value="@ViewBag.PurchaseTypeID" />
     <input type="hidden" id="PurchaseRequestID" value="@ViewBag.PurchaseRequestID" />
 </div>
-<div style="margin-top:60px">
-    <h2>采购申请单 @ViewBag.RequestNumber</h2>
+<div style="margin-top:60px;">
+    <h2>采购申请单 @ViewBag.RequestNumber</h2> 
 </div>
 <div class="Form_FatherDiv">
     <div class="Form_ToolbarDiv" style="height:40px;">
@@ -66,7 +68,7 @@
             <tr>
                 @if (Model == null)
             {
-                    <td><button class="btn btn-success" id="CreatePR"><span class="glyphicon glyphicon-download-alt"></span> 保存申请单</button></td>
+                    <td><button class="btn btn-success" id="CreatePR"><span class="glyphicon glyphicon-floppy-disk"></span> 保存申请单</button></td>
                     <td><button class="btn btn-info" id="AddContent" disabled><span class="glyphicon glyphicon-plus"></span> 添加零件</button></td>
                     <td><button class="btn btn-danger" id="DeleteContent"><span class="glyphicon glyphicon-trash"></span> 删除零件</button></td>
                 }
@@ -77,7 +79,7 @@
                         case (int)PurchaseRequestStatus.新建:
                             if (Model.DepartmentID == DeptID)
                             {
-                                <td><button class="btn btn-success" id="CreatePR"><span class="glyphicon glyphicon-download-alt"></span> 保存申请单</button></td>
+                                <td><button class="btn btn-success" id="CreatePR"><span class="glyphicon glyphicon-floppy-disk"></span> 保存申请单</button></td>
                                 <td><button class="btn btn-info" id="AddContent"><span class="glyphicon glyphicon-plus"></span> 添加零件</button></td>
                                 <td><button class="btn btn-warning" id="DeleteContent"><span class="glyphicon glyphicon-trash"></span> 删除零件</button></td>
                                 <td><button class="btn btn-warning" id="SubmitPR"><span class="glyphicon glyphicon-lock"></span> 提交申请单</button></td>
@@ -139,7 +141,10 @@
                     <td class="headTb_label">
                         采购类型
                     </td>
-                    <td><input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" disabled /></td>
+                    <td>
+                        <input type="hidden" id="PurchaseType" value="@ViewBag.PurchaseTypeID" />
+                        <input type="text" class="form-control" id="PurchaseTypeName" value="@ViewBag.PurchaseType" disabled />
+                    </td>
                     <td class="headTb_label">供应商</td>
                     <td>
                         @if (Model.State == 1)
@@ -607,10 +612,6 @@
     </div>
 </div>
 
-@using (Html.BeginForm("PDFTest", "Purchase", FormMethod.Post, new { id = "PDF" }))
-{ <input type="hidden" id="PDFContent" name="Content" />
-}
-
 @if (ViewBag.ProjectID == 0)
 {
     Html.RenderAction("MoldSelect", "Dialog");
@@ -659,8 +660,6 @@
                 $('#btntest').hide();
             }
         }
-        //_hrConfig();
-        //LoadWSUser($('#TaskType').val());
         var _supplierID;
         @try{
             @:_supplierID=@Model.SupplierID
@@ -669,7 +668,6 @@
         {
             @:_supplierID=-1;
                                                         }
-        //LoadRecommandSuppliers(_supplierID);
         @if (ViewBag.PurchaseRequestID != 0)
         {
             @:PRContentGrid("", @ViewBag.PurchaseRequestID, @ViewBag.PRState,"","");
@@ -698,8 +696,8 @@
                                                                 }
         else
         {
-            @:PRContentGrid("", 0, 0,"","","");
-                                                                                                }
+            @:PRContentGrid("", 0, 0, "", "", "");
+        }
         //设置成本中心
         $('#CostCenterID').on('change',function(){
             SetCostCenter();
@@ -734,10 +732,6 @@
 
         $("#PurchaseType").on("change", function(){
             $('#SupplierName').attr('disabled','disabled');
-            //$('#SupplierName').val('');
-            //if(Number($('#PurchaseType').val())==0){               
-            //    $('#SupplierName').val('');
-            //}    
             SetPurchaseType();
             $.get('/Purchase/GetPurchaseTypeInfo?PurchaseTypeID='+$('#PurchaseType').val(),function(res){
                 if(res.ParentTypeID==0){
@@ -749,11 +743,6 @@
                 if(res.ParentTypeID>0){
                     $('#SupplierName').removeAttr('disabled');
                 }
-                //if(res.ParentTypeID==3){
-
-                //}else{
-
-                //}
             })            
         })
 
@@ -837,7 +826,6 @@
             _url = "/Purchase/JsonPurchaseTypes?ContainParent=true&QFDep=true";
                                                         }
         if (_url!=""){
-            
             $.getJSON(_url, function(msg){
                 $("#PurchaseType").append($("<option/>", {value:0,text:"-"}))
                 $.each(msg, function(i,n){
@@ -921,19 +909,6 @@
     function SetDefaultDate(){
         var _typeID=Number($("#PurchaseType").val());
         if (_typeID!=0){
-            //var _url = "/Purchase/GetPurchaseTypeInfo?PurchaseTypeID="+_typeID;
-            //$.ajax({
-            //    url:_url,
-            //    type:"Get",
-            //    success:function(msg){
-            //        var _defaultPeriod = Number(msg.DefaultPeriod);
-            //        var _curDate = new Date();
-            //        _curDate.setDate(_curDate.getDate()+_defaultPeriod);
-            //        var _defaultDate = _curDate.getFullYear()+"-0"+(_curDate.getMonth()+1)+"-"+_curDate.getDate();
-
-            //        SaveRequireDate(_defaultDate);
-            //    }
-            //})
             $.get('/Purchase/Service_GetPRMRDate?_purchaseTypeID='+_typeID,function(res){
                 //SaveRequireDate(_defaultDate);
                 $('#RequireDateVal').val(res);
@@ -949,18 +924,6 @@
         var _selPartModal=$('#_selPartModal').val();
         var _url = "/Part/Service_Json_GetPartByKeys?sel=" + _sel + "&Keywords=" + _key+'&_selPartModal='+_selPartModal;
         reloadGrid(_url,'tb_PartSearch');
-        //var _url = "/Part/QueryBySpec?Keyword="+_key;
-        //var _row = "";
-        //$("#AllParts").removeAttr("style");
-        //$("#PartList tr").remove();
-        //$.getJSON(_url, function(msg){
-        //    $.each(msg, function(i, n){
-        //        _row = "<tr><td>"+n.PartNumber+"</td><td>"+n.Specification+"</td><td>"+n.MaterialName+"</td><td>"+n.Version+"</td><td>"+
-        //            "<button class='btn btn-primary' id='"+n.PartID+"' onclick='AddPart("+n.PartID+")'>添加</button>"+
-        //            "</td></tr>";
-        //        $("#PartList").append(_row);
-        //    })
-        //})
     }
     function reloadGrid(_url,_tbID){
         //var _url = '/Task/JsonMachineTasks?MoldNumber=' + _MoldNumber + "&TaskType=" + _TaskType + "&State=" + _State+"&Keyword="+Keyword;
@@ -1185,25 +1148,6 @@
         }
     }
 
-    //function SupplierListImport(_suplistID){
-    //    var js='';
-    //    $('#'+_suplistID).html('');
-    //    $.get('/Purchase/JsonSuppliersByJS?js='+js,function(res){
-    //        console.log(typeof(res));
-    //        var fo=res.toString();
-    //        fo=fo.split(",");
-    //        for(var i=0;i<fo.length;i++){
-    //            //中文
-    //            var v1=fo[i].split('-')[0];
-    //            //英文
-    //            var v2=fo[i].split('-')[1];
-    //            var ohtml = "<option value='"+v1+"'>"+v2+"</option>";
-    //            var $ohtml = $(ohtml);
-    //            $('#'+_suplistID).append($ohtml);
-    //        }
-    //    });
-    //}
-
     //加载workshop对应部门人员
     function LoadWSUser(type) {
         $("#wsUserID option").remove();
@@ -1343,8 +1287,6 @@
 
 <script>
     $(function() {
-        $(document).tooltip();       
-
         $('#BKClass').on('blur',function(){
             $.get('/Purchase/Service_GetBKJonNo?_bkClass='+$('#BKClass').val(),function(res){
                 $('#JobNo').val(res);

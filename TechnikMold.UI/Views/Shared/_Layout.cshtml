@@ -5,86 +5,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>模具管理系统-@ViewBag.Title</title>
-    @using StackExchange.Profiling;
+    @using StackExchange.Profiling
     @RenderSection("Headerjs", required: false)
-
-    @Styles.Render("~/Content/css")
-    @Styles.Render("~/Content/jqgrid")
-    @Scripts.Render("~/bundles/modernizr")
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
-    @Scripts.Render("~/bundles/jqgrid")
-    @Scripts.Render("~/bundles/GridTemplate")
-    <link rel="stylesheet" href="~/Content/jAlert.css">
-    <link rel="stylesheet" href="/Content/jquery-ui.css">
-    <script src="/Scripts/jquery-ui.js"></script>
-    <script src="~/Scripts/jquery.form.js"></script>
-    <script src="~/Scripts/MoldManager.js"></script>
-    <script src="~/Scripts/jAlert.js"></script>
-    <script src="~/Scripts/TimeFormat.js"></script>
-    @*Switch Date 控件*@
-    <link rel="stylesheet" href="~/Content/bootstrap-switch.css" />
-    <link rel="stylesheet" href="~/Content/datepicker.css" />
-    <script src="~/Scripts/bootstrap-switch.js"></script>
-    <script src="~/Scripts/bootstrap-datepicker.js"></script>
-    <link rel="stylesheet" href="~/Content/bootstrap-datetimepicker.min.css" />
-    <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
-    <script src="~/Scripts/bootstrap-datetimepicker.zh-CN.js"></script>
-
-    <style>
-        .hrsys_a {
-            display: none;
-        }
-
-        .modal-header {
-            height: 40px !important;
-        }
-
-        .modal-footer {
-            height: 50px !important;
-            padding: 5px !important;
-            margin-top: 0px !important;
-        }
-
-        .close {
-            font-size: 32px;
-            /*line-height: 100% !important;
-            padding: 0px !important;*/
-            margin-top: -12px!important;
-            color:red;
-        }
-
-        .modal-title {
-            line-height: 100% !important;
-            padding: 0px !important;
-        }
-
-        .modal-body {
-            padding: 10px 10px 10px 10px;
-        }
-        
-    </style>
-    <style>
-        .cbox {
-            margin: 0px !important;
-            width: 90% !important;
-            height: 100% !important;
-            /*margin-left: 20% !important;*/
-            display: block !important;
-
-        }
-        .ui-row-ltr label {
-            text-indent: -2px !important;
-        }
-        .ui-row-ltr a {
-            text-indent: -2px !important;
-        }
-    </style>
+    @*Style压缩*@
+    @Styles.Render("~/Content/JqGrid")
+    @Styles.Render("~/Content/Bootstrap")
+    @Styles.Render("~/Content/JqGrid")
+    @Styles.Render("~/Content/Plugin")
+    @Styles.Render("~/Content/CustomStyle")
+    @*Script压缩*@
+    @Scripts.Render("~/bundles/Jquery")
+    @Scripts.Render("~/bundles/Bootstrap")
+    @Scripts.Render("~/bundles/JqGrid")
+    @Scripts.Render("~/bundles/Plugin")
+    @Scripts.Render("~/bundles/CustomJS")
+    @*Custom Header*@
     @RenderSection("Header", required: false)
+    @*Cookie Corporation*@
     <script>
-        @*$("document").ready(function(){
-            $("#UserInfo").html("@{Html.RenderAction("Validate", "User", new { UserName = User.Identity.Name });}");
-        })*@
     @{
         int DeptID,PosID, UserID;
         string DisplayName = string.Empty;
@@ -128,454 +66,6 @@
         catch { }
     }
     </script>
-    <style>
-        .btn {
-            border-radius: 0px !important;
-        }
-
-        .FatherDiv {
-            position: absolute;
-            left: 0px;
-            right: 0px;
-            top: 100px;
-            bottom: 0px;
-        }
-
-        .LeftDiv {
-            position: absolute;
-            left: 10px;
-            top: 0px;
-            bottom: 10px;
-            width: 180px;
-        }
-
-        .RightDiv {
-            position: absolute;
-            left: 200px;
-            top: 0px;
-            bottom: 0px;
-            right: 0px;
-        }
-
-        .LeftDiv_Btn {
-            width: 100%;
-            /*height: 40px;*/
-            border-radius: 0px !important;
-        }
-
-        .LeftDiv_Inpt {
-            width: 100%;
-            height: 41px;
-            border-radius: 0px !important;
-            margin-top: 8px;
-        }
-
-        .LeftDiv_Sel {
-            position: absolute;
-            left: 0px;
-            top: 80px;
-            bottom: 0px;
-            width: 100%;
-            border-radius: 0px !important;
-        }
-
-            .LeftDiv_Sel option {
-                font-size: 16px;
-                padding: 2px;
-                cursor: pointer;
-                width: 100% !important;
-            }
-
-                .LeftDiv_Sel option:hover {
-                    background-color: rgba(0,0,0,0.1);
-                    font-size: 22px;
-                    font-weight: bold;
-                    text-align: center;
-                }
-
-        .RightDiv_TopDiv {
-            position: absolute;
-            left: 0px;
-            right: 0px;
-            top: 0px;
-            height: 40px;
-        }
-
-            .RightDiv_TopDiv select {
-                height: 34px !important;
-                border-radius: 0px !important;
-                font-size: 16px;
-            }
-
-            .RightDiv_TopDiv input {
-                border-radius: 0px !important;
-            }
-
-            .RightDiv_TopDiv option {
-                font-size: 18px;
-            }
-
-        .RightDiv_BottomDiv {
-            position: absolute;
-            left: 0px;
-            right: 10px;
-            top: 40px;
-            bottom: 10px;
-        }
-
-        input {
-            border-radius: 0px !important;
-        }
-
-        select {
-            border-radius: 0px !important;
-        }
-
-        div {
-            border-radius: 0px !important;
-        }
-
-        p, td, input, select, div {
-            font-family: "微软雅黑" !important;
-        }
-        .LeftDiv_Sel_1 {
-            position: absolute;
-            left: 0px;
-            top: 0px;
-            bottom: 0px;
-            width: 100%;
-            border-radius: 0px !important;
-        }
-
-            .LeftDiv_Sel_1 option {
-                font-size: 16px;
-                padding: 2px;
-                cursor: pointer;
-                width: 100% !important;
-            }
-
-                .LeftDiv_Sel_1 option:hover {
-                    background-color: rgba(0,0,0,0.1);
-                    font-size: 22px;
-                    font-weight: bold;
-                    text-align: center;
-                }
-    </style>
-    <style>
-        .UD_FatherDiv {
-            position: absolute;
-            left: 0px;
-            right: 0px;
-            top: 100px;
-            bottom: 0px;
-            width: 100%;
-            /*border:1px solid rgba(0,0,0,0.1);*/
-        }
-
-        .UD_ToolBarDiv {
-            position: absolute;
-            left: 10px;
-            right: 10px;
-            top: 0px;
-            height: 40px;
-            /*border:1px solid rgba(0,0,0,0.1);*/
-        }
-
-        .UD_TableDiv {
-            position: absolute;
-            left: 10px;
-            right: 10px;
-            top: 40px;
-            bottom: 10px;
-            /*border:1px solid red;*/
-        }
-
-    </style>
-    <style>
-        .BaseData_FatherDiv {
-            position: absolute;
-            top: 100px;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-        }
-
-        .BaseData_LeftDiv {
-            position: absolute;
-            width: 10%;
-            height: 100%;
-            /*border:1px solid rgba(0,0,0,0.1);*/
-        }
-
-        .BaseData_RightDiv {
-            position: absolute;
-            left: 10%;
-            width: 40%;
-            height: 100%;
-        }
-
-        .BaseData_Right_ToolbarDiv {
-            position: absolute;
-            width: 100%;
-            height: 40px;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .BaseData_Right_TableDiv {
-            position: absolute;
-            width: 100%;
-            top: 40px;
-            bottom: 0px;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .BaseData_Left_Sel {
-            position: absolute;
-            left: 0px;
-            top: 40px;
-            bottom: 0px;
-            width: 100%;
-            border-radius: 0px !important;
-        }
-
-            .BaseData_Left_Sel option {
-                font-size: 16px;
-                padding: 2px;
-                cursor: pointer;
-                width: 100% !important;
-            }
-
-                .BaseData_Left_Sel option:hover {
-                    background-color: rgba(0,0,0,0.1);
-                    font-size: 22px;
-                    font-weight: bold;
-                    text-align: center;
-                }
-
-        .BaseData_Right_FormDiv {
-            margin: 20px;
-            box-shadow: rgba(0,0,0,0.1) 0px 0px 5px 5px;
-        }
-    </style>
-    <style>
-        .Form_FatherDiv {
-            position: absolute;
-            top: 100px;
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-            /*border: 1px solid red;*/
-        }
-
-        .Form_ToolbarDiv {
-            position: absolute;
-            top: 0px;
-            width: 100%;
-            /*border: 1px solid blue;*/
-        }
-
-        .Form_HeadDiv {
-            position: absolute;
-            width: 100%; /*1884px*/
-            background-color: #fffde4;
-            border: 1px solid;
-            border-color: #fbf727;
-            border-radius: 5px;
-        }
-
-        .Form_HeadTable {
-            width: 80%;
-        }
-
-            .Form_HeadTable td {
-                font-family: "微软雅黑";
-                font-weight: bold;
-                text-align: center;
-                vertical-align: central;
-            }
-
-        .Form_TableDiv {
-            /*border: 1px solid red;*/
-            position: absolute;
-        }
-    </style>
-    <style>
-        .modal_LMR_FatherDiv {
-            position: absolute;
-            top: 0px;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
-        }
-
-        .modal_LMR_LeftDiv {
-            position: absolute;
-            left: 0px;
-            width: 45%;
-            height: 100%;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .modal_LMR_MiddleDiv {
-            position: absolute;
-            left: 45%;
-            width: 10%;
-            height: 100%;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .modal_LMR_RightDiv {
-            position: absolute;
-            left: 55%;
-            right: 0px;
-            width: 45%;
-            height: 100%;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .modal_SelTitle {
-            height: 25px;
-        }
-
-        .modal_Sel {
-            position: absolute;
-            left: 0px;
-            top: 25px;
-            bottom: 0px;
-            width: 100%;
-            border-radius: 0px !important;
-        }
-
-            .modal_Sel option {
-                font-size: 16px;
-                padding: 2px;
-                cursor: pointer;
-                width: 100% !important;
-            }
-
-                .modal_Sel option:hover {
-                    background-color: rgba(0,0,0,0.1);
-                    font-size: 22px;
-                    font-weight: bold;
-                    text-align: center;
-                }
-    </style>
-    <style>
-        .LR_FatherDiv {
-            position: absolute;
-            top: 100px;
-            bottom: 0px;
-            left: 10px;
-            right: 10px;
-        }
-
-        .LR_LeftDiv {
-            position: absolute;
-            left: 0px;
-            width: 30%;
-            height: 100%;
-        }
-
-        .LR_Left_ToolbarDiv {
-            position: absolute;
-            width: 100%;
-            height: 40px;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .LR_Left_BodyDiv {
-            position: absolute;
-            top: 40px;
-            bottom: 0px;
-            width: 100%;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .LR_RightDiv {
-            position: absolute;
-            left: 30%;
-            width: 30%;
-            height: 100%;
-        }
-
-        .LR_Right_ToolbarDiv {
-            position: absolute;
-            width: 100%;
-            height: 40px;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .LR_Right_BodyDiv {
-            position: absolute;
-            top: 40px;
-            bottom: 0px;
-            width: 100%;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .LR_Body_Sel {
-            position: absolute;
-            left: 0px;
-            top: 0px;
-            bottom: 0px;
-            width: 100%;
-            border-radius: 0px !important;
-        }
-
-            .LR_Body_Sel option {
-                font-size: 16px;
-                padding: 2px;
-                cursor: pointer;
-                width: 100% !important;
-            }
-
-                .LR_Body_Sel option:hover {
-                    background-color: rgba(0,0,0,0.1);
-                    font-size: 22px;
-                    font-weight: bold;
-                    text-align: center;
-                }
-    </style>
-    @*页面加载延迟时提醒用户等待脚本*@
-    <script>
-        //获取浏览器页面可见高度和宽度
-        var _PageHeight = document.documentElement.clientHeight,
-            _PageWidth = document.documentElement.clientWidth;
-        //计算loading框距离顶部和左部的距离（loading框的宽度为215px，高度为61px）
-        var _LoadingTop = _PageHeight > 61 ? (_PageHeight - 61) / 2 : 0,
-            _LoadingLeft = _PageWidth > 215 ? (_PageWidth ) / 2 : 0;
-        //在页面未加载完毕之前显示的loading Html自定义内容
-        var _LoadingHtml = '<div id="loadingDiv" style="position:absolute;left:0;width:100%;height:' + _PageHeight + 'px;top:0;background:#ffffff;opacity:0.8;filter:alpha(opacity=80);z-index:10000;"><div style="position: absolute; cursor1: wait; left: ' + _LoadingLeft + 'px; top:' + _LoadingTop + 'px; width: auto; height: 200px; padding-left: 150px; background: #fff url(/Images/loading-1.gif) no-repeat ;"></div></div>';
-        //呈现loading效果
-        document.write(_LoadingHtml);
-        //监听加载状态改变
-        document.onreadystatechange = completeLoading;
-        //加载状态为complete时移除loading效果
-        function completeLoading() {
-            if (document.readyState == "complete") {
-                var loadingMask = document.getElementById('loadingDiv');
-                loadingMask.parentNode.removeChild(loadingMask);
-            }
-        }
-    </script>
-    @*全局样式设置*@
-    <style>
-        @*注：本系统Body标题统一使用 H2 标签*@
-        h2{
-            margin:0px;
-            padding:0px;
-            line-height:40px;
-            font-size:18px;
-            text-indent:10px;
-            font-weight:bold;
-            font-family:"微软雅黑"!important;
-            width:220px;
-        }
-
-        input[type="checkbox"],button,a,select,h2 {
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -694,7 +184,7 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown dropdown-main" >
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="color:rgba(255,255,255,1);">@DisplayName <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="color:rgba(255,255,255,1);"><span class="glyphicon glyphicon-leaf"></span>&nbsp; @DisplayName <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a id="RoleChange" href="#"><span class="glyphicon glyphicon-pencil"></span> 角色切换</a></li>
                         <li role="separator" class="divider"></li>
@@ -710,25 +200,13 @@
                     </ul>
                 </li>
             </ul>
-            @*<p class="nav navbar-text navbar-right">
-                <label id="UserInfo">
-                    @DisplayName
-                </label>
-                
-                @if ((DeptID == 1) || (PosID == 3))
-            {
-                    <a href="/Administrator/" style="color:rgba(255,255,255,1);font-size:18px;"><span class="glyphicon glyphicon-cog"></span> </a>
-                }
-                <a href="#" id="RoleChange" style="color:rgba(255,255,255,0.7);font-size:18px;"><span class="glyphicon glyphicon-user"></span> </a>
-            </p>*@
     </div>
 
     </div>
     <div class="container-fluid body-content" role="main">       
         @RenderBody()
-        @*@MiniProfiler.RenderIncludes();*@
+        @MiniProfiler.RenderIncludes()
     </div>   
-
     @*用户角色切换*@
     <div class="modal" data-backdrop="static" data-keyboard="false" id="UserRoleSwitchModal" tabindex="-1" role="dialog" aria-labelledby="UserRoleLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -743,61 +221,38 @@
             </div>
         </div>
     </div>
+
     <script>
-    $("document").ready(function(){
-        $("#UserRoleSwitchModal").on("shown.bs.modal",function(){
-            LoadUserRoles();
-        });
+        $("document").ready(function () {
+            //加载用户角色
+            $("#UserRoleSwitchModal").on("shown.bs.modal", function () {
+                LoadUserRoles('@DeptID','@PosID');
+            });
 
-        $("#RoleChange").on("click", function(){
-            $("#UserRoleSwitchModal").modal("show");
-        })
-
-        $("#SwitchRole").on("click", function(){
-            SwitchRole();
-        })
-        $('#UserRoles').on('change',function(){
-            SwitchRole();
-        })
-        $('li.dropdown-main').mouseover(function() {
-            $(this).addClass('open');    }).mouseout(function() {        $(this).removeClass('open');    });
-
-        B_forbiden_menu();
-
-        $('h2').on('click',function(){
-            history.go(-1);
-        })
-
-        $('h2').attr('title','返回上一页');
-    })
-
-    function LoadUserRoles(){
-        var _url = "/User/JsonUserRoleList?UserID=" + $("#CurrentUserID").val();
-        $("#UserRoles option").remove();
-        $.getJSON(_url, function (msg) {
-            $.each(msg, function (i, n) {
-                var _html='';
-                if(n.DepID=='@DeptID' && n.Position=='@PosID'){
-                    _html=$("<option/>", { value: n.UserRoleID, text: n.DisplayName,selected:true });
-                }else{
-                    _html=$("<option/>", { value: n.UserRoleID, text: n.DisplayName });
-                } 
-                $("#UserRoles").append(_html);
+            $("#RoleChange").on("click", function () {
+                $("#UserRoleSwitchModal").modal("show");
             })
-        })
-    }
 
-    function SwitchRole(){
-        var _url = "/User/ReloadCookie?UserRoleID="+$("#UserRoles").val();
-        $.ajax({
-            type:"Get",
-            url:_url,
-            success:function(){
-                location.reload();
-            }
-        })
-    }
+            $("#SwitchRole").on("click", function () {
+                SwitchRole();
+            })
 
+            $('#UserRoles').on('change', function () {
+                SwitchRole();
+            })
+
+            $('li.dropdown-main').mouseover(function () {
+                $(this).addClass('open');
+            }).mouseout(function () { $(this).removeClass('open'); });
+
+            //禁用右键
+            B_forbiden_menu();
+
+            $('h2').on('click', function () {
+                history.go(-1);
+            })
+            $('h2').attr('title', '返回前一页');
+        })
     </script>
 </body>
 </html>

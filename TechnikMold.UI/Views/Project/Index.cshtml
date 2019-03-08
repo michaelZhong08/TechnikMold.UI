@@ -6,32 +6,34 @@
         var YJHEditedCellList=[];
     </script>
 }
+<script>
+    @{
+        int DeptID;
+        int PosID;
+        string DepName;
+        //string UserName;
+        try
+        {
+            DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
+            DepName = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]);
+        }
+        catch
+        {
+            DeptID = 0;
+            DepName = "";
+        }
 
-@{
-    int DeptID;
-    int PosID;
-    string DepName;
-    //string UserName;
-    try
-    {
-        DeptID = Convert.ToInt32(Request.Cookies["User"]["Department"]);
-        DepName = HttpUtility.UrlDecode(Request.Cookies["User"]["DepartmentName"]);
-    }
-    catch
-    {
-        DeptID = 0;
-        DepName = "";
-    }
+        try
+        {
+            PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+        }
+        catch
+        {
 
-    try
-    {
-        PosID = Convert.ToInt32(Request.Cookies["User"]["Position"]);
+        }
     }
-    catch
-    {
+</script>
 
-    }
-}
 <style>
     tr:nth-child(even){background-color:#ffffff;}
     #ProjectGrid p{
@@ -43,10 +45,7 @@
         float:left;
         font-size:12px;
         margin-top:0px!important;
-        /*padding:100%!important;*/
-        /*font-weight:bold;*/
         color:rgba(0,0,0,1);
-        /*line-height:100%!important;*/
         float:left!important;
     }
     #ProjectGrid label{
@@ -59,7 +58,6 @@
         text-align:center;
         vertical-align:middle;
         font-size:12px;
-        /*position:absolute;*/
     }
     #ProjectGrid input{
         height:24px;
@@ -71,13 +69,8 @@
     }
     #modal_tb_ProJFiles td {
             text-align: center;
-            /*height:60px!important;*/
             padding: 0px !important;
         }
-    /*.qrtb td{
-        font-size:5px!important;
-        height:10px!important;
-    }*/
     .td_planDate{
         font-weight:bold;
     }
@@ -86,8 +79,8 @@
 <div>
     <input id="_oldPhaseID" hidden />
     <input id="_oldPhaseCFDate" hidden />
-    <input id="DepID" value="@DeptID" hidden/>
-    <input type="hidden" id="selPhase" />
+    <input id="DepID" value="@DeptID" hidden />
+    <input id="selPhase" hidden/>
 </div>
 
 <h2 style="margin-top:60px;">项目计划</h2>
@@ -96,10 +89,8 @@
         <table>
             <tr>
                 <td>
-                    <div class="switch">
-                        <input type="hidden" id="ProjectState" value="false" />
-                        <input id="ProjectStateSwitch" type="checkbox" data-size="Normal" data-on-color="primary" data-off-color="warning" />
-                    </div>
+                    <input type="hidden" id="ProjectState" value="false" />
+                    <div id="ProJSatus"></div>
                 </td>
                 @if (ViewBag.Type == 1)
                 {
@@ -196,7 +187,6 @@
             <img src="~/Images/ProjectSchedule.png" />
             <span style="font-size:12px; font-family:Verdana">项目历史</span>
         </li>
-
     </ul>
 </div>
 
@@ -223,122 +213,6 @@
     </div>
 </div>
 
-@*计划调整对话框*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="ModifyMilestone" tabindex="-1" role="dialog" aria-labelledby="ModifyMilestoneLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="ModifyMilestoneLabel">项目计划调整</h4>
-            </div>
-            <div class="modal-body">
-                @using (Html.BeginForm("ModifyPhase", "Project", FormMethod.Post, new { id = "PhaseModify" }))
-                {
-                    <input type="hidden" id="ProjectID" name="ProjectID" />
-                    <input type="hidden" id="UserName" name="UserName" value="" />
-                    <table class="table-striped  colsm-12">
-                        <tr>
-                            <td class="col-sm-4"><label>项目阶段</label></td>
-                            <td class="col-sm-8">
-                                <select id="PhaseID" name="PhaseID" class="form-control"></select>
-                            </td>
-                        </tr>
-                        @if (ViewBag.Type == 1)
-                        {
-                            <tr id="MainRow">
-                                <td class="col-sm-4"><label>主项目完成日期</label></td>
-                                <td class="col-sm-8"><input type="date" id="MainFinish" class="form-control" disabled /></td>
-                            </tr>
-                        }
-                        <tr>
-                            <td class="col-sm-4"><label>原计划完成日期</label></td>
-                            <td class="col-sm-8"><input type="date" id="PlanFinish" name="PlanFinish" class="form-control" readonly /></td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>调整后完成日期</label></td>
-                            <td class="col-sm-8">
-                                <input type="date" id="PlanCFinish" name="PlanCFinish" class="form-control required" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>调整原因</label></td>
-                            <td class="col-sm-8">
-                                <select id="Reason" name="Reason" class="form-control"></select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="col-sm-4"><label>原因详细描述</label></td>
-                            <td class="col-sm-8">
-                                <textarea id="Description" name="Description" class="form-control" style="resize: none" rows="3" maxlength="50"></textarea>
-                            </td>
-                        </tr>
-                    </table>
-                }
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="SavePhaseModify" class="btn btn-primary">保存</button>
-
-            </div>
-        </div>
-    </div>
-</div>
-
-@*项目阶段完成*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="FinishPhaseDialog" tabindex="-1" role="dialog" aria-labelledby="FinishPhaseLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="FinishPhaseLabel">项目阶段结束</h4>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="FinishPhaseIDOriginal" />
-                @using (Html.BeginForm("ModifyPhase", "Project", FormMethod.Post, new { id = "FinishPhaseForm" }))
-                {
-                    <input type="hidden" id="FinishProjectID" name="ProjectID" />
-                    <input type="hidden" id="UserName" name="UserName" value="" />
-                    <table class="table-striped  colsm-12">
-                        <tr>
-                            <td class="col-sm-4"><label>项目阶段</label></td>
-                            <td class="col-sm-8">
-                                <select id="FinishPhaseID" name="PhaseID" class="form-control" readonly></select>
-                            </td>
-                        </tr>
-                    </table>
-                }
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="FinishPhaseModify" class="btn btn-primary">结束</button>
-
-            </div>
-        </div>
-    </div>
-</div>
-
-@*项目暂停/继续*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="PauseProjectDialog" tabindex="-1" role="dialog" aria-labelledby="PauseProjectLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="PauseProjectLabel">项目启动/暂停</h4>
-            </div>
-            <div class="modal-body">
-                <h4>备注信息</h4>
-                <input type="hidden" id="PauseProjectID" />
-                <input type="hidden" id="ParentID" />
-                <textarea id="PauseMemo" class="form-control" rows="5" style="resize:none" maxlength="100"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                <button type="button" id="PauseProjectBtn" class="btn btn-primary">确定</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 @*项目删除*@
 <div class="modal" data-backdrop="static" data-keyboard="false" id="DeleteProjectDialog" tabindex="-1" role="dialog" aria-labelledby="DeleteProjectLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -355,35 +229,6 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
                 <button type="button" id="DeleteProjectBtn" class="btn btn-primary">确认删除</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@*项目关键字筛选*@
-<div class="modal" data-backdrop="static" data-keyboard="false" id="ProjectSearchDialog" tabindex="-1" role="dialog" aria-labelledby="ProjectSearchLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h4 class="modal-title" id="ProjectSearchLabel">项目查询</h4>
-            </div>
-            <div class="modal-body">
-                <table>
-                    <tr>
-                        <td class="col-sm-2"><label>项目号/模具号关键字</label></td>
-                        <td class="col-sm-4">
-                            @*<input type="text" class="form-control" id="keyword" />*@
-                            <input type="hidden" id="state" value="@ViewBag.State" />
-                            <input type="hidden" id="Type" value="@ViewBag.Type" />
-                        </td>
-
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
-                @*<button type="button" id="ProjectSearchBtn" class="btn btn-primary">查询</button>*@
             </div>
         </div>
     </div>
@@ -461,15 +306,18 @@
     </div>
 </div>
 
+
+
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/Project.js"></script>
+
 <script type="text/javascript">
     $(document).ready(function(){
         ////原计划
         var YJHEditedCellList1 = [];
 
-        GetPhases("PhaseID", @ViewBag.Type);
-        GetPhases("FinishPhaseID", @ViewBag.Type);
+        @*GetPhases("PhaseID", @ViewBag.Type);
+        GetPhases("FinishPhaseID", @ViewBag.Type);*@
 
         ProjectGrid($('#keyword').val(), @ViewBag.State, @ViewBag.Type,'@DeptID',YJHEditedCellList);
 
@@ -481,39 +329,39 @@
         @if (ViewBag.Type == 1)
         {
             @:$("#ProjectGrid").setGridParam().showHideCol("ProjectNo");
-                    @:$("#ProjectGrid").setGridParam().setLabel('FOT', 'FOT','','');
-                }
+                            @:$("#ProjectGrid").setGridParam().setLabel('FOT', 'FOT','','');
+                        }
         $("#SavePhaseModify").on("click", function () {
             if (ValidateForm("PhaseModify")) {
 
                 @if (ViewBag.Type == 1)
                 {
                 @:if ($("#PlanCFinish").val() != $("#PlanFinish").val()) {
-                                                        @:if ($("#PlanCFinish").hasClass("invalidefield")) {
-                                                                @:    alert("模具项目阶段完成时间不能晚于主项目");
-                                                                @:}
-                                                                @:else {
-                                                                @:    $("#PhaseModify").submit();
-                                                                @:}
-                                                        @:} else {
-                                                        @:    alert("调整后完成日期和原计划完成日期不能相同");
-                                                        @:}
-                                                }
+                                                                            @:if ($("#PlanCFinish").hasClass("invalidefield")) {
+                                                                                        @:    alert("模具项目阶段完成时间不能晚于主项目");
+                                                                                        @:}
+                                                                                        @:else {
+                                                                                        @:    $("#PhaseModify").submit();
+                                                                                        @:}
+                                                                            @:} else {
+                                                                            @:    alert("调整后完成日期和原计划完成日期不能相同");
+                                                                            @:}
+                                                                }
                 else if (ViewBag.Type == 2)
                 {
                 @:var _url = "/Project/CheckFixMoldPhase?ProjectID="+$("#ProjectID").val()+"&PhaseID="+$("#PhaseID").val()+"&PlanCFinish="+$("#PlanCFinish").val();
-                                                @:$.ajax({
-                                                        @:  url:_url,
-                                                        @:  type:"Get",
-                                                        @:  success:function(msg){
-                                                                @:    if (msg==""){
-                                                                        @:      $("#PhaseModify").submit();
-                                                                        @:    }else{
-                                                                        @:      alert(msg);
-                                                                        @:  }
-                                                                @:  }
-                                                        @:})
-                                                }
+                                                                @:$.ajax({
+                                                                            @:  url:_url,
+                                                                            @:  type:"Get",
+                                                                            @:  success:function(msg){
+                                                                                        @:    if (msg==""){
+                                                                                                    @:      $("#PhaseModify").submit();
+                                                                                                    @:    }else{
+                                                                                                    @:      alert(msg);
+                                                                                                    @:  }
+                                                                                        @:  }
+                                                                            @:})
+                                                                }
             }
         });
         $('#MoldNumber').on('change',function(){
@@ -889,16 +737,10 @@
             $('.td_SaveProjectDate').hide();
         }
 
-        $('#ProjectStateSwitch').bootstrapSwitch({
-            size:'large',
-            state:true,
-            onText: '当前项目',
-            offText: '历史项目',
-            onSwitchChange:function(event,state){switchChange(event,state)},
-        });
+        CusSwitchConfig(switchChange,'ProJSatus','当前项目','历史项目');
     })
-    function switchChange(event,state){
-        if(state){
+    function switchChange(state){
+        if(state=='true'){
             $('#ProjectState').val('false');
             ReloadProJGrid('false');//当前
         }else{

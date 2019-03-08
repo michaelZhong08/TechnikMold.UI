@@ -2116,22 +2116,6 @@ function ConfirmFinishEDM() {
         }
     })
 }
-////非常重要 TODO:打开设定图纸
-function ShowElePDF(taskid) {
-    if (taskid == undefined) {
-        alert("请选择加工任务");
-    } else {
-        var _url = "/Task/GetTaskPDF?TaskID=" + taskid
-        $.ajax({
-            url: _url,
-            type: "Get",
-            success: function (msg) {
-                window.open(msg, "_blank", width = 1920, height = 1080);
-                //window.open(msg);
-            }
-        })
-    }
-}
 
 function LoadMInfoList(tasktype) {
     $('#MInfoCodeDL').html('');

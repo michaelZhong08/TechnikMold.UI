@@ -1,9 +1,8 @@
 ﻿$("document").ready(function () {
-    //NoUser();
 
-    $("#exit").on("click", function () {
-        Logout();
-    })
+    //$("#exit").on("click", function () {
+    //    Logout();
+    //})
     //设置系统特征值
     //hr / sinno
     sessionStorage.setItem('SpecKey', 'sinno');
@@ -211,12 +210,6 @@ function SysSpecShow(spec) {
     $('.' + spec).show();
 }
 
-function B_forbiden_menu() { //禁用鼠标右键
-    window.oncontextmenu = function () {
-        return false;
-    }
-}
-
 function InitialView() {
     var fatherDivHeight = $('.Form_FatherDiv').eq(0).height();
     var fatherDivWidth = $('.Form_FatherDiv').eq(0).width();
@@ -230,4 +223,21 @@ function InitialView() {
 
 function windowOpen(url) {
     window.open(url, "_blank", width = 1920, height = 1080);
+}
+
+////非常重要 TODO:打开设定图纸
+function ShowElePDF(taskid) {
+    if (taskid == undefined) {
+        alert("请选择加工任务");
+    } else {
+        var _url = "/Task/GetTaskPDF?TaskID=" + taskid
+        $.ajax({
+            url: _url,
+            type: "Get",
+            success: function (msg) {
+                window.open(msg, "_blank", width = 1920, height = 1080);
+                //window.open(msg);
+            }
+        })
+    }
 }

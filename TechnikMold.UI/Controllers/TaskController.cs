@@ -1885,39 +1885,14 @@ namespace MoldManager.WebUI.Controllers
             }
             
             string _camDrawingPath = "";
-            //ProjectPhase _projectPhase = null;
-            //string PlanDate = "";
+
             #region 图纸 历史；加工 当前
             if (State == 0)
             {
                 #region 加工当前
                 if (CAM == 0)
                 {
-                    switch (TaskType)
-                    {
-                        //case 1:
-                            //List<int> _states = new List<int>();
-                            //_states.Add((int)CNCStatus.暂停);
-                            //_states.Add((int)CNCStatus.等待);
-                            //_states.Add((int)CNCStatus.返工);
-                            //_states.Add((int)CNCStatus.正在加工);
-                            //_states.Add((int)CNCStatus.外发);
-                            //_tasks = _tasks.Where(t => (_states.Contains(t.State)));
-                        //    _tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.暂停 && t.State < (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.CNC结束);
-                        //    break;
-                        //case 4:
-                            //_tasks = _tasks.Where(t => t.State == (int)SteelStatus.等待)
-                            //    .Union(_tasks.Where(t => t.State == (int)SteelStatus.正在加工))
-                            //    .Union(_tasks.Where(t => t.State == (int)SteelStatus.外发))
-                            //    .Union(_tasks.Where(t => t.State == (int)SteelStatus.已接收))
-                            //    .Union(_tasks.Where(t => t.State == (int)SteelStatus.暂停))
-                            //    .Union(_tasks.Where(t => t.State == (int)SteelStatus.CNC结束));
-                            //_tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.暂停 && t.State < (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.CNC结束);
-                            //break;
-                        default:
-                            _tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.暂停 && t.State < (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.完成);
-                            break;
-                    }
+                    _tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.暂停 && t.State < (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.完成);
                 }
                 #endregion
                 #region 图纸历史
@@ -1931,19 +1906,7 @@ namespace MoldManager.WebUI.Controllers
             #region 加工 历史
             else if (State > 0)
             {
-                
-                switch (TaskType)
-                {
-                    //case 1:
-                    //    _tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.CNC结束);
-                    //    break;
-                    //case 4:
-                    //    _tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.CNC结束);
-                    //    break;
-                    default:
-                        _tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.完成);
-                        break;
-                }
+                _tasks = _tasks.Where(t => t.State >= (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.完成);
             }
             #endregion
             #region 图纸 当前
@@ -1963,7 +1926,7 @@ namespace MoldManager.WebUI.Controllers
             _tasks = _tasks.OrderBy(t => t.Priority);
             TaskGridViewModel _viewModel = new TaskGridViewModel(_tasks.OrderBy(t => t.Priority), _userRepository, _camDrawingPath,
                 _machInfoRepository, _edmDetailRepository, _taskRepository, _projectPhaseRepository,_mgSettingRepository,_wedmSettingRepository,_taskHourRepository,_systemConfigRepository
-                ,_taskTypeRepository);
+                ,_taskTypeRepository, _machinesinfoRepository);
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
         /// <summary>
@@ -2753,7 +2716,7 @@ namespace MoldManager.WebUI.Controllers
                     List<TaskHour> _curtaskhourList = new List<TaskHour>();
                     foreach (var ele in _labelNameList)
                     {
-                        List<TaskHour> _curtaskhour1 = _taskHourRepository.GetCurTHsBySemiTaskFlag(ele);
+                        List<TaskHour> _curtaskhour1 = _taskHourRepository.GetCurTHsBySemiTaskFlag(ele,1);
                         if (_curtaskhour1.Count > 0)
                         {
                             _curtaskhourList.AddRange(_curtaskhour1);
@@ -3511,8 +3474,6 @@ namespace MoldManager.WebUI.Controllers
 
             try
             {
-
-
                 bool _qcPoint = false;
                 _temp = _qcSteelPointRepository.QueryByFullPartName(FullPartName).Count();
                 if (_temp > 0)
@@ -3589,17 +3550,8 @@ namespace MoldManager.WebUI.Controllers
                         _groupProgram.Enabled = false;
                         _groupID = _steelGroupProgramRepository.Save(_groupProgram);
                     }
-                    //else
-                    //{
-                    //    _groupProgram = new SteelGroupProgram();
-                    //    _groupProgram.NCID = _camDrawing.SteelCAMDrawingID;
-                    //    _groupProgram.GroupName = "";
-
-                    //}
                 }
                 SaveSteelCADPart(_id, CADPartName);
-
-
                 SaveSteelTask(_camDrawing, _groupID, Time);
 
 
@@ -3734,6 +3686,7 @@ namespace MoldManager.WebUI.Controllers
             _task.ProjectID =_project ==null?0: _project.ProjectID;
             _task.ProgramID = SteelDrawing.SteelCAMDrawingID;
             _task.Creator = SteelDrawing.Programmer;
+            _task.State = (int)TechnikSys.MoldManager.Domain.Status.TaskStatus.未发布;///If this is a new task, set the task in "Not Released" state;
             if (_task.ProjectID == 0)
             {
                 try
@@ -5661,7 +5614,7 @@ namespace MoldManager.WebUI.Controllers
                     CNCItem _item = _cncItemRepository.QueryByID(Convert.ToInt32(_itemIDs[i]));
                     if (_item != null)
                     {
-                        List<TaskHour> _taskhours = _taskHourRepository.GetCurTHsBySemiTaskFlag(_item.LabelName);
+                        List<TaskHour> _taskhours = _taskHourRepository.GetCurTHsBySemiTaskFlag(_item.LabelName,1);
                         foreach (var t in _taskhours)
                         {
                             var _labelNameList = t.SemiTaskFlag.Split(',');
@@ -5816,7 +5769,7 @@ namespace MoldManager.WebUI.Controllers
                 List<TaskHour> _curtaskhourList = new List<TaskHour>();
                 foreach(var ele in _labelNameList)
                 {
-                    List<TaskHour> _curtaskhour1 = _taskHourRepository.GetCurTHsBySemiTaskFlag(ele);
+                    List<TaskHour> _curtaskhour1 = _taskHourRepository.GetCurTHsBySemiTaskFlag(ele,2);
                     if (_curtaskhour1.Count>0)
                     {
                         _curtaskhourList.AddRange(_curtaskhour1);
@@ -6640,7 +6593,7 @@ namespace MoldManager.WebUI.Controllers
             var _labelNameList = EleIDs.Split(',');
             foreach (var ele in _labelNameList)
             {
-                List<TaskHour> _curtaskhour1 = _taskHourRepository.GetCurTHsBySemiTaskFlag(ele);
+                List<TaskHour> _curtaskhour1 = _taskHourRepository.GetCurTHsBySemiTaskFlag(ele,1);
                 if (_curtaskhour1.Count > 0)
                 {
                     _curtaskhourList.AddRange(_curtaskhour1);
@@ -6684,17 +6637,21 @@ namespace MoldManager.WebUI.Controllers
             {
                 //List<TaskHour> _CanEedtaskhourList = new List<TaskHour>();
                 List<TaskHour> _UnEndtaskhourList = new List<TaskHour>();
-                
+                List<TaskHour> _UnEndtaskhourList1 = new List<TaskHour>();
+
                 if (_CanEedtaskhourList.Count > 0)
                 {
                     List<string> _mCodes = _CanEedtaskhourList.Select(h => h.MachineCode).Distinct().ToList();
                     #region 定义可以被关闭的工时的时间
-                    DateTime _finishTime = DateTime.Now;
+                    
                     //User _user = _userRepository.GetUserByID(UserID) ?? new User();
                     foreach (var _code in _mCodes)
                     {
                         //按照开始时间从后往前排
                         List<TaskHour> _CanEndcurTHList = _CanEedtaskhourList.Where(h => h.MachineCode == _code).OrderByDescending(h => h.StartTime).ToList();
+                        _UnEndtaskhourList1.AddRange(_taskHourRepository.GetCurTHsByMCode(_code));
+                        #region 
+                        #endregion
                         Dictionary<int, double> _taskhourTime = new Dictionary<int, double>();
                         //填充数据字典
                         foreach (var _th in _CanEndcurTHList)
@@ -6705,6 +6662,7 @@ namespace MoldManager.WebUI.Controllers
                         for (var i = 1; i <= _count; i++)
                         {
                             TaskHour _lastTH = _CanEndcurTHList.FirstOrDefault();
+                            DateTime _finishTime = Toolkits.CheckZero(_lastTH.FinishTime) ? DateTime.Now:_lastTH.FinishTime;
                             TimeSpan _span = _finishTime - _lastTH.StartTime;
                             double _Mtime = Math.Round(_span.TotalMinutes, 1);
                             if (i < _CanEndcurTHList.Count)
@@ -6740,7 +6698,7 @@ namespace MoldManager.WebUI.Controllers
                         foreach (var d in _taskhourTime)
                         {
                             TaskHour _taskhour = _taskHourRepository.TaskHours.Where(h => h.TaskHourID == d.Key).FirstOrDefault();
-                            _taskhour.FinishTime = _finishTime;
+                            _taskhour.FinishTime = Toolkits.CheckZero(_taskhour.FinishTime) ? DateTime.Now : _taskhour.FinishTime;
                             EndTaskHour(_taskhour, Convert.ToDecimal(d.Value), djUserName);
                         }
                     }
@@ -6768,20 +6726,21 @@ namespace MoldManager.WebUI.Controllers
                         {
                             foreach(var _th in _UnEndtaskhourList1)
                             {
-                                string _labelNames = _th.SemiTaskFlag;
-                                bool _isFinished = false;
-                                foreach(var labelName in _labelNames.Split(','))
-                                {
-                                    CNCItem _item1 = _cncItemRepository.QueryByLabel(labelName);
-                                    if (!new List<int> { (int)CNCItemStatus.CNC结束 }.Contains(_item1.Status))//工时记录下的全部电极点检则完成工时记录
-                                    {
-                                        _isFinished = false;
-                                    }
-                                }
-                                if (!_isFinished)
-                                {
-                                    _UnEndtaskhourList1.Remove(_th);
-                                }
+                                //string _labelNames = _th.SemiTaskFlag;
+                                //bool _isFinished = false;
+                                //foreach(var labelName in _labelNames.Split(','))
+                                //{
+                                //    CNCItem _item1 = _cncItemRepository.QueryByLabel(labelName);
+                                //    if (!new List<int> { (int)CNCItemStatus.CNC结束 }.Contains(_item1.Status))//工时记录下的全部电极点检则完成工时记录
+                                //    {
+                                //        _isFinished = false;
+                                //    }
+                                //}
+                                //if (!_isFinished)
+                                //{
+                                //    _UnEndtaskhourList1.Remove(_th);
+                                //}
+                                _th.FinishTime = _earliestTime;
                             }
                             CloseTaskHours(_UnEndtaskhourList1);
                         }
@@ -6792,7 +6751,7 @@ namespace MoldManager.WebUI.Controllers
                         {
                             foreach(var _th in _UnEndtaskhourList2)
                             {
-                                _th.StartTime = _startTime;
+                                _th.StartTime = _startTime;//当前时间
                                 _taskHourRepository.Save(_th);
                             }
                         }
@@ -7076,7 +7035,7 @@ namespace MoldManager.WebUI.Controllers
             }
             TaskGridViewModel _viewModel = new TaskGridViewModel(_curtasks, _userRepository, "",
                 _machInfoRepository, _edmDetailRepository, _taskRepository, _projectPhaseRepository, _mgSettingRepository, _wedmSettingRepository, _taskHourRepository, _systemConfigRepository
-                ,_taskTypeRepository);
+                ,_taskTypeRepository,_machinesinfoRepository);
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
         public void Service_Task_UptTime(List<Task> tasks)

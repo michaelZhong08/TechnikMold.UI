@@ -73,7 +73,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
                 _dbEntry = _context.SteelCAMDrawngs.Find(CAMDrawing.SteelCAMDrawingID);
                 if (_dbEntry != null)
                 {
-                    
                     _dbEntry.FullPartName = CAMDrawing.FullPartName;
                     _dbEntry.DrawName = CAMDrawing.DrawName;
                     _dbEntry.DrawREV = CAMDrawing.DrawREV;

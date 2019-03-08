@@ -230,18 +230,14 @@ namespace MoldManager.WebUI.Controllers
             int TaskType = 0)
         {
             List<User> ApprovaluserList = _userRepository.Users.Where(u => !string.IsNullOrEmpty(u.UserCode)).ToList() ?? new List<TechnikSys.MoldManager.Domain.Entity.User>();
-            //ViewBag.ApprovalUserIDList = new SelectList(ApprovaluserList, "UserCode", "FullName");
             ViewBag.ApprovalUserIDList = ApprovaluserList;
             ViewBag.TaskType = TaskType;
-            //ViewBag.SemiTaskType = SemiTaskType;
             #region 存在采购申请单号
             if (PurchaseRequestID != 0)
             {
                 PurchaseRequest _request = _purchaseRequestRepository.GetByID(PurchaseRequestID);
                 ViewBag.RequestNumber = _request.PurchaseRequestNumber;
                 ViewBag.Title = "申请单详情";
-                //ViewBag.ProjectID = _request.ProjectID;
-                //ViewBag.MoldNumber = _projectRepository.GetByID(_request.ProjectID).MoldNumber;
                 ViewBag.PartIDs = "";
                 ViewBag.PurchaseRequestID = PurchaseRequestID;
                 ViewBag.PRState = _request.State;
@@ -276,7 +272,6 @@ namespace MoldManager.WebUI.Controllers
             #region 不存在PR单号、存在模具号
             else if (MoldNumber != "")
             {
-                ViewBag.Title = "新建申请单";
                 try
                 {
                     ViewBag.ProjectID = _projectRepository.QueryByMoldNumber(MoldNumber).ProjectID;
@@ -296,6 +291,7 @@ namespace MoldManager.WebUI.Controllers
                     ViewBag.PartIDs = PartIDs;
                     ViewBag.TaskIDs = "";
                     ViewBag.WarehouseStockIDs = "";
+                    ViewBag.Title = "新建申请单(CAD)";
                 }
                 #endregion
                 #region 来源：任务外发
@@ -304,9 +300,7 @@ namespace MoldManager.WebUI.Controllers
                     ViewBag.PartIDs = "";
                     ViewBag.TaskIDs = TaskIDs;
                     ViewBag.WarehouseStockIDs = "";
-                    //ViewBag.setupTaskModel = _viewmodel;
-                    //if(_viewmodel.Count>0)
-                        //Session["setupTask"] = _viewmodel;
+                    ViewBag.Title = "新建申请单(外发)";
                 }
                 #endregion
                 return View();
@@ -315,9 +309,6 @@ namespace MoldManager.WebUI.Controllers
             #region 不存在PR单号、不存在模具号
             else
             {
-                ViewBag.Title = "新建申请单";
-                //List<User> ApprovaluserList = _userRepository.Users.Where(u => !string.IsNullOrEmpty(u.UserCode)).ToList() ?? new List<TechnikSys.MoldManager.Domain.Entity.User>();
-                //ViewBag.ApprovalUserIDList = new SelectList(ApprovaluserList, "UserCode", "FullName");
                 ViewBag.ProjectID = 0;
                 ViewBag.PartIDs = "";
                 ViewBag.PurchaseRequestID = 0;
@@ -327,10 +318,12 @@ namespace MoldManager.WebUI.Controllers
                 if (WarehouseStockIDs != "")
                 {
                     ViewBag.WarehouseStockIDs = WarehouseStockIDs;
+                    ViewBag.Title = "新建申请单(备库)";
                 }
                 else
                 {
                     ViewBag.WarehouseStockIDs = "";
+                    ViewBag.Title = "新建申请单";
                 }
                 return View();
             }
@@ -908,6 +901,18 @@ namespace MoldManager.WebUI.Controllers
         #endregion
 
         #region Json
+        /// <summary>
+        /// 采购申请单 PR List 列表内容获取
+        /// </summary>
+        /// <param name="MoldNumber"></param>
+        /// <param name="PRKeyword"></param>
+        /// <param name="StartDate"></param>
+        /// <param name="FinishDate"></param>
+        /// <param name="Supplier"></param>
+        /// <param name="PurchaseType"></param>
+        /// <param name="Department"></param>
+        /// <param name="State"></param>
+        /// <returns></returns>
         public JsonResult JsonPRList(string MoldNumber = "", string PRKeyword = "", string StartDate = "",
             string FinishDate = "", int Supplier = 0, int PurchaseType = 0, int Department = 0, int State = 0)
         {
@@ -915,17 +920,6 @@ namespace MoldManager.WebUI.Controllers
             IEnumerable<PurchaseRequest> _prList;
             if ((MoldNumber == "") && (PRKeyword == "") && (StartDate == "") && (FinishDate == "") && (Supplier == 0) && (PurchaseType == 0))
             {
-                //if (State > 0)
-                //{
-                //    _prList = _purchaseRequestRepository.PurchaseRequests
-                //        .Where(p => p.State == State)
-                //        .Where(p => p.Enabled == true)
-                //        .OrderByDescending(p => p.CreateDate);
-                //}
-                //else
-                //{
-                //    _prList = _purchaseRequestRepository.PurchaseRequests.Where(p => p.Enabled == true).OrderByDescending(p => p.PurchaseRequestNumber);
-                //}
                 _prList = _purchaseRequestRepository.PurchaseRequests
                         .Where(p => p.State == State)
                         .Where(p => p.Enabled == true)
@@ -2081,20 +2075,13 @@ namespace MoldManager.WebUI.Controllers
             int Supplier = 0,
             int PurchaseType = 0)
         {
-            IEnumerable<PurchaseOrder> _poList;
+            IEnumerable<PurchaseOrder> _poList=null;
             if ((MoldNumber == "") && (Keyword == "") && (StartDate == "") && (EndDate == "") && (Supplier == 0) && (PurchaseType == 0))
             {
-                _poList = _purchaseOrderRepository.PurchaseOrders;//.Where(p=>p.State != (int)PurchaseOrderStatus.取消);
-
-                //if (State > 0)
-                //{
-
-                //}
                 if (State != 0)
                 {
-                    _poList = _poList.Where(p => p.State == State);
+                    _poList = _purchaseOrderRepository.PurchaseOrders.Where(p => p.State == State).OrderByDescending(p => p.PurchaseOrderNumber);
                 }
-                _poList = _poList.OrderByDescending(p => p.PurchaseOrderNumber);
             }
             else
             {
@@ -2134,7 +2121,7 @@ namespace MoldManager.WebUI.Controllers
                 _poList = _purchaseOrderRepository.PurchaseOrders.Where(p => (_poIds.Contains(p.PurchaseOrderID)) );//&& p.State !=(int)PurchaseOrderStatus.取消
             }
 
-            POListGridViewModel _viewModel = new POListGridViewModel(_poList, _projectRepository, _supplierRepository, _purchaseTypeRepository,
+            POListGridViewModel _viewModel = new POListGridViewModel(_poList.ToList(), _projectRepository, _supplierRepository, _purchaseTypeRepository,
                 _userRepository);
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
@@ -2183,7 +2170,7 @@ namespace MoldManager.WebUI.Controllers
                 .Where(p=>_purIDs.Contains(p.PurchaseOrderID))
                 //.Where(p => p.PurchaseOrderID == PurchaseOrderID)
                 .Where(p => p.State == (int)PurchaseItemStatus.外发项待出库);
-            PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_outItems, _purchaseRequestRepository, _quotationRequestRepository,
+            PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_outItems.ToList(), _purchaseRequestRepository, _quotationRequestRepository,
                 _purchaseOrderRepository, _userRepository, _purchaseTypeRepository,_purchaseItemRepository);
             return Json(_viewModel, JsonRequestBehavior.AllowGet);
         }
@@ -2211,15 +2198,16 @@ namespace MoldManager.WebUI.Controllers
         public ActionResult JosnPOContents(int PurchaseOrderID,string purItemIds)
         {
             List<POContent> _poContents = new List<POContent>();
+            List<PurchaseItem> _items = _purchaseItemRepository.PurchaseItems.ToList();
             if (PurchaseOrderID > 0)
             {
                 _poContents = _poContentRepository.QueryByPOID(PurchaseOrderID).ToList();
             }
             else if (!string.IsNullOrEmpty(purItemIds))
             {
-                foreach(var _id in purItemIds.Split(','))
+                foreach (var _id in purItemIds.Split(','))
                 {
-                    PurchaseItem _item = _purchaseItemRepository.QueryByID(Convert.ToInt32(_id));
+                    PurchaseItem _item = _items.Where(p => p.PurchaseItemID == Convert.ToInt32(_id)).FirstOrDefault()??new PurchaseItem();//_purchaseItemRepository.QueryByID(Convert.ToInt32(_id));
                     POContent _poContent = new POContent()
                     {
                         POContentID = 0,
@@ -2234,8 +2222,7 @@ namespace MoldManager.WebUI.Controllers
                     _poContents.Add(_poContent);
                 }
             }
-            POContentGridViewModel _poContentModelJson = new POContentGridViewModel(_poContents,
-                _purchaseRequestRepository, _purchaseItemRepository,_taskRepository);
+            POContentGridViewModel _poContentModelJson = new POContentGridViewModel(_poContents.ToList(), _items,_purchaseRequestRepository,_taskRepository);
             return Json(_poContentModelJson, JsonRequestBehavior.AllowGet);
         }
 
@@ -2523,7 +2510,7 @@ namespace MoldManager.WebUI.Controllers
                      
             _items = _purchaseItemRepository.PurchaseItems.Where(_exp1);
 
-            PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_items,
+            PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_items.ToList(),
                 _purchaseRequestRepository,
                 _quotationRequestRepository,
                 _purchaseOrderRepository,
@@ -2564,7 +2551,7 @@ namespace MoldManager.WebUI.Controllers
             }
             _items = _purchaseItemRepository.PurchaseItems.Where(p => p.MoldNumber.ToUpper() == MoldNumber.ToUpper()).Where(_exp1);
 
-            PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_items,
+            PurchaseItemGridViewModel _viewModel = new PurchaseItemGridViewModel(_items.ToList(),
                 _purchaseRequestRepository,
                 _quotationRequestRepository,
                 _purchaseOrderRepository,
@@ -5416,7 +5403,7 @@ namespace MoldManager.WebUI.Controllers
         }
         public JsonResult Service_GetPurItemChangeDateRecords(int PurchaseRequestID)
         {
-            List<PurItemChangeDateRecord> _records = _purchaseItemRepository.GetPurItemChangeDateRecords(PurchaseRequestID);
+            List<PurItemChangeDateRecord> _records = _purchaseItemRepository.GetPurItemChangeDateRecords(_purchaseItemRepository.PurItemChangeDateRecords.ToList(), PurchaseRequestID);
             foreach(var r in _records)
             {
                 r.PlanAJDateStr = r.PlanAJDate.ToString("yyyy-MM-dd");
@@ -5436,7 +5423,7 @@ namespace MoldManager.WebUI.Controllers
         public string Service_PurItem_GetGridPlanAJDateContent(int purItemID)
         {
             string _htmlTitle = "";
-            List<PurItemChangeDateRecord> _puritems = _purchaseItemRepository.GetPurItemChangeDateRecords(purItemID);
+            List<PurItemChangeDateRecord> _puritems = _purchaseItemRepository.GetPurItemChangeDateRecords(_purchaseItemRepository.PurItemChangeDateRecords.ToList(), purItemID);
             if (_puritems.Count > 0)
             {
                 _htmlTitle = "<table><tr><th>调整后计划</th><th>调整人</th><th>调整时间</th></tr>";

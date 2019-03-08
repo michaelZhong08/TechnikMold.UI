@@ -403,15 +403,15 @@
     <Content Include="Content\bootstrap-datetimepicker.css" />
     <Content Include="Content\bootstrap-datetimepicker.min.css" />
     <Content Include="Content\bootstrap-switch.css" />
-    <Content Include="Content\bootstrap-switch1.css" />
     <Content Include="Content\bootstrap-treeview.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\CusPluginStyle.css" />
     <Content Include="Content\datepicker.css" />
     <Content Include="Content\jAlert.css" />
     <Content Include="Content\jquery-ui-timepicker-addon.css" />
     <Content Include="Content\jquery-ui.css" />
-    <Content Include="Content\layui.css" />
+    <Content Include="Content\LayoutStyle.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\ui.jqgrid-bootstrap-ui.css" />
     <Content Include="Content\ui.jqgrid-bootstrap.css" />
@@ -467,6 +467,7 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\GlobalScrip.js" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Scripts\i18n\fonts\glyphicons-halflings-regular.woff" />
@@ -495,8 +496,6 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Include="Scripts\layer.js" />
-    <Content Include="Scripts\List.js" />
     <Content Include="Scripts\locales\bootstrap-datepicker.zh-CN.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\MoldManager.js" />
@@ -506,7 +505,6 @@
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\Task.js" />
-    <Content Include="Scripts\test.js" />
     <Content Include="Scripts\TimeFormat.js" />
     <Content Include="Scripts\User.js" />
     <Content Include="Scripts\Warehouse.js" />

@@ -14,12 +14,23 @@ namespace TechnikSys.MoldManager.UI
     {
         protected void Application_Start()
         {
-            AreaRegistration.RegisterAllAreas();
+            MvcHandler.DisableMvcResponseHeader = true;
+            #region 清理视图引擎 只保留 Razor Engine
+            ViewEngines.Engines.Clear(); //clear all engines
+            ViewEngines.Engines.Add(new RazorViewEngine());
+            #endregion
+            #region 过滤器、路由、静态资源压缩 注册
+            //AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+            #endregion
+            #region 自定义IOC控制器工厂
             ControllerBuilder.Current.SetControllerFactory(new NinjectControllerFactory());
+            #endregion
+            #region 监测EF性能
             StackExchange.Profiling.EntityFramework6.MiniProfilerEF6.Initialize();
+            #endregion
         }
         protected void Application_BeginRequest()
         {

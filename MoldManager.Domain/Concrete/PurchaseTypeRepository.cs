@@ -50,7 +50,8 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             List<PurchaseType> _purchaseTypes= new List<PurchaseType>();
             List<PurchaseType> _purchaseTypes1 = new List<PurchaseType>();
-            PurchaseType ParentType = PurchaseTypes.Where(p => p.Name == ParentName).Where(p=>p.Enabled==true).FirstOrDefault();
+            List<PurchaseType> _purtypes = PurchaseTypes.ToList();
+            PurchaseType ParentType = _purtypes.Where(p => p.Name == ParentName).Where(p=>p.Enabled==true).FirstOrDefault();
             if (ContainParent)
             {
                 if (ParentType != null)
@@ -62,7 +63,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             {
                 if (ParentType != null)
                 {
-                    _purchaseTypes1 = PurchaseTypes.Where(p => p.ParentTypeID == ParentType.PurchaseTypeID && p.Enabled == true).ToList();
+                    _purchaseTypes1 = _purtypes.Where(p => p.ParentTypeID == ParentType.PurchaseTypeID && p.Enabled == true).ToList();
                     if (_purchaseTypes1 != null)
                     {
                         _purchaseTypes.AddRange(_purchaseTypes1.OrderBy(p => p.Name));

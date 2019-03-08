@@ -15,17 +15,21 @@ namespace MoldManager.WebUI.Models.GridViewModel
         public int Total;
         public int Records;
 
-        public POContentGridViewModel(IEnumerable<POContent> POContents,
-            IPurchaseRequestRepository PRRepository, IPurchaseItemRepository PurchaseItemRepository
-            ,ITaskRepository TaskRepository)
+        public POContentGridViewModel(List<POContent> POContents,
+            List<PurchaseItem> _items,
+            IPurchaseRequestRepository PRRepository, //IPurchaseItemRepository PurchaseItemRepository
+            ITaskRepository TaskRepository)
         {
             rows = new List<POContentGridRowModel>();
             string _eta;
             string _prNumber;
+            List<Task> _tasks = TaskRepository.Tasks.ToList();
+            List<PurchaseRequest> _preqs = PRRepository.PurchaseRequests.ToList();
+
             foreach (POContent _poContent in POContents)
             {
-                PurchaseItem _item = (PurchaseItemRepository.QueryByID(_poContent.PurchaseItemID) ?? new PurchaseItem());
-                Task _task = (TaskRepository.QueryByTaskID(_item.TaskID) ?? new Task());
+                PurchaseItem _item = _items.Where(p => p.PurchaseItemID == _poContent.PurchaseItemID).FirstOrDefault() ?? new PurchaseItem();// (PurchaseItemRepository.QueryByID(_poContent.PurchaseItemID) ?? new PurchaseItem());
+                Task _task = _tasks.Where(t => t.TaskID == _item.TaskID) .FirstOrDefault() ?? new Task();//(TaskRepository.QueryByTaskID(_item.TaskID) ?? new Task());
                 double time;
                 if (_task.TaskType == 1)
                 {
@@ -37,8 +41,8 @@ namespace MoldManager.WebUI.Models.GridViewModel
                 }
 
                 try
-                {                   
-                    PurchaseRequest _pr = PRRepository.GetByID(_item.PurchaseRequestID);
+                {
+                    PurchaseRequest _pr = _preqs.Where(p => p.PurchaseRequestID == _item.PurchaseRequestID).FirstOrDefault() ?? new PurchaseRequest();//PRRepository.GetByID(_item.PurchaseRequestID);
                     _eta = _pr.DueDate.ToString("yyyy-MM-dd");
                     _prNumber = _pr.PurchaseRequestNumber;
                 }

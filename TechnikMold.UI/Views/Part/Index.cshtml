@@ -198,14 +198,13 @@
 
 <script src="~/Scripts/jquery.contextmenu.r2.packed.js"></script>
 <script src="~/Scripts/Part.js"></script>
-<script src="~/Scripts/jquery.form.js"></script>
+
 <script type="text/javascript">
     $(document).ready(function () {
         //
         $('#PartGridDiv').css('width', document.body.clientWidth * 0.82);
         $('.ui-jqgrid-bdiv').css('width', document.body.clientWidth * 0.82);
         $('.ui-jqgrid-hdiv').css('width', document.body.clientWidth * 0.82);
-        //$('#PartGrid').css('width', document.body.clientWidth * 0.1);
         $(window).resize(function () {
             $('#PartGridDiv').css('width', document.body.clientWidth * 0.82);
 
@@ -216,14 +215,6 @@
         })
         //
         PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
-        @*@if (DeptID == 2)
-        {
-            @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
-                                }
-        else
-        {
-            @:PartListGrid("@ViewBag.MoldNumber", document.documentElement.clientHeight - 200);
-                        }*@
 
         var _listsize = Math.round((document.documentElement.clientHeight - 165) / 18);
         $("#MoldSelect").attr("size", _listsize);

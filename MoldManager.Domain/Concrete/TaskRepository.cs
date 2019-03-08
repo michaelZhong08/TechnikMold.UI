@@ -286,6 +286,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         {
             Task _task = QueryByTaskID(TaskID);
             //以前任务结束 _task.State = 90;
+            _task.PrevState = _task.State;
             _task.State = (int)TaskStatus.完成;
             _task.FinishTime = DateTime.Now;
             User _user = _context.Users.Where(u => u.FullName == FinishBy).FirstOrDefault() ?? new User();
@@ -350,6 +351,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public void AcceptItem(int TaskID)
         {
             Task _task = QueryByTaskID(TaskID);
+            _task.PrevState = _task.State;
             _task.State = (int)TaskStatus.已接收;
             _task.AcceptTime = DateTime.Now;
             _context.SaveChanges();
@@ -364,6 +366,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
         public void FinishTask(int TaskID, int TargetState, int WorkshopUser)
         {
             Task _task = QueryByTaskID(TaskID);
+            _task.PrevState = _task.State;
             _task.State = TargetState;
             _task.FinishTime = DateTime.Now;
             _task.WorkshopUser = WorkshopUser;
@@ -382,7 +385,6 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             return _context.Tasks.Where(t => t.ProgramID == GroupID).Where(t => t.Enabled == true).Where(t => t.State < 2).Where(t=>t.TaskType==4);
         }
 
-
         public Task QueryByNameVersion(string Name, int Version, int TaskType=-1, bool Enabled=true)
         {
             IEnumerable<Task> _task = _context.Tasks
@@ -395,7 +397,7 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             }
             else
             {
-                _task = _task.Where(t => t.TaskType < 5);
+                _task = _task.Where(t => t.TaskType < 10);
             }
             Task _returnTask = _task.FirstOrDefault();
             return _returnTask;

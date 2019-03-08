@@ -1,0 +1,52 @@
+﻿/* 自制Switch样式 */
+.switch-father-container {
+    width: 160px;
+    height: 36px;
+    margin: auto;
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    user-select: none;
+    cursor: pointer;
+}
+
+.switch-inner-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: inherit;
+    height: inherit;
+    text-transform: uppercase;
+    font-size: .6em;
+    letter-spacing: .2em;
+}
+
+    .switch-inner-container:first-child {
+        background: #e9e9e9;
+        color: #a9a9a9;
+    }
+
+    .switch-inner-container:nth-child(2) {
+        background: dodgerblue;
+        color: white;
+        clip-path: inset(0 50% 0 0);
+        transition: .3s cubic-bezier(0,0,0,1);
+    }
+
+.switch-toggle {
+    width: 50%;
+    position: absolute;
+    height: inherit;
+    display: flex;
+    box-sizing: border-box;
+}
+
+    .switch-toggle p {
+        font-family: "微软雅黑";
+        font-size: 14px;
+        margin: auto;
+    }
+
+    .switch-toggle:nth-child(1) {
+        right: 0;
+    }

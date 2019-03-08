@@ -1,0 +1,469 @@
+﻿/* h2样式 及指针样式小手掌*/
+h2 {
+    margin: 0px;
+    padding: 0px;
+    line-height: 40px;
+    font-size: 18px;
+    text-indent: 10px;
+    font-weight: bold;
+    font-family: "微软雅黑" !important;
+    width: 220px;
+}
+
+input[type="checkbox"], button, a, select, h2 {
+    cursor: pointer;
+}
+/* html 元素去掉圆角 */
+.btn {
+    border-radius: 0px !important;
+}
+
+input {
+    border-radius: 0px !important;
+}
+
+select {
+    border-radius: 0px !important;
+}
+
+div {
+    border-radius: 0px !important;
+}
+
+p, td, input, select, div {
+    font-family: "微软雅黑" !important;
+}
+/* modal 全局样式*/
+.modal-header {
+    height: 40px !important;
+}
+
+.modal-footer {
+    height: 50px !important;
+    padding: 5px !important;
+    margin-top: 0px !important;
+}
+
+.close {
+    font-size: 32px;
+    /*line-height: 100% !important;
+            padding: 0px !important;*/
+    margin-top: -12px !important;
+    color: red;
+}
+
+.modal-title {
+    line-height: 100% !important;
+    padding: 0px !important;
+}
+
+.modal-body {
+    padding: 10px 10px 10px 10px;
+}
+/* JqGrid checkbox 样式微调  */
+.cbox {
+    margin: 0px !important;
+    width: 90% !important;
+    height: 100% !important;
+    /*margin-left: 20% !important;*/
+    display: block !important;
+}
+
+.ui-row-ltr label {
+    text-indent: -2px !important;
+}
+
+.ui-row-ltr a {
+    text-indent: -2px !important;
+}
+/* 左右——左列表右表格布局（设计清单）*/
+.FatherDiv {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 100px;
+    bottom: 0px;
+}
+
+.LeftDiv {
+    position: absolute;
+    left: 10px;
+    top: 0px;
+    bottom: 10px;
+    width: 180px;
+}
+
+.RightDiv {
+    position: absolute;
+    left: 200px;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+}
+
+.LeftDiv_Btn {
+    width: 100%;
+    /*height: 40px;*/
+    border-radius: 0px !important;
+}
+
+.LeftDiv_Inpt {
+    width: 100%;
+    height: 41px;
+    border-radius: 0px !important;
+    margin-top: 8px;
+}
+
+.LeftDiv_Sel {
+    position: absolute;
+    left: 0px;
+    top: 80px;
+    bottom: 0px;
+    width: 100%;
+    border-radius: 0px !important;
+}
+
+    .LeftDiv_Sel option {
+        font-size: 16px;
+        padding: 2px;
+        cursor: pointer;
+        width: 100% !important;
+    }
+
+        .LeftDiv_Sel option:hover {
+            background-color: rgba(0,0,0,0.1);
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+.RightDiv_TopDiv {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    height: 40px;
+}
+
+    .RightDiv_TopDiv select {
+        height: 34px !important;
+        border-radius: 0px !important;
+        font-size: 16px;
+    }
+
+    .RightDiv_TopDiv input {
+        border-radius: 0px !important;
+    }
+
+    .RightDiv_TopDiv option {
+        font-size: 18px;
+    }
+
+.RightDiv_BottomDiv {
+    position: absolute;
+    left: 0px;
+    right: 10px;
+    top: 40px;
+    bottom: 10px;
+}
+
+
+.LeftDiv_Sel_1 {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    width: 100%;
+    border-radius: 0px !important;
+}
+
+    .LeftDiv_Sel_1 option {
+        font-size: 16px;
+        padding: 2px;
+        cursor: pointer;
+        width: 100% !important;
+    }
+
+        .LeftDiv_Sel_1 option:hover {
+            background-color: rgba(0,0,0,0.1);
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+        }
+/* 上下——上工具栏下表格布局（项目计划）*/
+.UD_FatherDiv {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 100px;
+    bottom: 0px;
+    width: 100%;
+    /*border:1px solid rgba(0,0,0,0.1);*/
+}
+
+.UD_ToolBarDiv {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 0px;
+    height: 40px;
+    /*border:1px solid rgba(0,0,0,0.1);*/
+}
+
+.UD_TableDiv {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 40px;
+    bottom: 10px;
+    /*border:1px solid red;*/
+}
+/* 基础数据维护页面布局（品牌管理）*/
+.BaseData_FatherDiv {
+    position: absolute;
+    top: 100px;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+}
+
+.BaseData_LeftDiv {
+    position: absolute;
+    width: 10%;
+    height: 100%;
+    /*border:1px solid rgba(0,0,0,0.1);*/
+}
+
+.BaseData_RightDiv {
+    position: absolute;
+    left: 10%;
+    width: 40%;
+    height: 100%;
+}
+
+.BaseData_Right_ToolbarDiv {
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.BaseData_Right_TableDiv {
+    position: absolute;
+    width: 100%;
+    top: 40px;
+    bottom: 0px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.BaseData_Left_Sel {
+    position: absolute;
+    left: 0px;
+    top: 40px;
+    bottom: 0px;
+    width: 100%;
+    border-radius: 0px !important;
+}
+
+    .BaseData_Left_Sel option {
+        font-size: 16px;
+        padding: 2px;
+        cursor: pointer;
+        width: 100% !important;
+    }
+
+        .BaseData_Left_Sel option:hover {
+            background-color: rgba(0,0,0,0.1);
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+.BaseData_Right_FormDiv {
+    margin: 20px;
+    box-shadow: rgba(0,0,0,0.1) 0px 0px 5px 5px;
+}
+/* 表单填写页面布局（PRDetail 采购申请单明细）*/
+.Form_FatherDiv {
+    position: absolute;
+    top: 100px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    /*border: 1px solid red;*/
+}
+
+.Form_ToolbarDiv {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    /*border: 1px solid blue;*/
+}
+
+.Form_HeadDiv {
+    position: absolute;
+    width: 100%; /*1884px*/
+    background-color: #fffde4;
+    border: 1px solid;
+    border-color: #fbf727;
+    border-radius: 5px;
+}
+
+.Form_HeadTable {
+    width: 80%;
+}
+
+    .Form_HeadTable td {
+        font-family: "微软雅黑";
+        font-weight: bold;
+        text-align: center;
+        vertical-align: central;
+    }
+
+.Form_TableDiv {
+    /*border: 1px solid red;*/
+    position: absolute;
+}
+
+/* 模态框左中右布局（部门/项目阶段权限关联）*/
+.modal_LMR_FatherDiv {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+}
+
+.modal_LMR_LeftDiv {
+    position: absolute;
+    left: 0px;
+    width: 45%;
+    height: 100%;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.modal_LMR_MiddleDiv {
+    position: absolute;
+    left: 45%;
+    width: 10%;
+    height: 100%;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.modal_LMR_RightDiv {
+    position: absolute;
+    left: 55%;
+    right: 0px;
+    width: 45%;
+    height: 100%;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.modal_SelTitle {
+    height: 25px;
+}
+
+.modal_Sel {
+    position: absolute;
+    left: 0px;
+    top: 25px;
+    bottom: 0px;
+    width: 100%;
+    border-radius: 0px !important;
+}
+
+    .modal_Sel option {
+        font-size: 16px;
+        padding: 2px;
+        cursor: pointer;
+        width: 100% !important;
+    }
+
+        .modal_Sel option:hover {
+            background-color: rgba(0,0,0,0.1);
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+/* 左右结构数据管理页面布局（材料管理）*/
+.LR_FatherDiv {
+    position: absolute;
+    top: 100px;
+    bottom: 0px;
+    left: 10px;
+    right: 10px;
+}
+
+.LR_LeftDiv {
+    position: absolute;
+    left: 0px;
+    width: 30%;
+    height: 100%;
+}
+
+.LR_Left_ToolbarDiv {
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.LR_Left_BodyDiv {
+    position: absolute;
+    top: 40px;
+    bottom: 0px;
+    width: 100%;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.LR_RightDiv {
+    position: absolute;
+    left: 30%;
+    width: 30%;
+    height: 100%;
+}
+
+.LR_Right_ToolbarDiv {
+    position: absolute;
+    width: 100%;
+    height: 40px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.LR_Right_BodyDiv {
+    position: absolute;
+    top: 40px;
+    bottom: 0px;
+    width: 100%;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.LR_Body_Sel {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    width: 100%;
+    border-radius: 0px !important;
+}
+
+    .LR_Body_Sel option {
+        font-size: 16px;
+        padding: 2px;
+        cursor: pointer;
+        width: 100% !important;
+    }
+
+        .LR_Body_Sel option:hover {
+            background-color: rgba(0,0,0,0.1);
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+.jqgrow td {
+        text-align: center!important;
+        vertical-align:middle!important;
+        padding: 5px !important;
+    }

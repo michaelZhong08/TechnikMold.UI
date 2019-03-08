@@ -1729,18 +1729,19 @@ namespace MoldManager.WebUI.Controllers
             Project _project = _projectRepository.GetByID(projectid);
             if (_project.MoldNumber == "---")
             {
-                List<Project> _projects = _projectRepository.Projects.Where(p => p.ParentID == _project.ProjectID).ToList();
-                string _moldNos = "";
-                if (_projects != null)
-                {
-                    foreach (var p in _projects)
-                    {
-                        _moldNos = _moldNos + p.MoldNumber + ",";
-                    }
-                }
+                //List<Project> _projects = _projectRepository.Projects.Where(p => p.ParentID == _project.ProjectID && p.Enabled).Distinct().ToList();
+                string[] moldNums = _projectRepository.Projects.Where(p => p.ParentID == _project.ProjectID && p.Enabled).Select(p => p.MoldNumber).Distinct().ToArray();
+                string _moldNos = string.Join(",", moldNums);//"";
+                //if (_projects != null)
+                //{
+                //    foreach (var p in _projects)
+                //    {
+                //        _moldNos = _moldNos + p.MoldNumber + ",";
+                //    }
+                //}
                 if (!string.IsNullOrEmpty(_moldNos))
                 {
-                    return _moldNos.Substring(0, _moldNos.Length - 1);
+                    return _moldNos;//_moldNos.Substring(0, _moldNos.Length - 1);
                 }
                 return null;
             }

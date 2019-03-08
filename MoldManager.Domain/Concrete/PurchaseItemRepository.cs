@@ -189,9 +189,13 @@ namespace TechnikSys.MoldManager.Domain.Concrete
             _context.PurItemChangeDateRecords.Add(model);
             _context.SaveChanges();
         }
-        public List<PurItemChangeDateRecord> GetPurItemChangeDateRecords(int PurchaseRequestID)
+        public IEnumerable<PurItemChangeDateRecord> PurItemChangeDateRecords
         {
-            return _context.PurItemChangeDateRecords.Where(p => p.PurchaseItemID == PurchaseRequestID).OrderByDescending(p => p.CreDate).ToList();
+            get { return _context.PurItemChangeDateRecords; }
+        }
+        public List<PurItemChangeDateRecord> GetPurItemChangeDateRecords(List<PurItemChangeDateRecord> _itemCDs ,int PurchaseRequestID)
+        {
+            return _itemCDs.Where(p => p.PurchaseItemID == PurchaseRequestID).OrderByDescending(p => p.CreDate).ToList();
         }
 
         public int UpdateItemTime(int purItemID,double time)

@@ -39,13 +39,10 @@
         width: 20px;
         height: 20px;
     }
-
-    .td_cb{
-        padding-left:10px!important;
-    }
 </style>
 <style>
     .td_cb{
+        padding-left:10px!important;
         border:1px solid rgba(0,0,0,0.2);
         box-shadow:rgba(0,0,0,0.1) 0px 0px 1px 1px;
     }
@@ -67,13 +64,11 @@
                 <tr>
                     <td style="font-weight:bold;">预估工时：</td>
                     <td>
-                        <div class="switch" >
-                            <input id="TaskTimeState" type="hidden" value="true"/>
-                            <input id="TaskTimeSwitch" type="checkbox" data-on-color="primary" data-off-color="warning" />
-                        </div>
+                        <input id="TaskTimeState" type="hidden" value="true" />
+                        <div id="TimeSatus"></div>
                     </td>
-                    <td style="font-weight:bold">优先级：</td>
-                    <td>
+                    <td style="font-weight:bold">&nbsp; 优先级：</td>
+                    <td style="padding-right:10px;">
                         <select class="form-control" id="Sel_priority">
                             <option value="0">-</option>
                             <option value="1">1</option>
@@ -84,13 +79,13 @@
                         </select>
                     </td>
 
-                    <td class="td_cb" id="td_task_1" hidden><input class="tdchkBox" type="checkbox" id="task_1"/> 电极</td>
-                    <td class="td_cb" id="td_task_2" hidden><input class="tdchkBox" type="checkbox" id="task_2" /> 放电</td>
-                    <td class="td_cb" id="td_task_3" hidden><input class="tdchkBox" type="checkbox" id="task_3" /> 线切割</td>
-                    <td class="td_cb" id="td_task_4" hidden><input class="tdchkBox" type="checkbox" id="task_4" /> 铣铁</td>
-                    <td class="td_cb" id="td_task_6" hidden><input class="tdchkBox" type="checkbox" id="task_6" /> 铣磨</td>
+                    <td class="td_cb" id="td_task_1" hidden> <input class="tdchkBox" type="checkbox" id="task_1" />电极</td>
+                    <td class="td_cb" id="td_task_2" hidden> <input class="tdchkBox" type="checkbox" id="task_2" />放电</td>
+                    <td class="td_cb" id="td_task_3" hidden> <input class="tdchkBox" type="checkbox" id="task_3" />线切割</td>
+                    <td class="td_cb" id="td_task_4" hidden> <input class="tdchkBox" type="checkbox" id="task_4" />铣铁</td>
+                    <td class="td_cb" id="td_task_6" hidden> <input class="tdchkBox" type="checkbox" id="task_6" />铣磨</td>
 
-                    <td><input type="text" class="col-sm-1 form-control" id="TaskKeyword" placeholder="任务名关键字" /></td>
+                    <td style="padding-left :10px!important;"> <input type="text" class="form-control" id="TaskKeyword" placeholder="任务名关键字" /></td>
                     <td><button class="btn btn-info" id="QueryTask"><span class="glyphicon glyphicon-search"></span> 查询</button></td>
 
                     @if (ViewBag.DepList == depID)
@@ -251,16 +246,18 @@
             SetPriority(GetMultiSelectedIDs("TaskTimeGrid"), this.value);
         });
 
-        $('#TaskTimeSwitch').bootstrapSwitch({
-            size: 'normal',//normal
-            onText: '有',
-            offText: '无',
-            onSwitchChange: function (event, state) { switchChange(event, state) },
-        });
+        //$('#TaskTimeSwitch').bootstrapSwitch({
+        //    size: 'normal',//normal
+        //    onText: '有',
+        //    offText: '无',
+        //    onSwitchChange: function (event, state) { switchChange(event, state) },
+        //});
+
+        CusSwitchConfig(switchChange, 'TimeSatus', '有', '无', false);
     });
-    function switchChange(event, state) {
+    function switchChange(state) {
         var types = getPickTaskType();
-        if (state) {
+        if (state=='true') {
             $('#TaskTimeState').val('false');
             RefreshTaskGrid($("#Keyword").val(), types, 'false');
             LoadMoldNum('false');
